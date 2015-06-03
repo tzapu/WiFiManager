@@ -1,7 +1,7 @@
 # WiFiManager
 ESP8266 WiFi Connection manager with save to EEPROM and web config portal
 
-First attempt at a library.
+First attempt at a library. Lots more changes and fixes to do. Adding examples also needs doing.
 
 This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 
