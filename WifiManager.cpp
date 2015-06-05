@@ -21,27 +21,29 @@ WiFiServer server(80);
 #endif
 
 
-WiFiManager::WiFiManager(char *apName)
+WiFiManager::WiFiManager(int eepromStart)
 {
-    _apName = apName;
+    _eepromStart = eepromStart;
 }
 
 void WiFiManager::begin() {
-    begin(0);
+    begin("NoNetESP");
 }
-void WiFiManager::begin(int eepromStart) {
-    _eepromStart = eepromStart;
+
+void WiFiManager::begin(char const *apName) {
+    _apName = apName;
+
     EEPROM.begin(512);
+    delay(10);
 }
 
 boolean WiFiManager::autoConnect() {
-    autoConnect(0);
+    autoConnect("NoNetESP");
 }
 
-boolean WiFiManager::autoConnect(int eepromStart) {
-    begin(eepromStart);
+boolean WiFiManager::autoConnect(char const *apName) {
+    begin(apName);
     
-    delay(10);
     
     DEBUG_PRINT("");
     DEBUG_PRINT("AutoConnect");
@@ -58,8 +60,10 @@ boolean WiFiManager::autoConnect(int eepromStart) {
             return true;
         }
     }
-    //oled_log("\nno network");
+    //setup AP
     beginConfigMode();
+    //start portal and loop
+    startWebConfig();
     return false;
 }
 
@@ -145,17 +149,21 @@ void WiFiManager::startWebConfig() {
     while(serverLoop() == WM_WAIT) {
         //looping
     }
-}
 
-void WiFiManager::beginConfigMode(void) {
-    
-    WiFi.softAP(_apName);
-    DEBUG_PRINT("Started Soft Access Point");
-    
-    startWebConfig();
     DEBUG_PRINT("Setup done");
     delay(10000);
     ESP.reset();
+
+}
+
+String WiFiManager::beginConfigMode(void) {
+    
+    WiFi.softAP(_apName);
+    DEBUG_PRINT("Started Soft Access Point");
+    IPAddress apIp = WiFi.softAPIP();
+    char ip[24];
+    sprintf(ip, "%d.%d.%d.%d", apIp[0], apIp[1], apIp[2], apIp[3]);
+    return ip;
 }
 
 int WiFiManager::serverLoop()

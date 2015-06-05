@@ -30,19 +30,21 @@
 class WiFiManager
 {
 public:
-    WiFiManager(char *apName);
+    WiFiManager(int eepromStart);
     void begin();
-    void begin(int eepromStart);
-    boolean hasConnected();
-    boolean autoConnect();
-    boolean autoConnect(int eepromStart);
+    void begin(char const *apName);
     
-    void beginConfigMode(void);
+    boolean autoConnect();
+    boolean autoConnect(char const *apName);
+    
+    boolean hasConnected();
+    
+    String beginConfigMode(void);
     void startWebConfig();
     
     String getSSID();
     String getPassword();
-    
+    //for conveniennce
     String urldecode(const char*);
 private:
     const int WM_DONE = 0;
