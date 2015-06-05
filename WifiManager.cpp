@@ -14,6 +14,12 @@
 MDNSResponder mdns;
 WiFiServer server(80);
 
+#ifdef DEBUG
+#define DEBUG_PRINT(x)  Serial.println(x)
+#else
+#define DEBUG_PRINT(x)
+#endif
+
 
 WiFiManager::WiFiManager(char *apName)
 {
@@ -37,14 +43,14 @@ boolean WiFiManager::autoConnect(int eepromStart) {
     
     delay(10);
     
-    Serial.println();
-    Serial.println("AutoConnect");
+    DEBUG_PRINT("");
+    DEBUG_PRINT("AutoConnect");
     // read eeprom for ssid and pass
     String ssid = getSSID();
     String pass = getPassword();
     
     if ( ssid.length() > 1 ) {
-        Serial.println("Waiting for Wifi to connect");
+        DEBUG_PRINT("Waiting for Wifi to connect");
 
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssid.c_str(), pass.c_str());
@@ -59,20 +65,20 @@ boolean WiFiManager::autoConnect(int eepromStart) {
 
 String WiFiManager::getSSID() {
     if(_ssid == "") {
-        Serial.println("Reading EEPROM SSID");
+        DEBUG_PRINT("Reading EEPROM SSID");
         _ssid = getEEPROMString(0, 32);
-        Serial.print("SSID: ");
-        Serial.println(_ssid);
+        DEBUG_PRINT("SSID: ");
+        DEBUG_PRINT(_ssid);
     }
     return _ssid;
 }
 
 String WiFiManager::getPassword() {
     if(_pass == "") {
-        Serial.println("Reading EEPROM Password");
+        DEBUG_PRINT("Reading EEPROM Password");
         _pass = getEEPROMString(32, 64);
-        Serial.print("Password: ");
-        Serial.println(_pass);
+        DEBUG_PRINT("Password: ");
+        DEBUG_PRINT(_pass);
     }
     return _pass;
 }
@@ -80,7 +86,7 @@ String WiFiManager::getPassword() {
 String WiFiManager::getEEPROMString(int start, int len) {
     String string = "";
     for (int i = _eepromStart + start; i < _eepromStart + start + len; i++) {
-        //Serial.println(i);
+        //DEBUG_PRINT(i);
         string += char(EEPROM.read(i));
     }
     return string;
@@ -92,8 +98,8 @@ void WiFiManager::setEEPROMString(int start, int len, String string) {
         char c;
         if(si < string.length()) {
             c = string[si];
-            Serial.print("Wrote: ");
-            Serial.println(c);
+            DEBUG_PRINT("Wrote: ");
+            DEBUG_PRINT(c);
             
         } else {
             c = 0;
@@ -112,29 +118,29 @@ boolean WiFiManager::hasConnected(void) {
             return true;
         }
         delay(500);
-        Serial.print(".");
+        DEBUG_PRINT(".");
         c++;
     }
-    Serial.println("");
-    Serial.println("Could not connect to WiFi");
+    DEBUG_PRINT("");
+    DEBUG_PRINT("Could not connect to WiFi");
     return false;
 }
 
 void WiFiManager::startWebConfig() {
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println(WiFi.localIP());
-    Serial.println(WiFi.softAPIP());
+    DEBUG_PRINT("");
+    DEBUG_PRINT("WiFi connected");
+    DEBUG_PRINT(WiFi.localIP());
+    DEBUG_PRINT(WiFi.softAPIP());
     if (!mdns.begin(_apName, WiFi.localIP())) {
-        Serial.println("Error setting up MDNS responder!");
+        DEBUG_PRINT("Error setting up MDNS responder!");
         while(1) {
             delay(1000);
         }
     }
-    Serial.println("mDNS responder started");
+    DEBUG_PRINT("mDNS responder started");
     // Start the server
     server.begin();
-    Serial.println("Server started");
+    DEBUG_PRINT("Server started");
 
     while(serverLoop() == WM_WAIT) {
         //looping
@@ -144,10 +150,10 @@ void WiFiManager::startWebConfig() {
 void WiFiManager::beginConfigMode(void) {
     
     WiFi.softAP(_apName);
-    Serial.println("Started Soft Access Point");
+    DEBUG_PRINT("Started Soft Access Point");
     
     startWebConfig();
-    Serial.println("Setup done");
+    DEBUG_PRINT("Setup done");
     delay(10000);
     ESP.reset();
 }
@@ -163,7 +169,7 @@ int WiFiManager::serverLoop()
         return(WM_WAIT);
     }
 
-    Serial.println("New client");
+    DEBUG_PRINT("New client");
     
     // Wait for data from client to become available
     while(client.connected() && !client.available()){
@@ -178,13 +184,13 @@ int WiFiManager::serverLoop()
     int addr_start = req.indexOf(' ');
     int addr_end = req.indexOf(' ', addr_start + 1);
     if (addr_start == -1 || addr_end == -1) {
-        Serial.print("Invalid request: ");
-        Serial.println(req);
+        DEBUG_PRINT("Invalid request: ");
+        DEBUG_PRINT(req);
         return(WM_WAIT);
     }
     req = req.substring(addr_start + 1, addr_end);
-    Serial.print("Request: ");
-    Serial.println(req);
+    DEBUG_PRINT("Request: ");
+    DEBUG_PRINT(req);
     client.flush();
     
     String s;
@@ -200,17 +206,16 @@ int WiFiManager::serverLoop()
         s += HTTP_HEAD_END;
         
         int n = WiFi.scanNetworks();
-        Serial.println("scan done");
+        DEBUG_PRINT("scan done");
         if (n == 0) {
-            Serial.println("no networks found");
+            DEBUG_PRINT("no networks found");
             s += "<div>No networks found. Refresh to scan again.</div>";
         }
         else {
             for (int i = 0; i < n; ++i)
             {
-                Serial.print(WiFi.SSID(i));
-                Serial.print(" ");
-                Serial.println(WiFi.RSSI(i));
+                DEBUG_PRINT(WiFi.SSID(i));
+                DEBUG_PRINT(WiFi.RSSI(i));
                 String item = HTTP_ITEM;
                 item.replace("{v}", WiFi.SSID(i));
                 s += item;
@@ -221,17 +226,17 @@ int WiFiManager::serverLoop()
         s += HTTP_FORM;
         s += HTTP_END;
         
-        Serial.println("Sending config page");
+        DEBUG_PRINT("Sending config page");
     }
     else if ( req.startsWith("/s") ) {
         String qssid;
         qssid = urldecode(req.substring(8,req.indexOf('&')).c_str());
-        Serial.println(qssid);
-        Serial.println("");
+        DEBUG_PRINT(qssid);
+        DEBUG_PRINT("");
         String qpass;
         qpass = urldecode(req.substring(req.lastIndexOf('=')+1).c_str());
-        Serial.println(qpass);
-        Serial.println("");
+        DEBUG_PRINT(qpass);
+        DEBUG_PRINT("");
         
         setEEPROMString(0, 32, qssid);
         setEEPROMString(32, 64, qpass);
@@ -248,17 +253,17 @@ int WiFiManager::serverLoop()
         client.print(s);
         client.flush();
         
-        Serial.println("Saved WiFiConfig...restarting.");
+        DEBUG_PRINT("Saved WiFiConfig...restarting.");
         return WM_DONE;
     }
     else
     {
         s = HTTP_404;
-        Serial.println("Sending 404");
+        DEBUG_PRINT("Sending 404");
     }
     
     client.print(s);
-    Serial.println("Done with client");
+    DEBUG_PRINT("Done with client");
     return(WM_WAIT);
 }
 
@@ -293,8 +298,6 @@ String WiFiManager::urldecode(const char *src)
         }
     }
     decoded += '\0';
-    Serial.print("source ");
-    Serial.println(decoded);
     
     return decoded;
 }

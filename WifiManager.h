@@ -18,6 +18,14 @@
 #include <ESP8266mDNS.h>
 #include <WiFiClient.h>
 
+#define DEBUG //until arduino ide can include defines at compile time from main sketch
+
+#ifdef DEBUG
+#define DEBUG_PRINT(x)  Serial.println(x)
+#else
+#define DEBUG_PRINT(x)
+#endif
+
 
 class WiFiManager
 {
