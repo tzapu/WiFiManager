@@ -68,6 +68,13 @@ private:
     String getEEPROMString(int start, int len);
     void setEEPROMString(int start, int len, String string);
     int serverLoop();
+    
+    
+    
+    
+    
 };
+
+
 
 #endif

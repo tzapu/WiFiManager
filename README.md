@@ -14,17 +14,19 @@ This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 #include <WiFiClient.h>
 #include <EEPROM.h>
 #include <ESP8266mDNS.h>
-#include <WifiManager.h>
+#include <WiFiManager.h>
 ```
 
 - Initialise library, the paramater is the Acces Point Name
 ```
-WiFiManager wifi("ESP-AP");
+//parameter is eeprom start
+WiFiManager wifi(0);
 ```
 
 - In your setup function add
 ```
-wifi.autoConnect();
+//parameter is name of access point
+wifi.autoConnect("AP-NAME");
 ```
 
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
