@@ -274,7 +274,6 @@ String WiFiManager::urldecode(const char *src)
     String decoded = "";
     char a, b;
     while (*src) {
-        
         if ((*src == '%') &&
             ((a = src[1]) && (b = src[2])) &&
             (isxdigit(a) && isxdigit(b))) {
@@ -293,8 +292,10 @@ String WiFiManager::urldecode(const char *src)
             
             decoded += char(16*a+b);
             src+=3;
-        } 
-        else {
+        } else if (*src == '+') {
+            decoded += ' ';
+            *src++;
+        } else {
             decoded += *src;
             *src++;
         }
