@@ -115,7 +115,7 @@ boolean WiFiManager::hasConnected(void) {
         if (WiFi.status() == WL_CONNECTED) {
             return true;
         }
-        delay(500);
+        delay(200);
         DEBUG_PRINT(".");
         c++;
     }
