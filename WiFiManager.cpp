@@ -111,7 +111,7 @@ void WiFiManager::setEEPROMString(int start, int len, String string) {
 
 boolean WiFiManager::hasConnected(void) {
     int c = 0;
-    while ( c < 20 ) {
+    while ( c < 50 ) {
         if (WiFi.status() == WL_CONNECTED) {
             return true;
         }
