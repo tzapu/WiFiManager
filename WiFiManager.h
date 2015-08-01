@@ -44,8 +44,15 @@ public:
     
     String getSSID();
     String getPassword();
+    void   resetSettings();
     //for conveniennce
     String urldecode(const char*);
+
+    //sets timeout before webserver loop ends and exits even if there has been no setup. 
+    //usefully for devices that failed to connect at some point and got stuck in a webserver loop
+    //in seconds
+    void setTimeout(unsigned long seconds);
+    
 private:
     const int WM_DONE = 0;
     const int WM_WAIT = 10;
@@ -64,13 +71,13 @@ private:
     const char* _apName = "no-net";
     String _ssid = "";
     String _pass = "";
+    unsigned long timeout = 0;
+    unsigned long start = 0;
+
     
     String getEEPROMString(int start, int len);
     void setEEPROMString(int start, int len, String string);
     int serverLoop();
-    
-    
-    
     
     
 };
