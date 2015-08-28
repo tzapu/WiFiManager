@@ -5,7 +5,7 @@ First attempt at a library. Lots more changes and fixes to do. Adding examples a
 
 This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 
-*v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
+> v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
 
 ####Quick Start
 - Checkout library to your Arduino libraries folder
