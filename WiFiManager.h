@@ -15,8 +15,10 @@
 #include <ESP8266WiFi.h>
 
 #include <EEPROM.h>
-#include <ESP8266mDNS.h>
 #include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <DNSServer.h>
+
 
 #define DEBUG //until arduino ide can include defines at compile time from main sketch
 
@@ -30,7 +32,8 @@
 class WiFiManager
 {
 public:
-    WiFiManager(int eepromStart);
+    WiFiManager();
+    
     void begin();
     void begin(char const *apName);
     
@@ -42,9 +45,11 @@ public:
     String beginConfigMode(void);
     void startWebConfig();
     
-    String getSSID();
-    String getPassword();
-    void   resetSettings();
+    String  getSSID();
+    String  getPassword();
+    void    setSSID(String s);
+    void    setPassword(String p);
+    void    resetSettings();
     //for conveniennce
     String urldecode(const char*);
 
@@ -52,7 +57,9 @@ public:
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds
     void setTimeout(unsigned long seconds);
-    
+
+    int serverLoop();
+
 private:
     const int WM_DONE = 0;
     const int WM_WAIT = 10;
@@ -64,7 +71,8 @@ private:
     const String HTTP_SCRIPT = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
     const String HTTP_HEAD_END = "</head><body>";
     const String HTTP_ITEM = "<div><a href='#' onclick='c(this)'>{v}</a></div>";
-    const String HTTP_FORM = "<form method='get' action='s'><input id='s' name='ssid' length=32 placeholder='SSID'><input id='p' name='pass' length=64 placeholder='password'><br/><input type='submit'></form>";
+    const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><input type='submit'></form>";
+    const String HTTP_SAVED = "<div>Credentials Saved<br />Node will reboot in 5 seconds.</div>";
     const String HTTP_END = "</body></html>";
     
     int _eepromStart;
@@ -77,9 +85,25 @@ private:
     
     String getEEPROMString(int start, int len);
     void setEEPROMString(int start, int len, String string);
-    int serverLoop();
+
+    bool keepLooping = true;
+    int status = WL_IDLE_STATUS;
+    void connectWifi(String ssid, String pass);
+
+    void handleRoot();
+    void handleWifi();
+    void handleWifiSave();
+    void handleNotFound();
+    boolean captivePortal();
     
+    // DNS server
+    const byte DNS_PORT = 53;
     
+    boolean isIp(String str);
+    String toStringIp(IPAddress ip);
+
+    boolean connect;
+   
 };
 
 
