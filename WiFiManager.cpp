@@ -46,7 +46,7 @@ void WiFiManager::begin(char const *apName) {
   server.on("/", std::bind(&WiFiManager::handleRoot, this));
   server.on("/wifi", std::bind(&WiFiManager::handleWifi, this));
   server.on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
-  server.on("/generate_204", std::bind(&WiFiManager::handleRoot, this));  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
+  server.on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server.on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server.onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server.begin(); // Web server start
@@ -537,6 +537,15 @@ void WiFiManager::handleWifiSave() {
   //saveCredentials();
   connect = true; //signal ready to connect/reset
 }
+
+void WiFiManager::handle204() {
+  DEBUG_PRINT("204 No Response");  
+  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server.sendHeader("Pragma", "no-cache");
+  server.sendHeader("Expires", "-1");
+  server.send ( 204, "text/plain", "");
+}
+
 
 void WiFiManager::handleNotFound() {
   if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
