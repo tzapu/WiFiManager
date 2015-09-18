@@ -94,6 +94,7 @@ private:
     void handleWifi();
     void handleWifiSave();
     void handleNotFound();
+    void handle204();
     boolean captivePortal();
     
     // DNS server
