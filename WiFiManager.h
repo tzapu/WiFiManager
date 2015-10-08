@@ -20,15 +20,6 @@
 #include <DNSServer.h>
 
 
-#define DEBUG //until arduino ide can include defines at compile time from main sketch
-
-#ifdef DEBUG
-#define DEBUG_PRINT(x)  Serial.println(x)
-#else
-#define DEBUG_PRINT(x)
-#endif
-
-
 class WiFiManager
 {
 public:
@@ -57,6 +48,7 @@ public:
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds
     void setTimeout(unsigned long seconds);
+    void setDebugOutput(boolean debug);
 
     int serverLoop();
 
@@ -104,7 +96,10 @@ private:
     String toStringIp(IPAddress ip);
 
     boolean connect;
-   
+    boolean _debug = true;
+
+    template <typename Generic>
+    void DEBUG_PRINT(Generic text);
 };
 
 

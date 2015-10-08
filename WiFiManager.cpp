@@ -27,16 +27,16 @@ void WiFiManager::begin() {
 }
 
 void WiFiManager::begin(char const *apName) {
-  Serial.println("");
+  DEBUG_PRINT("");
   _apName = apName;
   start = millis();
 
-  Serial.print("Configuring access point... ");
-  Serial.println(_apName);
+  DEBUG_PRINT("Configuring access point... ");
+  DEBUG_PRINT(_apName);
   WiFi.softAP(_apName);//TODO: add password option
   delay(500); // Without delay I've seen the IP address blank
-  Serial.print("AP IP address: ");
-  Serial.println(WiFi.softAPIP());
+  DEBUG_PRINT("AP IP address: ");
+  DEBUG_PRINT(WiFi.softAPIP());
 
   /* Setup the DNS server redirecting all the domains to the apIP */  
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
@@ -50,7 +50,7 @@ void WiFiManager::begin(char const *apName) {
   server.on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server.onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server.begin(); // Web server start
-  Serial.println("HTTP server started");
+  DEBUG_PRINT("HTTP server started");
 }
 
 boolean WiFiManager::autoConnect() {
@@ -60,6 +60,7 @@ boolean WiFiManager::autoConnect() {
 boolean WiFiManager::autoConnect(char const *apName) {
   DEBUG_PRINT("");
   DEBUG_PRINT("AutoConnect");
+  
   // read eeprom for ssid and pass
   String ssid = getSSID();
   String pass = getPassword();
@@ -72,35 +73,8 @@ boolean WiFiManager::autoConnect(char const *apName) {
     return true;
   }
  
-  
-/*
 
-  DEBUG_PRINT("");
-  DEBUG_PRINT("AutoConnect");
-  // read eeprom for ssid and pass
-  String ssid = getSSID();
-  String pass = getPassword();
-
-  if ( ssid.length() > 1 ) {
-    DEBUG_PRINT("Waiting for Wifi to connect");
-    
-    WiFi.mode(WIFI_STA);
- 
-    connectWifi(ssid, pass);
-    int s = WiFi.status();
-    if (s != WL_CONNECTED) {
-      //not connected
-      //setup AP
-      beginConfigMode();
-      //start portal and loop
-      startWebConfig();
-      return false;     
-    }
-    return true;// connected
-  }
-*/
-
- // delay(1000);
+  // delay(1000);
   //not connected
   //setup AP
   WiFi.mode(WIFI_AP);
@@ -141,12 +115,12 @@ boolean WiFiManager::autoConnect(char const *apName) {
 
 
 void WiFiManager::connectWifi(String ssid, String pass) {
-  Serial.println("Connecting as wifi client...");
+  DEBUG_PRINT("Connecting as wifi client...");
   WiFi.disconnect();
   WiFi.begin(ssid.c_str(), pass.c_str());
   int connRes = WiFi.waitForConnectResult();
-  Serial.print ( "connRes: " );
-  Serial.println ( connRes );
+  DEBUG_PRINT ("Connection result: ");
+  DEBUG_PRINT ( connRes );
 }
 
 
@@ -164,8 +138,8 @@ String WiFiManager::getPassword() {
   if (_pass == "") {
     DEBUG_PRINT("Reading EEPROM Password");
     _pass = getEEPROMString(32, 64);
-    DEBUG_PRINT("Password: ");
-    DEBUG_PRINT(_pass);
+    DEBUG_PRINT("Password: " + _pass);
+    //DEBUG_PRINT(_pass);
   }
   return _pass;
 }
@@ -203,8 +177,8 @@ void WiFiManager::setEEPROMString(int start, int len, String string) {
     char c;
     if (si < string.length()) {
       c = string[si];
-      DEBUG_PRINT("Wrote: ");
-      DEBUG_PRINT(c);
+      //DEBUG_PRINT("Wrote: ");
+      //DEBUG_PRINT(c);
     } else {
       c = 0;
     }
@@ -212,169 +186,7 @@ void WiFiManager::setEEPROMString(int start, int len, String string) {
     si++;
   }
   EEPROM.end();
-}
-
-/*
-void WiFiManager::startWebConfig() {
-  keepLooping = true;
-  
-  DEBUG_PRINT("");
-  DEBUG_PRINT("Starting Config Portal");
-  DEBUG_PRINT(WiFi.localIP());
-  DEBUG_PRINT(WiFi.softAPIP());
-
-  while (keepLooping) {
-    //looping
-    if(timeout > 0 && start + timeout < millis()) {
-      //we passed timeout value, release
-      DEBUG_PRINT("timeout reached");
-      keepLooping = false;
-    }
-    
-    //DNS
-    dnsServer.processNextRequest();
-    //HTTP
-    server.handleClient();
-    yield();
-  }
-
-  DEBUG_PRINT("Exited setup");
-}*/
-
-/*
-String WiFiManager::beginConfigMode(void) {
-
-  WiFi.softAP(_apName);
-  delay(500); // Without delay I've seen the IP address blank
-  Serial.print("AP IP address: ");
-  Serial.println(WiFi.softAPIP());
-
-  / * Setup the DNS server redirecting all the domains to the apIP * /  
-  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-
-  / * Setup web pages: root, wifi config pages, SO captive portal detectors and not found. * /
-  server.on("/", std::bind(&WiFiManager::handleRoot, this));
-  server.on("/wifi", std::bind(&WiFiManager::handleWifi, this));
-  server.on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
-  server.on("/generate_204", std::bind(&WiFiManager::handleRoot, this));  //Android captive portal. Maybe not needed. Might be handled by notFound handler.
-  server.on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-  server.onNotFound (std::bind(&WiFiManager::handleNotFound, this));
-  server.begin(); // Web server start
-  Serial.println("HTTP server started");
-  
-}
-*/
-
-int WiFiManager::serverLoop()
-{
-  
-
-/*
-  // Check if a client has connected
-//  WiFiClient client = server.available();
-  if (!client) {
-    return (WM_WAIT);
-  }
-
-  DEBUG_PRINT("New client");
-
-  // Wait for data from client to become available
-  while (client.connected() && !client.available()) {
-    delay(1);
-  }
-
-  // Read the first line of HTTP request
-  String req = client.readStringUntil('\r');
-
-  // First line of HTTP request looks like "GET /path HTTP/1.1"
-  // Retrieve the "/path" part by finding the spaces
-  int addr_start = req.indexOf(' ');
-  int addr_end = req.indexOf(' ', addr_start + 1);
-  if (addr_start == -1 || addr_end == -1) {
-    DEBUG_PRINT("Invalid request: ");
-    DEBUG_PRINT(req);
-    return (WM_WAIT);
-  }
-  req = req.substring(addr_start + 1, addr_end);
-  DEBUG_PRINT("Request: ");
-  DEBUG_PRINT(req);
-  client.flush();
-
-  String s;
-  if (req == "/")
-  {
-
-    s = HTTP_200;
-    String head = HTTP_HEAD;
-    head.replace("{v}", "Config ESP");
-    s += head;
-    s += HTTP_SCRIPT;
-    s += HTTP_STYLE;
-    s += HTTP_HEAD_END;
-
-    int n = WiFi.scanNetworks();
-    DEBUG_PRINT("scan done");
-    if (n == 0) {
-      DEBUG_PRINT("no networks found");
-      s += "<div>No networks found. Refresh to scan again.</div>";
-    }
-    else {
-      for (int i = 0; i < n; ++i)
-      {
-        DEBUG_PRINT(WiFi.SSID(i));
-        DEBUG_PRINT(WiFi.RSSI(i));
-        String item = HTTP_ITEM;
-        item.replace("{v}", WiFi.SSID(i));
-        s += item;
-        delay(10);
-      }
-    }
-
-    s += HTTP_FORM;
-    s += HTTP_END;
-
-    DEBUG_PRINT("Sending config page");
-  }
-  else if ( req.startsWith("/s") ) {
-    String qssid;
-    qssid = urldecode(req.substring(8, req.indexOf('&')).c_str());
-    DEBUG_PRINT(qssid);
-    DEBUG_PRINT("");
-    String qpass;
-    qpass = urldecode(req.substring(req.lastIndexOf('=') + 1).c_str());
-    DEBUG_PRINT(qpass);
-    DEBUG_PRINT("");
-
-    setEEPROMString(0, 32, qssid);
-    setEEPROMString(32, 64, qpass);
-
-    EEPROM.commit();
-
-    s = HTTP_200;
-    String head = HTTP_HEAD;
-    head.replace("{v}", "Saved config");
-    s += HTTP_STYLE;
-    s += HTTP_HEAD_END;
-    s += "saved to eeprom...<br/>resetting in 10 seconds";
-    s += HTTP_END;
-    client.print(s);
-    client.flush();
-
-    DEBUG_PRINT("Saved WiFiConfig...restarting.");
-    return WM_DONE;
-  }
-  else
-  {
-    s = HTTP_404;
-    DEBUG_PRINT("Sending 404");
-  }
-
-  client.print(s);
-  DEBUG_PRINT("Done with client");
-  return (WM_WAIT);
-
-  */
+  DEBUG_PRINT("Wrote " + string);
 }
 
 String WiFiManager::urldecode(const char *src)
@@ -427,9 +239,9 @@ void WiFiManager::setTimeout(unsigned long seconds) {
   timeout = seconds * 1000;
 }
 
-
-
-
+void WiFiManager::setDebugOutput(boolean debug) {
+  _debug = debug;
+}
 
 
 /** Handle root or redirect to captive portal */
@@ -476,9 +288,9 @@ void WiFiManager::handleWifi() {
   server.sendContent(HTTP_HEAD_END);
 
   int n = WiFi.scanNetworks();
-  DEBUG_PRINT("scan done");
+  DEBUG_PRINT("Scan done");
   if (n == 0) {
-    DEBUG_PRINT("no networks found");
+    DEBUG_PRINT("No networks found");
     server.sendContent("<div>No networks found. Refresh to scan again.</div>");
   }
   else {
@@ -502,7 +314,7 @@ void WiFiManager::handleWifi() {
 
 /** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
-  DEBUG_PRINT("wifi save");
+  DEBUG_PRINT("WiFi save");
   //server.arg("s").toCharArray(ssid, sizeof(ssid) - 1);
   //server.arg("p").toCharArray(password, sizeof(password) - 1);
   setSSID(urldecode(server.arg("s").c_str()));
@@ -526,14 +338,7 @@ void WiFiManager::handleWifiSave() {
   server.client().stop();
   
   DEBUG_PRINT("Sent wifi save page");  
-
-  /*
-  server.sendHeader("Location", "wifi", true);
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send ( 302, "text/plain", "");  // Empty content inhibits Content-length header so we have to close the socket ourselves.
-  server.client().stop(); // Stop is needed because we sent no content length*/
+  
   //saveCredentials();
   connect = true; //signal ready to connect/reset
 }
@@ -573,7 +378,7 @@ void WiFiManager::handleNotFound() {
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
 boolean WiFiManager::captivePortal() {
   if (!isIp(server.hostHeader()) ) {
-    Serial.print("Request redirected to captive portal");
+    DEBUG_PRINT("Request redirected to captive portal");
     server.sendHeader("Location", String("http://") + toStringIp(server.client().localIP()), true);
     server.send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server.client().stop(); // Stop is needed because we sent no content length
@@ -583,12 +388,13 @@ boolean WiFiManager::captivePortal() {
 }
 
 
-
-
-
-
-
-
+template <typename Generic>
+void WiFiManager::DEBUG_PRINT(Generic text) {
+  if(_debug) {
+    Serial.print("*WM: ");
+    Serial.println(text);    
+  }
+}
 
 
 
