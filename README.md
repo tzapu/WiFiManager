@@ -23,13 +23,13 @@ This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 #include <WiFiManager.h>
 ```
 
-- Initialise library, the paramater is the Acces Point Name
+- Initialise library, in your setup function add
 ```
 //parameter is eeprom start
 WiFiManager wifi;
 ```
 
-- In your setup function add
+- Also in the setup function add
 ```
 //parameter is name of access point
 wifi.autoConnect("AP-NAME");
@@ -40,6 +40,19 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 
 Also see examples.
 
+###Timeout
+If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add 
+```
+wifi.setTimeout(180);
+```
+which will wait 3 minutes (180 seconds). When the time passes, the autoConnect function will return, no matter the outcome.
+Check for connection and if it's still not established do whatever is needed (on some modules I restart them to retry, on others I enter deep sleep)
+
+###Debug
+Debug is enabled by default on Serial. To disable add before autoConnect
+```
+wifi.setDebugOutput(false);
+```
 
 ####Inspiration
 - http://www.esp8266.com/viewtopic.php?f=29&t=2520

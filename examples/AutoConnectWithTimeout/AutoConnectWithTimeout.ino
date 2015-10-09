@@ -1,26 +1,27 @@
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 //needed for library
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+
 
 //this intitilises the library, parameter is eeprom start
-WiFiManager wifi;
 
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  //WiFiManager
+  //Local intialization. Once its business is done, there is no need to keep it around
+  WiFiManager wifi;
 
   //reset settings - for testing
   //wifi.resetSettings();
 
-  //WiFiManager
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds

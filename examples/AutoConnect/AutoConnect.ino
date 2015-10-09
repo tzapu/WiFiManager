@@ -6,15 +6,15 @@
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
-//this intitilises the library, parameter is eeprom start
-WiFiManager wifi;
 
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
-    
-    
+
     //WiFiManager
+    //Local intialization. Once its business is done, there is no need to keep it around
+    WiFiManager wifi;
+    
     //fetches ssid and pass from eeprom and tries to connect
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP"

@@ -53,6 +53,9 @@ public:
     int serverLoop();
 
 private:
+    DNSServer dnsServer;
+    ESP8266WebServer server;
+
     const int WM_DONE = 0;
     const int WM_WAIT = 10;
     
@@ -66,6 +69,9 @@ private:
     const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><input type='submit'></form>";
     const String HTTP_SAVED = "<div>Credentials Saved<br />Node will reboot in 5 seconds.</div>";
     const String HTTP_END = "</body></html>";
+    //const char HTTP_END[] PROGMEM = R"=====(
+    //</body></html>
+    //)=====";
     
     int _eepromStart;
     const char* _apName = "no-net";

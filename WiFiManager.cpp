@@ -14,12 +14,12 @@
 #include "WiFiManager.h"
 
 
-DNSServer dnsServer;
+//DNSServer dnsServer;
 
 // Web server
-ESP8266WebServer server(80);
+//ESP8266WebServer server(80);
 
-WiFiManager::WiFiManager() {
+WiFiManager::WiFiManager() : server(80) {
 }
 
 void WiFiManager::begin() {
@@ -27,6 +27,7 @@ void WiFiManager::begin() {
 }
 
 void WiFiManager::begin(char const *apName) {
+  
   DEBUG_PRINT("");
   _apName = apName;
   start = millis();
@@ -64,7 +65,10 @@ boolean WiFiManager::autoConnect(char const *apName) {
   // read eeprom for ssid and pass
   String ssid = getSSID();
   String pass = getPassword();
-
+  //use SDK functions to get SSID and pass
+  //String ssid = WiFi.SSID();
+  //String pass = WiFi.psk();
+  
   WiFi.mode(WIFI_STA);
   connectWifi(ssid, pass);
   int s = WiFi.status();
@@ -325,7 +329,7 @@ void WiFiManager::handleWifiSave() {
   server.sendHeader("Expires", "-1");
   server.send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
- String head = HTTP_HEAD;
+  String head = HTTP_HEAD;
   head.replace("{v}", "Credentials Saved");
   server.sendContent(head);
   server.sendContent(HTTP_SCRIPT);
