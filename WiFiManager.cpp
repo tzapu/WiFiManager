@@ -73,6 +73,8 @@ boolean WiFiManager::autoConnect(char const *apName) {
   connectWifi(ssid, pass);
   int s = WiFi.status();
   if (s == WL_CONNECTED) {
+    DEBUG_PRINT("IP Address:");
+    DEBUG_PRINT(WiFi.localIP());
     //connected
     return true;
   }
