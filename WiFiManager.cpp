@@ -45,7 +45,8 @@ void WiFiManager::begin(char const *apName) {
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server.on("/", std::bind(&WiFiManager::handleRoot, this));
-  server.on("/wifi", std::bind(&WiFiManager::handleWifi, this));
+  server.on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
+  server.on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server.on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server.on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server.on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -272,6 +273,9 @@ void WiFiManager::handleRoot() {
   server.sendContent(
     "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form>"
   );
+  server.sendContent(
+    "<form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form>"
+  );
   
   server.sendContent(HTTP_END);
 
@@ -279,7 +283,7 @@ void WiFiManager::handleRoot() {
 }
 
 /** Wifi config page handler */
-void WiFiManager::handleWifi() {
+void WiFiManager::handleWifi(bool scan) {
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");
@@ -293,24 +297,26 @@ void WiFiManager::handleWifi() {
   server.sendContent(HTTP_STYLE);
   server.sendContent(HTTP_HEAD_END);
 
-  int n = WiFi.scanNetworks();
-  DEBUG_PRINT("Scan done");
-  if (n == 0) {
-    DEBUG_PRINT("No networks found");
-    server.sendContent("<div>No networks found. Refresh to scan again.</div>");
-  }
-  else {
-    for (int i = 0; i < n; ++i)
-    {
-      DEBUG_PRINT(WiFi.SSID(i));
-      DEBUG_PRINT(WiFi.RSSI(i));
-      String item = HTTP_ITEM;
-      item.replace("{v}", WiFi.SSID(i));
-      server.sendContent(item);
-      yield();
+  if (scan) {
+    int n = WiFi.scanNetworks();
+    DEBUG_PRINT("Scan done");
+    if (n == 0) {
+      DEBUG_PRINT("No networks found");
+      server.sendContent("<div>No networks found. Refresh to scan again.</div>");
+    }
+    else {
+      for (int i = 0; i < n; ++i)
+      {
+        DEBUG_PRINT(WiFi.SSID(i));
+        DEBUG_PRINT(WiFi.RSSI(i));
+        String item = HTTP_ITEM;
+        item.replace("{v}", WiFi.SSID(i));
+        server.sendContent(item);
+        yield();
+      }
     }
   }
-
+  
   server.sendContent(HTTP_FORM);
   server.sendContent(HTTP_END);
   server.client().stop();

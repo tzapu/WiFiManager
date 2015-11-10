@@ -89,7 +89,7 @@ private:
     void connectWifi(String ssid, String pass);
 
     void handleRoot();
-    void handleWifi();
+    void handleWifi(bool scan);
     void handleWifiSave();
     void handleNotFound();
     void handle204();
