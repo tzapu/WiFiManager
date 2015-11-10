@@ -65,11 +65,11 @@ private:
     const String HTTP_404 = "HTTP/1.1 404 Not Found\r\n\r\n";
     const String HTTP_200 = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
     const String HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
-    const String HTTP_STYLE = "<style>div,input {margin-bottom: 5px;}body{width:200px;display:block;margin-left:auto;margin-right:auto;}</style>";
+    const String HTTP_STYLE = "<style>div,input {margin-bottom: 5px;} body{width:200px;display:block;margin-left:auto;margin-right:auto;} button{padding:0.75rem 1rem;border:0;border-radius:0.317rem;background-color:#1fa3ec;color:#fff;line-height:1.5;cursor:pointer;}</style>";
     const String HTTP_SCRIPT = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
     const String HTTP_HEAD_END = "</head><body>";
     const String HTTP_ITEM = "<div><a href='#' onclick='c(this)'>{v}</a></div>";
-    const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><input type='submit'></form>";
+    const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
     const String HTTP_SAVED = "<div>Credentials Saved<br />Node will reboot in 5 seconds.</div>";
     const String HTTP_END = "</body></html>";
     //const char HTTP_END[] PROGMEM = R"=====(

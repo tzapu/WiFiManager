@@ -62,7 +62,8 @@ void WiFiManager::begin(char const *apName) {
 }
 
 boolean WiFiManager::autoConnect() {
-  return autoConnect("NoNetESP");
+  String ssid = "ESP" + String(ESP.getChipId());
+  return autoConnect(ssid.c_str());
 }
 
 boolean WiFiManager::autoConnect(char const *apName) {
@@ -283,7 +284,7 @@ void WiFiManager::handleRoot() {
   server.sendContent(HTTP_HEAD_END);
   
   server.sendContent(
-    "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form>"
+    "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/>"
   );
   server.sendContent(
     "<form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form>"

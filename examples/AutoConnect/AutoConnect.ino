@@ -25,6 +25,9 @@ void setup() {
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
     wifi.autoConnect("AutoConnectAP");
+    //or use this for auto generated name ESP + ChipID
+    //wifi.autoConnect();
+
     
     //if you get here you have connected to the WiFi
     Serial.println("connected...yeey :)");
