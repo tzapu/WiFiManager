@@ -10,7 +10,7 @@ This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 > v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
 > latest comit should work with the latest staging version
 
-####Quick Start
+## Quick Start
 - Checkout library to your Arduino libraries folder
 
 - Include in your sketch
@@ -40,7 +40,7 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 
 Also see examples.
 
-###Timeout
+### Timeout
 If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add 
 ```
 wifi.setTimeout(180);
@@ -48,10 +48,17 @@ wifi.setTimeout(180);
 which will wait 3 minutes (180 seconds). When the time passes, the autoConnect function will return, no matter the outcome.
 Check for connection and if it's still not established do whatever is needed (on some modules I restart them to retry, on others I enter deep sleep)
 
-###Debug
+### Debug
 Debug is enabled by default on Serial. To disable add before autoConnect
 ```
 wifi.setDebugOutput(false);
+```
+
+### Custom IP Configuration
+This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `autoConnect()`
+```
+//set custom ip for portal
+wifi.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
 
 ####Inspiration

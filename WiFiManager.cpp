@@ -34,6 +34,12 @@ void WiFiManager::begin(char const *apName) {
 
   DEBUG_PRINT("Configuring access point... ");
   DEBUG_PRINT(_apName);
+  //optional soft ip config
+  if (_ip) {
+    DEBUG_PRINT("Custom IP/GW/Subnet");
+    WiFi.softAPConfig(_ip, _gw, _sn);
+  }
+
   WiFi.softAP(_apName);//TODO: add password option
   delay(500); // Without delay I've seen the IP address blank
   DEBUG_PRINT("AP IP address: ");
@@ -248,6 +254,12 @@ void WiFiManager::setTimeout(unsigned long seconds) {
 
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
+}
+
+void WiFiManager::setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
+  _ip = ip;
+  _gw = gw;
+  _sn = sn;
 }
 
 

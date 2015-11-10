@@ -25,16 +25,16 @@ class WiFiManager
 public:
     WiFiManager();
     
-    void begin();
-    void begin(char const *apName);
+    void    begin();
+    void    begin(char const *apName);
     
     boolean autoConnect();
     boolean autoConnect(char const *apName);
     
     boolean hasConnected();
     
-    String beginConfigMode(void);
-    void startWebConfig();
+    String  beginConfigMode(void);
+    void    startWebConfig();
     
     String  getSSID();
     String  getPassword();
@@ -42,15 +42,18 @@ public:
     void    setPassword(String p);
     void    resetSettings();
     //for conveniennce
-    String urldecode(const char*);
+    String  urldecode(const char*);
 
     //sets timeout before webserver loop ends and exits even if there has been no setup. 
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds
-    void setTimeout(unsigned long seconds);
-    void setDebugOutput(boolean debug);
+    void    setTimeout(unsigned long seconds);
+    void    setDebugOutput(boolean debug);
 
-    int serverLoop();
+    //sets a custom ip /gateway /subnet configuration
+    void    setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    
+    int     serverLoop();
 
 private:
     DNSServer dnsServer;
@@ -79,7 +82,9 @@ private:
     String _pass = "";
     unsigned long timeout = 0;
     unsigned long start = 0;
-
+    IPAddress _ip;
+    IPAddress _gw;
+    IPAddress _sn;
     
     String getEEPROMString(int start, int len);
     void setEEPROMString(int start, int len, String string);
