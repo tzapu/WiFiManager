@@ -8,7 +8,7 @@ First attempt at a library. Lots more changes and fixes to do. Adding examples a
 This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 
 > v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
-> latest comit should work with the latest staging version
+> **v0.2 and newer need the latest staging version (or at least a recent release of the staging version) to work**
 
 ## How It works
 - when your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
