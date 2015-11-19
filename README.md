@@ -10,6 +10,13 @@ This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 > v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
 > latest comit should work with the latest staging version
 
+## How It works
+- when your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
+- if this is unsuccessful (or no previous network saved) it moves the ESP into Access Point mode and spins up a DNS and WebServer (default ip 192.168.4.1)
+- using any wifi enabled device with a browser (computer, phone, tablet) connect to the newly created Access Point
+- because of the Captive Portal and the DNS server you will either get a 'Join to network' type of popup or get any domain you try to access redirected to the configuration portal
+- choose one of the access points scanned, enter password, click save, ESP will reboot and retry the whole flow above
+
 ## Quick Start
 - Checkout library to your Arduino libraries folder
 
@@ -46,7 +53,7 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 Also see examples.
 
 ### Timeout
-If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add 
+If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add
 ```
 wifi.setTimeout(180);
 ```
