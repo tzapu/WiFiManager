@@ -96,7 +96,9 @@ boolean WiFiManager::autoConnect(char const *apName) {
   connect = false;
   begin(apName);
 
-  while(1) {
+  bool looping = true;
+  //while(1) {
+  while(timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer.processNextRequest();
     //HTTP
@@ -124,7 +126,7 @@ boolean WiFiManager::autoConnect(char const *apName) {
     yield();    
   }
 
-  return false;
+  return  WiFi.status() == WL_CONNECTED;
 }
 
 
