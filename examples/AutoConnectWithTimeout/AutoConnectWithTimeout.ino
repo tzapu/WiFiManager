@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 //needed for library
-#include <EEPROM.h>
-#include <WiFiClient.h>
+//#include <EEPROM.h>
+//#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
@@ -20,7 +20,7 @@ void setup() {
   WiFiManager wifi;
 
   //reset settings - for testing
-  //wifi.resetSettings();
+  wifi.resetSettings();
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
@@ -33,7 +33,7 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
   if(!wifi.autoConnect("AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
-    delay(5000);
+    delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
     delay(5000);

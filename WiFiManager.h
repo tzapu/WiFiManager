@@ -14,8 +14,8 @@
 
 #include <ESP8266WiFi.h>
 
-#include <EEPROM.h>
-#include <WiFiClient.h>
+//#include <EEPROM.h>
+//#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 
@@ -70,7 +70,7 @@ private:
     const String HTTP_HEAD_END = "</head><body>";
     const String HTTP_ITEM = "<div><a href='#' onclick='c(this)'>{v}</a></div>";
     const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
-    const String HTTP_SAVED = "<div>Credentials Saved<br />Node will reboot in 5 seconds.</div>";
+    const String HTTP_SAVED = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
     const String HTTP_END = "</body></html>";
     //const char HTTP_END[] PROGMEM = R"=====(
     //</body></html>
