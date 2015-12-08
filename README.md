@@ -16,6 +16,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 ## Still left to do
 - ~~remove dependency on EEPROM library~~
 - cleanup and streamline code
+- if timeout is set, extend it when a page is fetched in AP mode
 - add ability to configure more parameters than ssid/password
 - maybe allow setting ip of ESP after reboot
 
