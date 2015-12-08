@@ -15,6 +15,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ## Still left to do
 - ~~remove dependency on EEPROM library~~
+- move HTML Strings to PROGMEM
 - cleanup and streamline code
 - if timeout is set, extend it when a page is fetched in AP mode
 - add ability to configure more parameters than ssid/password
