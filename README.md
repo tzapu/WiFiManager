@@ -24,40 +24,38 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 
 ## Releases
->
+> v0.3 removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
+
 > **v0.2 and newer need the latest staging version (or at least a recent release of the staging version) to work**
 
 > v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
 
 
 ## Quick Start
-- Make sure you have a recent *staging* package of the ESP8266 for Arduino IDE
+- Make sure you have a recent package of the ESP8266 for Arduino IDE
 
 - Checkout library to your Arduino libraries folder
 
 - Include in your sketch
 ```cpp
-#include <EEPROM.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
 #include <DNSServer.h>
+#include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 ```
 
 - Initialise library, in your setup function add
 ```cpp
-//parameter is eeprom start
-WiFiManager wifi;
+WiFiManager wifiManager;
 ```
 
 - Also in the setup function add
 ```cpp
 //parameter is name of access point
-wifi.autoConnect("AP-NAME");
+wifiManager.autoConnect("AP-NAME");
 ```
 or if you want to use and auto generated name from 'ESP' and the esp's Chip ID use
 ```cpp
-wifi.autoConnect();
+wifiManager.autoConnect();
 ```
 
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
@@ -68,7 +66,7 @@ Also see examples.
 ### Timeout
 If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add
 ```cpp
-wifi.setTimeout(180);
+wifiManager.setTimeout(180);
 ```
 which will wait 3 minutes (180 seconds). When the time passes, the autoConnect function will return, no matter the outcome.
 Check for connection and if it's still not established do whatever is needed (on some modules I restart them to retry, on others I enter deep sleep)
@@ -76,14 +74,14 @@ Check for connection and if it's still not established do whatever is needed (on
 ### Debug
 Debug is enabled by default on Serial. To disable add before autoConnect
 ```cpp
-wifi.setDebugOutput(false);
+wifiManager.setDebugOutput(false);
 ```
 
 ### Custom IP Configuration
 This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `autoConnect()`
 ```cpp
 //set custom ip for portal
-wifi.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
 
 #### Inspiration
