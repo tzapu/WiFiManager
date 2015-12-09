@@ -24,11 +24,16 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
 
 ## Releases
-> v0.3 removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
+#### v0.3
+ - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
+ - removed restart on save of credentials
+ - updated examples
 
-> **v0.2 and newer need the latest staging version (or at least a recent release of the staging version) to work**
+##### v0.2
+needs the latest staging version (or at least a recent release of the staging version) to work
 
-> v0.1 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
+##### v0.1
+works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
 
 
 ## Quick Start

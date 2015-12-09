@@ -1,10 +1,9 @@
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 //needed for library
-#include <EEPROM.h>
-#include <ESP8266WebServer.h>
 #include <DNSServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
 
 void setup() {
@@ -13,20 +12,20 @@ void setup() {
 
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifi;
+    WiFiManager wifiManager;
     //reset saved settings
-    //wifi.resetSettings();
+    //wifiManager.resetSettings();
     
     //set custom ip for portal
-    //wifi.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+    //wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 
     //fetches ssid and pass from eeprom and tries to connect
     //if it does not connect it starts an access point with the specified name
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
-    wifi.autoConnect("AutoConnectAP");
+    wifiManager.autoConnect("AutoConnectAP");
     //or use this for auto generated name ESP + ChipID
-    //wifi.autoConnect();
+    //wifiManager.autoConnect();
 
     
     //if you get here you have connected to the WiFi
