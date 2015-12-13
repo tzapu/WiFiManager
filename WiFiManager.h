@@ -18,7 +18,7 @@
 //#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
-
+#include <memory>
 
 class WiFiManager
 {
@@ -56,8 +56,8 @@ public:
     int     serverLoop();
 
 private:
-    DNSServer dnsServer;
-    ESP8266WebServer server;
+    std::unique_ptr<DNSServer> dnsServer;
+    std::unique_ptr<ESP8266WebServer> server;
 
     const int WM_DONE = 0;
     const int WM_WAIT = 10;

@@ -13,13 +13,7 @@
 
 #include "WiFiManager.h"
 
-
-//DNSServer dnsServer;
-
-// Web server
-//ESP8266WebServer server(80);
-
-WiFiManager::WiFiManager() : server(80) {
+WiFiManager::WiFiManager() {
 }
 
 void WiFiManager::begin() {
@@ -27,6 +21,8 @@ void WiFiManager::begin() {
 }
 
 void WiFiManager::begin(char const *apName) {
+  dnsServer.reset(new DNSServer());
+  server.reset(new ESP8266WebServer(80));
   
   DEBUG_PRINT("");
   _apName = apName;
@@ -46,18 +42,18 @@ void WiFiManager::begin(char const *apName) {
   DEBUG_PRINT(WiFi.softAPIP());
 
   /* Setup the DNS server redirecting all the domains to the apIP */  
-  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server.on("/", std::bind(&WiFiManager::handleRoot, this));
-  server.on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
-  server.on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
-  server.on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
-  server.on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
-  server.on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-  server.onNotFound (std::bind(&WiFiManager::handleNotFound, this));
-  server.begin(); // Web server start
+  server->on("/", std::bind(&WiFiManager::handleRoot, this));
+  server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
+  server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
+  server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
+  server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
+  server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+  server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  server->begin(); // Web server start
   DEBUG_PRINT("HTTP server started");
 }
 
@@ -97,12 +93,11 @@ boolean WiFiManager::autoConnect(char const *apName) {
   begin(apName);
 
   bool looping = true;
-  //while(1) {
   while(timeout == 0 || millis() < start + timeout) {
     //DNS
-    dnsServer.processNextRequest();
+    dnsServer->processNextRequest();
     //HTTP
-    server.handleClient();
+    server->handleClient();
 
     /*if(connect) {
       delay(5000);
@@ -127,13 +122,15 @@ boolean WiFiManager::autoConnect(char const *apName) {
       } else {
         //connected 
         WiFi.mode(WIFI_STA);
-        return true;
+        break;
       }
  
     }
     yield();    
   }
 
+  server.reset();
+  dnsServer.reset();
   return  WiFi.status() == WL_CONNECTED;
 }
 
@@ -282,51 +279,51 @@ void WiFiManager::handleRoot() {
     return;
   }
 
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
   String head = HTTP_HEAD;
   head.replace("{v}", "Options");
-  server.sendContent(head);
-  server.sendContent(HTTP_SCRIPT);
-  server.sendContent(HTTP_STYLE);
-  server.sendContent(HTTP_HEAD_END);
+  server->sendContent(head);
+  server->sendContent(HTTP_SCRIPT);
+  server->sendContent(HTTP_STYLE);
+  server->sendContent(HTTP_HEAD_END);
   
-  server.sendContent(
+  server->sendContent(
     "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/>"
   );
-  server.sendContent(
+  server->sendContent(
     "<form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form>"
   );
   
-  server.sendContent(HTTP_END);
+  server->sendContent(HTTP_END);
 
-  server.client().stop(); // Stop is needed because we sent no content length
+  server->client().stop(); // Stop is needed because we sent no content length
 }
 
 /** Wifi config page handler */
 void WiFiManager::handleWifi(bool scan) {
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
 
   String head = HTTP_HEAD;
   head.replace("{v}", "Config ESP");
-  server.sendContent(head);
-  server.sendContent(HTTP_SCRIPT);
-  server.sendContent(HTTP_STYLE);
-  server.sendContent(HTTP_HEAD_END);
+  server->sendContent(head);
+  server->sendContent(HTTP_SCRIPT);
+  server->sendContent(HTTP_STYLE);
+  server->sendContent(HTTP_HEAD_END);
 
   if (scan) {
     int n = WiFi.scanNetworks();
     DEBUG_PRINT("Scan done");
     if (n == 0) {
       DEBUG_PRINT("No networks found");
-      server.sendContent("<div>No networks found. Refresh to scan again.</div>");
+      server->sendContent("<div>No networks found. Refresh to scan again.</div>");
     }
     else {
       for (int i = 0; i < n; ++i)
@@ -335,15 +332,15 @@ void WiFiManager::handleWifi(bool scan) {
         DEBUG_PRINT(WiFi.RSSI(i));
         String item = HTTP_ITEM;
         item.replace("{v}", WiFi.SSID(i));
-        server.sendContent(item);
+        server->sendContent(item);
         yield();
       }
     }
   }
   
-  server.sendContent(HTTP_FORM);
-  server.sendContent(HTTP_END);
-  server.client().stop();
+  server->sendContent(HTTP_FORM);
+  server->sendContent(HTTP_END);
+  server->client().stop();
   
   DEBUG_PRINT("Sent config page");  
 }
@@ -351,31 +348,31 @@ void WiFiManager::handleWifi(bool scan) {
 /** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
   DEBUG_PRINT("WiFi save");
-  //server.arg("s").toCharArray(ssid, sizeof(ssid) - 1);
-  //server.arg("p").toCharArray(password, sizeof(password) - 1);
+  //server->arg("s").toCharArray(ssid, sizeof(ssid) - 1);
+  //server->arg("p").toCharArray(password, sizeof(password) - 1);
 
   //SAVE/connect here
-  //setSSID(urldecode(server.arg("s").c_str()));
-  //setPassword(urldecode(server.arg("p").c_str()));
-  _ssid = urldecode(server.arg("s").c_str());
-  _pass = urldecode(server.arg("p").c_str());
+  //setSSID(urldecode(server->arg("s").c_str()));
+  //setPassword(urldecode(server->arg("p").c_str()));
+  _ssid = urldecode(server->arg("s").c_str());
+  _pass = urldecode(server->arg("p").c_str());
 
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
   String head = HTTP_HEAD;
   head.replace("{v}", "Credentials Saved");
-  server.sendContent(head);
-  server.sendContent(HTTP_SCRIPT);
-  server.sendContent(HTTP_STYLE);
-  server.sendContent(HTTP_HEAD_END);
+  server->sendContent(head);
+  server->sendContent(HTTP_SCRIPT);
+  server->sendContent(HTTP_STYLE);
+  server->sendContent(HTTP_HEAD_END);
   
-  server.sendContent(HTTP_SAVED);
+  server->sendContent(HTTP_SAVED);
 
-  server.sendContent(HTTP_END);
-  server.client().stop();
+  server->sendContent(HTTP_END);
+  server->client().stop();
   
   DEBUG_PRINT("Sent wifi save page");  
   
@@ -385,12 +382,11 @@ void WiFiManager::handleWifiSave() {
 
 void WiFiManager::handle204() {
   DEBUG_PRINT("204 No Response");  
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send ( 204, "text/plain", "");
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  server->send ( 204, "text/plain", "");
 }
-
 
 void WiFiManager::handleNotFound() {
   if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
@@ -398,30 +394,30 @@ void WiFiManager::handleNotFound() {
   }
   String message = "File Not Found\n\n";
   message += "URI: ";
-  message += server.uri();
+  message += server->uri();
   message += "\nMethod: ";
-  message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+  message += ( server->method() == HTTP_GET ) ? "GET" : "POST";
   message += "\nArguments: ";
-  message += server.args();
+  message += server->args();
   message += "\n";
 
-  for ( uint8_t i = 0; i < server.args(); i++ ) {
-    message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+  for ( uint8_t i = 0; i < server->args(); i++ ) {
+    message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
   }
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send ( 404, "text/plain", message );
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  server->send ( 404, "text/plain", message );
 }
 
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
 boolean WiFiManager::captivePortal() {
-  if (!isIp(server.hostHeader()) ) {
+  if (!isIp(server->hostHeader()) ) {
     DEBUG_PRINT("Request redirected to captive portal");
-    server.sendHeader("Location", String("http://") + toStringIp(server.client().localIP()), true);
-    server.send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    server.client().stop(); // Stop is needed because we sent no content length
+    server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
+    server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;
