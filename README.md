@@ -68,6 +68,21 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 
 Also see examples.
 
+### Callbacks
+##### Enter Config mode
+Use this if you need to do something when your device enters configuration mode on failed WiFi connection attempt.
+Before `autoConnect()`
+```cpp
+wifiManager.setAPCallback(configModeCallback);
+```
+`configModeCallback` declaration and example
+```
+void configModeCallback () {
+  Serial.println("Entered config mode");
+  Serial.println(WiFi.softAPIP());
+}
+```
+
 ### Timeout
 If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add
 ```cpp
@@ -90,10 +105,16 @@ wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,
 ```
 ### Contributions and thanks
 [alltheblinkythings](https://github.com/alltheblinkythings)
+
 [Niklas Wall](https://github.com/niklaswall)
+
 [Jakub Piasecki](https://github.com/zaporylie)
+
+[Maximiliano Duarte](https://github.com/domonetic)
+
+[Peter Allan](https://github.com/alwynallan)
+
+[John Little](https://github.com/j0hnlittle)
 
 #### Inspiration
 - http://www.esp8266.com/viewtopic.php?f=29&t=2520
-
-To be continued...
