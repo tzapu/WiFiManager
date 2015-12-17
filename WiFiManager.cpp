@@ -83,8 +83,6 @@ boolean WiFiManager::autoConnect(char const *apName) {
     return true;
   }
  
-
-  // delay(1000);
   //not connected
   //setup AP
   WiFi.mode(WIFI_AP);
@@ -102,11 +100,6 @@ boolean WiFiManager::autoConnect(char const *apName) {
     //HTTP
     server->handleClient();
 
-    /*if(connect) {
-      delay(5000);
-      ESP.reset();
-      delay(1000);
-    }*/
     
     if(connect) {
       delay(2000);
@@ -168,18 +161,6 @@ String WiFiManager::getPassword() {
   return _pass;
 }
 
-/*
-void WiFiManager::setSSID(String s) {
-  _ssid = s;
-  setEEPROMString(0, 32, _ssid);
-}
-
-void WiFiManager::setPassword(String p) {
-  DEBUG_PRINT("Save password:");
-  DEBUG_PRINT(p);
-  _pass = p;
-  setEEPROMString(32, 64, _pass);
-}*/
 /*
 String WiFiManager::getEEPROMString(int start, int len) {
   EEPROM.begin(512);
@@ -252,9 +233,6 @@ String WiFiManager::urldecode(const char *src)
 
 void WiFiManager::resetSettings() {
   //need to call it only after lib has been started with autoConnect or begin
-  //setEEPROMString(0, 32, "-");
-  //setEEPROMString(32, 64, "-");
-
   DEBUG_PRINT("settings invalidated");
   WiFi.disconnect();
   delay(200);
@@ -351,12 +329,8 @@ void WiFiManager::handleWifi(bool scan) {
 /** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
   DEBUG_PRINT("WiFi save");
-  //server->arg("s").toCharArray(ssid, sizeof(ssid) - 1);
-  //server->arg("p").toCharArray(password, sizeof(password) - 1);
 
   //SAVE/connect here
-  //setSSID(urldecode(server->arg("s").c_str()));
-  //setPassword(urldecode(server->arg("p").c_str()));
   _ssid = urldecode(server->arg("s").c_str());
   _pass = urldecode(server->arg("p").c_str());
 
@@ -379,7 +353,6 @@ void WiFiManager::handleWifiSave() {
   
   DEBUG_PRINT("Sent wifi save page");  
   
-  //saveCredentials();
   connect = true; //signal ready to connect/reset
 }
 
