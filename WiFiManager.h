@@ -24,10 +24,7 @@ class WiFiManager
 {
 public:
     WiFiManager();
-    
-    void    begin();
-    void    begin(char const *apName);
-    
+        
     boolean autoConnect();
     boolean autoConnect(char const *apName);
     
@@ -52,6 +49,7 @@ public:
 
     //sets a custom ip /gateway /subnet configuration
     void    setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    void    setAPCallback( void (*func)(void) );    
     
     int     serverLoop();
 
@@ -75,6 +73,9 @@ private:
     //const char HTTP_END[] PROGMEM = R"=====(
     //</body></html>
     //)=====";
+
+    void    begin();
+    void    begin(char const *apName);
     
     int _eepromStart;
     const char* _apName = "no-net";
@@ -108,6 +109,8 @@ private:
 
     boolean connect;
     boolean _debug = true;
+
+    void (*_apcallback)(void) = NULL;
 
     template <typename Generic>
     void DEBUG_PRINT(Generic text);

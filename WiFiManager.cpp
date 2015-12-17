@@ -88,7 +88,10 @@ boolean WiFiManager::autoConnect(char const *apName) {
   //not connected
   //setup AP
   WiFi.mode(WIFI_AP);
-
+  //notify we entered AP mode
+  if( _apcallback != NULL) {
+    _apcallback();
+  }
   connect = false;
   begin(apName);
 
@@ -421,6 +424,11 @@ boolean WiFiManager::captivePortal() {
     return true;
   }
   return false;
+}
+
+//start up config portal callback
+void WiFiManager::setAPCallback( void (*func)(void) ) {
+  _apcallback = func;
 }
 
 

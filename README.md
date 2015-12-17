@@ -21,10 +21,10 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - add ability to configure more parameters than ssid/password
 - maybe allow setting ip of ESP after reboot
 
-This works with the ESP8266 Arduino platform https://github.com/esp8266/Arduino
+This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
 ## Releases
-#### v0.3
+#### v0.3 and head
  - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
  - removed restart on save of credentials
  - updated examples
@@ -88,6 +88,10 @@ This will set your captive portal to a specific IP should you need/want such a f
 //set custom ip for portal
 wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
+### Contributions and thanks
+[alltheblinkythings](https://github.com/alltheblinkythings)
+[Niklas Wall](https://github.com/niklaswall)
+[Jakub Piasecki](https://github.com/zaporylie)
 
 #### Inspiration
 - http://www.esp8266.com/viewtopic.php?f=29&t=2520
