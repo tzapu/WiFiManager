@@ -28,18 +28,12 @@ public:
     boolean autoConnect();
     boolean autoConnect(char const *apName);
     boolean autoConnect(char const *apName, char const *apPasswd);
-    
-    boolean hasConnected();
-    
-    String  beginConfigMode(void);
-    void    startWebConfig();
-    
+
     String  getSSID();
     String  getPassword();
-    void    setSSID(String s);
-    void    setPassword(String p);
+
     void    resetSettings();
-    //for conveniennce
+    //for convenience
     String  urldecode(const char*);
 
     //sets timeout before webserver loop ends and exits even if there has been no setup. 
@@ -51,9 +45,7 @@ public:
     //sets a custom ip /gateway /subnet configuration
     void    setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     void    setAPCallback( void (*func)(void) );    
-    
-    int     serverLoop();
-
+ 
 private:
     std::unique_ptr<DNSServer> dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
