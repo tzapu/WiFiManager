@@ -21,22 +21,34 @@ void WiFiManager::begin() {
 }
 
 void WiFiManager::begin(char const *apName) {
+  begin(apName,NULL);
+}
+
+void WiFiManager::begin(char const *apName, char const *apPasswd) {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
   
   DEBUG_PRINT("");
   _apName = apName;
+  _apPasswd = apPasswd;
   start = millis();
 
   DEBUG_PRINT("Configuring access point... ");
   DEBUG_PRINT(_apName);
+  if (_apPasswd != NULL)
+    DEBUG_PRINT(_apPasswd);
+
   //optional soft ip config
   if (_ip) {
     DEBUG_PRINT("Custom IP/GW/Subnet");
     WiFi.softAPConfig(_ip, _gw, _sn);
   }
 
-  WiFi.softAP(_apName);//TODO: add password option
+  if (_apPasswd != NULL)
+    WiFi.softAP(_apName, _apPasswd);//password option
+  else
+    WiFi.softAP(_apName);
+
   delay(500); // Without delay I've seen the IP address blank
   DEBUG_PRINT("AP IP address: ");
   DEBUG_PRINT(WiFi.softAPIP());
@@ -59,10 +71,14 @@ void WiFiManager::begin(char const *apName) {
 
 boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str());
+  return autoConnect(ssid.c_str(),NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName) {
+  return autoConnect(apName,NULL);
+}
+
+boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
   DEBUG_PRINT("");
   DEBUG_PRINT("AutoConnect");
   
@@ -93,7 +109,7 @@ boolean WiFiManager::autoConnect(char const *apName) {
     _apcallback();
   }
   connect = false;
-  begin(apName);
+  begin(apName,apPasswd);
 
   bool looping = true;
   while(timeout == 0 || millis() < start + timeout) {

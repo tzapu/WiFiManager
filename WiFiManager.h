@@ -27,6 +27,7 @@ public:
         
     boolean autoConnect();
     boolean autoConnect(char const *apName);
+    boolean autoConnect(char const *apName, char const *apPasswd);
     
     boolean hasConnected();
     
@@ -76,9 +77,11 @@ private:
 
     void    begin();
     void    begin(char const *apName);
+    void    begin(char const *apName, char const *apPasswd);
     
     int _eepromStart;
     const char* _apName = "no-net";
+    const char* _apPasswd = "no-net";
     String _ssid = "";
     String _pass = "";
     unsigned long timeout = 0;
