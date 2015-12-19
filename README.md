@@ -5,6 +5,8 @@ The configuration portal is of the captive variety, so on various devices it wil
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
+#### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
+
 ## How It works
 - when your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
 - if this is unsuccessful (or no previous network saved) it moves the ESP into Access Point mode and spins up a DNS and WebServer (default ip 192.168.4.1)
@@ -21,10 +23,13 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - add ability to configure more parameters than ssid/password
 - maybe allow setting ip of ESP after reboot
 
-This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
-
 ## Releases
-#### v0.3 and head
+#### v0.4 - user contributed changes - Thank you
+ - added ability to password protect the configuration Access Point
+ - callback for enter configuration mode
+ - memory allocation improvements
+
+##### v0.3
  - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
  - removed restart on save of credentials
  - updated examples
@@ -55,7 +60,11 @@ WiFiManager wifiManager;
 
 - Also in the setup function add
 ```cpp
-//parameter is name of access point
+//first parameter is name of access point, second is the password
+wifiManager.autoConnect("AP-NAME", "AP-PASSWORD");
+```
+if you just want an unsecured access point
+```cpp
 wifiManager.autoConnect("AP-NAME");
 ```
 or if you want to use and auto generated name from 'ESP' and the esp's Chip ID use
@@ -68,6 +77,13 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 
 Also see examples.
 
+### Password protect the configuration Access Point
+You can and should password protect the configuration access point.  Simply add the password as a second parameter to `autoConnect`.
+A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
+```
+wifiManager.autoConnect("AutoConnectAP", "password")
+```
+
 ### Callbacks
 ##### Enter Config mode
 Use this if you need to do something when your device enters configuration mode on failed WiFi connection attempt.
@@ -76,7 +92,7 @@ Before `autoConnect()`
 wifiManager.setAPCallback(configModeCallback);
 ```
 `configModeCallback` declaration and example
-```
+```cpp
 void configModeCallback () {
   Serial.println("Entered config mode");
   Serial.println(WiFi.softAPIP());
