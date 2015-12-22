@@ -71,11 +71,11 @@ void WiFiManager::begin(char const *apName, char const *apPasswd) {
 
 boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str(),NULL);
+  return autoConnect(ssid.c_str(),NULL,NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName) {
-  return autoConnect(apName,NULL);
+  return autoConnect(apName,NULL,NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd,const char* aNets[][2]) {
