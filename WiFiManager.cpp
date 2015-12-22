@@ -71,14 +71,14 @@ void WiFiManager::begin(char const *apName, char const *apPasswd) {
 
 boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str(),NULL);
+  return autoConnect(ssid.c_str(),NULL,NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName) {
-  return autoConnect(apName,NULL);
+  return autoConnect(apName,NULL,NULL);
 }
 
-boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
+boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd,const char* aNets[][2]) {
   DEBUG_PRINT("");
   DEBUG_PRINT("AutoConnect");
   
@@ -90,13 +90,23 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
   //String pass = WiFi.psk();
   
   WiFi.mode(WIFI_STA);
-  connectWifi(ssid, pass);
-  int s = WiFi.status();
-  if (s == WL_CONNECTED) {
-    DEBUG_PRINT("IP Address:");
-    DEBUG_PRINT(WiFi.localIP());
-    //connected
-    return true;
+  
+  int s = connectWifi(ssid, pass); //try to connect to stored params
+  while (s != WL_CONNECTED && aNets != NULL) 
+  {
+	for(int f=0;f<sizeof(aNets);f++)
+	{
+		s=connectWifi(aNets[f][0], aNets[f][1]); //try to connect to stored params
+		s = WiFi.status();
+		if (s == WL_CONNECTED)
+		{
+			DEBUG_PRINT("IP Address:");
+			DEBUG_PRINT(WiFi.localIP());
+			//connected
+			return true;
+		}
+	}
+	break; //prevent if no connect for any nets of array
   }
  
   //not connected
