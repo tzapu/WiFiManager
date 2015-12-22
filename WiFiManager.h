@@ -27,7 +27,7 @@ public:
         
     boolean autoConnect();
     boolean autoConnect(char const *apName);
-    boolean autoConnect(char const *apName, char const *apPasswd);
+    boolean autoConnect(char const *apName, char const *apPasswd,const char* aNets[][2]);
 
     String  getSSID();
     String  getPassword();
