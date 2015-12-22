@@ -90,8 +90,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd,const 
   //String pass = WiFi.psk();
   
   WiFi.mode(WIFI_STA);
-  connectWifi(ssid, pass); //try to connect to stored params
-  int s = WL_IDLE_STATUS;
+  
+  int s = connectWifi(ssid, pass); //try to connect to stored params
   while (s != WL_CONNECTED && aNets != NULL) 
   {
 	for(int f=0;f<sizeof(aNets);f++)
