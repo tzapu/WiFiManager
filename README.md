@@ -80,7 +80,8 @@ Also see examples.
 ### Password protect the configuration Access Point
 You can and should password protect the configuration access point.  Simply add the password as a second parameter to `autoConnect`.
 A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
-```
+The guidelines are that a wifi password must consist of 8 to 63 ASCII-encoded characters in the range of 32 to 126 (decimal)
+```cpp
 wifiManager.autoConnect("AutoConnectAP", "password")
 ```
 
