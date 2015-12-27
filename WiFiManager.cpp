@@ -333,8 +333,17 @@ void WiFiManager::handleWifi(bool scan) {
       {
         DEBUG_PRINT(WiFi.SSID(i));
         DEBUG_PRINT(WiFi.RSSI(i));
-        String item = HTTP_ITEM;
+        String item = FPSTR(HTTP_ITEM);
+        String rssiQ;
+        rssiQ += getRSSIasQuality(WiFi.RSSI(i));
         item.replace("{v}", WiFi.SSID(i));
+        item.replace("{r}", rssiQ);
+        if(WiFi.encryptionType(i) != ENC_TYPE_NONE) {
+          item.replace("{i}", FPSTR(HTTP_ITEM_PADLOCK));
+        } else {
+          item.replace("{i}", "");
+        }
+        //DEBUG_PRINT(item);
         server->sendContent(item);
         delay(0);
       }
@@ -436,7 +445,18 @@ void WiFiManager::DEBUG_PRINT(Generic text) {
 }
 
 
+int WiFiManager::getRSSIasQuality(int RSSI) {
+  int quality = 0;
 
+  if(RSSI <= -100){
+        quality = 0;
+  }else if(RSSI >= -50){
+        quality = 100;
+  } else {
+        quality = 2 * (RSSI + 100); 
+  }
+  return quality;
+}
 
 /** Is this an IP? */
 boolean WiFiManager::isIp(String str) {
