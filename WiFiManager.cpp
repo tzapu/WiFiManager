@@ -293,14 +293,16 @@ void WiFiManager::handleRoot() {
   server->sendContent_P(HTTP_SCRIPT);
   server->sendContent_P(HTTP_STYLE);
   server->sendContent_P(HTTP_HEAD_END);
+
+  //server->sendContent(F("<h1>"));
+  String title = "<h1>";
+  title += _apName;
+  title += "</h1>";
+  server->sendContent(title);
+  server->sendContent(F("<h3>WiFiManager</h3>"));
+
   
-  server->sendContent(
-    "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/>"
-  );
-  server->sendContent(
-    "<form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form>"
-  );
-  
+  server->sendContent_P(HTTP_PORTAL_OPTIONS);
   server->sendContent_P(HTTP_END);
 
   server->client().stop(); // Stop is needed because we sent no content length
@@ -326,7 +328,7 @@ void WiFiManager::handleWifi(bool scan) {
     DEBUG_PRINT(F("Scan done"));
     if (n == 0) {
       DEBUG_PRINT(F("No networks found"));
-      server->sendContent("<div>No networks found. Refresh to scan again.</div>");
+      server->sendContent("No networks found. Refresh to scan again.");
     }
     else {
       for (int i = 0; i < n; ++i)
@@ -347,6 +349,7 @@ void WiFiManager::handleWifi(bool scan) {
         server->sendContent(item);
         delay(0);
       }
+      server->sendContent("<br/>");
     }
   }
   
