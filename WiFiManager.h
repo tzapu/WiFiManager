@@ -27,7 +27,7 @@ const char HTTP_STYLE[] PROGMEM = "<style>div,input {margin-bottom: 5px;} body{w
 const char HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[] PROGMEM = "</head><body>";
 const char HTTP_ITEM[] PROGMEM = "<div><a href='#' onclick='c(this)'>{v}</a> {r}% {i}</div>";
-const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEUAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADl82K3AAAAEXRSTlMAABUbPD94e7G3vcDD5PD5/Mw7MxAAAABQSURBVHgBrck5FoAgEATRBmQBZen7X1acN6KJmRX+gsHMp1qTx8wIBErhBj96dC72sSkc8hC4KzTaCyybAgmJ/IDCVRHgKwVov8KTQOYqw5weJgaXesJX/wAAAABJRU5ErkJggg=='/>";
+const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAACVBMVEUAAAC7u7v///9etNz6AAAAJ0lEQVR4AY3GsREAIBSDUD77D63x4tlKw0MdmD0ijTO9f6SFnv7YXB4qAIVn0xoMAAAAAElFTkSuQmCC'/>";
 const char HTTP_FORM[] PROGMEM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
 const char HTTP_SAVED[] PROGMEM = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[] PROGMEM = "</body></html>";
