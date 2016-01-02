@@ -121,13 +121,17 @@ This will set your captive portal to a specific IP should you need/want such a f
 wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
 ### Contributions and thanks
+The support and help I got from the community has been nothing short of fenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
+
+__THANK YOU__
+
+[Maximiliano Duarte](https://github.com/domonetic)
+
 [alltheblinkythings](https://github.com/alltheblinkythings)
 
 [Niklas Wall](https://github.com/niklaswall)
 
 [Jakub Piasecki](https://github.com/zaporylie)
-
-[Maximiliano Duarte](https://github.com/domonetic)
 
 [Peter Allan](https://github.com/alwynallan)
 
