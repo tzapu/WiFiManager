@@ -101,7 +101,7 @@ private:
 
     bool keepLooping = true;
     int status = WL_IDLE_STATUS;
-    void connectWifi(String ssid, String pass);
+    int connectWifi(String ssid, String pass);
 
     void handleRoot();
     void handleWifi(bool scan);

@@ -96,9 +96,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
   //String pass = WiFi.psk();
   
   WiFi.mode(WIFI_STA);
-  connectWifi(ssid, pass);
-  int s = WiFi.status();
-  if (s == WL_CONNECTED) {
+  if(connectWifi(ssid, pass) == WL_CONNECTED)   {
     DEBUG_PRINT(F("IP Address:"));
     DEBUG_PRINT(WiFi.localIP());
     //connected
@@ -127,16 +125,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
       delay(2000);
       DEBUG_PRINT(F("Connecting to new AP"));
       connect = false;
-      //ssid = getSSID();
-      //pass = getPassword();
-      connectWifi(_ssid, _pass);
-      int s = WiFi.status();
-      if (s != WL_CONNECTED) {
+      // using user-provided  _ssid, _pass in place of system-stored ssid amd pass
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_PRINT(F("Failed to connect."));
-        //not connected, should retry everything
-        //ESP.reset();
-        //delay(1000);
-        //return false;
       } else {
         //connected 
         WiFi.mode(WIFI_STA);
@@ -153,13 +144,14 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
 }
 
 
-void WiFiManager::connectWifi(String ssid, String pass) {
+int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_PRINT(F("Connecting as wifi client..."));
   //WiFi.disconnect();
   WiFi.begin(ssid.c_str(), pass.c_str());
   int connRes = WiFi.waitForConnectResult();
   DEBUG_PRINT ("Connection result: ");
   DEBUG_PRINT ( connRes );
+  return connRes;
 }
 
 
