@@ -16,14 +16,6 @@
 WiFiManager::WiFiManager() {
 }
 
-void WiFiManager::begin() {
-  begin("NoNetESP");
-}
-
-void WiFiManager::begin(char const *apName) {
-  begin(apName,NULL);
-}
-
 void WiFiManager::begin(char const *apName, char const *apPasswd) {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
@@ -113,7 +105,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
   connect = false;
   begin(apName,apPasswd);
 
-  bool looping = true;
   while(timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -174,40 +165,6 @@ String WiFiManager::getPassword() {
   }
   return _pass;
 }
-
-/*
-String WiFiManager::getEEPROMString(int start, int len) {
-  EEPROM.begin(512);
-  delay(10);
-  String string = "";
-  for (int i = _eepromStart + start; i < _eepromStart + start + len; i++) {
-    //DEBUG_PRINT(i);
-    string += char(EEPROM.read(i));
-  }
-  EEPROM.end();
-  return string;
-}
-*/
-/*
-void WiFiManager::setEEPROMString(int start, int len, String string) {
-  EEPROM.begin(512);
-  delay(10);
-  int si = 0;
-  for (int i = _eepromStart + start; i < _eepromStart + start + len; i++) {
-    char c;
-    if (si < string.length()) {
-      c = string[si];
-      //DEBUG_PRINT(F("Wrote: ");
-      //DEBUG_PRINT(c);
-    } else {
-      c = 0;
-    }
-    EEPROM.write(i, c);
-    si++;
-  }
-  EEPROM.end();
-  DEBUG_PRINT(F("Wrote " + string);
-}*/
 
 String WiFiManager::urldecode(const char *src)
 {
