@@ -38,7 +38,7 @@ public:
         
     boolean autoConnect();
     boolean autoConnect(char const *apName);
-    boolean autoConnect(char const *apName, char const *apPasswd);
+    boolean autoConnect(char const *apName, char const *apPasswd, bool forceAP = false);
 
     String  getSSID();
     String  getPassword();

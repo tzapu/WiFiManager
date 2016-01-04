@@ -76,25 +76,25 @@ boolean WiFiManager::autoConnect(char const *apName) {
   return autoConnect(apName,NULL);
 }
 
-boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
+boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd, bool forceAP) {
   DEBUG_PRINT(F(""));
   DEBUG_PRINT(F("AutoConnect"));
   
   // read eeprom for ssid and pass
   String ssid = getSSID();
   String pass = getPassword();
-  //use SDK functions to get SSID and pass
-  //String ssid = WiFi.SSID();
-  //String pass = WiFi.psk();
-  
-  WiFi.mode(WIFI_STA);
-  if(connectWifi(ssid, pass) == WL_CONNECTED)   {
-    DEBUG_PRINT(F("IP Address:"));
-    DEBUG_PRINT(WiFi.localIP());
-    //connected
-    return true;
+
+  if ( ! forceAP ) {
+	  // attempt to connect; should it fail, fall back to AP
+	  WiFi.mode(WIFI_STA);
+	  if(connectWifi(ssid, pass) == WL_CONNECTED)   {
+		DEBUG_PRINT(F("IP Address:"));
+		DEBUG_PRINT(WiFi.localIP());
+		//connected
+		return true;
+	  }
   }
- 
+  
   //not connected
   //setup AP
   WiFi.mode(WIFI_AP);
