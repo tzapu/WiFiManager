@@ -13,15 +13,15 @@ WiFiManager	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 autoConnect	KEYWORD2
-getSSI	KEYWORD2
-getPasswor	KEYWORD2
+getSSID	KEYWORD2
+getPassword	KEYWORD2
 resetSettings	KEYWORD2
 urldecode	KEYWORD2
 setTimeout	KEYWORD2
 setDebugOutput	KEYWORD2
 setAPConfig	KEYWORD2
 setAPCallback	KEYWORD2
-	
+
 #######################################
 # Constants (LITERAL1)
 #######################################
