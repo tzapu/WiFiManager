@@ -15,37 +15,37 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - choose one of the access points scanned, enter password, click save
 - ESP will try to connect. If successful, it relinquishes control back to your app. If not, reconnect to AP and reconfigure.
 
-## Still left to do
+## Wishlist
 - ~~remove dependency on EEPROM library~~
-- move HTML Strings to PROGMEM
+- ~~move HTML Strings to PROGMEM~~
 - cleanup and streamline code
 - if timeout is set, extend it when a page is fetched in AP mode
 - add ability to configure more parameters than ssid/password
 - maybe allow setting ip of ESP after reboot
-
-## Releases
-#### v0.4 - user contributed changes - Thank you
- - added ability to password protect the configuration Access Point
- - callback for enter configuration mode
- - memory allocation improvements
-
-##### v0.3
- - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
- - removed restart on save of credentials
- - updated examples
-
-##### v0.2
-needs the latest staging version (or at least a recent release of the staging version) to work
-
-##### v0.1
-works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
-
+- ~~add to Arduino Boards Manager~~
+- add to PlatformIO
+- add multiple sets of network credentials
+- allow users to customize CSS
 
 ## Quick Start
-- Make sure you have a recent package of the ESP8266 for Arduino IDE
 
+You can either install through the Arduino Boards Manager or checkout the latest changes or a release from github
+
+#### Install through Boards Manager
+__Currently version 0.5 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+ - in Arduino IDE got to Sketch/Include Library/Manage Libraries
+  ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
+
+ - search for WiFiManager
+  ![WiFiManager package](http://i.imgur.com/18yIai8.png)
+
+ - click Install and start using it
+
+####  Checkout from github
+__Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
 - Checkout library to your Arduino libraries folder
 
+#### Using
 - Include in your sketch
 ```cpp
 #include <DNSServer.h>
@@ -53,7 +53,7 @@ works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 o
 #include <WiFiManager.h>
 ```
 
-- Initialise library, in your setup function add
+- Initialize library, in your setup function add
 ```cpp
 WiFiManager wifiManager;
 ```
@@ -120,8 +120,33 @@ This will set your captive portal to a specific IP should you need/want such a f
 //set custom ip for portal
 wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
+
+## Releases
+#### 0.5
+ - Added to Arduino Boards Manager - Thanks Max
+ - moved most stuff to PROGMEM
+ - added signal quality and a nice little padlock to show which networks are encrypted
+
+##### v0.4 - user contributed changes - Thank you
+ - added ability to password protect the configuration Access Point
+ - callback for enter configuration mode
+ - memory allocation improvements
+
+##### v0.3
+ - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
+ - removed restart on save of credentials
+ - updated examples
+
+##### v0.2
+needs the latest staging version (or at least a recent release of the staging version) to work
+
+##### v0.1
+works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
+
+
+
 ### Contributions and thanks
-The support and help I got from the community has been nothing short of fenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
+The support and help I got from the community has been nothing short of phenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
 
 __THANK YOU__
 
