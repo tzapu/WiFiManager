@@ -13,7 +13,95 @@
 
 #include "WiFiManager.h"
 
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length){
+	_id = id;
+	_placeholder = placeholder;
+	_length = length;
+	_value = new char[length];
+	for(int i=0; i<length; i++)
+		_value[i] = 0;
+	if(defaultValue!=NULL)
+		strncpy(_value, defaultValue, length);
+}
+
+const char* WiFiManagerParameter::getValue(){
+	return _value;
+}
+const char* WiFiManagerParameter::getID(){
+	return _id;
+}
+const char* WiFiManagerParameter::getPlaceholder(){
+	return _placeholder;
+}
+int WiFiManagerParameter::getValueLength(){
+	return _length;
+}
+
 WiFiManager::WiFiManager() {
+	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++)
+		_params[i] = NULL;
+	_eepromLength = 0;
+}
+
+void WiFiManager::addParameter(WiFiManagerParameter *p){
+	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+		if(_params[i]==NULL){
+			_params[i] = p;
+			break;
+		}
+	}
+}
+
+void WiFiManager::loadParameters(){
+	if(_eepromLength==0){
+		// if not initialized
+		for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+			if(_params[i]==NULL)
+				break;
+			_eepromLength+= _params[i]->getValueLength();
+		}
+		DEBUG_PRINT(F("EEPROM initialized with length "));
+		DEBUG_PRINT(_eepromLength);
+
+		EEPROM.begin(_eepromLength);
+	}
+
+	int pos = 0;
+	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+		if(_params[i]==NULL)
+			break;
+		int l = _params[i]->getValueLength();
+		for(int j=0; j<l; j++)
+			_params[i]->_value[j] = EEPROM.read(pos++);
+		_params[i]->_value[l-1] = 0;
+		DEBUG_PRINT(F("Parameter loaded"));
+		DEBUG_PRINT(_params[i]->getID());
+		DEBUG_PRINT(_params[i]->getValue());
+	}
+}
+
+void WiFiManager::saveParameters(){
+	if(_eepromLength==0){
+		// if not initialized
+		for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+			if(_params[i]==NULL)
+				break;
+			_eepromLength+= _params[i]->getValueLength();
+		}
+		DEBUG_PRINT(F("EEPROM initialized with length "));
+		DEBUG_PRINT(_eepromLength);
+
+		EEPROM.begin(_eepromLength);
+	}
+	int pos = 0;
+	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+		if(_params[i]==NULL)
+			break;
+		int l = _params[i]->getValueLength();
+		for(int j=0; j<l; j++)
+			EEPROM.write(pos++, _params[i]->_value[j]);
+	}
+	EEPROM.commit();
 }
 
 void WiFiManager::begin() {
@@ -258,6 +346,9 @@ void WiFiManager::resetSettings() {
   DEBUG_PRINT(F("THIS MAY CAUSE AP NOT TO STRT UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
   //delay(200);
+
+  //overwrite the current parameter values (with defaults)
+  saveParameters();
 }
 
 void WiFiManager::setTimeout(unsigned long seconds) {
@@ -353,7 +444,26 @@ void WiFiManager::handleWifi(bool scan) {
     }
   }
   
-  server->sendContent_P(HTTP_FORM);
+  server->sendContent_P(HTTP_FORM_START);
+  char parLength[2];
+  // add the extra parameters to the form
+  for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+    if(_params[i]==NULL)
+      break;
+    String pitem = FPSTR(HTTP_FORM_PARAM);
+    pitem.replace("{i}", _params[i]->getID());
+    pitem.replace("{n}", _params[i]->getID());
+    pitem.replace("{p}", _params[i]->getPlaceholder());
+    snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+    pitem.replace("{l}", parLength);
+    pitem.replace("{v}", _params[i]->getValue());
+
+    server->sendContent(pitem);
+  }
+  if(_params[0]!=NULL)
+    server->sendContent_P("<br/>");
+
+  server->sendContent_P(HTTP_FORM_END);
   server->sendContent_P(HTTP_END);
   server->client().stop();
   
@@ -367,6 +477,18 @@ void WiFiManager::handleWifiSave() {
   //SAVE/connect here
   _ssid = urldecode(server->arg("s").c_str());
   _pass = urldecode(server->arg("p").c_str());
+
+  //parameter
+  for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
+    if(_params[i]==NULL)
+      break;
+    String value = urldecode(server->arg(_params[i]->getID()).c_str());
+    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    DEBUG_PRINT(F("Parameter"));  
+    DEBUG_PRINT(_params[i]->getID());  
+    DEBUG_PRINT(value);  
+  }
+  saveParameters();
 
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
