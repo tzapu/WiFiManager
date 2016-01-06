@@ -25,6 +25,9 @@ void setup() {
   //reset settings - for testing
   wifiManager.resetSettings();
 
+  //load previously saved parameters
+  wifiManager.loadParameters();
+
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
