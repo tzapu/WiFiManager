@@ -124,7 +124,7 @@ private:
     void (*_apcallback)(void) = NULL;
 
     template <typename Generic>
-    void DEBUG_PRINT(Generic text);
+    void WIFIMGR_DEBUG_PRINT(Generic text);
 };
 
 
