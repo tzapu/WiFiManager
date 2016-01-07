@@ -36,7 +36,7 @@ const char HTTP_FORM_END[] PROGMEM = "<br/><button type='submit'>save</button></
 const char HTTP_SAVED[] PROGMEM = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[] PROGMEM = "</div></body></html>";
 
-#define WIFI_MANAGER_MAX_PARAMS 6
+#define WIFI_MANAGER_MAX_PARAMS 10
 
 class WiFiManagerParameter {
 public:
@@ -81,10 +81,11 @@ public:
     //sets a custom ip /gateway /subnet configuration
     void    setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     void    setAPCallback( void (*func)(void) );    
- 
-    void addParameter(WiFiManagerParameter *p);
 
-    void loadParameters();
+    //adds a custom parameter
+    void    addParameter(WiFiManagerParameter *p);
+
+    //void loadParameters();
     void saveParameters();
 private:
     std::unique_ptr<DNSServer> dnsServer;
@@ -121,6 +122,7 @@ private:
     IPAddress   _ip;
     IPAddress   _gw;
     IPAddress   _sn;
+    int         _paramsCount = 0;
     
     String getEEPROMString(int start, int len);
     void setEEPROMString(int start, int len, String string);
@@ -150,7 +152,7 @@ private:
     void (*_apcallback)(void) = NULL;
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
-    int _eepromLength;
+    //int _eepromLength;
 
     template <typename Generic>
     void DEBUG_PRINT(Generic text);
