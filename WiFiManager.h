@@ -80,13 +80,14 @@ public:
 
     //sets a custom ip /gateway /subnet configuration
     void    setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    //called when AP mode and config portal is started
     void    setAPCallback( void (*func)(void) );    
+    //called when settings have been changed and connection was successful 
+    void    setSaveConfigCallback( void (*func)(void) );    
 
     //adds a custom parameter
     void    addParameter(WiFiManagerParameter *p);
 
-    //void loadParameters();
-    void saveParameters();
 private:
     std::unique_ptr<DNSServer> dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
@@ -150,6 +151,7 @@ private:
     boolean _debug = true;
 
     void (*_apcallback)(void) = NULL;
+    void (*_savecallback)(void) = NULL;
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
     //int _eepromLength;

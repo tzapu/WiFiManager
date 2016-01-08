@@ -40,83 +40,15 @@ int WiFiManagerParameter::getValueLength() {
 }
 
 WiFiManager::WiFiManager() {
-  //for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++)
-  //	_params[i] = NULL;
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
-  /*for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
-  	if(_params[i]==NULL){
-  		_params[i] = p;
-      _paramsCount++;
-  		break;
-  	}
-    }*/
-  //if(_params[_paramsCount] == NULL){
   _params[_paramsCount] = p;
   _paramsCount++;
   DEBUG_PRINT("Adding parameter");
   DEBUG_PRINT(p->getID());
-  //}
-
 }
 
-/*
-  void WiFiManager::loadParameters() {
-  DEBUG_PRINT("Load parameters - not needed");
-	if(_eepromLength==0){
-		// if not initialized
-		for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
-			if(_params[i]==NULL)
-				break;
-			_eepromLength+= _params[i]->getValueLength();
-		}
-		DEBUG_PRINT(F("EEPROM initialized with length "));
-		DEBUG_PRINT(_eepromLength);
-
-		EEPROM.begin(_eepromLength);
-	}
-
-	int pos = 0;
-	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
-		if(_params[i]==NULL)
-			break;
-		int l = _params[i]->getValueLength();
-		for(int j=0; j<l; j++)
-			_params[i]->_value[j] = EEPROM.read(pos++);
-		_params[i]->_value[l-1] = 0;
-		DEBUG_PRINT(F("Parameter loaded"));
-		DEBUG_PRINT(_params[i]->getID());
-		DEBUG_PRINT(_params[i]->getValue());
-	}
-  }
-*/
-void WiFiManager::saveParameters() {
-  DEBUG_PRINT("save params callback");
-  /*
-    if(_eepromLength==0){
-  	// if not initialized
-  	for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
-  		if(_params[i]==NULL)
-  			break;
-  		_eepromLength+= _params[i]->getValueLength();
-  	}
-  	DEBUG_PRINT(F("EEPROM initialized with length "));
-  	DEBUG_PRINT(_eepromLength);
-
-  	EEPROM.begin(_eepromLength);
-    }
-    int pos = 0;
-    for(int i=0; i<WIFI_MANAGER_MAX_PARAMS; i++){
-  	if(_params[i]==NULL)
-  		break;
-  	int l = _params[i]->getValueLength();
-  	for(int j=0; j<l; j++)
-  		EEPROM.write(pos++, _params[i]->_value[j]);
-    }
-    EEPROM.commit();
-  */
-}
 
 void WiFiManager::begin() {
   begin("NoNetESP");
@@ -242,6 +174,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
       } else {
         //connected
         WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
         break;
       }
 
@@ -360,9 +297,6 @@ void WiFiManager::resetSettings() {
   DEBUG_PRINT(F("THIS MAY CAUSE AP NOT TO STRT UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
   //delay(200);
-
-  //overwrite the current parameter values (with defaults)
-  //saveParameters();
 }
 
 void WiFiManager::setTimeout(unsigned long seconds) {
@@ -508,7 +442,6 @@ void WiFiManager::handleWifiSave() {
     DEBUG_PRINT(_params[i]->getID());
     DEBUG_PRINT(value);
   }
-  saveParameters();
 
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
@@ -579,6 +512,12 @@ boolean WiFiManager::captivePortal() {
 void WiFiManager::setAPCallback( void (*func)(void) ) {
   _apcallback = func;
 }
+
+//start up save config callback
+void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
+  _savecallback = func;
+}
+
 
 
 template <typename Generic>
