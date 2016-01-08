@@ -1,33 +1,67 @@
 /**************************************************************
- * WiFiManager is a library for the ESP8266/Arduino platform
- * (https://github.com/esp8266/Arduino) to enable easy
- * configuration and reconfiguration of WiFi credentials and
- * store them in EEPROM.
- * inspired by: 
- * http://www.esp8266.com/viewtopic.php?f=29&t=2520
- * https://github.com/chriscook8/esp-arduino-apboot
- * https://github.com/esp8266/Arduino/tree/esp8266/hardware/esp8266com/esp8266/libraries/DNSServer/examples/CaptivePortalAdvanced
- * Built by AlexT https://github.com/tzapu
- * Licensed under MIT license
+   WiFiManager is a library for the ESP8266/Arduino platform
+   (https://github.com/esp8266/Arduino) to enable easy
+   configuration and reconfiguration of WiFi credentials and
+   store them in EEPROM.
+   inspired by:
+   http://www.esp8266.com/viewtopic.php?f=29&t=2520
+   https://github.com/chriscook8/esp-arduino-apboot
+   https://github.com/esp8266/Arduino/tree/esp8266/hardware/esp8266com/esp8266/libraries/DNSServer/examples/CaptivePortalAdvanced
+   Built by AlexT https://github.com/tzapu
+   Licensed under MIT license
  **************************************************************/
 
 #include "WiFiManager.h"
 
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
+  _id = id;
+  _placeholder = placeholder;
+  _length = length;
+  _value = new char[length];
+  for (int i = 0; i < length; i++) {
+    _value[i] = 0;
+  }
+  if (defaultValue != NULL) {
+    strncpy(_value, defaultValue, length);
+  }
+}
+
+const char* WiFiManagerParameter::getValue() {
+  return _value;
+}
+const char* WiFiManagerParameter::getID() {
+  return _id;
+}
+const char* WiFiManagerParameter::getPlaceholder() {
+  return _placeholder;
+}
+int WiFiManagerParameter::getValueLength() {
+  return _length;
+}
+
 WiFiManager::WiFiManager() {
 }
+
+void WiFiManager::addParameter(WiFiManagerParameter *p) {
+  _params[_paramsCount] = p;
+  _paramsCount++;
+  DEBUG_PRINT("Adding parameter");
+  DEBUG_PRINT(p->getID());
+}
+
 
 void WiFiManager::begin() {
   begin("NoNetESP");
 }
 
 void WiFiManager::begin(char const *apName) {
-  begin(apName,NULL);
+  begin(apName, NULL);
 }
 
 void WiFiManager::begin(char const *apName, char const *apPasswd) {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
-  
+
   DEBUG_PRINT(F(""));
   _apName = apName;
   _apPasswd = apPasswd;
@@ -36,9 +70,9 @@ void WiFiManager::begin(char const *apName, char const *apPasswd) {
   DEBUG_PRINT(F("Configuring access point... "));
   DEBUG_PRINT(_apName);
   if (_apPasswd != NULL) {
-    if(strlen(_apPasswd) < 8 || strlen(_apPasswd) > 63) {
-        // fail passphrase to short or long!
-        DEBUG_PRINT(F("Invalid AccessPoint password"));
+    if (strlen(_apPasswd) < 8 || strlen(_apPasswd) > 63) {
+      // fail passphrase to short or long!
+      DEBUG_PRINT(F("Invalid AccessPoint password"));
     }
     DEBUG_PRINT(_apPasswd);
   }
@@ -59,7 +93,7 @@ void WiFiManager::begin(char const *apName, char const *apPasswd) {
   DEBUG_PRINT(F("AP IP address: "));
   DEBUG_PRINT(WiFi.softAPIP());
 
-  /* Setup the DNS server redirecting all the domains to the apIP */  
+  /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
 
@@ -77,24 +111,24 @@ void WiFiManager::begin(char const *apName, char const *apPasswd) {
 
 boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str(),NULL);
+  return autoConnect(ssid.c_str(), NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName) {
-  return autoConnect(apName,NULL);
+  return autoConnect(apName, NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
   DEBUG_PRINT(F(""));
   DEBUG_PRINT(F("AutoConnect"));
-  
+
   // read eeprom for ssid and pass
   String ssid = getSSID();
   String pass = getPassword();
   //use SDK functions to get SSID and pass
   //String ssid = WiFi.SSID();
   //String pass = WiFi.psk();
-  
+
   WiFi.mode(WIFI_STA);
   connectWifi(ssid, pass);
   int s = WiFi.status();
@@ -104,26 +138,26 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
     //connected
     return true;
   }
- 
+
   //not connected
   //setup AP
   WiFi.mode(WIFI_AP);
   //notify we entered AP mode
-  if( _apcallback != NULL) {
+  if ( _apcallback != NULL) {
     _apcallback();
   }
   connect = false;
-  begin(apName,apPasswd);
+  begin(apName, apPasswd);
 
   bool looping = true;
-  while(timeout == 0 || millis() < start + timeout) {
+  while (timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
 
-    
-    if(connect) {
+
+    if (connect) {
       delay(2000);
       DEBUG_PRINT(F("Connecting to new AP"));
       connect = false;
@@ -138,13 +172,18 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
         //delay(1000);
         //return false;
       } else {
-        //connected 
+        //connected
         WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
         break;
       }
- 
+
     }
-    yield();    
+    yield();
   }
 
   server.reset();
@@ -184,7 +223,7 @@ String WiFiManager::getPassword() {
 }
 
 /*
-String WiFiManager::getEEPROMString(int start, int len) {
+  String WiFiManager::getEEPROMString(int start, int len) {
   EEPROM.begin(512);
   delay(10);
   String string = "";
@@ -194,10 +233,10 @@ String WiFiManager::getEEPROMString(int start, int len) {
   }
   EEPROM.end();
   return string;
-}
+  }
 */
 /*
-void WiFiManager::setEEPROMString(int start, int len, String string) {
+  void WiFiManager::setEEPROMString(int start, int len, String string) {
   EEPROM.begin(512);
   delay(10);
   int si = 0;
@@ -215,7 +254,7 @@ void WiFiManager::setEEPROMString(int start, int len, String string) {
   }
   EEPROM.end();
   DEBUG_PRINT(F("Wrote " + string);
-}*/
+  }*/
 
 String WiFiManager::urldecode(const char *src)
 {
@@ -301,7 +340,7 @@ void WiFiManager::handleRoot() {
   server->sendContent(title);
   server->sendContent(F("<h3>WiFiManager</h3>"));
 
-  
+
   server->sendContent_P(HTTP_PORTAL_OPTIONS);
   server->sendContent_P(HTTP_END);
 
@@ -340,7 +379,7 @@ void WiFiManager::handleWifi(bool scan) {
         rssiQ += getRSSIasQuality(WiFi.RSSI(i));
         item.replace("{v}", WiFi.SSID(i));
         item.replace("{r}", rssiQ);
-        if(WiFi.encryptionType(i) != ENC_TYPE_NONE) {
+        if (WiFi.encryptionType(i) != ENC_TYPE_NONE) {
           item.replace("{i}", FPSTR(HTTP_ITEM_PADLOCK));
         } else {
           item.replace("{i}", "");
@@ -352,12 +391,34 @@ void WiFiManager::handleWifi(bool scan) {
       server->sendContent("<br/>");
     }
   }
-  
-  server->sendContent_P(HTTP_FORM);
+
+  server->sendContent_P(HTTP_FORM_START);
+  char parLength[2];
+  // add the extra parameters to the form
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+
+    String pitem = FPSTR(HTTP_FORM_PARAM);
+    pitem.replace("{i}", _params[i]->getID());
+    pitem.replace("{n}", _params[i]->getID());
+    pitem.replace("{p}", _params[i]->getPlaceholder());
+    snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+    pitem.replace("{l}", parLength);
+    pitem.replace("{v}", _params[i]->getValue());
+
+    server->sendContent(pitem);
+  }
+  if (_params[0] != NULL) {
+    server->sendContent_P("<br/>");
+  }
+
+  server->sendContent_P(HTTP_FORM_END);
   server->sendContent_P(HTTP_END);
   server->client().stop();
-  
-  DEBUG_PRINT(F("Sent config page"));  
+
+  DEBUG_PRINT(F("Sent config page"));
 }
 
 /** Handle the WLAN save form and redirect to WLAN config page again */
@@ -367,6 +428,20 @@ void WiFiManager::handleWifiSave() {
   //SAVE/connect here
   _ssid = urldecode(server->arg("s").c_str());
   _pass = urldecode(server->arg("p").c_str());
+
+  //parameters
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+    //read parameter
+    String value = urldecode(server->arg(_params[i]->getID()).c_str());
+    //store it in array
+    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    DEBUG_PRINT(F("Parameter"));
+    DEBUG_PRINT(_params[i]->getID());
+    DEBUG_PRINT(value);
+  }
 
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
@@ -379,19 +454,19 @@ void WiFiManager::handleWifiSave() {
   server->sendContent_P(HTTP_SCRIPT);
   server->sendContent_P(HTTP_STYLE);
   server->sendContent_P(HTTP_HEAD_END);
-  
+
   server->sendContent_P(HTTP_SAVED);
 
   server->sendContent_P(HTTP_END);
   server->client().stop();
-  
-  DEBUG_PRINT(F("Sent wifi save page"));  
-  
+
+  DEBUG_PRINT(F("Sent wifi save page"));
+
   connect = true; //signal ready to connect/reset
 }
 
 void WiFiManager::handle204() {
-  DEBUG_PRINT(F("204 No Response"));  
+  DEBUG_PRINT(F("204 No Response"));
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
@@ -438,12 +513,18 @@ void WiFiManager::setAPCallback( void (*func)(void) ) {
   _apcallback = func;
 }
 
+//start up save config callback
+void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
+  _savecallback = func;
+}
+
+
 
 template <typename Generic>
 void WiFiManager::DEBUG_PRINT(Generic text) {
-  if(_debug) {
+  if (_debug) {
     Serial.print("*WM: ");
-    Serial.println(text);    
+    Serial.println(text);
   }
 }
 
@@ -451,12 +532,12 @@ void WiFiManager::DEBUG_PRINT(Generic text) {
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;
 
-  if(RSSI <= -100){
-        quality = 0;
-  }else if(RSSI >= -50){
-        quality = 100;
+  if (RSSI <= -100) {
+    quality = 0;
+  } else if (RSSI >= -50) {
+    quality = 100;
   } else {
-        quality = 2 * (RSSI + 100); 
+    quality = 2 * (RSSI + 100);
   }
   return quality;
 }
