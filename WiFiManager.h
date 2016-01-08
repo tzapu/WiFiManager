@@ -59,7 +59,7 @@ class WiFiManager
     WiFiManager();
 
     boolean       autoConnect();
-    boolean       autoConnect(char const *apName, char const *apPasswd = NULL);
+    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
@@ -96,11 +96,11 @@ class WiFiManager
 
     const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
-    void          setupConfigPortal(char const *apName, char const *apPasswd);
+    void          setupConfigPortal(char const *apName, char const *apPassword);
 
     int           _eepromStart;
     const char*   _apName = "no-net";
-    const char*   _apPasswd = NULL;
+    const char*   _apPassword = NULL;
     String        _ssid = "";
     String        _pass = "";
     unsigned long timeout = 0;

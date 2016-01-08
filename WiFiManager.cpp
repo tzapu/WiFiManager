@@ -49,23 +49,24 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
-void WiFiManager::setupConfigPortal(char const *apName, char const *apPasswd) {
+void WiFiManager::setupConfigPortal(char const *apName, char const *apPassword) {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
   DEBUG_WM(F(""));
   _apName = apName;
-  _apPasswd = apPasswd;
+  _apPassword = apPassword;
   start = millis();
 
   DEBUG_WM(F("Configuring access point... "));
   DEBUG_WM(_apName);
-  if (_apPasswd != NULL) {
-    if (strlen(_apPasswd) < 8 || strlen(_apPasswd) > 63) {
+  if (_apPassword != NULL) {
+    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
       // fail passphrase to short or long!
-      DEBUG_WM(F("Invalid AccessPoint password"));
+      DEBUG_WM(F("Invalid AccessPoint password. Ignoring"));
+      _apPassword = NULL;
     }
-    DEBUG_WM(_apPasswd);
+    DEBUG_WM(_apPassword);
   }
 
   //optional soft ip config
@@ -74,8 +75,8 @@ void WiFiManager::setupConfigPortal(char const *apName, char const *apPasswd) {
     WiFi.softAPConfig(_ip, _gw, _sn);
   }
 
-  if (_apPasswd != NULL) {
-    WiFi.softAP(_apName, _apPasswd);//password option
+  if (_apPassword != NULL) {
+    WiFi.softAP(_apName, _apPassword);//password option
   } else {
     WiFi.softAP(_apName);
   }
@@ -136,7 +137,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   
   connect = false;
   setupConfigPortal(apName, apPassword);
-
+  DEBUG_WM("start loop");
   while (timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -168,7 +169,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   server.reset();
   dnsServer.reset();
-  
+  DEBUG_WM("end loop");
   return  WiFi.status() == WL_CONNECTED;
 }
 
