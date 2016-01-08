@@ -49,16 +49,7 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
-
-void WiFiManager::begin() {
-  begin("NoNetESP");
-}
-
-void WiFiManager::begin(char const *apName) {
-  begin(apName, NULL);
-}
-
-void WiFiManager::begin(char const *apName, char const *apPasswd) {
+void WiFiManager::setupConfigPortal(char const *apName, char const *apPasswd) {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
@@ -114,42 +105,38 @@ boolean WiFiManager::autoConnect() {
   return autoConnect(ssid.c_str(), NULL);
 }
 
-boolean WiFiManager::autoConnect(char const *apName) {
-  return autoConnect(apName, NULL);
-}
-
-boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
+boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
 
   // read eeprom for ssid and pass
   String ssid = getSSID();
   String pass = getPassword();
-  //use SDK functions to get SSID and pass
-  //String ssid = WiFi.SSID();
-  //String pass = WiFi.psk();
 
+  // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
-  connectWifi(ssid, pass);
-  int s = WiFi.status();
-  if (s == WL_CONNECTED) {
+  if (connectWifi(ssid, pass) == WL_CONNECTED)   {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
     return true;
   }
 
-  //not connected
+  return startConfigPortal(apName, apPassword);
+}
+
+boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP);
+  
   //notify we entered AP mode
   if ( _apcallback != NULL) {
     _apcallback();
   }
+  
   connect = false;
-  begin(apName, apPasswd);
+  setupConfigPortal(apName, apPassword);
 
-  bool looping = true;
   while (timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -161,16 +148,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
       connect = false;
-      //ssid = getSSID();
-      //pass = getPassword();
-      connectWifi(_ssid, _pass);
-      int s = WiFi.status();
-      if (s != WL_CONNECTED) {
+      // using user-provided  _ssid, _pass in place of system-stored ssid amd pass
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
-        //not connected, should retry everything
-        //ESP.reset();
-        //delay(1000);
-        //return false;
       } else {
         //connected
         WiFi.mode(WIFI_STA);
@@ -188,24 +168,26 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPasswd) {
 
   server.reset();
   dnsServer.reset();
+  
   return  WiFi.status() == WL_CONNECTED;
 }
 
 
-void WiFiManager::connectWifi(String ssid, String pass) {
+int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
   //WiFi.disconnect();
   WiFi.begin(ssid.c_str(), pass.c_str());
   int connRes = WiFi.waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
+  return connRes;
 }
 
 
 String WiFiManager::getSSID() {
   if (_ssid == "") {
     DEBUG_WM(F("Reading SSID"));
-    _ssid = WiFi.SSID();//getEEPROMString(0, 32);
+    _ssid = WiFi.SSID();
     DEBUG_WM(F("SSID: "));
     DEBUG_WM(_ssid);
   }
@@ -215,46 +197,12 @@ String WiFiManager::getSSID() {
 String WiFiManager::getPassword() {
   if (_pass == "") {
     DEBUG_WM(F("Reading Password"));
-    _pass = WiFi.psk();//getEEPROMString(32, 64);
+    _pass = WiFi.psk();
     DEBUG_WM("Password: " + _pass);
     //DEBUG_WM(_pass);
   }
   return _pass;
 }
-
-/*
-  String WiFiManager::getEEPROMString(int start, int len) {
-  EEPROM.begin(512);
-  delay(10);
-  String string = "";
-  for (int i = _eepromStart + start; i < _eepromStart + start + len; i++) {
-    //DEBUG_WM(i);
-    string += char(EEPROM.read(i));
-  }
-  EEPROM.end();
-  return string;
-  }
-*/
-/*
-  void WiFiManager::setEEPROMString(int start, int len, String string) {
-  EEPROM.begin(512);
-  delay(10);
-  int si = 0;
-  for (int i = _eepromStart + start; i < _eepromStart + start + len; i++) {
-    char c;
-    if (si < string.length()) {
-      c = string[si];
-      //DEBUG_WM(F("Wrote: ");
-      //DEBUG_WM(c);
-    } else {
-      c = 0;
-    }
-    EEPROM.write(i, c);
-    si++;
-  }
-  EEPROM.end();
-  DEBUG_WM(F("Wrote " + string);
-  }*/
 
 String WiFiManager::urldecode(const char *src)
 {
@@ -348,7 +296,7 @@ void WiFiManager::handleRoot() {
 }
 
 /** Wifi config page handler */
-void WiFiManager::handleWifi(bool scan) {
+void WiFiManager::handleWifi(boolean scan) {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
