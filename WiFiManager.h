@@ -157,7 +157,7 @@ private:
     //int _eepromLength;
 
     template <typename Generic>
-    void DEBUG_PRINT(Generic text);
+    void DEBUG_WM(Generic text);
 };
 
 
