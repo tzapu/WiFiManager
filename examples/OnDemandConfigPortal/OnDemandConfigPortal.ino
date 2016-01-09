@@ -45,8 +45,8 @@ void loop() {
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
 
-    //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY
-    WiFi.mode(WIFI_STA);
+    //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
+    //WiFi.mode(WIFI_STA);
     
     if (!wifiManager.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
