@@ -206,7 +206,7 @@ String WiFiManager::getPassword() {
   return _pass;
 }
 
-String WiFiManager::getConfigurationSSID() {
+String WiFiManager::getConfigPortalSSID() {
   return _apName;
 }
 
