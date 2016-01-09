@@ -133,7 +133,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   //notify we entered AP mode
   if ( _apcallback != NULL) {
-    _apcallback();
+    _apcallback(this);
   }
   
   connect = false;
@@ -463,7 +463,7 @@ boolean WiFiManager::captivePortal() {
 }
 
 //start up config portal callback
-void WiFiManager::setAPCallback( void (*func)(void) ) {
+void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
   _apcallback = func;
 }
 
