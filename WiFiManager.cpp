@@ -49,13 +49,11 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
-void WiFiManager::setupConfigPortal(char const *apName, char const *apPassword) {
+void WiFiManager::setupConfigPortal() {
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
   DEBUG_WM(F(""));
-  _apName = apName;
-  _apPassword = apPassword;
   start = millis();
 
   DEBUG_WM(F("Configuring access point... "));
@@ -130,14 +128,17 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   //setup AP
   WiFi.mode(WIFI_AP);
   
+  _apName = apName;
+  _apPassword = apPassword;
+
   //notify we entered AP mode
   if ( _apcallback != NULL) {
     _apcallback();
   }
   
   connect = false;
-  setupConfigPortal(apName, apPassword);
-
+  setupConfigPortal();
+  DEBUG_WM("start loop");
   while (timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -169,7 +170,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   server.reset();
   dnsServer.reset();
-
+  DEBUG_WM("end loop");
   return  WiFi.status() == WL_CONNECTED;
 }
 
@@ -203,6 +204,10 @@ String WiFiManager::getPassword() {
     //DEBUG_WM(_pass);
   }
   return _pass;
+}
+
+String WiFiManager::getConfigPortalSSID() {
+  return _apName;
 }
 
 String WiFiManager::urldecode(const char *src)
@@ -476,7 +481,6 @@ void WiFiManager::DEBUG_WM(Generic text) {
     Serial.println(text);
   }
 }
-
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;

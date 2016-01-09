@@ -67,6 +67,9 @@ class WiFiManager
     String        getSSID();
     String        getPassword();
 
+    // get the AP name of the config portal, so it can be used in the callback
+    String        getConfigPortalSSID();
+
     void          resetSettings();
     //for convenience
     String        urldecode(const char*);
@@ -96,7 +99,7 @@ class WiFiManager
 
     const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
-    void          setupConfigPortal(char const *apName, char const *apPassword);
+    void          setupConfigPortal();
 
     int           _eepromStart;
     const char*   _apName = "no-net";
