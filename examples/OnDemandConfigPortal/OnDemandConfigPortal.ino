@@ -3,6 +3,10 @@
 //needed for library
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
+// select wich pin will trigger the configuraton portal when set to LOW
+// ESP-01 users please note: the only pins available (0 and 2), are shared 
+// with the bootloader, so always set them HIGH at power-up
+#define TRIGGER_PIN 0
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
@@ -15,12 +19,13 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n Starting");
 
-  //read gpio 4 state on startup
-  pinMode(4, INPUT);
-  int pinState = digitalRead(4);
+  pinMode(TRIGGER_PIN, INPUT);
+}
 
-  //if gpio 4 is high startup config mode
-  if (pinState == LOW) {
+
+void loop() {
+  // is configuration portal requested?
+  if ( digitalRead(TRIGGER_PIN) == LOW ) {
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
@@ -56,10 +61,6 @@ void setup() {
   }
 
 
-}
-
-void loop() {
   // put your main code here, to run repeatedly:
-
 
 }
