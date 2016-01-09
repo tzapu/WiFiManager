@@ -22,7 +22,7 @@ void setup() {
   int pinState = digitalRead(4);
 
   //if gpio 4 is high startup config mode
-  if (pinState == LOW) {
+  if (pinState == HIGH) {
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
@@ -42,8 +42,8 @@ void setup() {
     //here  "AutoConnectAP"
     //and goes into a blocking loop awaiting configuration
 
-    //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY
-    WiFi.mode(WIFI_STA);
+    //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
+    //WiFi.mode(WIFI_STA);
     
     if (!wifiManager.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
