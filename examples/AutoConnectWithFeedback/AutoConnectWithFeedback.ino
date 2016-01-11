@@ -5,15 +5,11 @@
 #include <ESP8266WebServer.h>
 #include "WiFiManager.h"          //https://github.com/tzapu/WiFiManager
 
-//WiFiManger
-//global intialization: this wastes memory, only used here to have access to wifiManager.getConfigPortalSSID()
-WiFiManager wifiManager;
-
-void configModeCallback () {
+void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("Entered config mode");
   Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
-  Serial.println(wifiManager.getConfigPortalSSID());
+  Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 
 void setup() {
@@ -22,7 +18,7 @@ void setup() {
   
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
-  //WiFiManager wifiManager;
+  WiFiManager wifiManager;
   //reset settings - for testing
   //wifiManager.resetSettings();
 

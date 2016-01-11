@@ -83,7 +83,7 @@ class WiFiManager
     //sets a custom ip /gateway /subnet configuration
     void          setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     //called when AP mode and config portal is started
-    void          setAPCallback( void (*func)(void) );
+    void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
 
@@ -138,7 +138,7 @@ class WiFiManager
     boolean       connect;
     boolean       _debug = true;
 
-    void (*_apcallback)(void) = NULL;
+    void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
