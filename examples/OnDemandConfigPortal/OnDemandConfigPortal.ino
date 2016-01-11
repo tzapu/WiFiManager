@@ -1,15 +1,14 @@
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 //needed for library
-#include <DNSServer.h>
 #include <ESP8266WebServer.h>
+#include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
-
-//callback notifying us of the need to save config
-void saveConfigCallback () {
-  Serial.println("Should save config");
-}
+// select wich pin will trigger the configuraton portal when set to LOW
+// ESP-01 users please note: the only pins available (0 and 2), are shared 
+// with the bootloader, so always set them HIGH at power-up
+#define TRIGGER_PIN 0
 
 
 void setup() {
@@ -17,18 +16,16 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n Starting");
 
-  //read gpio 4 state on startup
-  pinMode(4, INPUT);
-  int pinState = digitalRead(4);
+  pinMode(TRIGGER_PIN, INPUT);
+}
 
-  //if gpio 4 is high startup config mode
-  if (pinState == HIGH) {
+
+void loop() {
+  // is configuration portal requested?
+  if ( digitalRead(TRIGGER_PIN) == LOW ) {
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
-
-    //set config save notify callback
-    wifiManager.setSaveConfigCallback(saveConfigCallback);
 
     //reset settings - for testing
     //wifiManager.resetSettings();
@@ -58,10 +55,6 @@ void setup() {
   }
 
 
-}
-
-void loop() {
   // put your main code here, to run repeatedly:
-
 
 }
