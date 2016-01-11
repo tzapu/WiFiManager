@@ -1,10 +1,11 @@
 /**************************************************************
    WiFiManager is a library for the ESP8266/Arduino platform
    (https://github.com/esp8266/Arduino) to enable easy
-   configuration and reconfiguration of WiFi credentials and
-   store them in EEPROM.
-   inspired by http://www.esp8266.com/viewtopic.php?f=29&t=2520
+   configuration and reconfiguration of WiFi credentials using a Captive Portal
+   inspired by:
+   http://www.esp8266.com/viewtopic.php?f=29&t=2520
    https://github.com/chriscook8/esp-arduino-apboot
+   https://github.com/esp8266/Arduino/tree/esp8266/hardware/esp8266com/esp8266/libraries/DNSServer/examples/CaptivePortalAdvanced
    Built by AlexT https://github.com/tzapu
    Licensed under MIT license
  **************************************************************/
@@ -79,6 +80,8 @@ class WiFiManager
     //in seconds
     void          setTimeout(unsigned long seconds);
     void          setDebugOutput(boolean debug);
+    //defaults to not showing anything under 8% signal quality if called
+    void          setMinimumSignalQuality(int quality = 8);
 
     //sets a custom ip /gateway /subnet configuration
     void          setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
@@ -112,11 +115,11 @@ class WiFiManager
     IPAddress     _gw;
     IPAddress     _sn;
     int           _paramsCount = 0;
+    int           _minimumQuality = -1;
 
-    String        getEEPROMString(int start, int len);
-    void          setEEPROMString(int start, int len, String string);
+    //String        getEEPROMString(int start, int len);
+    //void          setEEPROMString(int start, int len, String string);
 
-//    boolean keepLooping = true;
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
 

@@ -1,8 +1,7 @@
 /**************************************************************
    WiFiManager is a library for the ESP8266/Arduino platform
    (https://github.com/esp8266/Arduino) to enable easy
-   configuration and reconfiguration of WiFi credentials and
-   store them in EEPROM.
+   configuration and reconfiguration of WiFi credentials using a Captive Portal
    inspired by:
    http://www.esp8266.com/viewtopic.php?f=29&t=2520
    https://github.com/chriscook8/esp-arduino-apboot
@@ -127,7 +126,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP);
-  
+
   _apName = apName;
   _apPassword = apPassword;
 
@@ -135,7 +134,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-  
+
   connect = false;
   setupConfigPortal();
   DEBUG_WM("start loop");
@@ -267,6 +266,10 @@ void WiFiManager::setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
   _sn = sn;
 }
 
+void WiFiManager::setMinimumSignalQuality(int quality) {
+  _minimumQuality = quality;
+}
+
 
 /** Handle root or redirect to captive portal */
 void WiFiManager::handleRoot() {
@@ -328,19 +331,26 @@ void WiFiManager::handleWifi(boolean scan) {
       {
         DEBUG_WM(WiFi.SSID(i));
         DEBUG_WM(WiFi.RSSI(i));
-        String item = FPSTR(HTTP_ITEM);
-        String rssiQ;
-        rssiQ += getRSSIasQuality(WiFi.RSSI(i));
-        item.replace("{v}", WiFi.SSID(i));
-        item.replace("{r}", rssiQ);
-        if (WiFi.encryptionType(i) != ENC_TYPE_NONE) {
-          item.replace("{i}", FPSTR(HTTP_ITEM_PADLOCK));
+        int quality = getRSSIasQuality(WiFi.RSSI(i));
+        
+        if (_minimumQuality == -1 || _minimumQuality < quality) {
+          String item = FPSTR(HTTP_ITEM);
+          String rssiQ;
+          rssiQ += quality;
+          item.replace("{v}", WiFi.SSID(i));
+          item.replace("{r}", rssiQ);
+          if (WiFi.encryptionType(i) != ENC_TYPE_NONE) {
+            item.replace("{i}", FPSTR(HTTP_ITEM_PADLOCK));
+          } else {
+            item.replace("{i}", "");
+          }
+          //DEBUG_WM(item);
+          server->sendContent(item);
+          delay(0);
         } else {
-          item.replace("{i}", "");
+          DEBUG_WM(F("Skipping due to quality"));
         }
-        //DEBUG_WM(item);
-        server->sendContent(item);
-        delay(0);
+
       }
       server->sendContent("<br/>");
     }
