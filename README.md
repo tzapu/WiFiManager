@@ -7,7 +7,28 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 #### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
-## How It works
+## Contents
+ - [How it works](#how-it-works)
+ - [Wishlist](#wishlist)
+ - [Quick start](#quick-start)
+   - Installing
+     - [Through Boards Manager](#install-through-boards-manager)
+     - [From Github](#checkout-from-github)
+   - [Using](#using)
+ - [Documentation](#documentation)
+   - [Access Point Password](#password-protect-the-configuration-access-point)
+   - [Callbacks](#callbacks)
+   - [Timeout](#timeout)
+   - [On Demand Configuration](#on-demand-configuration-portal)
+   - [Custom Parameters](#custom-parameters)
+   - [Custom IP Configuration](#custom-ip-configuration)
+   - [Filter Low Quality Networks](#filter-networks)
+   - [Debug Output](#debug)
+ - [Releases](#releases)
+ - [Contributors](#contributions-and-thanks)
+
+
+## How It Works
 - when your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
 - if this is unsuccessful (or no previous network saved) it moves the ESP into Access Point mode and spins up a DNS and WebServer (default ip 192.168.4.1)
 - using any wifi enabled device with a browser (computer, phone, tablet) connect to the newly created Access Point
@@ -15,12 +36,15 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - choose one of the access points scanned, enter password, click save
 - ESP will try to connect. If successful, it relinquishes control back to your app. If not, reconnect to AP and reconfigure.
 
+## How It Looks
+![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
+
 ## Wishlist
 - ~~remove dependency on EEPROM library~~
 - ~~move HTML Strings to PROGMEM~~
-- cleanup and streamline code
+- ~~cleanup and streamline code~~ (although this is ongoing)
 - if timeout is set, extend it when a page is fetched in AP mode
-- add ability to configure more parameters than ssid/password
+- ~~add ability to configure more parameters than ssid/password~~
 - maybe allow setting ip of ESP after reboot
 - ~~add to Arduino Boards Manager~~
 - add to PlatformIO
@@ -29,23 +53,24 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ## Quick Start
 
+### Installing
 You can either install through the Arduino Boards Manager or checkout the latest changes or a release from github
 
 #### Install through Boards Manager
-__Currently version 0.5 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Currently version 0.6 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
   ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
 
  - search for WiFiManager
   ![WiFiManager package](http://i.imgur.com/18yIai8.png)
 
- - click Install and start using it
+ - click Install and start [using it](#using)
 
 ####  Checkout from github
 __Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
 - Checkout library to your Arduino libraries folder
 
-#### Using
+### Using
 - Include in your sketch
 ```cpp
 #include <DNSServer.h>
@@ -75,9 +100,11 @@ wifiManager.autoConnect();
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
-Also see examples.
+Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
 
-### Password protect the configuration Access Point
+## Documentation
+
+#### Password protect the configuration Access Point
 You can and should password protect the configuration access point.  Simply add the password as a second parameter to `autoConnect`.
 A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
 The guidelines are that a wifi password must consist of 8 to 63 ASCII-encoded characters in the range of 32 to 126 (decimal)
@@ -85,7 +112,7 @@ The guidelines are that a wifi password must consist of 8 to 63 ASCII-encoded ch
 wifiManager.autoConnect("AutoConnectAP", "password")
 ```
 
-### Callbacks
+#### Callbacks
 ##### Enter Config mode
 Use this if you need to do something when your device enters configuration mode on failed WiFi connection attempt.
 Before `autoConnect()`
@@ -94,13 +121,32 @@ wifiManager.setAPCallback(configModeCallback);
 ```
 `configModeCallback` declaration and example
 ```cpp
-void configModeCallback () {
+void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("Entered config mode");
   Serial.println(WiFi.softAPIP());
+
+  Serial.println(myWiFiManager->getConfigPortalSSID());
 }
 ```
 
-### Timeout
+##### Save settings
+This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere. See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
+```cpp
+wifiManager.setSaveConfigCallback(saveConfigCallback);
+```
+`saveConfigCallback` declaration and example
+```cpp
+//flag for saving data
+bool shouldSaveConfig = false;
+
+//callback notifying us of the need to save config
+void saveConfigCallback () {
+  Serial.println("Should save config");
+  shouldSaveConfig = true;
+}
+```
+
+#### Timeout
 If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add
 ```cpp
 wifiManager.setTimeout(180);
@@ -108,11 +154,46 @@ wifiManager.setTimeout(180);
 which will wait 3 minutes (180 seconds). When the time passes, the autoConnect function will return, no matter the outcome.
 Check for connection and if it's still not established do whatever is needed (on some modules I restart them to retry, on others I enter deep sleep)
 
-### Debug
-Debug is enabled by default on Serial. To disable add before autoConnect
+#### On Demand Configuration Portal
+If you would rather start the configuration portal on demand rather than automatically on a failed connection attempt, then this is for you.
+
+Instead of calling `autoConnect()` which does all the connecting and failover configuration portal setup for you, you need to use `startConfigPortal()`
+Example usage
 ```cpp
-wifiManager.setDebugOutput(false);
+void loop() {
+  // is configuration portal requested?
+  if ( digitalRead(TRIGGER_PIN) == LOW ) {
+    WiFiManager wifiManager;
+    wifiManager.startConfigPortal("OnDemandAP");
+    Serial.println("connected...yeey :)");
+  }
+}
 ```
+See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemandConfigPortal)
+
+### Custom Parameters
+You can use WiFiManager to collect more parameters than just SSID and password.
+This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
+**You are responsible for saving and loading these custom values.** The library just collects and displays the data for you as a convenience.
+Usage scenario would be:
+- load values from somewhere (EEPROM/FS) or generate some defaults
+- add the custom parameters to WiFiManager using
+ ```cpp
+ // id/name, placeholder/prompt, default, length
+ WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
+ wifiManager.addParameter(&custom_mqtt_server);
+
+ ```
+- if connection to AP fails, configuration portal starts and you can set /change the values (or use on demand configuration portal)
+- once configuration is done and connection is established [save config callback]() is called
+- once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
+ ```cpp
+ mqtt_server = custom_mqtt_server.getValue();
+ ```  
+This feature is a lot more involved than all the others, so here are some examples to fully show how it is done
+- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters)
+- *Save and load custom parameters to EEPROM* (not done yet)
+
 
 ### Custom IP Configuration
 This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `autoConnect()`
@@ -120,14 +201,32 @@ This will set your captive portal to a specific IP should you need/want such a f
 //set custom ip for portal
 wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
+#### Filter Networks
+If you would like to filter low signal quality networks you can tell WiFiManager to not show networks below an arbitrary quality %;
+```
+wifiManager.setMinimumSignalQuality(10);
+```
+will not show networks under 10% signal quality. If you omit the parameter it defaults to 8%;
+
+#### Debug
+Debug is enabled by default on Serial. To disable add before autoConnect
+```cpp
+wifiManager.setDebugOutput(false);
+```
 
 ## Releases
-#### 0.5
+#### 0.6
+ - custom parameters
+ - prettier
+ - on demand config portal
+ - commit #100 :D
+
+##### 0.5
  - Added to Arduino Boards Manager - Thanks Max
  - moved most stuff to PROGMEM
  - added signal quality and a nice little padlock to show which networks are encrypted
 
-##### v0.4 - user contributed changes - Thank you
+##### v0.4 - all of it user contributed changes - Thank you
  - added ability to password protect the configuration Access Point
  - callback for enter configuration mode
  - memory allocation improvements
@@ -139,10 +238,11 @@ wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,
 
 ##### v0.2
 needs the latest staging version (or at least a recent release of the staging version) to work
+This is jsut random textTo show the lagginess.
+[the editor is completly](behing the typing)
 
 ##### v0.1
 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
-
 
 
 ### Contributions and thanks
@@ -151,16 +251,17 @@ The support and help I got from the community has been nothing short of phenomen
 __THANK YOU__
 
 [Maximiliano Duarte](https://github.com/domonetic)
-
 [alltheblinkythings](https://github.com/alltheblinkythings)
-
 [Niklas Wall](https://github.com/niklaswall)
-
 [Jakub Piasecki](https://github.com/zaporylie)
-
 [Peter Allan](https://github.com/alwynallan)
-
 [John Little](https://github.com/j0hnlittle)
+[markaswift](https://github.com/markaswift)
+[franklinvv](https://github.com/franklinvv)
+[Alberto Ricci Bitti](https://github.com/riccibitti)
+[SebiPanther](https://github.com/SebiPanther)
+
+Sorry if i have missed anyone.
 
 #### Inspiration
 - http://www.esp8266.com/viewtopic.php?f=29&t=2520

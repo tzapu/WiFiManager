@@ -137,7 +137,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   connect = false;
   setupConfigPortal();
-  DEBUG_WM("start loop");
+
   while (timeout == 0 || millis() < start + timeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -169,7 +169,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   server.reset();
   dnsServer.reset();
-  DEBUG_WM("end loop");
+
   return  WiFi.status() == WL_CONNECTED;
 }
 
