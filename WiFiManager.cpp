@@ -281,6 +281,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
+  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
   server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
   String head = HTTP_HEAD;
@@ -309,8 +310,9 @@ void WiFiManager::handleWifi(boolean scan) {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
+  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
   server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-
+  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
 
   String head = HTTP_HEAD;
   head.replace("{v}", "Config ESP");
@@ -410,6 +412,7 @@ void WiFiManager::handleWifiSave() {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
+  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
   server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
   String head = HTTP_HEAD;

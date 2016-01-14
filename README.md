@@ -251,14 +251,23 @@ The support and help I got from the community has been nothing short of phenomen
 __THANK YOU__
 
 [Maximiliano Duarte](https://github.com/domonetic)
+
 [alltheblinkythings](https://github.com/alltheblinkythings)
+
 [Niklas Wall](https://github.com/niklaswall)
+
 [Jakub Piasecki](https://github.com/zaporylie)
+
 [Peter Allan](https://github.com/alwynallan)
+
 [John Little](https://github.com/j0hnlittle)
+
 [markaswift](https://github.com/markaswift)
+
 [franklinvv](https://github.com/franklinvv)
+
 [Alberto Ricci Bitti](https://github.com/riccibitti)
+
 [SebiPanther](https://github.com/SebiPanther)
 
 Sorry if i have missed anyone.
