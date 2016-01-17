@@ -195,22 +195,22 @@ This feature is a lot more involved than all the others, so here are some exampl
 - *Save and load custom parameters to EEPROM* (not done yet)
 
 
-### Custom IP Configuration
+### Custom Access Point IP Configuration
 This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `autoConnect()`
 ```cpp
 //set custom ip for portal
-wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
 
-### Custom Static IP Configuration
-This will make use the specified IP configuration instead of using DHCP.
-```
-wifiManager.setStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
+### Custom Station Static IP Configuration
+This will make use the specified IP configuration instead of using DHCP in station mode.
+```cpp
+wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
 ```
 
 #### Filter Networks
 If you would like to filter low signal quality networks you can tell WiFiManager to not show networks below an arbitrary quality %;
-```
+```cpp
 wifiManager.setMinimumSignalQuality(10);
 ```
 will not show networks under 10% signal quality. If you omit the parameter it defaults to 8%;
@@ -276,6 +276,10 @@ __THANK YOU__
 [Alberto Ricci Bitti](https://github.com/riccibitti)
 
 [SebiPanther](https://github.com/SebiPanther)
+
+[jonathanendersby](https://github.com/jonathanendersby)
+
+[walthercarsten](https://github.com/walthercarsten)
 
 Sorry if i have missed anyone.
 

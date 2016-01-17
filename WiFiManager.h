@@ -83,9 +83,9 @@ class WiFiManager
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
     //sets a custom ip /gateway /subnet configuration
-    void          setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    void          setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     //sets config for a static IP 
-    void          setStaticIPConfig(IPAddress static_ip, IPAddress static_gw, IPAddress static_sn);
+    void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     //called when AP mode and config portal is started
     void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
@@ -111,12 +111,12 @@ class WiFiManager
     String        _pass = "";
     unsigned long timeout = 0;
     unsigned long start = 0;
-    IPAddress     _ip;
-    IPAddress     _gw;
-    IPAddress     _sn;
-    IPAddress     _static_ip;
-    IPAddress     _static_gw;
-    IPAddress     _static_sn;
+    IPAddress     _ap_static_ip;
+    IPAddress     _ap_static_gw;
+    IPAddress     _ap_static_sn;
+    IPAddress     _sta_static_ip;
+    IPAddress     _sta_static_gw;
+    IPAddress     _sta_static_sn;
     int           _paramsCount = 0;
     int           _minimumQuality = -1;
 

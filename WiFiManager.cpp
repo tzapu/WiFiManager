@@ -67,9 +67,9 @@ void WiFiManager::setupConfigPortal() {
   }
 
   //optional soft ip config
-  if (_ip) {
-    DEBUG_WM(F("Custom IP/GW/Subnet"));
-    WiFi.softAPConfig(_ip, _gw, _sn);
+  if (_ap_static_ip) {
+    DEBUG_WM(F("Custom AP IP/GW/Subnet"));
+    WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
   if (_apPassword != NULL) {
@@ -115,8 +115,10 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   WiFi.mode(WIFI_STA);
 
   // check if we've got static_ip settings, if we do, use those.
-  if (_static_ip){
-    WiFi.config(_static_ip, _static_gw, _static_sn);
+  if (_sta_static_ip) {
+    DEBUG_WM(F("Custom STA IP/GW/Subnet"));
+    WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    DEBUG_WM(WiFi.localIP());
   }
 
   if (connectWifi(ssid, pass) == WL_CONNECTED)   {
@@ -266,16 +268,16 @@ void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
 }
 
-void WiFiManager::setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
-  _ip = ip;
-  _gw = gw;
-  _sn = sn;
+void WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
+  _ap_static_ip = ip;
+  _ap_static_gw = gw;
+  _ap_static_sn = sn;
 }
 
-void WiFiManager::setStaticIPConfig(IPAddress static_ip, IPAddress static_gw, IPAddress static_sn) {
-  _static_ip = static_ip;
-  _static_gw = static_gw;
-  _static_sn = static_sn;
+void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
+  _sta_static_ip = ip;
+  _sta_static_gw = gw;
+  _sta_static_sn = sn;
 }
 
 void WiFiManager::setMinimumSignalQuality(int quality) {
@@ -346,7 +348,7 @@ void WiFiManager::handleWifi(boolean scan) {
         DEBUG_WM(WiFi.SSID(i));
         DEBUG_WM(WiFi.RSSI(i));
         int quality = getRSSIasQuality(WiFi.RSSI(i));
-        
+
         if (_minimumQuality == -1 || _minimumQuality < quality) {
           String item = FPSTR(HTTP_ITEM);
           String rssiQ;
