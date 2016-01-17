@@ -113,6 +113,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
+
+  // check if we've got static_ip settings, if we do, use those.
+  if (_static_ip){
+    WiFi.config(_static_ip, _static_gw, _static_sn);
+  }
+
   if (connectWifi(ssid, pass) == WL_CONNECTED)   {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
@@ -264,6 +270,12 @@ void WiFiManager::setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
   _ip = ip;
   _gw = gw;
   _sn = sn;
+}
+
+void WiFiManager::setStaticIPConfig(IPAddress static_ip, IPAddress static_gw, IPAddress static_sn) {
+  _static_ip = static_ip;
+  _static_gw = static_gw;
+  _static_sn = static_sn;
 }
 
 void WiFiManager::setMinimumSignalQuality(int quality) {

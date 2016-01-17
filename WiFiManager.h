@@ -82,14 +82,14 @@ class WiFiManager
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
-
     //sets a custom ip /gateway /subnet configuration
     void          setAPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    //sets config for a static IP 
+    void          setStaticIPConfig(IPAddress static_ip, IPAddress static_gw, IPAddress static_sn);
     //called when AP mode and config portal is started
     void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
-
     //adds a custom parameter
     void          addParameter(WiFiManagerParameter *p);
 
@@ -114,6 +114,9 @@ class WiFiManager
     IPAddress     _ip;
     IPAddress     _gw;
     IPAddress     _sn;
+    IPAddress     _static_ip;
+    IPAddress     _static_gw;
+    IPAddress     _static_sn;
     int           _paramsCount = 0;
     int           _minimumQuality = -1;
 

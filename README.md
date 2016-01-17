@@ -201,6 +201,13 @@ This will set your captive portal to a specific IP should you need/want such a f
 //set custom ip for portal
 wifiManager.setAPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
+
+### Custom Static IP Configuration
+This will make use the specified IP configuration instead of using DHCP.
+```
+wifiManager.setStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
+```
+
 #### Filter Networks
 If you would like to filter low signal quality networks you can tell WiFiManager to not show networks below an arbitrary quality %;
 ```
