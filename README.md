@@ -24,6 +24,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
    - [Custom IP Configuration](#custom-ip-configuration)
    - [Filter Low Quality Networks](#filter-networks)
    - [Debug Output](#debug)
+ - [Troubleshooting](#troubleshooting)
  - [Releases](#releases)
  - [Contributors](#contributions-and-thanks)
 
@@ -67,7 +68,7 @@ __Currently version 0.6 works with release 2.0.0 or newer of the [ESP8266 core f
  - click Install and start [using it](#using)
 
 ####  Checkout from github
-__Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Github version works with the HEAD (as of 18 jan 2016) or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
 - Checkout library to your Arduino libraries folder
 
 ### Using
@@ -205,11 +206,12 @@ This will set your captive portal to a specific IP should you need/want such a f
 wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
 ```
 
-### Custom Station Static IP Configuration
+### Custom Station (client) Static IP Configuration
 This will make use the specified IP configuration instead of using DHCP in station mode.
 ```cpp
 wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
 ```
+There are a couple of examples in the examples folder that show you how to set a static IP and even how to configure it through the web configuration portal.
 
 #### Filter Networks
 If you would like to filter low signal quality networks you can tell WiFiManager to not show networks below an arbitrary quality %;
@@ -223,6 +225,11 @@ Debug is enabled by default on Serial. To disable add before autoConnect
 ```cpp
 wifiManager.setDebugOutput(false);
 ```
+
+## Troubleshooting
+If you get compilation errors, more often than not, you may need to install a newer version of the ESP8266 core for Arduino.
+
+I am trying to keep releases working with release versions of the core, so they can be installed through boards manager, but if you checkout the latest version directly from github, sometimes, the library will only work if you update the ESP8266 core to the latest version because I am using some newly added function.
 
 ## Releases
 #### 0.6
