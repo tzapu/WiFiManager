@@ -16,7 +16,7 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
   _id = id;
   _placeholder = placeholder;
   _length = length;
-  _value = new char[length];
+  _value = new char[length+1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
   }

@@ -10,13 +10,14 @@
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
 //define your default values here, if there are different values in config.json, they are overwritten.
+//length should be max size + 1 
 char mqtt_server[40];
-char mqtt_port[5] = "8080";
-char blynk_token[64] = "YOUR_BLYNK_TOKEN";
+char mqtt_port[6] = "8080";
+char blynk_token[33] = "YOUR_BLYNK_TOKEN";
 //default custom static IP
-char static_ip[18] = "10.0.1.56";
-char static_gw[18] = "10.0.1.1";
-char static_sn[18] = "255.255.255.0";
+char static_ip[16] = "10.0.1.56";
+char static_gw[16] = "10.0.1.1";
+char static_sn[16] = "255.255.255.0";
 
 //flag for saving data
 bool shouldSaveConfig = false;
@@ -61,10 +62,6 @@ void setup() {
           strcpy(mqtt_port, json["mqtt_port"]);
           strcpy(blynk_token, json["blynk_token"]);
 
-          //mqtt_server = json["mqtt_server"];
-          //mqtt_port = json["mqtt_port"];
-          //blynk_token = json["blynk_token"];
-
           if(json["ip"]) {
             Serial.println("setting custom ip from config");
             //static_ip = json["ip"];
@@ -100,7 +97,7 @@ void setup() {
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
-  WiFiManagerParameter custom_blynk_token("blynk", "blynk token", blynk_token, 64);
+  WiFiManagerParameter custom_blynk_token("blynk", "blynk token", blynk_token, 34);
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -153,8 +150,6 @@ void setup() {
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(blynk_token, custom_blynk_token.getValue());
-  //mqtt_port = custom_mqtt_port.getValue();
-  //blynk_token = custom_blynk_token.getValue();
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
