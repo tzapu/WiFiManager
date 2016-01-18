@@ -114,13 +114,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  // check if we've got static_ip settings, if we do, use those.
-  if (_sta_static_ip) {
-    DEBUG_WM(F("Custom STA IP/GW/Subnet"));
-    WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
-    DEBUG_WM(WiFi.localIP());
-  }
-
   if (connectWifi(ssid, pass) == WL_CONNECTED)   {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
@@ -154,9 +147,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
 
     if (connect) {
+      connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
-      connect = false;
       // using user-provided  _ssid, _pass in place of system-stored ssid amd pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
@@ -184,7 +177,15 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
-  //WiFi.disconnect();
+
+  // check if we've got static_ip settings, if we do, use those.
+  if (_sta_static_ip) {
+    DEBUG_WM(F("Custom STA IP/GW/Subnet"));
+    WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    DEBUG_WM(WiFi.localIP());
+  }
+
+
   WiFi.begin(ssid.c_str(), pass.c_str());
   int connRes = WiFi.waitForConnectResult();
   DEBUG_WM ("Connection result: ");
@@ -394,6 +395,38 @@ void WiFiManager::handleWifi(boolean scan) {
     server->sendContent_P("<br/>");
   }
 
+  if(_sta_static_ip) {
+    
+    String item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "ip");
+    item.replace("{n}", "ip");
+    item.replace("{p}", "Static IP");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_ip.toString());
+
+    server->sendContent(item);       
+    
+    item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "gw");
+    item.replace("{n}", "gw");
+    item.replace("{p}", "Static Gateway");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_gw.toString());
+
+    server->sendContent(item);
+    
+    item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "sn");
+    item.replace("{n}", "sn");
+    item.replace("{p}", "Subnet");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_sn.toString());
+
+    server->sendContent(item);    
+
+    server->sendContent_P("<br/>");
+  }
+
   server->sendContent_P(HTTP_FORM_END);
   server->sendContent_P(HTTP_END);
   server->client().stop();
@@ -421,6 +454,22 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(F("Parameter"));
     DEBUG_WM(_params[i]->getID());
     DEBUG_WM(value);
+  }
+
+  if(server->arg("ip") != "") {
+    DEBUG_WM(F("static ip"));
+    DEBUG_WM(server->arg("ip"));
+    _sta_static_ip.fromString(server->arg("ip"));
+  }
+  if(server->arg("gw")) {
+    DEBUG_WM(F("static gateway"));
+    DEBUG_WM(server->arg("gw"));
+    _sta_static_gw.fromString(server->arg("gw"));
+  }
+  if(server->arg("sn")) {
+    DEBUG_WM(F("static netmask"));
+    DEBUG_WM(server->arg("sn"));
+    _sta_static_sn.fromString(server->arg("sn"));
   }
 
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");

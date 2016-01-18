@@ -40,15 +40,15 @@ class WiFiManagerParameter {
   public:
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
 
-    const char* getID();
-    const char* getValue();
-    const char* getPlaceholder();
-    int getValueLength();
+    const char *getID();
+    const char *getValue();
+    const char *getPlaceholder();
+    int         getValueLength();
   private:
-    const char* _id;
-    const char* _placeholder;
-    char* _value;
-    int _length;
+    const char *_id;
+    const char *_placeholder;
+    char       *_value;
+    int         _length;
 
     friend class WiFiManager;
 };

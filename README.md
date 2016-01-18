@@ -45,7 +45,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - ~~cleanup and streamline code~~ (although this is ongoing)
 - if timeout is set, extend it when a page is fetched in AP mode
 - ~~add ability to configure more parameters than ssid/password~~
-- maybe allow setting ip of ESP after reboot
+- ~~maybe allow setting ip of ESP after reboot~~
 - ~~add to Arduino Boards Manager~~
 - add to PlatformIO
 - add multiple sets of network credentials
@@ -130,7 +130,9 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 ```
 
 ##### Save settings
-This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere. See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
+This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere. 
+
+See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -157,7 +159,8 @@ Check for connection and if it's still not established do whatever is needed (on
 #### On Demand Configuration Portal
 If you would rather start the configuration portal on demand rather than automatically on a failed connection attempt, then this is for you.
 
-Instead of calling `autoConnect()` which does all the connecting and failover configuration portal setup for you, you need to use `startConfigPortal()`
+Instead of calling `autoConnect()` which does all the connecting and failover configuration portal setup for you, you need to use `startConfigPortal()`. __Do not use BOTH.__
+
 Example usage
 ```cpp
 void loop() {
@@ -245,8 +248,6 @@ wifiManager.setDebugOutput(false);
 
 ##### v0.2
 needs the latest staging version (or at least a recent release of the staging version) to work
-This is jsut random textTo show the lagginess.
-[the editor is completly](behing the typing)
 
 ##### v0.1
 works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
