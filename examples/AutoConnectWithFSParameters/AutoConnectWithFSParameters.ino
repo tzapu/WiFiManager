@@ -10,9 +10,9 @@
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
 //define your default values here, if there are different values in config.json, they are overwritten.
-const char *mqtt_server = NULL;
-const char *mqtt_port = "8080";
-const char *blynk_token = "YOUR_BLYNK_TOKEN";
+char mqtt_server[40];
+char mqtt_port[6] = "8080";
+char blynk_token[34] = "YOUR_BLYNK_TOKEN";
 
 //flag for saving data
 bool shouldSaveConfig = false;
@@ -54,9 +54,10 @@ void setup() {
         if (json.success()) {
           Serial.println("\nparsed json");
 
-          mqtt_server = json["mqtt_server"];
-          mqtt_port = json["mqtt_port"];
-          blynk_token = json["blynk_token"];
+          strcpy(mqtt_server, json["mqtt_server"]);
+          strcpy(mqtt_port, json["mqtt_port"]);
+          strcpy(blynk_token, json["blynk_token"]);
+
         } else {
           Serial.println("failed to load json config");
         }
@@ -73,7 +74,7 @@ void setup() {
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 8);
+  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
   WiFiManagerParameter custom_blynk_token("blynk", "blynk token", blynk_token, 32);
 
   //WiFiManager
@@ -83,13 +84,16 @@ void setup() {
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
 
+  //set static ip
+  wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+  
   //add all your parameters here
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_blynk_token);
 
   //reset settings - for testing
-  wifiManager.resetSettings();
+  //wifiManager.resetSettings();
 
   //set minimu quality of signal so it ignores AP's under that quality
   //defaults to 8%
@@ -116,9 +120,9 @@ void setup() {
   Serial.println("connected...yeey :)");
 
   //read updated parameters
-  mqtt_server = custom_mqtt_server.getValue();
-  mqtt_port = custom_mqtt_port.getValue();
-  blynk_token = custom_blynk_token.getValue();
+  strcpy(mqtt_server, custom_mqtt_server.getValue());
+  strcpy(mqtt_port, custom_mqtt_port.getValue());
+  strcpy(blynk_token, custom_blynk_token.getValue());
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
@@ -139,6 +143,10 @@ void setup() {
     configFile.close();
     //end save
   }
+
+  Serial.println("local ip");
+  Serial.println(WiFi.localIP());
+
 }
 
 void loop() {

@@ -231,6 +231,10 @@ If you get compilation errors, more often than not, you may need to install a ne
 
 I am trying to keep releases working with release versions of the core, so they can be installed through boards manager, but if you checkout the latest version directly from github, sometimes, the library will only work if you update the ESP8266 core to the latest version because I am using some newly added function.
 
+
+If you connect to the created configuration Access Point but the configuration portal does not show up, just open a browser and type in the IP of the web portal, by default `192.168.4.1`.
+
+
 ## Releases
 #### 0.6
  - custom parameters
