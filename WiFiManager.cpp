@@ -461,12 +461,12 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(server->arg("ip"));
     _sta_static_ip.fromString(server->arg("ip"));
   }
-  if(server->arg("gw")) {
+  if(server->arg("gw") != "") {
     DEBUG_WM(F("static gateway"));
     DEBUG_WM(server->arg("gw"));
     _sta_static_gw.fromString(server->arg("gw"));
   }
-  if(server->arg("sn")) {
+  if(server->arg("sn") != "") {
     DEBUG_WM(F("static netmask"));
     DEBUG_WM(server->arg("sn"));
     _sta_static_sn.fromString(server->arg("sn"));
