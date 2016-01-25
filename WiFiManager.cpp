@@ -91,6 +91,8 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
+  server->on("/i", std::bind(&WiFiManager::handleInfo, this));
+  server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
@@ -311,31 +313,20 @@ void WiFiManager::handleRoot() {
     return;
   }
 
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Options");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_HEAD_END);
+  page += "<h1>";
+  page += _apName;
+  page += "</h1>";
+  page += F("<h3>WiFiManager</h3>");
+  page += FPSTR(HTTP_PORTAL_OPTIONS);
+  page += FPSTR(HTTP_END);
+  
+  server->send(200, "text/html", page);
 
-  String head = HTTP_HEAD;
-  head.replace("{v}", "Options");
-  server->sendContent(head);
-  server->sendContent_P(HTTP_SCRIPT);
-  server->sendContent_P(HTTP_STYLE);
-  server->sendContent_P(HTTP_HEAD_END);
-
-  //server->sendContent(F("<h1>"));
-  String title = "<h1>";
-  title += _apName;
-  title += "</h1>";
-  server->sendContent(title);
-  server->sendContent(F("<h3>WiFiManager</h3>"));
-
-
-  server->sendContent_P(HTTP_PORTAL_OPTIONS);
-  server->sendContent_P(HTTP_END);
-
-  server->client().stop(); // Stop is needed because we sent no content length
 }
 
 /** Wifi config page handler */
@@ -347,7 +338,7 @@ void WiFiManager::handleWifi(boolean scan) {
   server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
   server->setContentLength(CONTENT_LENGTH_UNKNOWN);
 
-  String head = HTTP_HEAD;
+  String head = FPSTR(HTTP_HEAD);
   head.replace("{v}", "Config ESP");
   server->sendContent(head);
   server->sendContent_P(HTTP_SCRIPT);
@@ -446,6 +437,7 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   server->sendContent_P(HTTP_FORM_END);
+  server->sendContent_P(HTTP_SCAN_LINK);
   server->sendContent_P(HTTP_END);
   server->client().stop();
 
@@ -496,7 +488,7 @@ void WiFiManager::handleWifiSave() {
   server->setContentLength(CONTENT_LENGTH_UNKNOWN);
   server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 
-  String head = HTTP_HEAD;
+  String head = FPSTR(HTTP_HEAD);
   head.replace("{v}", "Credentials Saved");
   server->sendContent(head);
   server->sendContent_P(HTTP_SCRIPT);
@@ -512,6 +504,64 @@ void WiFiManager::handleWifiSave() {
 
   connect = true; //signal ready to connect/reset
 }
+
+/** Handle the info page */
+void WiFiManager::handleInfo() {
+  DEBUG_WM(F("Info"));
+
+String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Info");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("<dl>");
+  page += F("<dt>Chip ID</dt><dd>");
+  page += ESP.getChipId();
+  page += F("</dd>");
+  page += F("<dt>Flash Chip ID</dt><dd>");
+  page += ESP.getFlashChipId();
+  page += F("</dd>");
+  page += F("<dt>Flash Size</dt><dd>");
+  page += ESP.getFlashChipSize();
+  page += F(" bytes</dd>");
+  page += F("<dt>Soft AP IP</dt><dd>");
+  page += WiFi.softAPIP().toString();
+  page += F("</dd>");
+  page += F("<dt>Soft AP MAC</dt><dd>");
+  page += WiFi.softAPmacAddress();
+  page += F("</dd>");
+  page += F("<dt>Station MAC</dt><dd>");
+  page += WiFi.macAddress();
+  page += F("</dd>");
+  page += F("</dl>");
+  page += FPSTR(HTTP_END);
+  
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent info page"));
+}
+
+/** Handle the reset page */
+void WiFiManager::handleReset() {
+  DEBUG_WM(F("Reset"));
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Info");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("Module will reset in a few seconds.");
+  page += FPSTR(HTTP_END);
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent reset page"));
+  delay(5000);
+  ESP.reset();
+  delay(2000);
+}
+
+
+
 
 void WiFiManager::handle204() {
   DEBUG_WM(F("204 No Response"));
