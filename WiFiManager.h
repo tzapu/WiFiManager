@@ -92,6 +92,8 @@ class WiFiManager
     void          setSaveConfigCallback( void (*func)(void) );
     //adds a custom parameter
     void          addParameter(WiFiManagerParameter *p);
+    //if this is set, it will exit after config, even if connection is unsucessful.
+    void          setBreakAfterConfig(boolean shouldBreak);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -119,6 +121,7 @@ class WiFiManager
     IPAddress     _sta_static_sn;
     int           _paramsCount = 0;
     int           _minimumQuality = -1;
+    boolean       _shouldBreakAfterConfig = false;
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);

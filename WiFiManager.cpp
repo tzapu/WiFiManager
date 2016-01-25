@@ -108,13 +108,13 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
   // read eeprom for ssid and pass
-  String ssid = getSSID();
-  String pass = getPassword();
+  //String ssid = getSSID();
+  //String pass = getPassword();
 
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  if (connectWifi(ssid, pass) == WL_CONNECTED)   {
+  if (connectWifi("", "") == WL_CONNECTED)   {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
@@ -150,7 +150,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
-      // using user-provided  _ssid, _pass in place of system-stored ssid amd pass
+      
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
       } else {
@@ -163,7 +164,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         }
         break;
       }
-
+      
+      if(_shouldBreakAfterConfig) {
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
     }
     yield();
   }
@@ -185,8 +195,13 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-
-  WiFi.begin(ssid.c_str(), pass.c_str());
+  if(ssid !="" && pass != "") {
+    WiFi.begin(ssid.c_str(), pass.c_str());
+  } else {
+    DEBUG_WM("Using last saved values, should be faster");
+    WiFi.begin();
+  }
+  
   int connRes = WiFi.waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
@@ -285,6 +300,9 @@ void WiFiManager::setMinimumSignalQuality(int quality) {
   _minimumQuality = quality;
 }
 
+void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
+  _shouldBreakAfterConfig = shouldBreak;
+}
 
 /** Handle root or redirect to captive portal */
 void WiFiManager::handleRoot() {

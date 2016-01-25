@@ -7,6 +7,7 @@
 #######################################
 
 WiFiManager	KEYWORD1
+WiFiManagerParameter KEYWORD1
 
 
 #######################################
@@ -15,12 +16,22 @@ WiFiManager	KEYWORD1
 autoConnect	KEYWORD2
 getSSID	KEYWORD2
 getPassword	KEYWORD2
+getConfigPortalSSID KEYWORD2
 resetSettings	KEYWORD2
 urldecode	KEYWORD2
 setTimeout	KEYWORD2
 setDebugOutput	KEYWORD2
-setAPConfig	KEYWORD2
+setMinimumSignalQuality KEYWORD2
+setAPStaticIPConfig	KEYWORD2
+setSTAStaticIPConfig KEYWORD2
 setAPCallback	KEYWORD2
+setSaveConfigCallback KEYWORD2
+addParameter KEYWORD2
+
+getID KEYWORD2
+getValue KEYWORD2
+getPlaceholder KEYWORD2
+getValueLength KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
