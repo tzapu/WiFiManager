@@ -1,7 +1,7 @@
 {
   "name": "WifiManager",
   "keywords": "wifi, wi-fi",
-  "description": "ESP8266 WiFi Connection manager with fallback web configuration portal",
+  "description": "ESP8266 WiFi Connection manager with fallback web configuration portal **USE version 0.6 together with stable 2.0.0 ESP8266 core for Arduino and use 0.7 for core 2.1.0.rc2 or newer**",
   "repository":
   {
     "type": "git",
