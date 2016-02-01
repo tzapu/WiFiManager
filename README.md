@@ -48,7 +48,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - ~~add ability to configure more parameters than ssid/password~~
 - ~~maybe allow setting ip of ESP after reboot~~
 - ~~add to Arduino Boards Manager~~
-- add to PlatformIO
+- ~~add to PlatformIO~~
 - add multiple sets of network credentials
 - allow users to customize CSS
 
@@ -58,7 +58,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 You can either install through the Arduino Boards Manager or checkout the latest changes or a release from github
 
 #### Install through Boards Manager
-__Currently version 0.6 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Currently version 0.8 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
   ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
 
@@ -68,7 +68,7 @@ __Currently version 0.6 works with release 2.0.0 or newer of the [ESP8266 core f
  - click Install and start [using it](#using)
 
 ####  Checkout from github
-__Github version works with the HEAD (as of 18 jan 2016) or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
 - Checkout library to your Arduino libraries folder
 
 ### Using
@@ -131,7 +131,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 ```
 
 ##### Save settings
-This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere. 
+This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
 
 See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
 ```cpp
@@ -229,6 +229,8 @@ wifiManager.setDebugOutput(false);
 ## Troubleshooting
 If you get compilation errors, more often than not, you may need to install a newer version of the ESP8266 core for Arduino.
 
+Changes added on 0.8 should make the latest trunk work without compilation errors. Tested down to ESP8266 core 2.0.0. **Please update to version 0.8**
+
 I am trying to keep releases working with release versions of the core, so they can be installed through boards manager, but if you checkout the latest version directly from github, sometimes, the library will only work if you update the ESP8266 core to the latest version because I am using some newly added function.
 
 
@@ -236,7 +238,17 @@ If you connect to the created configuration Access Point but the configuration p
 
 
 ## Releases
-#### 0.6
+#### 0.8
+ - made it compile on older versions of ESP8266 core as well, tested down to 2.0.0
+ - added simple example for Custom IP
+
+##### 0.7
+ - added static IP in station mode
+ - added example of persisting custom IP to FS config.json
+ - more option on portal homepage
+ - added on PlatformIO
+
+##### 0.6
  - custom parameters
  - prettier
  - on demand config portal

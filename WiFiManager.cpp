@@ -16,7 +16,7 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
   _id = id;
   _placeholder = placeholder;
   _length = length;
-  _value = new char[length+1];
+  _value = new char[length + 1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
   }
@@ -98,6 +98,11 @@ void WiFiManager::setupConfigPortal() {
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
+  /*
+      String ip = "10.1.2.3";
+      optionalIPFromString(&_sta_static_ip, ip.c_str());
+      DEBUG_WM(_sta_static_ip);*/
+
 }
 
 boolean WiFiManager::autoConnect() {
@@ -152,7 +157,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
-      
+
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
@@ -166,8 +171,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         }
         break;
       }
-      
-      if(_shouldBreakAfterConfig) {
+
+      if (_shouldBreakAfterConfig) {
         //flag set to exit after config after trying to connect
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
@@ -197,13 +202,14 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-  if(ssid !="" && pass != "") {
+  //check if we have ssid and pass and force those, if not, try with last saved values
+  if (ssid != "" && pass != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     DEBUG_WM("Using last saved values, should be faster");
     WiFi.begin();
   }
-  
+
   int connRes = WiFi.waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
@@ -273,7 +279,7 @@ String WiFiManager::urldecode(const char *src)
 
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
-  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO STRT UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
+  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
   //delay(200);
 }
@@ -324,7 +330,7 @@ void WiFiManager::handleRoot() {
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += FPSTR(HTTP_END);
-  
+
   server->send(200, "text/html", page);
 
 }
@@ -404,8 +410,8 @@ void WiFiManager::handleWifi(boolean scan) {
     server->sendContent_P("<br/>");
   }
 
-  if(_sta_static_ip) {
-    
+  if (_sta_static_ip) {
+
     String item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
@@ -413,8 +419,8 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{l}", "15");
     item.replace("{v}", _sta_static_ip.toString());
 
-    server->sendContent(item);       
-    
+    server->sendContent(item);
+
     item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "gw");
     item.replace("{n}", "gw");
@@ -423,7 +429,7 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{v}", _sta_static_gw.toString());
 
     server->sendContent(item);
-    
+
     item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "sn");
     item.replace("{n}", "sn");
@@ -431,7 +437,7 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{l}", "15");
     item.replace("{v}", _sta_static_sn.toString());
 
-    server->sendContent(item);    
+    server->sendContent(item);
 
     server->sendContent_P("<br/>");
   }
@@ -466,20 +472,24 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(value);
   }
 
-  if(server->arg("ip") != "") {
+  if (server->arg("ip") != "") {
     DEBUG_WM(F("static ip"));
     DEBUG_WM(server->arg("ip"));
-    _sta_static_ip.fromString(server->arg("ip"));
+    //_sta_static_ip.fromString(server->arg("ip"));
+    String ip = server->arg("ip");
+    optionalIPFromString(&_sta_static_ip, ip.c_str());
   }
-  if(server->arg("gw") != "") {
+  if (server->arg("gw") != "") {
     DEBUG_WM(F("static gateway"));
     DEBUG_WM(server->arg("gw"));
-    _sta_static_gw.fromString(server->arg("gw"));
+    String gw = server->arg("gw");
+    optionalIPFromString(&_sta_static_gw, gw.c_str());
   }
-  if(server->arg("sn") != "") {
+  if (server->arg("sn") != "") {
     DEBUG_WM(F("static netmask"));
     DEBUG_WM(server->arg("sn"));
-    _sta_static_sn.fromString(server->arg("sn"));
+    String sn = server->arg("sn");
+    optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
 
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -509,7 +519,7 @@ void WiFiManager::handleWifiSave() {
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("Info"));
 
-String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
@@ -535,7 +545,7 @@ String page = FPSTR(HTTP_HEAD);
   page += F("</dd>");
   page += F("</dl>");
   page += FPSTR(HTTP_END);
-  
+
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
