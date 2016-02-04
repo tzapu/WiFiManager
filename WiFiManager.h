@@ -66,15 +66,13 @@ class WiFiManager
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
-    String        getSSID();
-    String        getPassword();
+    //String        getSSID();
+    //String        getPassword();
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
 
     void          resetSettings();
-    //for convenience
-    String        urldecode(const char*);
 
     //sets timeout before webserver loop ends and exits even if there has been no setup.
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
@@ -95,34 +93,38 @@ class WiFiManager
     void          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsucessful.
     void          setBreakAfterConfig(boolean shouldBreak);
+    //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
 
-    const int     WM_DONE = 0;
-    const int     WM_WAIT = 10;
+    //const int     WM_DONE                 = 0;
+    //const int     WM_WAIT                 = 10;
 
     //const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
     void          setupConfigPortal();
+    void          startWPS();
 
-    int           _eepromStart;
-    const char*   _apName = "no-net";
-    const char*   _apPassword = NULL;
-    String        _ssid = "";
-    String        _pass = "";
-    unsigned long timeout = 0;
-    unsigned long start = 0;
+    const char*   _apName                 = "no-net";
+    const char*   _apPassword             = NULL;
+    String        _ssid                   = "";
+    String        _pass                   = "";
+    unsigned long timeout                 = 0;
+    unsigned long start                   = 0;
+    
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
     IPAddress     _ap_static_sn;
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
-    int           _paramsCount = 0;
-    int           _minimumQuality = -1;
+    
+    int           _paramsCount            = 0;
+    int           _minimumQuality         = -1;
     boolean       _shouldBreakAfterConfig = false;
+    boolean       _tryWPS                 = false;
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);

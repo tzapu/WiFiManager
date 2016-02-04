@@ -238,7 +238,10 @@ If you connect to the created configuration Access Point but the configuration p
 
 
 ## Releases
-#### 0.8
+#### 0.9
+ - fixed support for encoded characters in ssid/pass
+ 
+##### 0.8
  - made it compile on older versions of ESP8266 core as well, tested down to 2.0.0
  - added simple example for Custom IP
 
