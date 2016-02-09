@@ -12,7 +12,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
  - [Wishlist](#wishlist)
  - [Quick start](#quick-start)
    - Installing
-     - [Through Boards Manager](#install-through-boards-manager)
+     - [Through Library Manager](#install-through-library-manager)
      - [From Github](#checkout-from-github)
    - [Using](#using)
  - [Documentation](#documentation)
@@ -47,7 +47,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - if timeout is set, extend it when a page is fetched in AP mode
 - ~~add ability to configure more parameters than ssid/password~~
 - ~~maybe allow setting ip of ESP after reboot~~
-- ~~add to Arduino Boards Manager~~
+- ~~add to Arduino Library Manager~~
 - ~~add to PlatformIO~~
 - add multiple sets of network credentials
 - allow users to customize CSS
@@ -55,9 +55,9 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 ## Quick Start
 
 ### Installing
-You can either install through the Arduino Boards Manager or checkout the latest changes or a release from github
+You can either install through the Arduino Library Manager or checkout the latest changes or a release from github
 
-#### Install through Boards Manager
+#### Install through Library Manager
 __Currently version 0.8 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
   ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
@@ -240,7 +240,7 @@ If you connect to the created configuration Access Point but the configuration p
 ## Releases
 #### 0.9
  - fixed support for encoded characters in ssid/pass
- 
+
 ##### 0.8
  - made it compile on older versions of ESP8266 core as well, tested down to 2.0.0
  - added simple example for Custom IP
