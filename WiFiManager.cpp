@@ -225,7 +225,7 @@ void WiFiManager::startWPS() {
   DEBUG_WM("END WPS");
 }
 /*
-String WiFiManager::getSSID() {
+  String WiFiManager::getSSID() {
   if (_ssid == "") {
     DEBUG_WM(F("Reading SSID"));
     _ssid = WiFi.SSID();
@@ -233,9 +233,9 @@ String WiFiManager::getSSID() {
     DEBUG_WM(_ssid);
   }
   return _ssid;
-}
+  }
 
-String WiFiManager::getPassword() {
+  String WiFiManager::getPassword() {
   if (_pass == "") {
     DEBUG_WM(F("Reading Password"));
     _pass = WiFi.psk();
@@ -243,7 +243,7 @@ String WiFiManager::getPassword() {
     //DEBUG_WM(_pass);
   }
   return _pass;
-}
+  }
 */
 String WiFiManager::getConfigPortalSSID() {
   return _apName;
@@ -309,26 +309,19 @@ void WiFiManager::handleRoot() {
 
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
 
-  String head = FPSTR(HTTP_HEAD);
-  head.replace("{v}", "Config ESP");
-  server->sendContent(head);
-  server->sendContent_P(HTTP_SCRIPT);
-  server->sendContent_P(HTTP_STYLE);
-  server->sendContent_P(HTTP_HEAD_END);
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Config ESP");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_HEAD_END);
 
   if (scan) {
     int n = WiFi.scanNetworks();
     DEBUG_WM(F("Scan done"));
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
-      server->sendContent("No networks found. Refresh to scan again.");
+      page += F("No networks found. Refresh to scan again.");
     }
     else {
       for (int i = 0; i < n; ++i)
@@ -349,18 +342,18 @@ void WiFiManager::handleWifi(boolean scan) {
             item.replace("{i}", "");
           }
           //DEBUG_WM(item);
-          server->sendContent(item);
+          page += item;
           delay(0);
         } else {
           DEBUG_WM(F("Skipping due to quality"));
         }
 
       }
-      server->sendContent("<br/>");
+      page += "<br/>";
     }
   }
 
-  server->sendContent_P(HTTP_FORM_START);
+  page += FPSTR(HTTP_FORM_START);
   char parLength[2];
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++) {
@@ -376,10 +369,10 @@ void WiFiManager::handleWifi(boolean scan) {
     pitem.replace("{l}", parLength);
     pitem.replace("{v}", _params[i]->getValue());
 
-    server->sendContent(pitem);
+    page += pitem;
   }
   if (_params[0] != NULL) {
-    server->sendContent_P("<br/>");
+    page += "<br/>";
   }
 
   if (_sta_static_ip) {
@@ -391,7 +384,7 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{l}", "15");
     item.replace("{v}", _sta_static_ip.toString());
 
-    server->sendContent(item);
+    page += item;
 
     item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "gw");
@@ -400,7 +393,7 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{l}", "15");
     item.replace("{v}", _sta_static_gw.toString());
 
-    server->sendContent(item);
+    page += item;
 
     item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "sn");
@@ -409,15 +402,18 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{l}", "15");
     item.replace("{v}", _sta_static_sn.toString());
 
-    server->sendContent(item);
+    page += item;
 
-    server->sendContent_P("<br/>");
+    page += "<br/>";
   }
 
-  server->sendContent_P(HTTP_FORM_END);
-  server->sendContent_P(HTTP_SCAN_LINK);
-  server->sendContent_P(HTTP_END);
-  server->client().stop();
+  page += FPSTR(HTTP_FORM_END);
+  page += FPSTR(HTTP_SCAN_LINK);
+
+  page += FPSTR(HTTP_END);
+
+  server->send(200, "text/html", page);
+
 
   DEBUG_WM(F("Sent config page"));
 }
@@ -464,23 +460,15 @@ void WiFiManager::handleWifiSave() {
     optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
 
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  server->send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Credentials Saved");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_SAVED);
+  page += FPSTR(HTTP_END);
 
-  String head = FPSTR(HTTP_HEAD);
-  head.replace("{v}", "Credentials Saved");
-  server->sendContent(head);
-  server->sendContent_P(HTTP_SCRIPT);
-  server->sendContent_P(HTTP_STYLE);
-  server->sendContent_P(HTTP_HEAD_END);
-
-  server->sendContent_P(HTTP_SAVED);
-
-  server->sendContent_P(HTTP_END);
-  server->client().stop();
+  server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent wifi save page"));
 
