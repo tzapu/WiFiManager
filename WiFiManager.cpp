@@ -352,21 +352,38 @@ void WiFiManager::handleWifi(boolean scan) {
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
       page += F("No networks found. Refresh to scan again.");
-    }
-    else {
-      for (int i = 0; i < n; ++i)
-      {
-        DEBUG_WM(WiFi.SSID(i));
-        DEBUG_WM(WiFi.RSSI(i));
-        int quality = getRSSIasQuality(WiFi.RSSI(i));
+    } else {
+      //sort networks
+      int indices[n];
+
+      for (int i = 0; i < n; i++) {
+        indices[i] = i;
+      }
+
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+            //int temp = indices[j];
+            //indices[j] = indices[i];
+            //indices[i] = temp;
+            std::swap(indices[i], indices[j]);
+          }
+        }
+      }
+
+      //display networks in page
+      for (int i = 0; i < n; i++) {
+        DEBUG_WM(WiFi.SSID(indices[i]));
+        DEBUG_WM(WiFi.RSSI(indices[i]));
+        int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
 
         if (_minimumQuality == -1 || _minimumQuality < quality) {
           String item = FPSTR(HTTP_ITEM);
           String rssiQ;
           rssiQ += quality;
-          item.replace("{v}", WiFi.SSID(i));
+          item.replace("{v}", WiFi.SSID(indices[i]));
           item.replace("{r}", rssiQ);
-          if (WiFi.encryptionType(i) != ENC_TYPE_NONE) {
+          if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
             item.replace("{i}", "l");
           } else {
             item.replace("{i}", "");

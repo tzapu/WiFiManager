@@ -18,7 +18,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
  - [Documentation](#documentation)
    - [Access Point Password](#password-protect-the-configuration-access-point)
    - [Callbacks](#callbacks)
-   - [Timeout](#timeout)
+   - [Configuration Portal Timeout](#configuration-portal-timeout)
    - [On Demand Configuration](#on-demand-configuration-portal)
    - [Custom Parameters](#custom-parameters)
    - [Custom IP Configuration](#custom-ip-configuration)
@@ -149,10 +149,10 @@ void saveConfigCallback () {
 }
 ```
 
-#### Timeout
+#### Configuration Portal Timeout
 If you need to set a timeout so the ESP doesn't hang waiting to be configured, for instance after a power failure, you can add
 ```cpp
-wifiManager.setTimeout(180);
+wifiManager.setConfigPortalTimeout(180);
 ```
 which will wait 3 minutes (180 seconds). When the time passes, the autoConnect function will return, no matter the outcome.
 Check for connection and if it's still not established do whatever is needed (on some modules I restart them to retry, on others I enter deep sleep)
