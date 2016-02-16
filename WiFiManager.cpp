@@ -223,7 +223,7 @@ uint8_t WiFiManager::waitForConnectResult() {
   if (_connectTimeout == 0) {
     return WiFi.waitForConnectResult();
   } else {
-    DEBUG_WM (F("Waiting for connection result with timed out"));
+    DEBUG_WM (F("Waiting for connection result with time out"));
     unsigned long start = millis();
     boolean keepConnecting = true;
     uint8_t status;
@@ -367,7 +367,7 @@ void WiFiManager::handleWifi(boolean scan) {
           item.replace("{v}", WiFi.SSID(i));
           item.replace("{r}", rssiQ);
           if (WiFi.encryptionType(i) != ENC_TYPE_NONE) {
-            item.replace("{i}", FPSTR(HTTP_ITEM_PADLOCK));
+            item.replace("{i}", "l");
           } else {
             item.replace("{i}", "");
           }
