@@ -53,7 +53,7 @@ void WiFiManager::setupConfigPortal() {
   server.reset(new ESP8266WebServer(80));
 
   DEBUG_WM(F(""));
-  start = millis();
+  _configPortalStart = millis();
 
   DEBUG_WM(F("Configuring access point... "));
   DEBUG_WM(_apName);
@@ -143,7 +143,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while (timeout == 0 || millis() < start + timeout) {
+  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
     //DNS
     dnsServer->processNextRequest();
     //HTTP
@@ -207,16 +207,39 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.begin();
   }
 
-  int connRes = WiFi.waitForConnectResult();
+  int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
   //not connected, WPS enabled, no pass - first attempt
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
     startWPS();
     //should be connected at the end of WPS
-    connRes = WiFi.waitForConnectResult();
+    connRes = waitForConnectResult();
   }
   return connRes;
+}
+
+uint8_t WiFiManager::waitForConnectResult() {
+  if (_connectTimeout == 0) {
+    return WiFi.waitForConnectResult();
+  } else {
+    DEBUG_WM (F("Waiting for connection result with timed out"));
+    unsigned long start = millis();
+    boolean keepConnecting = true;
+    uint8_t status;
+    while (keepConnecting) {
+      status = WiFi.status();
+      if (millis() > start + _connectTimeout) {
+        keepConnecting = false;
+        DEBUG_WM (F("Connection timed out"));
+      }
+      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+        keepConnecting = false;
+      }
+      delay(100);
+    }
+    return status;
+  }
 }
 
 void WiFiManager::startWPS() {
@@ -255,9 +278,16 @@ void WiFiManager::resetSettings() {
   WiFi.disconnect(true);
   //delay(200);
 }
-
 void WiFiManager::setTimeout(unsigned long seconds) {
-  timeout = seconds * 1000;
+  setConfigPortalTimeout(seconds);
+}
+
+void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
+  _configPortalTimeout = seconds * 1000;
+}
+
+void WiFiManager::setConnectTimeout(unsigned long seconds) {
+  _connectTimeout = seconds * 1000;
 }
 
 void WiFiManager::setDebugOutput(boolean debug) {

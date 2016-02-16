@@ -66,9 +66,6 @@ class WiFiManager
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
-    //String        getSSID();
-    //String        getPassword();
-
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
 
@@ -76,8 +73,14 @@ class WiFiManager
 
     //sets timeout before webserver loop ends and exits even if there has been no setup.
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
-    //in seconds
+    //in seconds setConfigPortalTimeout is a new name for setTimeout
+    void          setConfigPortalTimeout(unsigned long seconds);
     void          setTimeout(unsigned long seconds);
+
+    //sets timeout for which to attempt connecting, usefull if you get a lot of failed connects
+    void          setConnectTimeout(unsigned long seconds);
+
+    
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
@@ -111,8 +114,9 @@ class WiFiManager
     const char*   _apPassword             = NULL;
     String        _ssid                   = "";
     String        _pass                   = "";
-    unsigned long timeout                 = 0;
-    unsigned long start                   = 0;
+    unsigned long _configPortalTimeout    = 0;
+    unsigned long _connectTimeout         = 0;
+    unsigned long _configPortalStart      = 0;
     
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -131,6 +135,7 @@ class WiFiManager
 
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
+    uint8_t       waitForConnectResult();
 
     void          handleRoot();
     void          handleWifi(boolean scan);
@@ -140,7 +145,7 @@ class WiFiManager
     void          handleNotFound();
     void          handle204();
     boolean       captivePortal();
-
+    
     // DNS server
     const byte    DNS_PORT = 53;
 
