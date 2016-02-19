@@ -12,7 +12,8 @@
 
 #include "WiFiManager.h"
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
+  
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, int rofield) {
   _id = id;
   _placeholder = placeholder;
   _length = length;
@@ -23,6 +24,25 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
   if (defaultValue != NULL) {
     strncpy(_value, defaultValue, length);
   }
+  if (rofield == 0) {
+    _rofield = " readonly";
+  } else {
+    _rofield = "";
+  }
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
+ _id = id;
+  _placeholder = placeholder;
+  _length = length;
+  _value = new char[length + 1];
+  for (int i = 0; i < length; i++) {
+    _value[i] = 0;
+  }
+  if (defaultValue != NULL) {
+    strncpy(_value, defaultValue, length);
+  }
+  _rofield = "";
 }
 
 const char* WiFiManagerParameter::getValue() {
@@ -36,6 +56,9 @@ const char* WiFiManagerParameter::getPlaceholder() {
 }
 int WiFiManagerParameter::getValueLength() {
   return _length;
+}
+const char* WiFiManagerParameter::getRofield() {
+  return _rofield;
 }
 
 WiFiManager::WiFiManager() {
@@ -415,6 +438,7 @@ void WiFiManager::handleWifi(boolean scan) {
     snprintf(parLength, 2, "%d", _params[i]->getValueLength());
     pitem.replace("{l}", parLength);
     pitem.replace("{v}", _params[i]->getValue());
+    pitem.replace("{r}", _params[i]->getRofield());
 
     page += pitem;
   }
@@ -679,5 +703,3 @@ String WiFiManager::toStringIp(IPAddress ip) {
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
 }
-
-
