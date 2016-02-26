@@ -1,0 +1,13 @@
+{
+  "name": "WifiManager",
+  "keywords": "wifi, wi-fi",
+  "description": "ESP8266 WiFi Connection manager with fallback web configuration portal",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/tzapu/WiFiManager.git"
+  },
+  "frameworks": "arduino",
+  "platforms": "espressif",
+  "version": "0.10"
+}

@@ -1,0 +1,39 @@
+#######################################
+# Syntax Coloring Map For WifiManager
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WiFiManager	KEYWORD1
+WiFiManagerParameter KEYWORD1
+
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+autoConnect	KEYWORD2
+getSSID	KEYWORD2
+getPassword	KEYWORD2
+getConfigPortalSSID KEYWORD2
+resetSettings	KEYWORD2
+setConfigPortalTimeout	KEYWORD2
+setConnectTimeout KEYWORD2
+setDebugOutput	KEYWORD2
+setMinimumSignalQuality KEYWORD2
+setAPStaticIPConfig	KEYWORD2
+setSTAStaticIPConfig KEYWORD2
+setAPCallback	KEYWORD2
+setSaveConfigCallback KEYWORD2
+addParameter KEYWORD2
+getID KEYWORD2
+getValue KEYWORD2
+getPlaceholder KEYWORD2
+getValueLength KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+#	LITERAL1
