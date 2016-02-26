@@ -27,7 +27,7 @@ const char HTTP_STYLE[] PROGMEM = "<style>div,input {margin-bottom: 5px;} body{w
 const char HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[] PROGMEM = "</head><body>";
 //const char HTTP_ITEM[] PROGMEM = "<div><a href='#' onclick='c(this)'>{v}</a></div>";
-const char HTTP_FORM[] PROGMEM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
+const char HTTP_FORM[] PROGMEM = "<form id='wmform' method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
 const char HTTP_SAVED[] PROGMEM = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[] PROGMEM = "</body></html>";
 
@@ -71,8 +71,8 @@ private:
     //const String HTTP_STYLE = "<style>div,input {margin-bottom: 5px;} body{width:200px;display:block;margin-left:auto;margin-right:auto;} button{padding:0.75rem 1rem;border:0;border-radius:0.317rem;background-color:#1fa3ec;color:#fff;line-height:1.5;cursor:pointer;}</style>";
     //const String HTTP_SCRIPT = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
     //const String HTTP_HEAD_END = "</head><body>";
-    const String HTTP_ITEM = "<div><a href='#' onclick='c(this)'>{v}</a></div>";
-    //const String HTTP_FORM = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
+    const String HTTP_ITEM = "<div><a href='#wmform' onclick='c(this)'>{v}</a></div>";
+    //const String HTTP_FORM = "<form id='wmform' method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><input id='p' name='p' length=64 placeholder='password'><br/><button type='submit'>save</button></form>";
     //const String HTTP_SAVED = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
     //const String HTTP_END = "</body></html>";
     //const char HTTP_END[] PROGMEM = R"=====(
