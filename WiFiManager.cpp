@@ -354,7 +354,7 @@ void WiFiManager::handleWifi(boolean scan) {
       page += F("No networks found. Refresh to scan again.");
     } else {
       //sort networks
-      int indices[n];
+      /*int indices[n];
 
       for (int i = 0; i < n; i++) {
         indices[i] = i;
@@ -370,7 +370,18 @@ void WiFiManager::handleWifi(boolean scan) {
           }
         }
       }
+      */
+      int indices[n];
+      for (int i = 0; i < n; i++) {
+        indices[i] = i;
+      }
 
+      std::sort(indices, indices+n, [](const int & a, const int & b) -> bool
+      { 
+          return WiFi.RSSI(a) > WiFi.RSSI(b); 
+      });
+      
+      
       //display networks in page
       for (int i = 0; i < n; i++) {
         DEBUG_WM(WiFi.SSID(indices[i]));

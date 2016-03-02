@@ -17,6 +17,9 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <memory>
+#undef min
+#undef max
+#include <algorithm>
 
 
 const char HTTP_200[] PROGMEM = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
