@@ -12,8 +12,24 @@
 
 #include "WiFiManager.h"
 
-  
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, int rofield) {
+WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
+  _id = NULL;
+  _placeholder = NULL;
+  _length = 0;
+  _value = NULL;
+
+  _customHTML = custom;
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
+  init(id, placeholder, defaultValue, length, "");
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
+  init(id, placeholder, defaultValue, length, custom);
+}
+
+void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
   _id = id;
   _placeholder = placeholder;
   _length = length;
@@ -24,25 +40,8 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
   if (defaultValue != NULL) {
     strncpy(_value, defaultValue, length);
   }
-  if (rofield == 0) {
-    _rofield = " readonly";
-  } else {
-    _rofield = "";
-  }
-}
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
- _id = id;
-  _placeholder = placeholder;
-  _length = length;
-  _value = new char[length + 1];
-  for (int i = 0; i < length; i++) {
-    _value[i] = 0;
-  }
-  if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
-  }
-  _rofield = "";
+  _customHTML = custom;
 }
 
 const char* WiFiManagerParameter::getValue() {
@@ -57,8 +56,8 @@ const char* WiFiManagerParameter::getPlaceholder() {
 int WiFiManagerParameter::getValueLength() {
   return _length;
 }
-const char* WiFiManagerParameter::getRofield() {
-  return _rofield;
+const char* WiFiManagerParameter::getCustomHTML() {
+  return _customHTML;
 }
 
 WiFiManager::WiFiManager() {
@@ -348,6 +347,7 @@ void WiFiManager::handleRoot() {
   page.replace("{v}", "Options");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += "<h1>";
   page += _apName;
@@ -367,6 +367,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page.replace("{v}", "Config ESP");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
 
   if (scan) {
@@ -379,11 +380,11 @@ void WiFiManager::handleWifi(boolean scan) {
       //sort networks
       /*int indices[n];
 
-      for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
         indices[i] = i;
-      }
+        }
 
-      for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
           if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
             //int temp = indices[j];
@@ -392,19 +393,19 @@ void WiFiManager::handleWifi(boolean scan) {
             std::swap(indices[i], indices[j]);
           }
         }
-      }
+        }
       */
       int indices[n];
       for (int i = 0; i < n; i++) {
         indices[i] = i;
       }
 
-      std::sort(indices, indices+n, [](const int & a, const int & b) -> bool
-      { 
-          return WiFi.RSSI(a) > WiFi.RSSI(b); 
+      std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
+      {
+        return WiFi.RSSI(a) > WiFi.RSSI(b);
       });
-      
-      
+
+
       //display networks in page
       for (int i = 0; i < n; i++) {
         DEBUG_WM(WiFi.SSID(indices[i]));
@@ -443,13 +444,17 @@ void WiFiManager::handleWifi(boolean scan) {
     }
 
     String pitem = FPSTR(HTTP_FORM_PARAM);
-    pitem.replace("{i}", _params[i]->getID());
-    pitem.replace("{n}", _params[i]->getID());
-    pitem.replace("{p}", _params[i]->getPlaceholder());
-    snprintf(parLength, 2, "%d", _params[i]->getValueLength());
-    pitem.replace("{l}", parLength);
-    pitem.replace("{v}", _params[i]->getValue());
-    pitem.replace("{r}", _params[i]->getRofield());
+    if (_params[i]->getID() != NULL) {
+      pitem.replace("{i}", _params[i]->getID());
+      pitem.replace("{n}", _params[i]->getID());
+      pitem.replace("{p}", _params[i]->getPlaceholder());
+      snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+      pitem.replace("{l}", parLength);
+      pitem.replace("{v}", _params[i]->getValue());
+      pitem.replace("{c}", _params[i]->getCustomHTML());
+    } else {
+      pitem = _params[i]->getCustomHTML();
+    }
 
     page += pitem;
   }
@@ -546,6 +551,7 @@ void WiFiManager::handleWifiSave() {
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
@@ -565,6 +571,7 @@ void WiFiManager::handleInfo() {
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += F("<dl>");
   page += F("<dt>Chip ID</dt><dd>");
@@ -604,6 +611,7 @@ void WiFiManager::handleReset() {
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += F("Module will reset in a few seconds.");
   page += FPSTR(HTTP_END);
@@ -670,6 +678,12 @@ void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
+
+//sets a custom element to add to head, like a new style tag
+void WiFiManager::setCustomHeadElement(const char* element) {
+  _customHeadElement = element;
+}
+
 
 
 
