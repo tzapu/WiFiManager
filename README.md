@@ -289,6 +289,7 @@ works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 o
 The support and help I got from the community has been nothing short of phenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
 
 __THANK YOU__
+
 [Shawn A](https://github.com/tablatronix)
 
 [Maximiliano Duarte](https://github.com/domonetic)
