@@ -178,7 +178,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       DEBUG_WM(F("Connecting to new AP"));
 
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED  && !_forceSaveOnDone) {
         DEBUG_WM(F("Failed to connect."));
       } else {
         //connected
@@ -220,7 +220,12 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(F("Custom STA IP/GW/Subnet"));
     WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     DEBUG_WM(WiFi.localIP());
+  } else
+  {
+	DEBUG_WM(F("DHCP - disconnect"));
+	WiFi.disconnect();
   }
+	
   //fix for auto connect racing issue
   if (WiFi.status() == WL_CONNECTED) {
     DEBUG_WM("Already connected. Bailing out.");
@@ -709,12 +714,17 @@ void WiFiManager::setForceStaticIPconfig(boolean force)
 	_forceStaticIPconfig = force;
 }
 
+void WiFiManager::setForceSaveOnDone(boolean force)
+{
+	_forceSaveOnDone = force;
+}
 //returns true if we have all the bits needed to make a static config
 boolean WiFiManager::getSTAIsStaticIP()
 {
 	return (_sta_static_ip && _sta_static_gw && _sta_static_sn);
 		
 }
+
 
 
 template <typename Generic>

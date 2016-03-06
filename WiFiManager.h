@@ -110,6 +110,8 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
 	//if this is set, always display inputs for static IP config, but allow them to be blank (Meaning config will be DHCP as normal)
 	void		  setForceStaticIPconfig(boolean force);
+	//if this is set, always exit the AP config whether conection successful or not (allows config to be saved when offline)
+	void		  setForceSaveOnDone(boolean force);
 	
 	//making the below public so that we can query them to save after config is done
 	//as far as I can tell there is no way to find out from the WiFi object whether the localIP() is set via static or DHCP
@@ -151,6 +153,8 @@ class WiFiManager
     boolean       _tryWPS                 = false;
 	
 	boolean		  _forceStaticIPconfig    = false;
+	
+	boolean		  _forceSaveOnDone		  = false;
 
     const char*   _customHeadElement      = "";
 
