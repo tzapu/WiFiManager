@@ -151,8 +151,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  WiFi.mode(WIFI_AP);
-  DEBUG_WM("SET AP");
+  WiFi.mode(WIFI_AP_STA);
+  DEBUG_WM("SET AP STA");
 
   _apName = apName;
   _apPassword = apPassword;
@@ -229,8 +229,17 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
-    DEBUG_WM("Using last saved values, should be faster");
-    WiFi.begin();
+    if(WiFi.SSID()) {
+      DEBUG_WM("Using last saved values, should be faster");
+      //trying to fix connection in progress hanging
+      ETS_UART_INTR_DISABLE();
+      wifi_station_disconnect();
+      ETS_UART_INTR_ENABLE();
+        
+      WiFi.begin();
+    } else {
+      DEBUG_WM("No saved credentials");
+    }
   }
 
   int connRes = waitForConnectResult();
