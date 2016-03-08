@@ -215,6 +215,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
 
   // check if we've got static_ip settings, if we do, use those.
+  //TODO - should we be checking that we have a gw and sn? What happens if not?
   if (_sta_static_ip) {
     DEBUG_WM(F("Custom STA IP/GW/Subnet"));
     WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
@@ -475,14 +476,22 @@ void WiFiManager::handleWifi(boolean scan) {
     page += "<br/>";
   }
 
-  if (_sta_static_ip) {
+  //added in check to see if we should force a static IP selection
+  if (_sta_static_ip || _forceStaticIPconfig) {
 
     String item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
-    item.replace("{p}", "Static IP");
+	if (_forceStaticIPconfig)
+		item.replace("{p}", "Static IP (blank for DHCP)");
+	else
+		item.replace("{p}", "Static IP");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_ip.toString());
+	if (_sta_static_ip)
+		item.replace("{v}", _sta_static_ip.toString());
+	else
+		item.replace("{v}", "");
+
 
     page += item;
 
@@ -491,7 +500,10 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{n}", "gw");
     item.replace("{p}", "Static Gateway");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_gw.toString());
+	if (_sta_static_gw)
+		item.replace("{v}", _sta_static_gw.toString());
+	else
+		item.replace("{v}", "");
 
     page += item;
 
@@ -500,7 +512,10 @@ void WiFiManager::handleWifi(boolean scan) {
     item.replace("{n}", "sn");
     item.replace("{p}", "Subnet");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_sn.toString());
+	if (_sta_static_sn)
+		item.replace("{v}", _sta_static_sn.toString());
+	else
+		item.replace("{v}", "");
 
     page += item;
 
@@ -697,7 +712,18 @@ void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
+//forces the display of a static IP even if we don't send one - this means user can changes between DHCP and static
+void WiFiManager::setForceStaticIPconfig(boolean force)
+{
+	_forceStaticIPconfig = force;
+}
 
+//returns true if we have all the bits needed to make a static config
+boolean WiFiManager::getSTAIsStaticIP()
+{
+	return (_sta_static_ip && _sta_static_gw && _sta_static_sn);
+		
+}
 
 
 template <typename Generic>

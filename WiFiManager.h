@@ -110,6 +110,14 @@ class WiFiManager
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
+	//if this is set, always display inputs for static IP config, but allow them to be blank (Meaning config will be DHCP as normal)
+	void		  setForceStaticIPconfig(boolean force);
+	
+	//making the below public so that we can query them to save after config is done
+	//as far as I can tell there is no way to find out from the WiFi object whether the localIP() is set via static or DHCP
+	//so this allows us to query whether we had a static IP and if so we can get the details from WiFi.localIP() etc and store them in EEPROM manually
+	boolean     getSTAIsStaticIP();
+
 
 
   private:
@@ -143,6 +151,8 @@ class WiFiManager
     int           _minimumQuality         = -1;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
+	
+	boolean		  _forceStaticIPconfig    = false;
 
     const char*   _customHeadElement      = "";
 
