@@ -119,7 +119,7 @@ class WiFiManager
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;
 
-    //const Srting  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
+    //const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
     void          setupConfigPortal();
     void          startWPS();
