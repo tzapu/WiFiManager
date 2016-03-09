@@ -58,7 +58,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 You can either install through the Arduino Library Manager or checkout the latest changes or a release from github
 
 #### Install through Library Manager
-__Currently version 0.8 works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Currently version 0.8+ works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
   ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
 
@@ -233,12 +233,18 @@ Changes added on 0.8 should make the latest trunk work without compilation error
 
 I am trying to keep releases working with release versions of the core, so they can be installed through boards manager, but if you checkout the latest version directly from github, sometimes, the library will only work if you update the ESP8266 core to the latest version because I am using some newly added function.
 
-
 If you connect to the created configuration Access Point but the configuration portal does not show up, just open a browser and type in the IP of the web portal, by default `192.168.4.1`.
 
+If trying to connect ends up in an endless loop, try to add `setConnectTimeout(60)` before `autoConnect();`. The parameter is timeout to try connecting in seconds.
 
 ## Releases
-#### 0.9
+#### 0.10
+- some css changes
+- bug fixes and speed improvements
+- added an alternative to waitForConnectResult() for debugging
+- changed `setTimeout(seconds)` to `setConfigPortalTimeout(seconds)`
+
+##### 0.9
  - fixed support for encoded characters in ssid/pass
 
 ##### 0.8
@@ -283,6 +289,8 @@ works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 o
 The support and help I got from the community has been nothing short of phenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
 
 __THANK YOU__
+
+[Shawn A](https://github.com/tablatronix)
 
 [Maximiliano Duarte](https://github.com/domonetic)
 
