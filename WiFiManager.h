@@ -155,7 +155,7 @@ class WiFiManager
 	boolean		  _forceStaticIPconfig    = false;
 	
 	boolean		  _forceSaveOnDone		  = false;
-
+	
     const char*   _customHeadElement      = "";
 
     //String        getEEPROMString(int start, int len);
