@@ -32,7 +32,7 @@ const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div style='text-align
 const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/><form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form><br/><form action=\"/i\" method=\"get\"><button>Info</button></form><br/><form action=\"/r\" method=\"post\"><button>Reset</button></form>";
 const char HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
 //const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==' width='13px'/>";
-const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/>";
+const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID' value='{sv}'><br/><input id='p' name='p' length=64 type='password' placeholder='password' value='{pv}'><br/>";
 const char HTTP_FORM_PARAM[] PROGMEM      = "<br/><input id='{i}' name='{n}' length={l} placeholder='{p}' value='{v}' {c}>";
 const char HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>save</button></form>";
 const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wifi\">Scan</a></div>";
@@ -114,6 +114,8 @@ class WiFiManager
 	void		  setForceStaticIPconfig(boolean force);
 	//if this is set, always exit the AP config whether conection successful or not (allows config to be saved when offline)
 	void		  setForceSaveOnDone(boolean force);
+	//if this is set, put the current SSID and PASSWORD into the fields so that the user doesn't have to re-enter
+	void		  setDisplayExistingCreds(boolean display);
 	
 	//making the below public so that we can query them to save after config is done
 	//as far as I can tell there is no way to find out from the WiFi object whether the localIP() is set via static or DHCP
@@ -157,6 +159,8 @@ class WiFiManager
 	boolean		  _forceStaticIPconfig    = false;
 	
 	boolean		  _forceSaveOnDone		  = false;
+	
+	boolean		  _displayExistingCreds	  = false;
 	
     const char*   _customHeadElement      = "";
 

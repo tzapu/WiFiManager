@@ -71,6 +71,17 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 }
 
 void WiFiManager::setupConfigPortal() {
+	
+  if (_displayExistingCreds)
+  {
+	  //we are wanting to display existing credentials
+	  _ssid = String(WiFi.SSID());
+	  struct station_config conf;
+	  wifi_station_get_config(&conf);
+	  const char* passphrase = reinterpret_cast<const char*>(conf.password);
+      _pass = String(passphrase);
+		
+  }
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
@@ -222,8 +233,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   } else
   {
-	DEBUG_WM(F("DHCP - disconnect"));
-	WiFi.disconnect();
+	DEBUG_WM(F("DHCP "));
+	WiFi.disconnect(); //I know that this wipes the store SSID and PASS but nothing else works!!
   }
 	
   //fix for auto connect racing issue
@@ -453,8 +464,17 @@ void WiFiManager::handleWifi(boolean scan) {
       page += "<br/>";
     }
   }
-
-  page += FPSTR(HTTP_FORM_START);
+  String hItem = FPSTR(HTTP_FORM_START);
+  if (_displayExistingCreds)
+  {
+	  hItem.replace("{sv}", _ssid);
+	  hItem.replace("{pv}", _pass);
+  } else
+  {
+	  hItem.replace("{sv}", "");
+	  hItem.replace("{sv}", "");
+  }
+  page += hItem;
   char parLength[2];
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++) {
@@ -727,7 +747,10 @@ void WiFiManager::setForceSaveOnDone(boolean force)
 {
 	_forceSaveOnDone = force;
 }
-//returns true if we have all the bits needed to make a static config
+void WiFiManager::setDisplayExistingCreds(boolean display)
+{
+	_displayExistingCreds = display;
+}
 boolean WiFiManager::getSTAIsStaticIP()
 {
 	return (_sta_static_ip && _sta_static_gw && _sta_static_sn);
