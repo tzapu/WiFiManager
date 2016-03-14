@@ -149,6 +149,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   return startConfigPortal(apName, apPassword);
 }
 
+boolean  WiFiManager::startConfigPortal() {
+  String ssid = "ESP" + String(ESP.getChipId());
+  return startConfigPortal(ssid.c_str());
+}
+
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP_STA);
@@ -203,7 +208,13 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
     yield();
   }
-
+  //Timed out so go back to station mode using system-stored ssid and pass
+   if (connectWifi(WiFi.SSID().c_str(),WiFi.psk().c_str()) != WL_CONNECTED) {
+           DEBUG_WM(F("Failed to connect after configuration mode timeout."));
+         } else {
+           //connected
+           WiFi.mode(WIFI_STA);
+        }
   server.reset();
   dnsServer.reset();
 
@@ -235,7 +246,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
-        
+
       WiFi.begin();
     } else {
       DEBUG_WM("No saved credentials");
