@@ -141,6 +141,7 @@ class WiFiManager
 
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
+    boolean       _removeDupAps           = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
 
