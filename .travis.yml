@@ -3,17 +3,28 @@ before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
   - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.6.8-linux64.tar.xz
-  - tar xf arduino-1.6.8-linux64.tar.xz
-  - sudo mv arduino-1.6.8 /usr/local/share/arduino
+  - wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
+  - tar xf arduino-1.6.5-linux64.tar.xz
+  - sudo mv arduino-1.6.5 /usr/local/share/arduino
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
-  - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs 2>&1
+# boards manager not working on 1.6.7 - 1.6.8
+  - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
+# install lib arduino json not working in 1.6.5
+#  - arduino --install-library "ArduinoJson"
+  - git clone https://github.com/bblanchon/ArduinoJson /usr/local/share/arduino/libraries/ArduinoJson
   - arduino --install-boards esp8266:esp8266
-#  - arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
+  - arduino --board esp8266:esp8266:generic --save-prefs
+  - arduino --pref "compiler.warning_level=all" --save-prefs
 script:
-  - arduino --verify --board esp8266:generic $PWD/examples/AutoConnect/AutoConnect.ino
+  - "echo $PWD"
+  - "echo $HOME"
+  - "ls $PWD"
+  - source $TRAVIS_BUILD_DIR/travis/common.sh
+  - build_examples
+#  - "cat $PWD/examples/AutoConnect/AutoConnect.ino"
+#  - arduino -v --verbose-build --verify $PWD/examples/AutoConnect/AutoConnect.ino
 #  - arduino --verify --board arduino:avr:uno $PWD/examples/IncomingCall/IncomingCall.ino
 #  - arduino --verify --board arduino:avr:uno $PWD/examples/AdafruitIO_GPS/AdafruitIO_GPS.ino
 notifications:
