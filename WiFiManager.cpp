@@ -235,7 +235,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
-        
+
       WiFi.begin();
     } else {
       DEBUG_WM("No saved credentials");
@@ -390,7 +390,7 @@ void WiFiManager::handleWifi(boolean scan) {
       DEBUG_WM(F("No networks found"));
       page += F("No networks found. Refresh to scan again.");
     } else {
-      
+
       //sort networks
       int indices[n];
       for (int i = 0; i < n; i++) {
@@ -417,7 +417,7 @@ void WiFiManager::handleWifi(boolean scan) {
       });
 
       // remove duplicates ( must be RSSI sorted )
-      if(_removeDupAps){
+      if(_removeDuplicateAPs){
         String cssid;
         for (int i = 0; i < n; i++) {
           if(indices[i] == -1) continue;
@@ -427,7 +427,7 @@ void WiFiManager::handleWifi(boolean scan) {
               DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
               indices[j] = -1; // set dup aps to index -1
             }
-          }  
+          }
         }
       }
 
@@ -710,6 +710,10 @@ void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
+//if this is true, remove duplicated Access Points - defaut true
+void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
+  _removeDuplicateAPs = removeDuplicates;
+}
 
 
 
