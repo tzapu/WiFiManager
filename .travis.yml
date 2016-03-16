@@ -9,6 +9,7 @@ before_install:
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
+  - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json,http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs 2>&1
   - arduino --install-boards esp8266:esp8266
 #  - arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
 script:
