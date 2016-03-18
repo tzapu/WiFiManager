@@ -1,6 +1,8 @@
 # WiFiManager
 ESP8266 WiFi Connection manager with fallback web configuration portal
 
+[![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=master)](https://travis-ci.org/tzapu/WiFiManager)
+
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
@@ -74,9 +76,11 @@ __Github version works with release 2.0.0 or newer of the [ESP8266 core for Ardu
 ### Using
 - Include in your sketch
 ```cpp
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>
+#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
+
+#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
+#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 ```
 
 - Initialize library, in your setup function add
