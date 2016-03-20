@@ -70,6 +70,9 @@ class WiFiManager
   public:
     WiFiManager();
 
+    // Retuns a string that can be used as ssid, based on this ESP's unique ID
+    const char *  ssidFromId();
+
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 

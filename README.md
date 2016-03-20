@@ -97,11 +97,14 @@ if you just want an unsecured access point
 ```cpp
 wifiManager.autoConnect("AP-NAME");
 ```
-or if you want to use and auto generated name from 'ESP' and the esp's Chip ID use
+When working with multiple devices, it can be useful to have unique AP names (based on the esp's Chip ID).
+For this you can use simply omit all arguments to `autoConnect()`, or use `wifiManager.ssidFromId()` when you want to use a password:
 ```cpp
+// use generated AP name, no password
 wifiManager.autoConnect();
+// Use a generated AP name, but also a password
+wifiManager.autoConnect(wifiManager.ssidFromId(), "AP-PASSWORD");
 ```
-
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
@@ -197,7 +200,7 @@ Usage scenario would be:
 - once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
  ```cpp
  mqtt_server = custom_mqtt_server.getValue();
- ```  
+ ```
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done
 - Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
