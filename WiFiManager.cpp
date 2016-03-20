@@ -869,18 +869,16 @@ void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
-<<<<<<< HEAD
 //forces the display of a static IP even if we don't send one - this means user can changes between DHCP and static
 void WiFiManager::setForceStaticIPconfig(boolean force)
 {
 	_forceStaticIPconfig = force;
-=======
+}
+
 //if this is true, remove duplicated Access Points - defaut true
 void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
->>>>>>> tzapu/master
 }
-
 void WiFiManager::setForceSaveOnDone(boolean force)
 {
 	_forceSaveOnDone = force;
