@@ -440,6 +440,9 @@ void WiFiManager::handleRoot() {
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
 
+  if (_displaySettingsPageCallback != NULL)
+	_displaySettingsPageCallback(this);
+
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Config ESP");
   page += FPSTR(HTTP_SCRIPT);
@@ -863,6 +866,12 @@ void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
+
+void WiFiManager::setDisplaySettingsPageCallback( void (*func)(WiFiManager* myWiFiManager) )
+{
+  _displaySettingsPageCallback = func;
+}
+
 
 //sets a custom element to add to head, like a new style tag
 void WiFiManager::setCustomHeadElement(const char* element) {
