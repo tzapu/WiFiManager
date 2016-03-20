@@ -297,7 +297,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
-        
+
       WiFi.begin();
     } else {
       DEBUG_WM("No saved credentials");
@@ -454,37 +454,50 @@ void WiFiManager::handleWifi(boolean scan) {
       DEBUG_WM(F("No networks found"));
       page += F("No networks found. Refresh to scan again.");
     } else {
+
       //sort networks
-      /*int indices[n];
-
-        for (int i = 0; i < n; i++) {
-        indices[i] = i;
-        }
-
-        for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-            //int temp = indices[j];
-            //indices[j] = indices[i];
-            //indices[i] = temp;
-            std::swap(indices[i], indices[j]);
-          }
-        }
-        }
-      */
       int indices[n];
       for (int i = 0; i < n; i++) {
         indices[i] = i;
       }
+
+      // RSSI SORT
+
+      // old sort
+      // for (int i = 0; i < n; i++) {
+      //   for (int j = i + 1; j < n; j++) {
+      //     if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+      //       //int temp = indices[j];
+      //       //indices[j] = indices[i];
+      //       //indices[i] = temp;
+      //       std::swap(indices[i], indices[j]);
+      //     }
+      //   }
+      // }
 
       std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
       {
         return WiFi.RSSI(a) > WiFi.RSSI(b);
       });
 
+      // remove duplicates ( must be RSSI sorted )
+      if(_removeDuplicateAPs){
+        String cssid;
+        for (int i = 0; i < n; i++) {
+          if(indices[i] == -1) continue;
+          cssid = WiFi.SSID(indices[i]);
+          for (int j = i + 1; j < n; j++) {
+            if(cssid == WiFi.SSID(indices[j])){
+              DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
+              indices[j] = -1; // set dup aps to index -1
+            }
+          }
+        }
+      }
 
       //display networks in page
       for (int i = 0; i < n; i++) {
+        if(indices[i] == -1) continue; // skip dups
         DEBUG_WM(WiFi.SSID(indices[i]));
         DEBUG_WM(WiFi.RSSI(indices[i]));
         int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
@@ -856,10 +869,16 @@ void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
+<<<<<<< HEAD
 //forces the display of a static IP even if we don't send one - this means user can changes between DHCP and static
 void WiFiManager::setForceStaticIPconfig(boolean force)
 {
 	_forceStaticIPconfig = force;
+=======
+//if this is true, remove duplicated Access Points - defaut true
+void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
+  _removeDuplicateAPs = removeDuplicates;
+>>>>>>> tzapu/master
 }
 
 void WiFiManager::setForceSaveOnDone(boolean force)

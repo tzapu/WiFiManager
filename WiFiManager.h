@@ -121,6 +121,7 @@ class WiFiManager
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
+<<<<<<< HEAD
 	//if this is set, always display inputs for static IP config, but allow them to be blank (Meaning config will be DHCP as normal)
 	void		  setForceStaticIPconfig(boolean force);
 	//if this is set, always exit the AP config whether conection successful or not (allows config to be saved when offline)
@@ -140,6 +141,10 @@ class WiFiManager
 
 
 
+=======
+    //if this is true, remove duplicated Access Points - defaut true
+    void          setRemoveDuplicateAPs(boolean removeDuplicates);
+>>>>>>> tzapu/master
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -170,6 +175,7 @@ class WiFiManager
 
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
+    boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
 	
