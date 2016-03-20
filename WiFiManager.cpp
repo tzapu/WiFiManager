@@ -123,9 +123,13 @@ void WiFiManager::setupConfigPortal() {
 
 }
 
+const char * WiFiManager::ssidFromId(){
+  String ssid = "ESP_" + String(ESP.getChipId());
+  return ssid.c_str();
+}
+
 boolean WiFiManager::autoConnect() {
-  String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str(), NULL);
+  return autoConnect(ssidFromId(), NULL);
 }
 
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
