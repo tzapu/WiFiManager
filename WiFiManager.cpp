@@ -33,15 +33,21 @@ void WiFiManagerParameter::init(const char *id, const char *placeholder, const c
   _id = id;
   _placeholder = placeholder;
   _length = length;
-  _value = new char[length + 1];
-  for (int i = 0; i < length; i++) {
+  
+  setDefaultValue(defaultValue);
+  
+  _customHTML = custom;
+}
+
+void WiFiManagerParameter::setDefaultValue(const char *defaultValue)
+{
+  _value = new char[_length + 1];
+  for (int i = 0; i < _length; i++) {
     _value[i] = 0;
   }
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
+    strncpy(_value, defaultValue, _length);
   }
-
-  _customHTML = custom;
 }
 
 const char* WiFiManagerParameter::getValue() {
@@ -83,7 +89,6 @@ void WiFiManager::setupConfigPortal() {
 		
   }
   dnsServer.reset(new DNSServer());
-  server.reset(new ESP8266WebServer(80));
 
   DEBUG_WM(F(""));
   _configPortalStart = millis();
@@ -118,12 +123,25 @@ void WiFiManager::setupConfigPortal() {
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
+  configureServer();
+}
+
+void WiFiManager::configureServer()
+{
+  DEBUG_WM(F("Configuring server"));
+  
+  if (_serverIsConfigured)
+	return;
+  
+  server.reset(new ESP8266WebServer(80));
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on("/", std::bind(&WiFiManager::handleRoot, this));
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
+  server->on("/upload", std::bind(&WiFiManager::handleUpload, this));
+  server->on("/uploadSave", HTTP_POST, std::bind(&WiFiManager::handleUploadSave, this), std::bind(&WiFiManager::fileHandler, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
@@ -131,10 +149,20 @@ void WiFiManager::setupConfigPortal() {
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
+  
+  _serverIsConfigured = true;
 
 }
 
+void WiFiManager::resetServer()
+{
+  server.reset();
+  _serverIsConfigured = false;
+}
+
+
 boolean WiFiManager::autoConnect() {
+	DEBUG_WM(F("(MAKING AP ID"));
   String ssid = "ESP" + String(ESP.getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
@@ -175,12 +203,20 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   connect = false;
   setupConfigPortal();
+  
 
   while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
-    //DNS
-    dnsServer->processNextRequest();
-    //HTTP
-    server->handleClient();
+	
+	//DNS
+	dnsServer->processNextRequest();
+
+	runServerLoop();
+	
+	//allow sketch to take control briefl
+	if (_loopcallback != NULL)
+	{
+		_loopcallback(this);
+	}
 
 
     if (connect) {
@@ -191,6 +227,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED  && !_forceSaveOnDone) {
         DEBUG_WM(F("Failed to connect."));
+		  //WiFi.mode(WIFI_AP_STA); //RW ADDED TO REVERT
       } else {
         //connected
         WiFi.mode(WIFI_STA);
@@ -215,10 +252,17 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
 
-  server.reset();
+  resetServer();
   dnsServer.reset();
 
   return  WiFi.status() == WL_CONNECTED;
+}
+
+
+void WiFiManager::runServerLoop()
+{
+    //HTTP
+    server->handleClient();
 }
 
 
@@ -234,7 +278,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   } else
   {
 	DEBUG_WM(F("DHCP "));
-	WiFi.disconnect(); //I know that this wipes the store SSID and PASS but nothing else works!!
+	//WiFi.disconnect(); //I know that this wipes the store SSID and PASS but nothing else works!!
+	//WiFi.mode(WIFI_STA);
   }
 	
   //fix for auto connect racing issue
@@ -384,6 +429,8 @@ void WiFiManager::handleRoot() {
   page += "</h1>";
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
+  if (_displayUploadOption)
+	  page += FPSTR(HTTP_PORTAL_UPLOAD_OPTION);
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -558,6 +605,7 @@ void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM(F("Sent config page"));
 }
 
+
 /** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
@@ -614,6 +662,77 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
+}
+
+/** Display file upload page etc*/
+void WiFiManager::handleUpload() {
+  DEBUG_WM(F("Upload sketch"));
+
+ 
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Upload new firmware");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("<form method='POST' action='/uploadSave' enctype='multipart/form-data'>");
+  page += F("<input type='file' name='update'>");
+  page += F("<input type='submit' value='Update'>");
+  page += F("</FORM>");
+  page += FPSTR(HTTP_END);
+
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent upload sketch page"));
+
+}
+			
+void WiFiManager::handleUploadSave() {
+  DEBUG_WM(F("handle upload save"));
+
+  server->sendHeader("Connection", "close");
+  server->sendHeader("Access-Control-Allow-Origin", "*");
+  server->send(200, "text/html", (Update.hasError())?"FAIL":"<META http-equiv=\"refresh\" content=\"15;URL=/update\">OK");
+  if (!Update.hasError())
+	ESP.restart();
+
+
+}
+
+void WiFiManager::fileHandler()
+{
+   // from https://github.com/esp8266/Arduino/blob/master/libraries/ESP8266HTTPUpdateServer/src/ESP8266HTTPUpdateServer.cpp
+   // handler for the file upload, get's the sketch bytes, and writes
+  // them through the Update object
+  HTTPUpload& upload = server->upload();
+  if(upload.status == UPLOAD_FILE_START){
+	if (_debug)
+	  Serial.setDebugOutput(true);
+	WiFiUDP::stopAll();
+	
+	if (_debug) Serial.printf("Update: %s\n", upload.filename.c_str());
+	uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+	if(!Update.begin(maxSketchSpace)){//start with max available size
+	  if (_debug) Update.printError(Serial);
+	}
+  } else if(upload.status == UPLOAD_FILE_WRITE){
+	if (_debug) Serial.printf(".");
+	if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
+	  if (_debug) Update.printError(Serial);
+
+	}
+  } else if(upload.status == UPLOAD_FILE_END){
+	if(Update.end(true)){ //true to set the size to the current progress
+	  if (_debug) Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+	} else {
+	  if (_debug) Update.printError(Serial);
+	}
+	if (_debug) Serial.setDebugOutput(false);
+  } else if(upload.status == UPLOAD_FILE_ABORTED){
+	Update.end();
+	if (_debug) Serial.println("Update was aborted");
+  }
+  delay(0);
 }
 
 /** Handle the info page */
@@ -757,6 +876,14 @@ boolean WiFiManager::getSTAIsStaticIP()
 		
 }
 
+void  WiFiManager::setLoopCallback( void (*func)(WiFiManager*) )
+{
+	_loopcallback = func;
+}
+void WiFiManager::setDisplayUploadOption(boolean upload)
+{
+	_displayUploadOption = upload;
+}
 
 
 template <typename Generic>

@@ -30,6 +30,7 @@ const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,
 const char HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div style='text-align:left;display:inline-block;min-width:260px;'>";
 const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/><form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form><br/><form action=\"/i\" method=\"get\"><button>Info</button></form><br/><form action=\"/r\" method=\"post\"><button>Reset</button></form>";
+const char HTTP_PORTAL_UPLOAD_OPTION[] PROGMEM  = "<br/><form action=\"/upload\" method=\"get\"><button>Upload new firmware</button></form>";
 const char HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
 //const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==' width='13px'/>";
 const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID' value='{sv}'><br/><input id='p' name='p' length=64 type='password' placeholder='password' value='{pv}'><br/>";
@@ -46,6 +47,8 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
+	
+	void		setDefaultValue(const char* val);
 
     const char *getID();
     const char *getValue();
@@ -80,6 +83,14 @@ class WiFiManager
     String        getConfigPortalSSID();
 
     void          resetSettings();
+	
+	//set up the server - public so can be called externally
+	void		  configureServer();
+	//call this from loop() if not doing a traditional on demand server
+	void		  runServerLoop();
+	//call when no longer listening for connections
+	void		  resetServer();
+
 
     //sets timeout before webserver loop ends and exits even if there has been no setup.
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
@@ -116,11 +127,17 @@ class WiFiManager
 	void		  setForceSaveOnDone(boolean force);
 	//if this is set, put the current SSID and PASSWORD into the fields so that the user doesn't have to re-enter
 	void		  setDisplayExistingCreds(boolean display);
+	//called each time the loop runs - allows the calling sketch to do stuff
+	void          setLoopCallback( void (*func)(WiFiManager*) );
+	//if this is set display an option in main menu to allow upload of new sketch
+	void		  setDisplayUploadOption(boolean upload);
+
 	
 	//making the below public so that we can query them to save after config is done
 	//as far as I can tell there is no way to find out from the WiFi object whether the localIP() is set via static or DHCP
 	//so this allows us to query whether we had a static IP and if so we can get the details from WiFi.localIP() etc and store them in EEPROM manually
 	boolean     getSTAIsStaticIP();
+
 
 
 
@@ -162,11 +179,15 @@ class WiFiManager
 	
 	boolean		  _displayExistingCreds	  = false;
 	
+	boolean		  _displayUploadOption	  = false;
+	
+	boolean		  _serverIsConfigured	  = false;
+	
     const char*   _customHeadElement      = "";
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);
-
+	
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
@@ -174,6 +195,11 @@ class WiFiManager
     void          handleRoot();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
+	void          handleUpload();
+	void		  handleUploadSave();
+	void		  fileHandler();
+
+
     void          handleInfo();
     void          handleReset();
     void          handleNotFound();
@@ -193,6 +219,7 @@ class WiFiManager
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
+	void (*_loopcallback)(WiFiManager*) = NULL;
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
 
