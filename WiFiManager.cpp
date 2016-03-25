@@ -444,6 +444,8 @@ void WiFiManager::handleWifi(boolean scan) {
           rssiQ += quality;
           item.replace("{v}", WiFi.SSID(indices[i]));
           item.replace("{r}", rssiQ);
+          Serial.print(map(quality,0,100,1,4));
+          item.replace("{q}", (String)round(map(quality,0,100,1,4)));
           if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
             item.replace("{i}", "l");
           } else {
