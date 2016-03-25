@@ -71,6 +71,7 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 }
 
 void WiFiManager::setupConfigPortal() {
+  stopConfigPortal = false; //Signal not to close config portal
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
@@ -113,6 +114,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
+  server->on("/close", std::bind(&WiFiManager::handleServerClose, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
@@ -148,7 +150,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     {
         delay(100);
         if (WiFi.status()==WL_CONNECTED) {
-			float waited = startedAt - millis();
+			float waited = (millis()- startedAt);
 			DEBUG_WM(F("After waiting "));
 			DEBUG_WM(waited/1000);
 			DEBUG_WM(F(" secs local ip: "));
@@ -197,14 +199,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
       } else {
-        //connected
-        WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
         }
-        break;
+        //break;
       }
 
       if (_shouldBreakAfterConfig) {
@@ -217,14 +217,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         break;
       }
     }
+    if (stopConfigPortal) {
+	  stopConfigPortal = false;
+	  break;
+    }
     yield();
   }
+  delay(3000);
   server.reset();
   dnsServer.reset();
-
+  WiFi.mode(WIFI_STA);
   return  WiFi.status() == WL_CONNECTED;
 }
-
 
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
@@ -317,6 +321,7 @@ void WiFiManager::resetSettings() {
   //DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
   //delay(200);
+  return;
 }
 void WiFiManager::setTimeout(unsigned long seconds) {
   setConfigPortalTimeout(seconds);
@@ -580,7 +585,32 @@ void WiFiManager::handleWifiSave() {
 
   connect = true; //signal ready to connect/reset
 }
+/** Handle shut down the server page */
+void WiFiManager::handleServerClose() {
+  DEBUG_WM(F("Server Close"));
+    String page = FPSTR(HTTP_HEAD);
+    page.replace("{v}", "Close Server");
+    page += FPSTR(HTTP_SCRIPT);
+    page += FPSTR(HTTP_STYLE);
+    page += _customHeadElement;
+    page += FPSTR(HTTP_HEAD_END);
+    page += F("<dl>");
+    page += F("<dt>My network is</dt><dd>");
+    page += WiFi.SSID();
+    page += F("</dd>");
+    page += F("<dt>My Ip </dt><dd>");
+    page += WiFi.localIP();
+    page += F("</dd>");
+    page += F("<dt>Configuration server closed...</dt><dd>");
+    page += F("Push flash button to resart config server</dd>");
+    page += F("<dt>It really is over</dt><dd></dd>");
+    page += F("</dl>");
+    page += FPSTR(HTTP_END);
+    server->send(200, "text/html", page);
+    stopConfigPortal = true; //signal ready to shutdown config portal
+  DEBUG_WM(F("Sent server close page"));
 
+}
 /** Handle the info page */
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("Info"));
