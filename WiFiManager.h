@@ -70,8 +70,8 @@ class WiFiManager
   public:
     WiFiManager();
 
-    boolean       autoConnect();
-    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
+    boolean       autoConnect(); //Deprecated. Do not use.
+    boolean       autoConnect(char const *apName, char const *apPassword = NULL); //Deprecated. Do not use.
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();

@@ -127,7 +127,11 @@ boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
-
+/* This is not very useful as there has been an assumption that device has to be
+told to connect but Wifi already does it's best to connect in background. Calling this
+method will block until WiFi connects. Sketch can avoid
+blocking call then use (WiFi.status()==WL_CONNECTED) test to see if connected yet.
+*/
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
@@ -136,15 +140,22 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   //String ssid = getSSID();
   //String pass = getPassword();
 
-  // attempt to connect; should it fail, fall back to AP
+  // device will attempt to connect by itself; wait 10 secs
+  // to see if it succeeds and should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
-
-  if (connectWifi("", "") == WL_CONNECTED)   {
-    DEBUG_WM(F("IP Address:"));
-    DEBUG_WM(WiFi.localIP());
-    //connected
-    return true;
-  }
+  unsigned long startedAt = millis();
+    while(millis() - startedAt < 10000)
+    {
+        delay(100);
+        if (WiFi.status()==WL_CONNECTED) {
+			float waited = startedAt - millis();
+			DEBUG_WM(F("After waiting "));
+			DEBUG_WM(waited/1000);
+			DEBUG_WM(F(" secs local ip: "));
+			DEBUG_WM(WiFi.localIP());
+            return true;
+		}
+    }
 
   return startConfigPortal(apName, apPassword);
 }
@@ -208,13 +219,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
     yield();
   }
-  //Timed out so go back to station mode using system-stored ssid and pass
-   if (connectWifi(WiFi.SSID().c_str(),WiFi.psk().c_str()) != WL_CONNECTED) {
-           DEBUG_WM(F("Failed to connect after configuration mode timeout."));
-         } else {
-           //connected
-           WiFi.mode(WIFI_STA);
-        }
   server.reset();
   dnsServer.reset();
 
@@ -231,26 +235,16 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     DEBUG_WM(WiFi.localIP());
   }
-  //fix for auto connect racing issue
-  if (WiFi.status() == WL_CONNECTED) {
-    DEBUG_WM("Already connected. Bailing out.");
-    return WL_CONNECTED;
-  }
-  //check if we have ssid and pass and force those, if not, try with last saved values
+  //check if we have ssid and pass and force those, if not,
+  //do nothing as it will try with last saved values automatically
   if (ssid != "") {
-    WiFi.begin(ssid.c_str(), pass.c_str());
-  } else {
-    if(WiFi.SSID()) {
-      DEBUG_WM("Using last saved values, should be faster");
-      //trying to fix connection in progress hanging
-      ETS_UART_INTR_DISABLE();
-      wifi_station_disconnect();
-      ETS_UART_INTR_ENABLE();
-
-      WiFi.begin();
-    } else {
+	resetSettings(); /*Disconnect and wipe out old values. If you don't do this
+    esp8266 will sometimes lock up when SSID or password is different to
+	the already stored values. Mostly it doesn't but occasionally it does.
+	*/
+    WiFi.begin(ssid.c_str(), pass.c_str());// Start Wifi with new values.
+  } else if(!WiFi.SSID()) {
       DEBUG_WM("No saved credentials");
-    }
   }
 
   int connRes = waitForConnectResult();
@@ -320,7 +314,7 @@ String WiFiManager::getConfigPortalSSID() {
 
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
-  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
+  //DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
   //delay(200);
 }
