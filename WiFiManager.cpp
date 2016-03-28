@@ -121,6 +121,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/close", std::bind(&WiFiManager::handleServerClose, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
+  server->on("/state", std::bind(&WiFiManager::handleState, this));
   /*
   Not sure about generate_204. Example at https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/CaptivePortalAdvanced.ino
   uses handleRoot but AlexT added handler for generate_204. If I use the generate_204
@@ -450,23 +451,6 @@ void WiFiManager::handleWifi(boolean scan) {
       page += F("No networks found. Refresh to scan again.");
     } else {
       //sort networks
-      /*int indices[n];
-
-        for (int i = 0; i < n; i++) {
-        indices[i] = i;
-        }
-
-        for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-            //int temp = indices[j];
-            //indices[j] = indices[i];
-            //indices[i] = temp;
-            std::swap(indices[i], indices[j]);
-          }
-        }
-        }
-      */
       int indices[n];
       for (int i = 0; i < n; i++) {
         indices[i] = i;
@@ -702,6 +686,37 @@ void WiFiManager::handleInfo() {
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
+}
+/** Handle the state page */
+void WiFiManager::handleState() {
+  DEBUG_WM(F("State - json"));
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "State");
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("{\"state\":[{\"Soft_AP_IP\":\"");
+  page += WiFi.softAPIP().toString();
+  page += F("\"},{\"Soft_AP_MAC\":\"");
+  page += WiFi.softAPmacAddress();
+  page += F("\"},{\"Station_IP\":\"");
+  page += WiFi.localIP().toString();
+  page += F("\"},{\"Station_MAC\":\"");
+  page += WiFi.macAddress();
+  page += F("\"},");
+  if (WiFi.psk()!=""){
+  	  page += F("{\"Password\":\"TRUE\"},");
+    }
+  else {
+  	  page += F("{\"Password\":\"FALSE\"},");
+    }
+  page += F("{\"SSID\":\"");
+  page += WiFi.SSID();
+  page += F("\"}]}");
+  page += FPSTR(HTTP_END);
+  server->send(200, "text/html", page);
+  DEBUG_WM(F("Sent state page in json format"));
 }
 
 /** Handle the reset page */
