@@ -27,10 +27,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n Starting");
   WiFi.printDiag(Serial);
-  Serial.print("Stored Password: ");
-  Serial.println(WiFi.psk());
-  Serial.print("Stored PSSID: ");
-  Serial.println(WiFi.SSID());
   if (WiFi.SSID()==""){
     Serial.println("We never ever got access point credentials, so get them now");   
     digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
@@ -65,10 +61,6 @@ void setup() {
   }
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(TRIGGER_PIN2, INPUT_PULLUP);
-  /*Serial.print("Pin ");
-  Serial.print(TRIGGER_PIN);
-  Serial.print(": ");
-  Serial.println(digitalRead(TRIGGER_PIN));*/
   if (WiFi.status()!=WL_CONNECTED){
     Serial.println("failed to connect, finnishing setup anyway");
   }

@@ -72,6 +72,10 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 
 void WiFiManager::setupConfigPortal() {
   stopConfigPortal = false; //Signal not to close config portal
+  /*This library assumes autoconnect is set to 1. It usually is
+  but just in case check the setting and turn on autoconnect if it is off.
+  Some useful discussion at https://github.com/esp8266/Arduino/issues/1615*/
+  if (WiFi.getAutoConnect()==0)WiFi.setAutoConnect(1);
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
@@ -121,14 +125,11 @@ void WiFiManager::setupConfigPortal() {
   Not sure about generate_204. Example at https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/CaptivePortalAdvanced.ino
   uses handleRoot but AlexT added handler for generate_204. If I use the generate_204
   response handler then chromeOS thinks this access point provides internet connectivity.
-  If chromeOS doesn't think it has internet connectivity it will not send http requests and the
+  If chromeOS doesn't think it has internet connectivity it will sometimes not send http requests and the
   device can not be contacted through the browser but if chromeOS does think it has an internet connection scripts running in the background
-  will send requests and get the wrong response. Server can get a lot of requests in this case and other things
-  can be stuffed up. When ChromeOS thinks it is a captive portal it will offer a captive portal configuration page
-  and device can be configured from this page. If chromeOS thinks it doesn't have internet
-  access through this access point and it can see another access point which it thinks
-  will provide internet access it will switch automatically to the other one.
-  Either way it is not good. Revert to handleRoot.
+  will send requests and get the wrong response. Server can get overwhelmed with requests in this case and other things
+  in the chr4omeOS machine can be stuffed up. When ChromeOS thinks it is a captive portal it will offer a captive portal configuration page
+  and device can be configured from this page. Either way it is not great. Revert to handleRoot.
   */
   server->on("/generate_204", std::bind(&WiFiManager::handleRoot, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -146,6 +147,7 @@ boolean WiFiManager::autoConnect() {
 told to connect but Wifi already does it's best to connect in background. Calling this
 method will block until WiFi connects. Sketch can avoid
 blocking call then use (WiFi.status()==WL_CONNECTED) test to see if connected yet.
+See some discussion at https://github.com/tzapu/WiFiManager/issues/68
 */
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
@@ -182,9 +184,17 @@ boolean  WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  WiFi.mode(WIFI_AP_STA);
-  DEBUG_WM("SET AP STA");
-
+  if (WiFi.status() == WL_CONNECTED){
+	  WiFi.mode(WIFI_AP_STA); //Dual mode works fine if it is connected to WiFi
+	  DEBUG_WM("SET AP STA");
+  	}
+  	else {
+	WiFi.disconnect();
+    WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
+    // I think this might be because too much of the processor is being utilised
+    //trying to connect to the network.
+    DEBUG_WM("SET AP");
+	}
   _apName = apName;
   _apPassword = apPassword;
 
@@ -211,6 +221,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
+        WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
+		    // I think this might be because too much of the processor is being utilised
+    //trying to connect to the network.
       } else {
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
@@ -236,10 +249,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
     yield();
   }
+  WiFi.mode(WIFI_STA);
   delay(3000);
   server.reset();
   dnsServer.reset();
-  WiFi.mode(WIFI_STA);
   return  WiFi.status() == WL_CONNECTED;
 }
 
@@ -260,6 +273,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 	the already stored values and device is in the process of trying to connect
 	to the network. Mostly it doesn't but occasionally it does.
 	*/
+	WiFi.mode(WIFI_AP_STA); //It will start in station mode if it was previously in AP mode.
     WiFi.begin(ssid.c_str(), pass.c_str());// Start Wifi with new values.
   } else if(!WiFi.SSID()) {
       DEBUG_WM("No saved credentials");
@@ -397,8 +411,11 @@ void WiFiManager::handleRoot() {
 	  page += F("</hr></hr>Currently configured to connect to ");
 	  page += WiFi.SSID();
 	  if (WiFi.status()==WL_CONNECTED){
-		  page += F(" and currently connected on IP ");
+		  page += F(" and currently connected on IP <a href=\"http://");
 		  page += WiFi.localIP().toString();
+		  page += F("/\">");
+		  page += WiFi.localIP().toString();
+		  page += F("</a>");
 	   }
 	  else {
 		  page += F(" but not currently connected to network.");
@@ -602,7 +619,7 @@ void WiFiManager::handleWifiSave() {
     optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
 
-  /*String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
@@ -611,16 +628,11 @@ void WiFiManager::handleWifiSave() {
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
-  server->send(200, "text/html", page);*/
+  server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
-  server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
-  server->setContentLength(0);
-  server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
- //     server->client().stop(); // Stop is needed because we sent no content length
-
 }
 /** Handle shut down the server page */
 void WiFiManager::handleServerClose() {
