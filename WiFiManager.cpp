@@ -5,8 +5,8 @@
    inspired by:
    http://www.esp8266.com/viewtopic.php?f=29&t=2520
    https://github.com/chriscook8/esp-arduino-apboot
-   https://github.com/esp8266/Arduino/tree/esp8266/hardware/esp8266com/esp8266/libraries/DNSServer/examples/CaptivePortalAdvanced
-   Built by AlexT https://github.com/tzapu
+   https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/
+   Built by Ken Taylor https://github.com/kentaylor
    Licensed under MIT license
  **************************************************************/
 
@@ -117,7 +117,20 @@ void WiFiManager::setupConfigPortal() {
   server->on("/close", std::bind(&WiFiManager::handleServerClose, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
-  server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
+  /*
+  Not sure about generate_204. Example at https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/CaptivePortalAdvanced.ino
+  uses handleRoot but AlexT added handler for generate_204. If I use the generate_204
+  response handler then chromeOS thinks this access point provides internet connectivity.
+  If chromeOS doesn't think it has internet connectivity it will not send http requests and the
+  device can not be contacted through the browser but if chromeOS does think it has an internet connection scripts running in the background
+  will send requests and get the wrong response. Server can get a lot of requests in this case and other things
+  can be stuffed up. When ChromeOS thinks it is a captive portal it will offer a captive portal configuration page
+  and device can be configured from this page. If chromeOS thinks it doesn't have internet
+  access through this access point and it can see another access point which it thinks
+  will provide internet access it will switch automatically to the other one.
+  Either way it is not good. Revert to handleRoot.
+  */
+  server->on("/generate_204", std::bind(&WiFiManager::handleRoot, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
@@ -244,7 +257,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "") {
 	resetSettings(); /*Disconnect and wipe out old values. If you don't do this
     esp8266 will sometimes lock up when SSID or password is different to
-	the already stored values. Mostly it doesn't but occasionally it does.
+	the already stored values and device is in the process of trying to connect
+	to the network. Mostly it doesn't but occasionally it does.
 	*/
     WiFi.begin(ssid.c_str(), pass.c_str());// Start Wifi with new values.
   } else if(!WiFi.SSID()) {
@@ -365,7 +379,9 @@ void WiFiManager::handleRoot() {
   if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
     return;
   }
-
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Options");
   page += FPSTR(HTTP_SCRIPT);
@@ -377,6 +393,20 @@ void WiFiManager::handleRoot() {
   page += "</h1>";
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
+  if (WiFi.SSID() != ""){
+	  page += F("</hr></hr>Currently configured to connect to ");
+	  page += WiFi.SSID();
+	  if (WiFi.status()==WL_CONNECTED){
+		  page += F(" and currently connected on IP ");
+		  page += WiFi.localIP().toString();
+	   }
+	  else {
+		  page += F(" but not currently connected to network.");
+	  }
+    }
+    else {
+		page += F("</hr></hr>No network currently configured.");
+	}
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -385,7 +415,9 @@ void WiFiManager::handleRoot() {
 
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
-
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Config ESP");
   page += FPSTR(HTTP_SCRIPT);
@@ -570,7 +602,7 @@ void WiFiManager::handleWifiSave() {
     optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
 
-  String page = FPSTR(HTTP_HEAD);
+  /*String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
@@ -579,15 +611,23 @@ void WiFiManager::handleWifiSave() {
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
-  server->send(200, "text/html", page);
+  server->send(200, "text/html", page);*/
 
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
+  server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
+  server->setContentLength(0);
+  server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+ //     server->client().stop(); // Stop is needed because we sent no content length
+
 }
 /** Handle shut down the server page */
 void WiFiManager::handleServerClose() {
-  DEBUG_WM(F("Server Close"));
+    DEBUG_WM(F("Server Close"));
+    server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server->sendHeader("Pragma", "no-cache");
+    server->sendHeader("Expires", "-1");
     String page = FPSTR(HTTP_HEAD);
     page.replace("{v}", "Close Server");
     page += FPSTR(HTTP_SCRIPT);
@@ -599,11 +639,10 @@ void WiFiManager::handleServerClose() {
     page += WiFi.SSID();
     page += F("</dd>");
     page += F("<dt>My Ip </dt><dd>");
-    page += WiFi.localIP();
+    page += WiFi.localIP().toString();
     page += F("</dd>");
     page += F("<dt>Configuration server closed...</dt><dd>");
-    page += F("Push flash button to resart config server</dd>");
-    page += F("<dt>It really is over</dt><dd></dd>");
+    page += F("Push flash button on NodeMCU device to restart configuration server</dd>");
     page += F("</dl>");
     page += FPSTR(HTTP_END);
     server->send(200, "text/html", page);
@@ -614,7 +653,9 @@ void WiFiManager::handleServerClose() {
 /** Handle the info page */
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("Info"));
-
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
@@ -654,7 +695,9 @@ void WiFiManager::handleInfo() {
 /** Handle the reset page */
 void WiFiManager::handleReset() {
   DEBUG_WM(F("Reset"));
-
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
@@ -679,6 +722,7 @@ void WiFiManager::handle204() {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
+  server->setContentLength(0);
   server->send ( 204, "text/plain", "");
 }
 
@@ -710,8 +754,9 @@ boolean WiFiManager::captivePortal() {
   if (!isIp(server->hostHeader()) ) {
     DEBUG_WM(F("Request redirected to captive portal"));
     server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
+    server->setContentLength(0);
     server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    server->client().stop(); // Stop is needed because we sent no content length
+//    server->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;

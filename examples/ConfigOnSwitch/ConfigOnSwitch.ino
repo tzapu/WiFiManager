@@ -8,7 +8,7 @@
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
 // with the bootloader, so always set them HIGH at power-up
 // Onboard LED I/O pin on NodeMCU board
-const int PIN_LED = 16;      // Controls the onboard LED.
+const int PIN_LED = D4;      // Controls the onboard LED.
 /*Trigger for inititating config mode Pin D3 and also flash button on NodeMCU
  * Flash button is convenient to use but if it is pressed it will stuff up the serial port device driver 
  * until the computer is rebooted on windows machines.
@@ -46,6 +46,7 @@ void setup() {
   }
   else{
   digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
+  WiFi.mode(WIFI_STA); // Force to station mode because if device was switched off while in access point mode it will start up next time in access point mode.
   Serial.print("local ip: ");
   Serial.println(WiFi.localIP());
   unsigned long startedAt = millis();
@@ -88,15 +89,10 @@ void loop() {
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    wifiManager.setConfigPortalTimeout(120);
+    //wifiManager.setConfigPortalTimeout(120);
 
-    //it starts an access point with the specified name
-    //here  "AutoConnectAP"
+    //it starts an access point 
     //and goes into a blocking loop awaiting configuration
-
-    //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
-    //WiFi.mode(WIFI_STA);
-    
     if (!wifiManager.startConfigPortal()) {
       Serial.println("Hit ConfigPortal timeout. Continue with existing credentials");
     } else {
@@ -104,6 +100,9 @@ void loop() {
       Serial.println("connected...yeey :)");
     }
     digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
+    ESP.reset(); // This is a bit crude. For some unknown reason webserver can only be started once per boot up 
+    // so resetting the device allows to go back into config mode again when it reboots.
+    delay(5000);
   }
 
 
