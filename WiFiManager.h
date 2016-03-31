@@ -37,7 +37,7 @@ const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave
 const char HTTP_FORM_PARAM[] PROGMEM      = "<br/><input id='{i}' name='{n}' length={l} placeholder='{p}' value='{v}' {c}>";
 const char HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>save</button></form>";
 const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wifi\">Scan</a></div>";
-const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
+const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div> <META HTTP-EQUIV=\"refresh\" CONTENT=\"5; URL=/\">";
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
@@ -87,7 +87,7 @@ class WiFiManager
 	//set up the server - public so can be called externally
 	void		  configureServer();
 	//call this from loop() if not doing a traditional on demand server
-	void		  runServerLoop();
+	boolean		  runServerLoop(); //returns true if we have sucessfully saved, false if not
 	//call when no longer listening for connections
 	void		  resetServer();
 
@@ -125,8 +125,6 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
 	//if this is set, always display inputs for static IP config, but allow them to be blank (Meaning config will be DHCP as normal)
 	void		  setForceStaticIPconfig(boolean force);
-	//if this is set, always exit the AP config whether conection successful or not (allows config to be saved when offline)
-	void		  setForceSaveOnDone(boolean force);
 	//if this is set, put the current SSID and PASSWORD into the fields so that the user doesn't have to re-enter
 	void		  setDisplayExistingCreds(boolean display);
 	//called each time the loop runs - allows the calling sketch to do stuff
@@ -178,9 +176,7 @@ class WiFiManager
     boolean       _tryWPS                 = false;
 	
 	boolean		  _forceStaticIPconfig    = false;
-	
-	boolean		  _forceSaveOnDone		  = false;
-	
+		
 	boolean		  _displayExistingCreds	  = false;
 	
 	boolean		  _displayUploadOption	  = false;

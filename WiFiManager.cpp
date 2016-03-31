@@ -201,7 +201,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 	//DNS
 	dnsServer->processNextRequest();
 
-	runServerLoop();
+	if (runServerLoop())
+	  break; //true is we have saved and are done
 	
 	//allow sketch to take control briefl
 	if (_loopcallback != NULL)
@@ -209,37 +210,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 		_loopcallback(this);
 	}
 
-
-    if (connect) {
-      connect = false;
-      delay(2000);
-      DEBUG_WM(F("Connecting to new AP"));
-
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED  && !_forceSaveOnDone) {
-        DEBUG_WM(F("Failed to connect."));
-		  //WiFi.mode(WIFI_AP_STA); //RW ADDED TO REVERT
-      } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
-      }
-
-      if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
-      }
-    }
     yield();
   }
 
@@ -250,10 +220,44 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 
-void WiFiManager::runServerLoop()
+boolean WiFiManager::runServerLoop()
 {
     //HTTP
     server->handleClient();
+	
+	if (connect) {
+      connect = false;
+
+      DEBUG_WM(F("Connecting to new AP"));
+
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED ) {
+        DEBUG_WM(F("Failed to connect."));
+		  //WiFi.mode(WIFI_AP_STA); //RW ADDED TO REVERT
+      } else {
+        //connected
+        WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+		return true;
+		
+	  }
+
+      if (_shouldBreakAfterConfig) {
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        return true;
+      }
+    }
+	
+	return false;
 }
 
 
@@ -879,10 +883,7 @@ void WiFiManager::setForceStaticIPconfig(boolean force)
 void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
 }
-void WiFiManager::setForceSaveOnDone(boolean force)
-{
-	_forceSaveOnDone = force;
-}
+
 void WiFiManager::setDisplayExistingCreds(boolean display)
 {
 	_displayExistingCreds = display;
