@@ -78,16 +78,7 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 
 void WiFiManager::setupConfigPortal() {
 	
-  if (_displayExistingCreds)
-  {
-	  //we are wanting to display existing credentials
-	  _ssid = String(WiFi.SSID());
-	  struct station_config conf;
-	  wifi_station_get_config(&conf);
-	  const char* passphrase = reinterpret_cast<const char*>(conf.password);
-      _pass = String(passphrase);
-		
-  }
+
   dnsServer.reset(new DNSServer());
 
   DEBUG_WM(F(""));
@@ -895,6 +886,16 @@ void WiFiManager::setForceSaveOnDone(boolean force)
 void WiFiManager::setDisplayExistingCreds(boolean display)
 {
 	_displayExistingCreds = display;
+  if (_displayExistingCreds)
+  {
+	  //we are wanting to display existing credentials
+	  _ssid = String(WiFi.SSID());
+	  struct station_config conf;
+	  wifi_station_get_config(&conf);
+	  const char* passphrase = reinterpret_cast<const char*>(conf.password);
+      _pass = String(passphrase);
+		
+  }
 }
 boolean WiFiManager::getSTAIsStaticIP()
 {
