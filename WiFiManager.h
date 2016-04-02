@@ -111,7 +111,8 @@ class WiFiManager
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
-
+    //if this is true, remove duplicated Access Points - defaut true
+    void          setRemoveDuplicateAPs(boolean removeDuplicates);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -142,6 +143,7 @@ class WiFiManager
 
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
+    boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
 
