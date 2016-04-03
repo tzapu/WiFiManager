@@ -213,8 +213,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
 
-  resetServer();
-  dnsServer.reset();
+//  resetServer();
+//  dnsServer.reset();
+
+//not resetting these as we may still be staying alive - need to look at a better way of managing this..
 
   return  WiFi.status() == WL_CONNECTED;
 }
@@ -396,6 +398,11 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
   _sta_static_ip = ip;
   _sta_static_gw = gw;
   _sta_static_sn = sn;
+}
+void WiFiManager::setSTAStaticIPConfig() {
+  _sta_static_ip = IPAddress(0,0,0,0);
+  _sta_static_gw = IPAddress(0,0,0,0);
+  _sta_static_sn = IPAddress(0,0,0,0);
 }
 
 void WiFiManager::setMinimumSignalQuality(int quality) {
@@ -645,20 +652,28 @@ void WiFiManager::handleWifiSave() {
     //_sta_static_ip.fromString(server->arg("ip"));
     String ip = server->arg("ip");
     optionalIPFromString(&_sta_static_ip, ip.c_str());
-  }
-  if (server->arg("gw") != "") {
-    DEBUG_WM(F("static gateway"));
-    DEBUG_WM(server->arg("gw"));
-    String gw = server->arg("gw");
-    optionalIPFromString(&_sta_static_gw, gw.c_str());
-  }
-  if (server->arg("sn") != "") {
-    DEBUG_WM(F("static netmask"));
-    DEBUG_WM(server->arg("sn"));
-    String sn = server->arg("sn");
-    optionalIPFromString(&_sta_static_sn, sn.c_str());
+	if (server->arg("gw") != "") {
+	  DEBUG_WM(F("static gateway"));
+	  DEBUG_WM(server->arg("gw"));
+	  String gw = server->arg("gw");
+	  optionalIPFromString(&_sta_static_gw, gw.c_str());
+	}
+	if (server->arg("sn") != "") {
+	  DEBUG_WM(F("static netmask"));
+	  DEBUG_WM(server->arg("sn"));
+	  String sn = server->arg("sn");
+	  optionalIPFromString(&_sta_static_sn, sn.c_str());
+	}
+
+  } else
+  {
+	_sta_static_ip = IPAddress(0,0,0,0);
+	_sta_static_gw = IPAddress(0,0,0,0);
+	_sta_static_sn = IPAddress(0,0,0,0);
   }
 
+	
+	
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);
