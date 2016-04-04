@@ -275,15 +275,20 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   } else
   {
 	DEBUG_WM(F("DHCP "));
+	//disconnect to ensure we refresh IP
+	ETS_UART_INTR_DISABLE();
+	wifi_station_disconnect();
+	ETS_UART_INTR_ENABLE();
 	//WiFi.disconnect(); //I know that this wipes the store SSID and PASS but nothing else works!!
 	//WiFi.mode(WIFI_STA);
   }
-	
-  //fix for auto connect racing issue
-  if (WiFi.status() == WL_CONNECTED) {
+  
+  //fix for auto connect racing issue - RW has changed as this meant there was no way to change to another network while old one was in range..
+  if ((ssid == "" || ssid==WiFi.SSID()) && WiFi.status() == WL_CONNECTED) {
     DEBUG_WM("Already connected. Bailing out.");
     return WL_CONNECTED;
   }
+  
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
