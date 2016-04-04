@@ -709,10 +709,7 @@ void WiFiManager::handleState() {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "State");
-  page += FPSTR(HTTP_HEAD_END);
-  page += F("{\"state\":[{\"Soft_AP_IP\":\"");
+  String page = F("{\"Soft_AP_IP\":\"");
   page += WiFi.softAPIP().toString();
   page += F("\"},{\"Soft_AP_MAC\":\"");
   page += WiFi.softAPmacAddress();
@@ -729,9 +726,8 @@ void WiFiManager::handleState() {
     }
   page += F("{\"SSID\":\"");
   page += WiFi.SSID();
-  page += F("\"}]}");
-  page += FPSTR(HTTP_END);
-  server->send(200, "text/html", page);
+  page += F("\"}");
+  server->send(200, "application/json", page);
   DEBUG_WM(F("Sent state page in json format"));
 }
 
