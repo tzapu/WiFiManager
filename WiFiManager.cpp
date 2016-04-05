@@ -60,7 +60,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
-WiFiManager::WiFiManager() {
+WiFiManager::WiFiManager() : ipcb(NULL) {
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
@@ -621,6 +621,13 @@ void WiFiManager::handleInfo() {
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+  if (ipcb) {
+     char buffer[128];
+     ipcb(buffer, sizeof buffer);
+     page += F("<dt>Extra info:</dt><dd>");
+     page += String(buffer);
+     page += F("</dd>");
+  }
   page += F("</dl>");
   page += FPSTR(HTTP_END);
 
