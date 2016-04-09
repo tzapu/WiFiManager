@@ -711,20 +711,20 @@ void WiFiManager::handleState() {
   server->sendHeader("Expires", "-1");
   String page = F("{\"Soft_AP_IP\":\"");
   page += WiFi.softAPIP().toString();
-  page += F("\"},{\"Soft_AP_MAC\":\"");
+  page += F("\",\"Soft_AP_MAC\":\"");
   page += WiFi.softAPmacAddress();
-  page += F("\"},{\"Station_IP\":\"");
+  page += F("\",\"Station_IP\":\"");
   page += WiFi.localIP().toString();
-  page += F("\"},{\"Station_MAC\":\"");
+  page += F("\",\"Station_MAC\":\"");
   page += WiFi.macAddress();
-  page += F("\"},");
+  page += F("\",");
   if (WiFi.psk()!=""){
-  	  page += F("{\"Password\":\"TRUE\"},");
+  	  page += F("\"Password\":\"TRUE\",");
     }
   else {
-  	  page += F("{\"Password\":\"FALSE\"},");
+  	  page += F("\"Password\":\"FALSE\",");
     }
-  page += F("{\"SSID\":\"");
+  page += F("\"SSID\":\"");
   page += WiFi.SSID();
   page += F("\"}");
   server->send(200, "application/json", page);
