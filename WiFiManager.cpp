@@ -78,7 +78,6 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 
 void WiFiManager::setupConfigPortal() {
 	
-
   dnsServer.reset(new DNSServer());
 
   DEBUG_WM(F(""));
@@ -114,6 +113,8 @@ void WiFiManager::setupConfigPortal() {
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
+  
+  
   configureServer();
 }
 
@@ -122,7 +123,10 @@ void WiFiManager::configureServer()
   DEBUG_WM(F("Configuring server"));
   
   if (_serverIsConfigured)
+  {
+	DEBUG_WM(F("Already configured - returning"));
 	return;
+  }
   
   server.reset(new ESP8266WebServer(80));
 
@@ -169,7 +173,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  if (connectWifi("", "") == WL_CONNECTED)   {
+  if (connectWifi("", "") == WL_CONNECTED)   { //send blank ssid+pass which means try with existing creds..
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
@@ -181,7 +185,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_AP_STA); //this means be both and Access Point and a station..
   DEBUG_WM("SET AP STA");
 
   _apName = apName;
@@ -204,7 +208,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 	if (runServerLoop())
 	  break; //true is we have saved and are done
 	
-	//allow sketch to take control briefl
+	//allow sketch to take control briefly
 	if (_loopcallback != NULL)
 	{
 		_loopcallback(this);
@@ -229,36 +233,30 @@ boolean WiFiManager::runServerLoop()
 	
 	if (connect) {
       connect = false;
+	  
+	  //I've changed this to now save before attempting to connect - wouldn't the user always want to save whether or not the wifi connected. Otherwise they have to re-enter any info..
+	  
+	  //notify that configuration has changed and any optional parameters should be saved
+	  if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+	  }
 
       DEBUG_WM(F("Connecting to new AP"));
 
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED ) {
         DEBUG_WM(F("Failed to connect."));
-		  //WiFi.mode(WIFI_AP_STA); //RW ADDED TO REVERT
       } else {
         //connected
         WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
+
 		return true;
 		
 	  }
 
-      if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        return true;
-      }
-    }
-	
+      return _shouldBreakAfterConfig;
+	}
 	return false;
 }
 
@@ -276,9 +274,6 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   {
 	DEBUG_WM(F("DHCP "));
 	//disconnect to ensure we refresh IP
-	ETS_UART_INTR_DISABLE();
-	wifi_station_disconnect();
-	ETS_UART_INTR_ENABLE();
 	//WiFi.disconnect(); //I know that this wipes the store SSID and PASS but nothing else works!!
 	//WiFi.mode(WIFI_STA);
   }
@@ -289,8 +284,18 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     return WL_CONNECTED;
   }
   
+  if (WiFi.status() == WL_CONNECTED)
+  {
+	DEBUG_WM("Disconnecting from old network");
+	ETS_UART_INTR_DISABLE();
+	wifi_station_disconnect();
+	ETS_UART_INTR_ENABLE();
+	
+  }
+  
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
+	DEBUG_WM("Attempting connection");
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if(WiFi.SSID()) {
@@ -422,6 +427,7 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("Handle root"));
   if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+	DEBUG_WM("CAPTIVE SO RETURN?");
     return;
   }
 
