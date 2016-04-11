@@ -113,6 +113,9 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    //Scan for WiFiNetworks in range and sort by signal strength
+    //space for indices array allocated on the heap and should be freed when no longer required
+    int           scanWifiNetworks(int **indicesptr);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -125,6 +128,7 @@ class WiFiManager
 
     void          setupConfigPortal();
     void          startWPS();
+    char*         getStatus(int status);
 
     const char*   _apName                 = "no-net";
     const char*   _apPassword             = NULL;
@@ -160,8 +164,8 @@ class WiFiManager
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleServerClose();
-    void          handleState();
     void          handleInfo();
+    void          handleState();
     void          handleReset();
     void          handleNotFound();
     void          handle204();

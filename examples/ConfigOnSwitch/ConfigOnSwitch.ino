@@ -26,9 +26,9 @@ void setup() {
   pinMode(PIN_LED, OUTPUT);
   Serial.begin(115200);
   Serial.println("\n Starting");
-  WiFi.printDiag(Serial);
+  WiFi.printDiag(Serial); //Remove this line if you do not want to see WiFi password printed
   if (WiFi.SSID()==""){
-    Serial.println("We never ever got access point credentials, so get them now");   
+    Serial.println("We haven't got any access point credentials, so get them now");   
     digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
@@ -41,28 +41,23 @@ void setup() {
     }
   }
   else{
-  digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
-  WiFi.mode(WIFI_STA); // Force to station mode because if device was switched off while in access point mode it will start up next time in access point mode.
-  Serial.print("local ip: ");
-  Serial.println(WiFi.localIP());
-  unsigned long startedAt = millis();
-  while(millis() - startedAt < 10000)
-        {
-        delay(100);
-        if (WiFi.status()==WL_CONNECTED) {
-          float waited = (millis()- startedAt);
-          Serial.print("After waiting ");
-          Serial.print(waited/1000);
-          Serial.print(" secs in setup() local ip: ");
-          Serial.println(WiFi.localIP());
-          break;
-          }
-       }
+    digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
+    WiFi.mode(WIFI_STA); // Force to station mode because if device was switched off while in access point mode it will start up next time in access point mode.
+    unsigned long startedAt = millis();
+    Serial.print("After waiting ");
+    int connRes = WiFi.waitForConnectResult();
+    float waited = (millis()- startedAt);
+    Serial.print(waited/1000);
+    Serial.print(" secs in setup() connection result is ");
+    Serial.println(connRes);
   }
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(TRIGGER_PIN2, INPUT_PULLUP);
   if (WiFi.status()!=WL_CONNECTED){
     Serial.println("failed to connect, finnishing setup anyway");
+  } else{
+    Serial.print("local ip: ");
+    Serial.println(WiFi.localIP());
   }
 }
 
@@ -75,18 +70,15 @@ void loop() {
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
 
-    //reset settings - for testing
-    //wifiManager.resetSettings();
-
-    //sets timeout until configuration portal gets turned off
-    //useful to make it all retry or go to sleep
-    //in seconds
-    //wifiManager.setConfigPortalTimeout(120);
+    //sets timeout in seconds until configuration portal gets turned off.
+    //If not specified device will remain in configuration mode until
+    //switched off via webserver or device is restarted.
+    //wifiManager.setConfigPortalTimeout(600);
 
     //it starts an access point 
     //and goes into a blocking loop awaiting configuration
     if (!wifiManager.startConfigPortal()) {
-      Serial.println("Hit ConfigPortal timeout. Continue with existing credentials");
+      Serial.println("Not connected to WiFi but continuing anyway.");
     } else {
       //if you get here you have connected to the WiFi
       Serial.println("connected...yeey :)");
