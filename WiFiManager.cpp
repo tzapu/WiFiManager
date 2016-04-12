@@ -122,6 +122,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/state", std::bind(&WiFiManager::handleState, this));
+  server->on("/scan", std::bind(&WiFiManager::handleScan, this));
   /*
   Not sure about generate_204. Example at https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/CaptivePortalAdvanced.ino
   uses handleRoot but AlexT added handler for generate_204. If I use the generate_204
@@ -410,7 +411,7 @@ void WiFiManager::handleRoot() {
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   if (WiFi.SSID() != ""){
-	  page += F("</hr></hr>Currently configured to connect to ");
+	  page += F("</hr></hr>Currently configured to connect to access point ");
 	  page += WiFi.SSID();
 	  if (WiFi.status()==WL_CONNECTED){
 		  page += F(" and currently connected on IP <a href=\"http://");
@@ -704,6 +705,48 @@ void WiFiManager::handleState() {
   page += F("\"}");
   server->send(200, "application/json", page);
   DEBUG_WM(F("Sent state page in json format"));
+}
+
+/** Handle the scan page */
+void WiFiManager::handleScan() {
+  DEBUG_WM(F("State - json"));
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+
+  int n;
+  int *indices;
+  int **indicesptr = &indices;
+  //Space for indices array allocated on heap in scanWifiNetworks
+  //and should be freed when indices no longer required.
+  n = scanWifiNetworks(indicesptr);
+  DEBUG_WM(F("In handleScan, scanWifiNetworks done"));
+  String page = F("{\"Access_Points\":[");
+  //display networks in page
+  for (int i = 0; i < n; i++) {
+          if(indices[i] == -1) continue; // skip duplicates and those that are below the required quality
+          if(i != 0) page += F(", ");
+          DEBUG_WM(WiFi.SSID(indices[i]));
+          DEBUG_WM(WiFi.RSSI(indices[i]));
+          int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
+          String item = FPSTR(JSON_ITEM);
+          String rssiQ;
+          rssiQ += quality;
+          item.replace("{v}", WiFi.SSID(indices[i]));
+          item.replace("{r}", rssiQ);
+          if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
+            item.replace("{i}", "true");
+          } else {
+            item.replace("{i}", "false");
+          }
+          //DEBUG_WM(item);
+          page += item;
+          delay(0);
+  }
+  free(indices); //indices array no longer required so free memory
+  page += F("]}");
+  server->send(200, "application/json", page);
+  DEBUG_WM(F("Sent WiFi scan data ordered by signal strength in json format"));
 }
 
 /** Handle the reset page */
