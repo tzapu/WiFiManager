@@ -185,6 +185,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
+  wifi_station_disconnect();
   WiFi.mode(WIFI_AP_STA); //this means be both and Access Point and a station..
   DEBUG_WM("SET AP STA");
 
