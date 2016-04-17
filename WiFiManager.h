@@ -87,7 +87,9 @@ class WiFiManager
 	//set up the server - public so can be called externally
 	void		  configureServer();
 	//call this from loop() if not doing a traditional on demand server
-	boolean		  runServerLoop(); //returns true if we have sucessfully saved, false if not
+	boolean		  runLoop(bool internal); //if sent with true don't check to see if we are on demand..
+
+	boolean		  runLoop(); //returns true if we have sucessfully saved, false if not
 	//call when no longer listening for connections
 	void		  resetServer();
 
@@ -133,8 +135,12 @@ class WiFiManager
 	void          setLoopCallback( void (*func)(WiFiManager*) );
 	//if this is set display an option in main menu to allow upload of new sketch
 	void		  setDisplayUploadOption(boolean upload);
+  
+	void		  setAlwaysOnIsOn(boolean ison) {_alwaysOnIsOn = ison;};
+    boolean		  getAlwaysOnIsOn() {return _alwaysOnIsOn;};
 
 	
+  
 	//making the below public so that we can query them to save after config is done
 	//as far as I can tell there is no way to find out from the WiFi object whether the localIP() is set via static or DHCP
 	//so this allows us to query whether we had a static IP and if so we can get the details from WiFi.localIP() etc and store them in EEPROM manually
@@ -143,6 +149,7 @@ class WiFiManager
 
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+  
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -184,6 +191,8 @@ class WiFiManager
 	boolean		  _displayUploadOption	  = false;
 	
 	boolean		  _serverIsConfigured	  = false;
+  
+    boolean		  _alwaysOnIsOn			  = false;
 	
     const char*   _customHeadElement      = "";
 

@@ -206,7 +206,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 	//DNS
 	dnsServer->processNextRequest();
 
-	if (runServerLoop())
+	if (runLoop(true))
 	  break; //true is we have saved and are done
 	
 	//allow sketch to take control briefly
@@ -217,18 +217,32 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
     yield();
   }
-
-//  resetServer();
-//  dnsServer.reset();
-
-//not resetting these as we may still be staying alive - need to look at a better way of managing this..
+  if (!_alwaysOnIsOn)
+	resetServer(); //don't reset if we are alwayson
+  
+  dnsServer.reset(); //always reset this as we don't need when alwaysOnIsOn
 
   return  WiFi.status() == WL_CONNECTED;
 }
 
-
-boolean WiFiManager::runServerLoop()
+boolean WiFiManager::runLoop()
 {
+  return runLoop(false);
+}
+
+
+boolean WiFiManager::runLoop(bool internal)
+{
+	if (!_alwaysOnIsOn || internal)
+	{
+	  if (_serverIsConfigured)
+		resetServer();
+	  return false;
+	}
+  
+	if (!_serverIsConfigured)
+	  configureServer();
+  
     //HTTP
     server->handleClient();
 	
