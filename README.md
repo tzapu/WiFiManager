@@ -5,11 +5,11 @@ Connect an ESP8266 to WiFi using a web configuration portal served from the ESP8
 
 The configuration portal is captive, so it will present the configuration dialogue with a http connection to any web address as soon as you connect to the created access point. Captive portals do not work with https web addresses.
 
-This is the first attempt at extensively modifying an existing library which appears to be based on an incorrect premise. This causes the base library to include unneeded functionality which causes the WiFiManager to fail intermittently and sometimes brick the ESP8266 module. The ESP8266 module can be recovered by reflashing with different software. The library also includes other changes. For example it previously spoofed that it provided a path to the internet in access point mode which was removed because it caused problems with other applications running on the browsing device and the ESP8266 can not reliably serve web pages in combined access point/station mode when not connected to a network so changes to station mode only when this occurs. Changes are detailed in the commit messages.
+This is an extensive modification of an existing library which appears to be based on the incorrect premise that the ESP8266 should be instructed to connect to a WiFi network. This led to the base library including unneeded functionality which has the side effect of causing the ESP8266 module to intermittently fail to connect to WiFi, behave inconsistently and occasionally brick. Once bricked, the ESP8266 module can be recovered by reflashing with different software. The library also includes other changes. For example it previously spoofed that it provided a path to the internet in access point mode. This spoof was removed because it caused problems with other applications running on the browsing device. Also the ESP8266 can not reliably serve web pages in combined access point/station mode when not connected to a network so changes to station mode only when this occurs. Changes are detailed in the commit messages.
 
-An ESP8266 stores access point credentials in non volatile memory. Therefore these details should only be set once, unless they need to be changed. The ESP8266 is set by default to autoconnect and will always do it's best to connect to a network when it has an access point name (SSID) configured. If the access point is visible and the password is correct it will connect in a few seconds. If the access point is not visible or goes away it will reestablish the connection automatically when the access point becomes visible. There are no calls to the Espressif ESP8266 library that can connect to a network faster or more reliably and trying to use calls to the Espressif library to connect to a network can sometimes brick the ESP8266. Specifically, calling WiFi.begin(SSID, Password) with a different SSID or password to those already in non volatile memory or calling WiFi.begin() should not be done while it is trying to connect to a network. It will usually be OK but sometimes it will fail, depending, I suspect, on what stage it is up to in the connection process.
+An ESP8266 stores access point credentials in non volatile memory. Therefore these details should only be set once, unless they need to be changed. The ESP8266 is set by default to auto connect and will always do it's best to connect to a network when it has an access point name (SSID) configured. If the access point is visible and the password is correct it will connect in a few seconds. If the access point is not visible or goes away it will reestablish the connection automatically when the access point becomes visible. There are no calls to the Espressif ESP8266 library that can connect to a network faster or more reliably and trying to use calls to the Espressif library to connect to a network can sometimes cause the WiFi connectivity to fail until it is rebooted and occasionally brick the ESP8266. Specifically, calling WiFi.begin(SSID, Password) with a different SSID or password to those already in non volatile memory or calling WiFi.begin() should not be done while it is trying to connect to a network. It will usually be OK but sometimes it will fail, depending, I suspect, on what stage it is up to in the connection process. Once it has failed it must be rebooted to be able to connect again to WiFi.
 
-The inbuilt autoconnect functionality makes the autoconnect examples in the library from which this was forked superfluous so those that don't demonstrate some additional functionality have been deleted.
+The inbuilt auto connect functionality makes the autoconnect examples in the library from which this was forked superfluous so those that don't demonstrate some additional functionality have been deleted.
 The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch) example is the only one tested after the changes have been made. 
 
 #### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
@@ -17,9 +17,9 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 ## Contents
  - [How it works](#how-it-works)
  - [Wishlist](#wishlist)
- - [Evidence The Premise Is Wrong And Of The Problems It Causes](#Evidence-The-Premise-Is Wrong-And-Of-The-Problems-It=Causes)
+ - [Evidence The Premise Is Wrong And The Problems It Causes](#Evidence-The-Premise-Is Wrong-And-The-Problems-It-Causes)
  - [Quick start](#quick-start)
-   - Installing(#Installing)
+   - [Installing](#Installing)
      - [From Github](#checkout-from-github)
    - [Using](#using)
  - [Documentation](#documentation)
@@ -58,12 +58,12 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 - Provide an app to set up WiFi credentials using the json interfaces provided as usability testing has shown that people find switching back and forward between WiFi networks to be confusing. An app can swap back and forward between networks in the background.
 - Incorporate these changes into WiFiManager library from which this version was forked.
 
-## Evidence The Premise Is Wrong And Of The Problems It Causes
-It seems bold to claim the premise underlying the library from which this version was forked is wrong when it was developed over some time and is already widely used. So I thought I should provide some evidence. 
+## Evidence The Premise Is Wrong And The Problems It Causes
+It seems bold to claim the premise underlying the library from which this version was forked is wrong when it was developed over some time and is already widely used. So I thought I should provide some explanation and evidence. 
 
-I started out investigating why my ESP8266's were occasionally bricking which I'd suspected was due to faulty modules and ended up forming a view the problem was software related. As the problems are intermittent and not reliably repeatable and after spending much more time on this than intended I'm still not sure that my claim of what causes the ESP8266 to brick is correct or that I have identified the complete solution. The solution here has worked for me so far and I'm hopeful others may identify any further errors or provide new insight.
+I started out investigating why my ESP8266's were sometimes not connecting to the network and occasionally bricking. I'd suspected bricking was due to faulty modules but found I could recover them by reflashing with different software. As the problems are intermittent and random they are difficult to investigate. I'm still not sure that my claim of what causes the ESP8266 to brick is correct or that I have identified the complete solution. This library here has worked for me without failure so far and I'm hopeful others may identify any further errors or provide new insight.
 
-When the ESP8266 has an SSID in non volatile memory and it is set for autoconnect there is no need to do anything in a sketch to establish WiFi connectivity. This can be seen in the [ConfigOnSwitch](https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch) example which connects to a network effectively whenever network credentials are available in non volatile memory. Therefore the claim that calling WiFi.begin is unnecessary is easy to sustain.
+When the ESP8266 has an SSID in non volatile memory and auto connect as revealed by the command WiFi.printDiag(Serial) is set to 1 there is no need to do anything in a sketch to establish WiFi connectivity. This can be seen in the [ConfigOnSwitch](https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch) example which connects to a network effectively whenever network credentials are available in non volatile memory. Therefore, the claim that the module will automatically connect to a WiFi network without calling WiFi.begin is easy to sustain.
 
 Evidence that calling WiFi.begin can be harmful is more circumstantial. Looking through the issues reported and code revisions in WiFi manager I can see discussion of the same problems I was having and efforts to fix them. Specifically:-
 - There has been an attempt to fix a problem identified as an ["auto connect racing issue"] ( https://github.com/tzapu/WiFiManager/commit/b99487785d2c8319df1223b204e1bba2b321f3f3) by not calling WiFi.begin under some circumstances. This fix has a side effect identified in [issue 141](https://github.com/tzapu/WiFiManager/issues/141) that "WiFiManager will not connect to a newly selected access point if a connection to another access point already exists."
@@ -90,19 +90,17 @@ __Github version works with release 2.0.0 or newer of the [ESP8266 core for Ardu
 
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
-#include <WiFiManager.h>          //https://github.com/kentaylor/WiFiManager WiFi Configuration Magic
+#include <WiFiManager.h>          //https://github.com/kentaylor/WiFiManager WiFi 
 ```
 
 - When you want open a config portal initialize library, add
 ```cpp
 WiFiManager wifiManager;
-Configuration Magic
 ```
 then call
 
 ```cpp
 wifiManager.startConfigPortal()
-Configuration Magic
 ```
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should save WiFi connection information in non volatile memory, reboot and connect.
 
@@ -120,7 +118,6 @@ A short password seems to have unpredictable results so use one that's around 8 
 The guidelines are that a wifi password must consist of 8 to 63 ASCII-encoded characters in the range of 32 to 126 (decimal)
 ```cpp
 wifiManager.startConfigPortal()
-Configuration Magic
 ```
 
 #### Callbacks
@@ -131,7 +128,6 @@ This gets called when custom parameters have been set **AND** a connection has b
 See [AutoConnectWithFSParameters Example](https://github.com/kentaylor/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
-Configuration Magic
 ```
 saveConfigCallback declaration and example
 ```cpp
@@ -143,7 +139,6 @@ void saveConfigCallback () {
   Serial.println("Should save config");
   shouldSaveConfig = true;
 }
-Configuration Magic
 ```
 
 #### Configuration Portal Timeout
@@ -198,7 +193,7 @@ You should also take a look at adding custom HTML to your form.
 You can set a custom IP for both AP (access point, config mode) and STA (station mode, client mode, normal project state)
 
 ##### Custom Access Point IP Configuration
-This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `autoConnect()`
+This will set your captive portal to a specific IP should you need/want such a feature. Add the following snippet before `startConfigPortal()`
 ```cpp
 //set custom ip for portal
 wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
@@ -246,7 +241,7 @@ wifiManager.setRemoveDuplicateAPs(false);
 ```
 
 #### Debug
-Debug is enabled by default on Serial. To disable add before autoConnect
+Debug is enabled by default on Serial. To disable add before `startConfigPortal()`
 ```cpp
 wifiManager.setDebugOutput(false);
 ```
