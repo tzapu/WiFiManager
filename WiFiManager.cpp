@@ -17,22 +17,28 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _placeholder = NULL;
   _length = 0;
   _value = NULL;
+  _labelPlacement = 1;
 
   _customHTML = custom;
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "");
+  init(id, placeholder, defaultValue, length, "", 1);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom);
+  init(id, placeholder, defaultValue, length, custom, 1);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+  init(id, placeholder, defaultValue, length, custom, labelPlacement);
+}
+
+void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
   _id = id;
   _placeholder = placeholder;
   _length = length;
+  _labelPlacement = labelPlacement;
   _value = new char[length + 1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
@@ -55,6 +61,9 @@ const char* WiFiManagerParameter::getPlaceholder() {
 }
 int WiFiManagerParameter::getValueLength() {
   return _length;
+}
+int WiFiManagerParameter::getLabelPlacement() {
+  return _labelPlacement;
 }
 const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
@@ -408,25 +417,26 @@ void WiFiManager::handleRoot() {
   page += "<h1>";
   page += _apName;
   page += "</h1>";
-  page += F("<h3>WiFiManager</h3>");
+  page += F("<h2>WiFi Manager</h2>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   if (WiFi.SSID() != ""){
-	  page += F("</hr></hr>Currently configured to connect to access point ");
+	  page += F("<div class=\"msg\">Configured to connect to access point ");
 	  page += WiFi.SSID();
 	  if (WiFi.status()==WL_CONNECTED){
-		  page += F(" and currently connected on IP <a href=\"http://");
+		  page += F(" and <strong>currently connected</strong> on IP <a href=\"http://");
 		  page += WiFi.localIP().toString();
 		  page += F("/\">");
 		  page += WiFi.localIP().toString();
 		  page += F("</a>");
 	   }
 	  else {
-		  page += F(" but not currently connected to network.");
+		  page += F(" but <strong>not currently connected</strong> to network.");
 	  }
     }
     else {
-		page += F("</hr></hr>No network currently configured.");
+		page += F("No network currently configured.");
 	}
+  page += F("</div>");
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -484,6 +494,8 @@ void WiFiManager::handleWifi(boolean scan) {
     }
   }
 
+  page += F("<h2>Configuration</h2>");
+  page += FPSTR(HTTP_SCAN_LINK);
   page += FPSTR(HTTP_FORM_START);
   char parLength[2];
   // add the extra parameters to the form
@@ -492,7 +504,21 @@ void WiFiManager::handleWifi(boolean scan) {
       break;
     }
 
-    String pitem = FPSTR(HTTP_FORM_PARAM);
+	String pitem;
+	switch (_params[i]->getLabelPlacement()) {
+    case 1:
+	  pitem = FPSTR(HTTP_FORM_LABEL);
+	  pitem += FPSTR(HTTP_FORM_PARAM);
+      break;
+    case 2:
+	  pitem = FPSTR(HTTP_FORM_PARAM);
+	  pitem += FPSTR(HTTP_FORM_LABEL);
+      break;
+    default: 
+      pitem = FPSTR(HTTP_FORM_PARAM);
+    break;
+  }
+
     if (_params[i]->getID() != NULL) {
       pitem.replace("{i}", _params[i]->getID());
       pitem.replace("{n}", _params[i]->getID());
@@ -544,7 +570,6 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   page += FPSTR(HTTP_FORM_END);
-  page += FPSTR(HTTP_SCAN_LINK);
 
   page += FPSTR(HTTP_END);
 
@@ -622,16 +647,15 @@ void WiFiManager::handleServerClose() {
     page += FPSTR(HTTP_STYLE);
     page += _customHeadElement;
     page += FPSTR(HTTP_HEAD_END);
-    page += F("<dl>");
-    page += F("<dt>My network is</dt><dd>");
+    page += F("<div class=\"msg\">");
+    page += F("My network is <strong>");
     page += WiFi.SSID();
-    page += F("</dd>");
-    page += F("<dt>My Ip is </dt><dd>");
+    page += F("</strong><br>");
+    page += F("My IP address is <strong>");
     page += WiFi.localIP().toString();
-    page += F("</dd>");
-    page += F("<dt>Configuration server closed...</dt><dd>");
-    page += F("Push button on device to restart configuration server</dd>");
-    page += F("</dl>");
+    page += F("</strong><br><br>");
+    page += F("Configuration server closed...<br><br>");
+    page += F("Push button on device to restart configuration server!");
     page += FPSTR(HTTP_END);
     server->send(200, "text/html", page);
     stopConfigPortal = true; //signal ready to shutdown config portal
@@ -650,29 +674,31 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += F("<dl>");
-  page += F("<dt>Chip ID</dt><dd>");
+
+  page += F("<h2>WiFi Information</h2><table class=\"table\">");
+  page += F("<thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>Chip ID</td><td>");
   page += ESP.getChipId();
-  page += F("</dd>");
-  page += F("<dt>Flash Chip ID</dt><dd>");
+  page += F("</td></tr>");
+  page += F("<tr><td>Flash Chip ID</td><td>");
   page += ESP.getFlashChipId();
-  page += F("</dd>");
-  page += F("<dt>IDE Flash Size</dt><dd>");
+  page += F("</td></tr>");
+  page += F("<tr><td>IDE Flash Size</td><td>");
   page += ESP.getFlashChipSize();
-  page += F(" bytes</dd>");
-  page += F("<dt>Real Flash Size</dt><dd>");
+  page += F(" bytes</td></tr>");
+  page += F("<tr><td>Real Flash Size</td><td>");
   page += ESP.getFlashChipRealSize();
-  page += F(" bytes</dd>");
-  page += F("<dt>Soft AP IP</dt><dd>");
+  page += F(" bytes</td></tr>");
+  page += F("<tr><td>Soft AP IP</td><td>");
   page += WiFi.softAPIP().toString();
-  page += F("</dd>");
-  page += F("<dt>Soft AP MAC</dt><dd>");
+  page += F("</td></tr>");
+  page += F("<tr><td>Soft AP MAC</td><td>");
   page += WiFi.softAPmacAddress();
-  page += F("</dd>");
-  page += F("<dt>Station MAC</dt><dd>");
+  page += F("</td></tr>");
+  page += F("<tr><td>Station MAC</td><td>");
   page += WiFi.macAddress();
-  page += F("</dd>");
-  page += F("</dl>");
+  page += F("</td></tr>");
+  page += F("</table>");
+
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -756,7 +782,7 @@ void WiFiManager::handleReset() {
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
+  page.replace("{v}", "WiFi Information");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
