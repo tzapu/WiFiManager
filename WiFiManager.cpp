@@ -495,7 +495,6 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   page += F("<h2>Configuration</h2>");
-  page += FPSTR(HTTP_SCAN_LINK);
   page += FPSTR(HTTP_FORM_START);
   char parLength[2];
   // add the extra parameters to the form
