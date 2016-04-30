@@ -233,8 +233,8 @@ boolean WiFiManager::runLoop()
 
 boolean WiFiManager::runLoop(bool internal)
 {
-	if (!_alwaysOnIsOn || internal)
-	{
+	if (!_alwaysOnIsOn && !internal)
+	{ //reset everything 
 	  if (_serverIsConfigured)
 		resetServer();
 	  return false;
