@@ -13,17 +13,17 @@
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
 // with the bootloader, so always set them HIGH at power-up
 // Onboard LED I/O pin on NodeMCU board
-const int PIN_LED = D4; // 2-D4 on NodeMCU and WeMos. Controls the onboard LED.
+const int PIN_LED = 2; // D4 on NodeMCU and WeMos. Controls the onboard LED.
 /* Trigger for inititating config mode is Pin D3 and also flash button on NodeMCU
  * Flash button is convenient to use but if it is pressed it will stuff up the serial port device driver 
  * until the computer is rebooted on windows machines.
  */     
-const int TRIGGER_PIN = D3; // 0-D3 on NodeMCU and WeMos.
+const int TRIGGER_PIN = 0; // D3 on NodeMCU and WeMos.
 /*
  * Alternative trigger pin. Needs to be connected to a button to use this pin. It must be a momentary connection
  * not connected permanently to ground. Either trigger pin will work.
  */
-const int TRIGGER_PIN2 = D7; // 13-D7 on NodeMCU and WeMos.
+const int TRIGGER_PIN2 = 13; // D7 on NodeMCU and WeMos.
 
 const char* CONFIG_FILE = "/config.json";
 
