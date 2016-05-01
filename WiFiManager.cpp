@@ -23,11 +23,11 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "", 1);
+  init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom, 1);
+  init(id, placeholder, defaultValue, length, custom, WFM_LABEL_BEFORE);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
