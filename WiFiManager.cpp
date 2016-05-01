@@ -17,7 +17,7 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _placeholder = NULL;
   _length = 0;
   _value = NULL;
-  _labelPlacement = 1;
+  _labelPlacement = WFM_LABEL_BEFORE;
 
   _customHTML = custom;
 }
