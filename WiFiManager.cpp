@@ -505,15 +505,16 @@ void WiFiManager::handleWifi(boolean scan) {
 
 	String pitem;
 	switch (_params[i]->getLabelPlacement()) {
-    case 1:
+    case WFM_LABEL_BEFORE:
 	  pitem = FPSTR(HTTP_FORM_LABEL);
 	  pitem += FPSTR(HTTP_FORM_PARAM);
       break;
-    case 2:
+    case WFM_LABEL_AFTER:
 	  pitem = FPSTR(HTTP_FORM_PARAM);
 	  pitem += FPSTR(HTTP_FORM_LABEL);
       break;
     default: 
+	  // WFM_NO_LABEL
       pitem = FPSTR(HTTP_FORM_PARAM);
     break;
   }
