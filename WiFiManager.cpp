@@ -195,12 +195,12 @@ boolean  WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  if (WiFi.status() == WL_CONNECTED){
+  int connRes = WiFi.waitForConnectResult();
+  if (connRes == WL_CONNECTED){
 	  WiFi.mode(WIFI_AP_STA); //Dual mode works fine if it is connected to WiFi
 	  DEBUG_WM("SET AP STA");
   	}
   	else {
-	WiFi.disconnect();
     WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
     // I think this might be because too much of the processor is being utilised
     //trying to connect to the network.
@@ -216,7 +216,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   connect = false;
   setupConfigPortal();
-
+  bool TimedOut=true;
   while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
     //DNS
     dnsServer->processNextRequest();
@@ -226,6 +226,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
     if (connect) {
       connect = false;
+      TimedOut=false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
 
@@ -261,7 +262,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
   WiFi.mode(WIFI_STA);
-  delay(3000);
+  if (TimedOut & WiFi.status() != WL_CONNECTED) {
+	WiFi.begin();
+    int connRes = waitForConnectResult();
+    DEBUG_WM ("Timed out connection result: ");
+    DEBUG_WM ( getStatus(connRes));
+    }
   server.reset();
   dnsServer.reset();
   return  WiFi.status() == WL_CONNECTED;
@@ -513,7 +519,7 @@ void WiFiManager::handleWifi(boolean scan) {
 	  pitem = FPSTR(HTTP_FORM_PARAM);
 	  pitem += FPSTR(HTTP_FORM_LABEL);
       break;
-    default: 
+    default:
 	  // WFM_NO_LABEL
       pitem = FPSTR(HTTP_FORM_PARAM);
     break;
@@ -655,7 +661,7 @@ void WiFiManager::handleServerClose() {
     page += WiFi.localIP().toString();
     page += F("</strong><br><br>");
     page += F("Configuration server closed...<br><br>");
-    page += F("Push button on device to restart configuration server!");
+    //page += F("Push button on device to restart configuration server!");
     page += FPSTR(HTTP_END);
     server->send(200, "text/html", page);
     stopConfigPortal = true; //signal ready to shutdown config portal
@@ -793,6 +799,7 @@ void WiFiManager::handleReset() {
 
   DEBUG_WM(F("Sent reset page"));
   delay(5000);
+  WiFi.disconnect(true); // Wipe out WiFi credentials.
   ESP.reset();
   delay(2000);
 }

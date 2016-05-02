@@ -1,3 +1,10 @@
+/*
+This example will open a configuration portal when no WiFi configuration has been previously
+entered or when a button is pushed. It is the easiest scenario for configuration but 
+requires a pin and a button on the ESP8266 device. The Flash button is convenient 
+for this on NodeMCU devices.
+*/
+
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 //needed for library
@@ -20,6 +27,9 @@ const int TRIGGER_PIN = 0; // D3 on NodeMCU and WeMos.
  */
 const int TRIGGER_PIN2 = 13; // D7 on NodeMCU and WeMos.
 
+// Indicates whether ESP has WiFi credentials saved from previous session
+bool initialConfig = false;
+
 void setup() {
   // put your setup code here, to run once:
   // initialize the LED digital pin as an output.
@@ -29,16 +39,7 @@ void setup() {
   WiFi.printDiag(Serial); //Remove this line if you do not want to see WiFi password printed
   if (WiFi.SSID()==""){
     Serial.println("We haven't got any access point credentials, so get them now");   
-    digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
-    //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifiManager;
-    if (!wifiManager.startConfigPortal()) {
-      Serial.println("failed to connect and should not get here");
-      delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
-      delay(5000);
-    }
+    initialConfig = true;
   }
   else{
     digitalWrite(PIN_LED, HIGH); // Turn led off as we are not in configuration mode.
@@ -54,7 +55,7 @@ void setup() {
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   pinMode(TRIGGER_PIN2, INPUT_PULLUP);
   if (WiFi.status()!=WL_CONNECTED){
-    Serial.println("failed to connect, finnishing setup anyway");
+    Serial.println("failed to connect, finishing setup anyway");
   } else{
     Serial.print("local ip: ");
     Serial.println(WiFi.localIP());
@@ -64,7 +65,7 @@ void setup() {
 
 void loop() {
   // is configuration portal requested?
-  if ( (digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW)) {
+  if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW) || (initialConfig)) {
      Serial.println("Configuration portal requested.");
      digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
     //Local intialization. Once its business is done, there is no need to keep it around

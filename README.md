@@ -17,7 +17,7 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 ## Contents
  - [How it works](#how-it-works)
  - [Wishlist](#wishlist)
- - [Evidence The Premise Is Wrong And The Problems It Causes](#Evidence-The-Premise-Is Wrong-And-The-Problems-It-Causes)
+ - [Evidence The Premise Is Wrong And The Problems It Causes](#Evidence-The-Premise-Is-Wrong-And-The-Problems-It-Causes)
  - [Quick start](#quick-start)
    - [Installing](#Installing)
      - [From Github](#checkout-from-github)
