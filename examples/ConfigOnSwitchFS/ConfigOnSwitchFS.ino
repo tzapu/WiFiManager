@@ -126,7 +126,7 @@ void loop() {
     WiFiManagerParameter p_pinScl("pinscl", "I2C SCL pin", convertedValue, 3);
 
     // Just a quick hint
-    WiFiManagerParameter p_hint("<small>*Hint: if you want to reuse the already saved WiFi credentials, leave SSID and Password fields empty</small>");
+    WiFiManagerParameter p_hint("<small>*Hint: if you want to reuse the currently active WiFi credentials, leave SSID and Password fields empty</small>");
     
     // Initialize WiFIManager
     WiFiManager wifiManager;
@@ -153,15 +153,18 @@ void loop() {
     } else {
       // If you get here you have connected to the WiFi
       Serial.println("Connected...yeey :)");
-
-      // Getting parameters from the web form and overriding local variables' values accordingly
-      strcpy(thingspeakApiKey, p_thingspeakApiKey.getValue());
-      sensorDht22 = (strncmp(p_sensorDht22.getValue(), "T", 1) == 0);
-      pinSda = atoi(p_pinSda.getValue());
-      pinScl = atoi(p_pinScl.getValue());
-      // Writing JSON config file to flash for next boot
-      writeConfigFile();
     }
+
+
+    // Getting posted form values and overriding local variables parameters
+    // Config file is written regardless the connection state
+    strcpy(thingspeakApiKey, p_thingspeakApiKey.getValue());
+    sensorDht22 = (strncmp(p_sensorDht22.getValue(), "T", 1) == 0);
+    pinSda = atoi(p_pinSda.getValue());
+    pinScl = atoi(p_pinScl.getValue());
+    // Writing JSON config file to flash for next boot
+    writeConfigFile();
+
     
     digitalWrite(PIN_LED, HIGH); // Turn LED off as we are not in configuration mode.
 
@@ -181,7 +184,7 @@ bool readConfigFile() {
   
   if (!f) {
     Serial.println("Configuration file not found");
-    return true;
+    return false;
   } else {
     // we could open the file
     size_t size = f.size();
