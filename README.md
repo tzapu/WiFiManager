@@ -53,11 +53,10 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 ## How It Looks
 **Default Home Page**
 
- ![ESP8266 WiFi Captive Portal Homepage](images/DefaultScreen.png) 
-
+ ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/v7tyqRJ.png)
 **Configuration Page**
 
-![ESP8266 WiFi Captive Portal Configuration](images/ConfigurationScreen.png)
+![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/FwdXhTp.png)
 
 
 ## Wishlist
