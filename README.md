@@ -15,11 +15,12 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 #### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
 ## Contents
- - [How it works](#how-it-works)
+ - [How It Works](#how-it-works)
+ - [How It Looks](#how-it-looks)
  - [Wishlist](#wishlist)
- - [Evidence The Premise Is Wrong And The Problems It Causes](#Evidence-The-Premise-Is-Wrong-And-The-Problems-It-Causes)
- - [Quick start](#quick-start)
-   - [Installing](#Installing)
+ - [Evidence The Premise Is Wrong And The Problems It Causes](#evidence-the-premise-is-wrong-and-the-problems-it-causes)
+ - [Quick Start](#quick-start)
+   - [Installing](#installing)
      - [From Github](#checkout-from-github)
    - [Using](#using)
  - [Documentation](#documentation)
@@ -48,6 +49,16 @@ The [ConfigOnSwitch] (https://github.com/kentaylor/WiFiManager/tree/master/examp
 - ESP will try to connect. If successful, the IP address on the new network will be displayed in the configuration portal. 
 - The configuration portal will now be visible on two networks, these being it's own network and the network to which it has connected.  On it's own network it will have two IP addresses, the original 192.168.4.1 and the same IP address it has on the network to which it connected.
 - Selecting "close configuration portal" will shutdown the web server, shutdown the ESP8266 WiFi network and return control to the following sketch code.
+
+## How It Looks
+**Default Home Page**
+
+ ![ESP8266 WiFi Captive Portal Homepage](images/DefaultScreen.png) 
+
+**Configuration Page**
+
+![ESP8266 WiFi Captive Portal Configuration](images/ConfigurationScreen.png)
+
 
 ## Wishlist
 - Testing by others to confirm or repudiate the claim that the premise underlying the forked library is incorrect.

@@ -694,12 +694,21 @@ void WiFiManager::handleInfo() {
   page += F("<tr><td>Real Flash Size</td><td>");
   page += ESP.getFlashChipRealSize();
   page += F(" bytes</td></tr>");
-  page += F("<tr><td>Soft AP IP</td><td>");
+  page += F("<tr><td>Access Point IP</td><td>");
   page += WiFi.softAPIP().toString();
   page += F("</td></tr>");
-  page += F("<tr><td>Soft AP MAC</td><td>");
+  page += F("<tr><td>Access Point MAC</td><td>");
   page += WiFi.softAPmacAddress();
   page += F("</td></tr>");
+
+  page += F("<tr><td>SSID</td><td>");
+  page += WiFi.SSID();
+  page += F("</td></tr>");
+
+  page += F("<tr><td>Station IP</td><td>");
+  page += WiFi.localIP().toString();
+  page += F("</td></tr>");
+
   page += F("<tr><td>Station MAC</td><td>");
   page += WiFi.macAddress();
   page += F("</td></tr>");
