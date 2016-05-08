@@ -17,9 +17,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <memory>
-#undef min
-#undef max
-#include <algorithm>
+
 extern "C" {
   #include "user_interface.h"
 }

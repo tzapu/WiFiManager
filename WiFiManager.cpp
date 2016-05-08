@@ -229,7 +229,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
-    if(WiFi.SSID()) {
+    if (WiFi.SSID()) {
       DEBUG_WM("Using last saved values, should be faster");
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
@@ -400,30 +400,30 @@ void WiFiManager::handleWifi(boolean scan) {
       // RSSI SORT
 
       // old sort
-      // for (int i = 0; i < n; i++) {
-      //   for (int j = i + 1; j < n; j++) {
-      //     if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-      //       //int temp = indices[j];
-      //       //indices[j] = indices[i];
-      //       //indices[i] = temp;
-      //       std::swap(indices[i], indices[j]);
-      //     }
-      //   }
-      // }
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+            //int temp = indices[j];
+            //indices[j] = indices[i];
+            //indices[i] = temp;
+            std::swap(indices[i], indices[j]);
+          }
+        }
+      }
 
-      std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
-      {
+      /*std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
+        {
         return WiFi.RSSI(a) > WiFi.RSSI(b);
-      });
+        });*/
 
       // remove duplicates ( must be RSSI sorted )
-      if(_removeDuplicateAPs){
+      if (_removeDuplicateAPs) {
         String cssid;
         for (int i = 0; i < n; i++) {
-          if(indices[i] == -1) continue;
+          if (indices[i] == -1) continue;
           cssid = WiFi.SSID(indices[i]);
           for (int j = i + 1; j < n; j++) {
-            if(cssid == WiFi.SSID(indices[j])){
+            if (cssid == WiFi.SSID(indices[j])) {
               DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
               indices[j] = -1; // set dup aps to index -1
             }
@@ -433,7 +433,7 @@ void WiFiManager::handleWifi(boolean scan) {
 
       //display networks in page
       for (int i = 0; i < n; i++) {
-        if(indices[i] == -1) continue; // skip dups
+        if (indices[i] == -1) continue; // skip dups
         DEBUG_WM(WiFi.SSID(indices[i]));
         DEBUG_WM(WiFi.RSSI(indices[i]));
         int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
