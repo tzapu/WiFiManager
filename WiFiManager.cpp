@@ -149,6 +149,21 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   return startConfigPortal(apName, apPassword);
 }
 
+/**
+ * Process events for the current state
+ */
+void WiFiManager::process() {
+  switch (currentState) {
+    case WIFIMANAGER_STATE_CONFIG_PORTAL:
+      return processConfigPortal();
+
+
+    default:
+      return;
+
+  }
+}
+
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP_STA);
@@ -165,12 +180,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+  currentState = WIFIMANAGER_STATE_CONFIG_PORTAL;
+
+  return true;
+}
+
+// Process incoming http and dns requests
+void WiFiManager::processConfigPortal() {
+  if (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
     //DNS
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
 
     if (connect) {
       connect = false;
@@ -180,6 +201,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
+        if (_shouldBreakAfterConfig) {
+          //flag set to exit after config after trying to connect
+          //notify that configuration has changed and any optional parameters should be saved
+          if ( _savecallback != NULL) {
+            //todo: check if any custom parameters actually exist, and check if they really changed maybe
+            _savecallback();
+          }
+        } else {
+          return;
+        }
       } else {
         //connected
         WiFi.mode(WIFI_STA);
@@ -188,26 +219,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
         }
-        break;
       }
 
-      if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
-      }
+    } else {
+      return;
     }
-    yield();
   }
+  DEBUG_WM(F("Portal deactivated"));
 
+  currentState = WIFIMANAGER_STATE_DEACTIVATED;
   server.reset();
   dnsServer.reset();
 
-  return  WiFi.status() == WL_CONNECTED;
 }
 
 
