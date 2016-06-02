@@ -147,7 +147,7 @@ class WiFiManager
     String        _ssid                   = "";
     String        _pass                   = "";
     unsigned long _configPortalTimeout    = 0;
-    unsigned long _connectTimeout         = 0;
+    unsigned long _connectTimeout         = 30000;
     unsigned long _configPortalStart      = 0;
     unsigned long _connectionStart        = 0;
 
