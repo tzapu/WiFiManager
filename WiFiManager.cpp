@@ -145,7 +145,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   currentState = WIFIMANAGER_STATE_CONNECTING;
   if (connectWifi("", "") == WL_CONNECTED) {
     afterConnected();
+    return true;
   }
+
+  if (!_nonBlocking) return block();
+
   return true;
 
 }
@@ -189,6 +193,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   setupConfigPortal();
 
   currentState = WIFIMANAGER_STATE_CONFIG_PORTAL;
+
+  if (!_nonBlocking) return block();
 
   return true;
 }
@@ -345,6 +351,18 @@ void WiFiManager::afterConnected() {
   DEBUG_WM(WiFi.localIP());
   currentState = WIFIMANAGER_STATE_DEACTIVATED;
 }
+
+/**
+ * Block until process is ended
+ */
+boolean WiFiManager::block() {
+  while (!_nonBlocking && currentState != WIFIMANAGER_STATE_DEACTIVATED) {
+    yield();
+    delay(20);
+    process();
+  }
+  return WiFi.status() == WL_CONNECTED;
+}
 /*
   String WiFiManager::getSSID() {
   if (_ssid == "") {
@@ -386,6 +404,10 @@ void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
 
 void WiFiManager::setConnectTimeout(unsigned long seconds) {
   _connectTimeout = seconds * 1000;
+}
+
+void WiFiManager::setNonBlocking(boolean nonBlocking) {
+  _nonBlocking = nonBlocking;
 }
 
 void WiFiManager::setDebugOutput(boolean debug) {

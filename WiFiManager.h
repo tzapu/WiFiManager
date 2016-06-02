@@ -105,6 +105,9 @@ class WiFiManager
     void          setConnectTimeout(unsigned long seconds);
 
 
+    // Turn on non-blocking mode. This should be called before autoConnect
+    void          setNonBlocking(boolean nonBlocking);
+
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
@@ -142,6 +145,7 @@ class WiFiManager
     char          currentState            = WIFIMANAGER_STATE_INIT;
     void          processConfigPortal();
 
+    boolean       _nonBlocking            = false;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = "";
@@ -174,6 +178,7 @@ class WiFiManager
     uint8_t       waitForConnectResult();
     void          leaveConnecting(uint8_t status);
     void          afterConnected();
+    boolean       block();
 
     void          handleRoot();
     void          handleWifi(boolean scan);
