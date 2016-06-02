@@ -28,6 +28,7 @@ extern "C" {
 #define WIFIMANAGER_STATE_INIT             0
 #define WIFIMANAGER_STATE_CONNECTING       1
 #define WIFIMANAGER_STATE_CONFIG_PORTAL   10
+#define WIFIMANAGER_STATE_CHECKING        11
 #define WIFIMANAGER_STATE_DEACTIVATED    255
 
 
@@ -80,6 +81,11 @@ class WiFiManager
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
+
+    // You can stop an already running config portal with this.
+    // It will destroy the web and dns server, and also make shure that
+    // the wifi is in STA mode
+    void          deactivateConfigPortal();
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();

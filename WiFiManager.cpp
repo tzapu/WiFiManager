@@ -156,6 +156,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 void WiFiManager::process() {
   switch (currentState) {
     case WIFIMANAGER_STATE_CONNECTING:
+    case WIFIMANAGER_STATE_CHECKING:
       waitForConnectResult();
       return;
 
@@ -205,41 +206,28 @@ void WiFiManager::processConfigPortal() {
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
 
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
-        if (_shouldBreakAfterConfig) {
-          //flag set to exit after config after trying to connect
-          //notify that configuration has changed and any optional parameters should be saved
-          if ( _savecallback != NULL) {
-            //todo: check if any custom parameters actually exist, and check if they really changed maybe
-            _savecallback();
-          }
-        } else {
-          return;
-        }
-      } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-      }
+      currentState = WIFIMANAGER_STATE_CHECKING;
 
-    } else {
-      return;
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+        leaveConnecting(WL_CONNECTED);
+      }
+      
     }
+    return;
   }
+
+  deactivateConfigPortal();
+}
+
+void WiFiManager::deactivateConfigPortal() {
   DEBUG_WM(F("Portal deactivated"));
 
   currentState = WIFIMANAGER_STATE_DEACTIVATED;
   server.reset();
   dnsServer.reset();
-
+  WiFi.mode(WIFI_STA);
 }
-
 
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
@@ -310,6 +298,27 @@ void WiFiManager::leaveConnecting(uint8_t status) {
         startWPS();
       } else {
         startConfigPortal(NULL, NULL);
+      }
+      break;
+
+    case WIFIMANAGER_STATE_CHECKING:
+      if (status == WL_CONNECTED) {
+        afterConnected();
+      }
+
+      if (status == WL_CONNECTED || _shouldBreakAfterConfig) {
+        // we stop either if there's a connection or
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        deactivateConfigPortal();
+
+      } else {
+        DEBUG_WM(F("Failed to connect."));
+        currentState = WIFIMANAGER_STATE_CONFIG_PORTAL;
       }
       break;
   }
