@@ -132,6 +132,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
 
+  _apName = apName;
+  _apPassword = apPassword;
+
   // read eeprom for ssid and pass
   //String ssid = getSSID();
   //String pass = getPassword();
@@ -139,14 +142,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  if (connectWifi("", "") == WL_CONNECTED)   {
-    DEBUG_WM(F("IP Address:"));
-    DEBUG_WM(WiFi.localIP());
-    //connected
-    return true;
+  currentState = WIFIMANAGER_STATE_CONNECTING;
+  if (connectWifi("", "") == WL_CONNECTED) {
+    afterConnected();
   }
+  return true;
 
-  return startConfigPortal(apName, apPassword);
 }
 
 /**
@@ -154,6 +155,10 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
  */
 void WiFiManager::process() {
   switch (currentState) {
+    case WIFIMANAGER_STATE_CONNECTING:
+      waitForConnectResult();
+      return;
+
     case WIFIMANAGER_STATE_CONFIG_PORTAL:
       return processConfigPortal();
 
@@ -169,8 +174,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   WiFi.mode(WIFI_AP_STA);
   DEBUG_WM("SET AP STA");
 
-  _apName = apName;
-  _apPassword = apPassword;
+  if (apName != NULL) {
+    _apName = apName;
+    _apPassword = apPassword;
+  }
 
   //notify we entered AP mode
   if ( _apcallback != NULL) {
@@ -264,46 +271,70 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       DEBUG_WM("No saved credentials");
     }
   }
-
-  int connRes = waitForConnectResult();
-  DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( connRes );
-  //not connected, WPS enabled, no pass - first attempt
-  if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
-    startWPS();
-    //should be connected at the end of WPS
-    connRes = waitForConnectResult();
-  }
-  return connRes;
 }
 
+/**
+ * This is the general event processor waiting for wifi
+ * connection. It doesn't matter why we're waiting for: we'll
+ * get here. When a connection is established, or failed
+ * permanently, or the time is out, then we call
+ * leaveConnecting method to decide where to go from the current state
+ */
 uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) {
-    return WiFi.waitForConnectResult();
-  } else {
-    DEBUG_WM (F("Waiting for connection result with time out"));
-    unsigned long start = millis();
-    boolean keepConnecting = true;
-    uint8_t status;
-    while (keepConnecting) {
-      status = WiFi.status();
-      if (millis() > start + _connectTimeout) {
-        keepConnecting = false;
-        DEBUG_WM (F("Connection timed out"));
+  if (!_connectionStart) {
+   _connectionStart = millis();
+  }
+  uint8_t status;
+
+  status = WiFi.status();
+
+  if (_connectTimeout && millis() > _connectionStart + _connectTimeout)
+  {
+    DEBUG_WM (F("Connection timed out"));
+    leaveConnecting(status);
+  }
+  if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+    leaveConnecting(status);
+  }
+  return status;
+}
+
+// Move to the next state from connection
+void WiFiManager::leaveConnecting(uint8_t status) {
+  _connectionStart = 0;
+  switch (currentState) {
+    case WIFIMANAGER_STATE_CONNECTING:
+      if (status == WL_CONNECTED) {
+        afterConnected();
+      } else if (_tryWPS) {
+        startWPS();
+      } else {
+        startConfigPortal(NULL, NULL);
       }
-      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
-        keepConnecting = false;
-      }
-      delay(100);
-    }
-    return status;
+      break;
   }
 }
 
 void WiFiManager::startWPS() {
   DEBUG_WM("START WPS");
+  // TODO: this is currently blocking
   WiFi.beginWPSConfig();
   DEBUG_WM("END WPS");
+
+  if (WiFi.status() == WL_CONNECTED) {
+    afterConnected();
+  } else {
+    startConfigPortal(NULL, NULL);
+  }
+}
+
+/**
+ * Do anything that's necessary after we're connected to a netwrok
+ */
+void WiFiManager::afterConnected() {
+  DEBUG_WM(F("IP Address:"));
+  DEBUG_WM(WiFi.localIP());
+  currentState = WIFIMANAGER_STATE_DEACTIVATED;
 }
 /*
   String WiFiManager::getSSID() {

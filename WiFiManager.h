@@ -143,6 +143,7 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
+    unsigned long _connectionStart        = 0;
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -165,6 +166,8 @@ class WiFiManager
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
+    void          leaveConnecting(uint8_t status);
+    void          afterConnected();
 
     void          handleRoot();
     void          handleWifi(boolean scan);
