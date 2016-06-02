@@ -79,11 +79,11 @@ void WiFiManager::setupConfigPortal() {
 
   DEBUG_WM(F("Configuring access point... "));
   DEBUG_WM(_apName);
-  if (_apPassword != NULL) {
-    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
+  if (_apPassword != "") {
+    if (_apPassword.length() < 8 || _apPassword.length() > 63) {
       // fail passphrase to short or long!
       DEBUG_WM(F("Invalid AccessPoint password. Ignoring"));
-      _apPassword = NULL;
+      _apPassword = "";
     }
     DEBUG_WM(_apPassword);
   }
@@ -94,10 +94,10 @@ void WiFiManager::setupConfigPortal() {
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
-  if (_apPassword != NULL) {
-    WiFi.softAP(_apName, _apPassword);//password option
+  if (_apPassword != "") {
+    WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
-    WiFi.softAP(_apName);
+    WiFi.softAP(_apName.c_str());
   }
 
   delay(500); // Without delay I've seen the IP address blank
