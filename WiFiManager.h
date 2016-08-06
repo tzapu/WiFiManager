@@ -70,6 +70,7 @@ class WiFiManager
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 
     //if you want to always start the config portal, without trying to connect first
+    boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
     // get the AP name of the config portal, so it can be used in the callback
