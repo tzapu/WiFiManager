@@ -1,3 +1,6 @@
+# Doanh Văn Lương
+####Change: now you can configure even you have connected already if you connected wifi, link to change your wifi is your IP address.
+
 # WiFiManager
 ESP8266 WiFi Connection manager with fallback web configuration portal
 
