@@ -1066,7 +1066,7 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    Serial.print("SoftDreams: ");
+    Serial.print("*WM: ");
     Serial.println(text);
   }
 }
