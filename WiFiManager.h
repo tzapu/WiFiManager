@@ -36,7 +36,7 @@ const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div class=\"container
 const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/0wifi\" method=\"get\"><button class=\"btn\">Configuration</button></form><br/><form action=\"/i\" method=\"get\"><button class=\"btn\">Information</button></form><br/><form action=\"/close\" method=\"get\"><button class=\"btn\">Exit Portal</button></form><br/>";
 const char HTTP_ITEM[] PROGMEM            = "<div><a href=\"#p\" onclick=\"c(this)\">{v}</a>&nbsp;<span class=\"q {i}\">{r}%</span></div>";
 const char JSON_ITEM[] PROGMEM            = "{\"SSID\":\"{v}\", \"Encryption\":{i}, \"Quality\":\"{r}\"}";
-const char HTTP_FORM_START[] PROGMEM      = "<form method=\"get\" action=\"wifisave\"><label>SSID&nbsp;<a href=\"/wifi\">Scan</a></label><input id=\"s\" name=\"s\" length=32 placeholder=\"SSID\"><label>Password</label><input id=\"p\" name=\"p\" length=64 type=\"password\" placeholder=\"password\">";
+const char HTTP_FORM_START[] PROGMEM      = "<form method=\"get\" action=\"wifisave\"><label>SSID&nbsp;<a href=\"/wifi\">Scan</a></label><input id=\"s\" name=\"s\" length=32 placeholder=\"SSID\"><label>Password</label><input id=\"p\" name=\"p\" length=64 placeholder=\"password\">";
 const char HTTP_FORM_LABEL[] PROGMEM      = "<label for=\"{i}\">{p}</label>";
 const char HTTP_FORM_PARAM[] PROGMEM      = "<input id=\"{i}\" name=\"{n}\" length={l} placeholder=\"{p}\" value=\"{v}\" {c}>";
 const char HTTP_FORM_END[] PROGMEM        = "<button class=\"btn\" type=\"submit\">save</button></form>";
@@ -144,6 +144,9 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
+    /* hostname for mDNS. Set to a valid internet address so that user
+    will see an information page if they are connected to the wrong network */
+	const char *myHostname = "wifi.urremote.com";
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -176,8 +179,8 @@ class WiFiManager
     void          handleScan();
     void          handleReset();
     void          handleNotFound();
-    void          handle204();
     boolean       captivePortal();
+    void          reportStatus(String &page);
 
     // DNS server
     const byte    DNS_PORT = 53;

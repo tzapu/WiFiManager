@@ -6,6 +6,7 @@
    http://www.esp8266.com/viewtopic.php?f=29&t=2520
    https://github.com/chriscook8/esp-arduino-apboot
    https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/
+   Forked from Tzapu https://github.com/tzapu/WiFiManager
    Built by Ken Taylor https://github.com/kentaylor
    Licensed under MIT license
  **************************************************************/
@@ -132,18 +133,6 @@ void WiFiManager::setupConfigPortal() {
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/state", std::bind(&WiFiManager::handleState, this));
   server->on("/scan", std::bind(&WiFiManager::handleScan, this));
-  /*
-  Not sure about generate_204. Example at https://github.com/esp8266/Arduino/blob/master/libraries/DNSServer/examples/CaptivePortalAdvanced/CaptivePortalAdvanced.ino
-  uses handleRoot but AlexT added handler for generate_204. If I use the generate_204
-  response handler then chromeOS thinks this access point provides internet connectivity.
-  If chromeOS doesn't think it has internet connectivity it will sometimes not send http requests and the
-  device can not be contacted through the browser but if chromeOS does think it has an internet connection scripts running in the background
-  will send requests and get the wrong response. Server can get overwhelmed with requests in this case and other things
-  in the chr4omeOS machine can be stuffed up. When ChromeOS thinks it is a captive portal it will offer a captive portal configuration page
-  and device can be configured from this page. Either way it is not great. Revert to handleRoot.
-  */
-  server->on("/generate_204", std::bind(&WiFiManager::handleRoot, this));  //Android/Chrome OS captive portal check.
-  server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
@@ -202,8 +191,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   	}
   	else {
     WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
-    // I think this might be because too much of the processor is being utilised
-    //trying to connect to the network.
+    // When ESP8266 station is trying to find a target AP, it will scan on every channel,
+    // that means ESP8266 station is changing its channel to scan. This makes the channel of ESP8266 softAP keep changing too..
+    // So the connection may break. From http://bbs.espressif.com/viewtopic.php?t=671#p2531
     DEBUG_WM("SET AP");
 	}
   _apName = apName;
@@ -403,30 +393,9 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
 
-
-
-/** Handle root or redirect to captive portal */
-void WiFiManager::handleRoot() {
-  DEBUG_WM(F("Handle root"));
-  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
-    return;
-  }
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Options");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-  page += "<h1>";
-  page += _apName;
-  page += "</h1>";
-  page += F("<h2>WiFi Manager</h2>");
-  page += FPSTR(HTTP_PORTAL_OPTIONS);
+void WiFiManager::reportStatus(String &page){
   if (WiFi.SSID() != ""){
-	  page += F("<div class=\"msg\">Configured to connect to access point ");
+	  page += F("Configured to connect to access point ");
 	  page += WiFi.SSID();
 	  if (WiFi.status()==WL_CONNECTED){
 		  page += F(" and <strong>currently connected</strong> on IP <a href=\"http://");
@@ -442,6 +411,30 @@ void WiFiManager::handleRoot() {
     else {
 		page += F("No network currently configured.");
 	}
+}
+
+/** Handle root or redirect to captive portal */
+void WiFiManager::handleRoot() {
+  DEBUG_WM(F("Handle root"));
+  if (captivePortal()) { // If caprive portal redirect instead of displaying the error page.
+      return;
+  }
+  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  server->sendHeader("Pragma", "no-cache");
+  server->sendHeader("Expires", "-1");
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Options");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += "<h1>";
+  page += _apName;
+  page += "</h1>";
+  page += F("<h2>WiFi Manager</h2>");
+  page += FPSTR(HTTP_PORTAL_OPTIONS);
+  page += F("<div class=\"msg\">");
+  reportStatus(page);
   page += F("</div>");
   page += FPSTR(HTTP_END);
 
@@ -680,8 +673,11 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-
-  page += F("<h2>WiFi Information</h2><table class=\"table\">");
+  page += F("<h2>WiFi Information</h2>");
+  page += F("Use the Android app from <a href=\"https://play.google.com/store/apps/details?id=au.com.umranium.espconnect\">https://play.google.com/store/apps/details?id=au.com.umranium.espconnect</a> for easier ESP WiFi configuration.<p/>.");
+  reportStatus(page);
+  page += F("<h3>Device Data</h3>");
+  page += F("<table class=\"table\">");
   page += F("<thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>Chip ID</td><td>");
   page += ESP.getChipId();
   page += F("</td></tr>");
@@ -712,8 +708,31 @@ void WiFiManager::handleInfo() {
   page += F("<tr><td>Station MAC</td><td>");
   page += WiFi.macAddress();
   page += F("</td></tr>");
-  page += F("</table>");
+  page += F("</tbody></table>");
 
+  page += F("<h3>Available Pages</h3>");
+  page += F("<table class=\"table\">");
+  page += F("<thead><tr><th>Page</th><th>Function</th></tr></thead><tbody>");
+  page += F("<tr><td><a href=\"/\">/</a></td>");
+  page += F("<td>Menu page.</td></tr>");
+  page += F("<tr><td><a href=\"/wifi\">/wifi</a></td>");
+  page += F("<td>Enter WiFI information after conducting a WiFi Scan.</td></tr>");
+  page += F("<tr><td><a href=\"/0wifi\">/0wifi</a></td>");
+  page += F("<td>Enter WiFI information without conducting a WiFi Scan.</td></tr>");
+  page += F("<tr><td><a href=\"/wifisave\">/wifisave\</a></td>");
+  page += F("<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>");
+  page += F("<tr><td><a href=\"/close\">/close</a></td>");
+  page += F("<td>Close the configuration server and configuration WiFi network.</td></tr>");
+  page += F("<tr><td><a href=\"/i\">/i</a></td>");
+  page += F("<td>This page.</td></tr>");
+  page += F("<tr><td><a href=\"/r\">/r</a></td>");
+  page += F("<td>Delete WiFi configuration and reboot. Will not reconnect to network after calling.</td></tr>");
+  page += F("<tr><td><a href=\"/state\">/state</a></td>");
+  page += F("<td>Current device state in JSON format. Interface for programmatic WiFi configuration.</td></tr>");
+  page += F("<tr><td><a href=\"/scan\">/scan</a></td>");
+  page += F("<td>Run a WiFi scan and return results in JSON format. Interface for programmatic WiFi configuration.</td></tr>");
+  page += F("</table>");
+  page += F("<p/>More information about WiFiManager at <a href=\"https://github.com/kentaylor/WiFiManager\">https://github.com/kentaylor/WiFiManager</a>.");
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -813,21 +832,9 @@ void WiFiManager::handleReset() {
   delay(2000);
 }
 
-
-
-
-void WiFiManager::handle204() {
-  DEBUG_WM(F("204 No Response"));
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  server->setContentLength(0);
-  server->send ( 204, "text/plain", "");
-}
-
 void WiFiManager::handleNotFound() {
-  if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
-    return;
+  if (captivePortal()) { // If caprive portal redirect instead of displaying the error page.
+      return;
   }
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -847,12 +854,12 @@ void WiFiManager::handleNotFound() {
   server->send ( 404, "text/plain", message );
 }
 
-
-/** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
+/** Redirect to captive portal if we got a request for another domain. Return true in
+that case so the page handler do not try to handle the request again. */
 boolean WiFiManager::captivePortal() {
-  if (!isIp(server->hostHeader()) ) {
+  if (!isIp(server->hostHeader()) && server->hostHeader() != (String(myHostname))) {
     DEBUG_WM(F("Request redirected to captive portal"));
-    server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
+    server->sendHeader("Location", ("http://") +String(myHostname), true);
     server->setContentLength(0);
     server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
 //    server->client().stop(); // Stop is needed because we sent no content length
