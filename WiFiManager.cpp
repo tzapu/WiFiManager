@@ -430,10 +430,18 @@ void WiFiManager::handleRoot() {
   page += FPSTR(HTTP_HEAD_END);
   page += "<h2>";
   page += _apName;
+  if (WiFi.SSID() != ""){
 	  if (WiFi.status()==WL_CONNECTED){
 		  page += " on ";
 		  page += WiFi.SSID();
 	  }
+	  else{
+		  page += " <s>on ";
+		  page += WiFi.SSID();
+		  page += "</s>";
+	  }
+
+  }
   page += "</h2>";
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += F("<div class=\"msg\">");
