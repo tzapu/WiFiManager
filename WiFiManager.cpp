@@ -428,10 +428,13 @@ void WiFiManager::handleRoot() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += "<h1>";
+  page += "<h2>";
   page += _apName;
-  page += "</h1>";
-  page += F("<h2>WiFi Manager</h2>");
+	  if (WiFi.status()==WL_CONNECTED){
+		  page += " on ";
+		  page += WiFi.SSID();
+	  }
+  page += "</h2>";
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += F("<div class=\"msg\">");
   reportStatus(page);
@@ -626,6 +629,8 @@ void WiFiManager::handleWifiSave() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += FPSTR(HTTP_SAVED);
+  page.replace("{v}", "ESP" + String(ESP.getChipId()));
+  page.replace("{x}", _ssid);
   page += FPSTR(HTTP_END);
 
   server->send(200, "text/html", page);
@@ -674,7 +679,7 @@ void WiFiManager::handleInfo() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += F("<h2>WiFi Information</h2>");
-  page += F("Use the Android app from <a href=\"https://play.google.com/store/apps/details?id=au.com.umranium.espconnect\">https://play.google.com/store/apps/details?id=au.com.umranium.espconnect</a> for easier ESP WiFi configuration.<p/>.");
+  page += F("Android app from <a href=\"https://play.google.com/store/apps/details?id=au.com.umranium.espconnect\">https://play.google.com/store/apps/details?id=au.com.umranium.espconnect</a> provides easier ESP WiFi configuration.<p/>");
   reportStatus(page);
   page += F("<h3>Device Data</h3>");
   page += F("<table class=\"table\">");
@@ -726,7 +731,7 @@ void WiFiManager::handleInfo() {
   page += F("<tr><td><a href=\"/i\">/i</a></td>");
   page += F("<td>This page.</td></tr>");
   page += F("<tr><td><a href=\"/r\">/r</a></td>");
-  page += F("<td>Delete WiFi configuration and reboot. Will not reconnect to network after calling.</td></tr>");
+  page += F("<td>Delete WiFi configuration and reboot. ESP device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>");
   page += F("<tr><td><a href=\"/state\">/state</a></td>");
   page += F("<td>Current device state in JSON format. Interface for programmatic WiFi configuration.</td></tr>");
   page += F("<tr><td><a href=\"/scan\">/scan</a></td>");

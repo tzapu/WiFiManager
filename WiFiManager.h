@@ -40,7 +40,7 @@ const char HTTP_FORM_START[] PROGMEM      = "<form method=\"get\" action=\"wifis
 const char HTTP_FORM_LABEL[] PROGMEM      = "<label for=\"{i}\">{p}</label>";
 const char HTTP_FORM_PARAM[] PROGMEM      = "<input id=\"{i}\" name=\"{n}\" length={l} placeholder=\"{p}\" value=\"{v}\" {c}>";
 const char HTTP_FORM_END[] PROGMEM        = "<button class=\"btn\" type=\"submit\">save</button></form>";
-const char HTTP_SAVED[] PROGMEM           = "<div class=\"msg\"><strong>Credentials Saved</strong><br>Trying to connect ESP to network.<br>Give it 30 seconds or so and check on the <a href=\"/\">main page</a> how it went. It can take as long as minute for the web server to restart.</div>";
+const char HTTP_SAVED[] PROGMEM           = "<div class=\"msg\"><strong>Credentials Saved</strong><br>Trying to connect ESP to the {x} network.<br>Give it 10 seconds or so and check <a href=\"/\">how it went.</a> <p/>The {v} network you are connected to will be restarted on the radio channel of the {x} network. You may have to manually reconnect to the {v} network.</div>";
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
