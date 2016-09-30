@@ -7,23 +7,23 @@ The configuration portal is captive, so it will present the configuration dialog
 
 This is an extensive modification of an existing library. The major changes are:-
 
-- Portal [continues to exist](#Portal-Continues-To-Exist-After-Configuration) after configuring the ESP device to provide user feedback on success or otherwise.
-- Provides [guidance](#User-Guidance-At-The-Same-Address-Regardless-of-Network) to users when they are not connected to the correct network.
-- Supports [configuration from apps](#Programmatic-Configuration) including the [ESP Connect](https://play.google.com/store/apps/details?id=au.com.umranium.espconnect) Android app. 
-- Relies on [automatic connectivity.](#Relies-On-Automatic-Connectivity)
-- [Configuration portal initiation not automatic](#Configuration-Portal-Initiation-Not-Automatic) when a configured WiFi network is not visible.
-- Selectively operates in [dual mode](#Selectively-Operates-In-Dual-Mode)
+- Portal [continues to exist](#portal-continues-to-exist-after-configuration) after configuring the ESP device to provide user feedback on success or otherwise.
+- Provides [guidance](#user-guidance-at-the-same-address-regardless-of-network) to users when they are not connected to the correct network.
+- Supports [configuration from apps](#programmatic-configuration) including the [ESP Connect](https://play.google.com/store/apps/details?id=au.com.umranium.espconnect) Android app. 
+- Relies on [automatic connectivity.](#relies-on-automatic-connectivity)
+- [Configuration portal initiation not automatic](#configuration-portal-initiation-not-automatic) when a configured WiFi network is not visible.
+- Selectively operates in [dual mode](#selectively-operates-in-dual-mode)
 
 This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
 ## Contents
  - [Features](#Features)
-   - [Portal Continues To Exist After Configuration](#Portal-Continues-To-Exist-After-Configuration)
-   - [User Guidance At The Same Address Regardless of Network](#User-Guidance-At-The-Same-Address-Regardless-of-Network)
-   - [Programmatic Configuration](#Programmatic-Configuration)
-   - [Relies On Automatic Connectivity](#Relies-On-Automatic-Connectivity)
-   - [Configuration Portal Initiation Not Automatic](#Configuration-Portal-Initiation-Not-Automatic)
-   - [Selectively Operates In Dual Mode](#Selectively-Operates-In-Dual-Mode)
+   - [Portal Continues To Exist After Configuration](#portal-continues-to-exist-after-configuration)
+   - [User Guidance At The Same Address Regardless of Network](#user-guidance-at-the-same-address-regardless-of-network)
+   - [Programmatic Configuration](#programmatic-configuration)
+   - [Relies On Automatic Connectivity](#relies-on-automatic-connectivity)
+   - [Configuration Portal Initiation Not Automatic](#configuration-portal-initiation-not-automatic)
+   - [Selectively Operates In Dual Mode](#selectively-operates-in-dual-mode)
  - [How It Works](#how-it-works)
  - [How It Looks](#how-it-looks)
  - [Wishlist](#wishlist)
