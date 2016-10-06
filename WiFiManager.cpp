@@ -120,7 +120,58 @@ void WiFiManager::setupConfigPortal() {
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
+}
 
+void WiFiManager::setupConfigPortalSTA() {
+  dnsServer.reset(new DNSServer());
+  server.reset(new ESP8266WebServer(80));
+
+  DEBUG_WM(F(""));
+  _configPortalStart = millis();
+
+  DEBUG_WM(F("Configuring access point... "));
+  DEBUG_WM(_apName);
+  if (_apPassword != NULL) {
+    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
+      // fail passphrase to short or long!
+      DEBUG_WM(F("Invalid AccessPoint password. Ignoring"));
+      _apPassword = NULL;
+    }
+    DEBUG_WM(_apPassword);
+  }
+
+  //optional soft ip config
+  if (_ap_static_ip) {
+    DEBUG_WM(F("Custom AP IP/GW/Subnet"));
+    WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
+  }
+
+  if (_apPassword != NULL) {
+    WiFi.softAP(_apName, _apPassword);//password option
+  } else {
+    WiFi.softAP(_apName);
+  }
+
+  delay(500); // Without delay I've seen the IP address blank
+  DEBUG_WM(F("AP IP address: "));
+  DEBUG_WM(WiFi.softAPIP());
+
+  /* Setup the DNS server redirecting all the domains to the apIP */
+  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
+
+  /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
+  server->on("/", std::bind(&WiFiManager::handleRootSTA, this));
+  server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
+  server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
+  server->on("/wifisave", std::bind(&WiFiManager::handleWifiSaveSTA, this));
+  server->on("/i", std::bind(&WiFiManager::handleInfo, this));
+  server->on("/r", std::bind(&WiFiManager::handleReset, this));
+  //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
+  server->on("/fwlink", std::bind(&WiFiManager::handleRootSTA, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+  server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  server->begin(); // Web server start
+  DEBUG_WM(F("HTTP server started to Reconnect"));
 }
 
 boolean WiFiManager::autoConnect() {
@@ -143,10 +194,126 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
-    return true;
+    return startConfigPortalSTA();
   }
 
   return startConfigPortal(apName, apPassword);
+}
+
+boolean WiFiManager::autoConnectSTA(char const *apName, char const *apPassword)
+{
+	DEBUG_WM(F(""));
+  DEBUG_WM(F("AutoConnectSTA"));
+
+  // read eeprom for ssid and pass
+  //String ssid = getSSID();
+  //String pass = getPassword();
+
+  // attempt to connect; should it fail, fall back to AP
+  WiFi.mode(WIFI_STA);
+
+  if (connectWifi("", "") == WL_CONNECTED)   {
+    DEBUG_WM(F("IP Address:"));
+    DEBUG_WM(WiFi.localIP());
+    //connected
+    return startConfigPortalSTA();
+  }
+
+  return startConfigPortalReconnect(apName, apPassword);
+}
+
+
+boolean WiFiManager::startConfigPortalSTA()
+{
+  connect = false;
+  dnsServer.reset(new DNSServer());
+  server.reset(new ESP8266WebServer(80));
+
+  /* Setup the DNS server redirecting all the domains to the apIP */
+  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer->start(DNS_PORT, "*", WiFi.localIP());
+
+  /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
+  server->on("/", std::bind(&WiFiManager::handleRootSTA, this));
+  server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
+  server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
+  server->on("/wifisave", std::bind(&WiFiManager::handleWifiSaveSTA, this));
+  server->on("/i", std::bind(&WiFiManager::handleInfo, this));
+  server->on("/r", std::bind(&WiFiManager::handleReset, this));
+  //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
+  server->on("/fwlink", std::bind(&WiFiManager::handleRootSTA, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+  server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  server->begin(); // Web server start
+  DEBUG_WM(F("HTTP server started on STA Mode"));
+
+  return true;
+}
+
+void WiFiManager::AccessDNSServer()
+{
+  //DNS
+  dnsServer->processNextRequest();
+  //HTTP
+  server->handleClient();
+}
+
+boolean  WiFiManager::startConfigPortalReconnect(char const *apName, char const *apPassword) {
+  //setup AP
+  WiFi.mode(WIFI_AP_STA);
+  DEBUG_WM("SET AP STA");
+
+  _apName = apName;
+  _apPassword = apPassword;
+
+  //notify we entered AP mode
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
+
+  connect = false;
+  setupConfigPortalSTA();
+
+  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+    //DNS
+    dnsServer->processNextRequest();
+    //HTTP
+    server->handleClient();
+    if (connect) {
+      connect = false;
+      delay(2000);
+      DEBUG_WM(F("Connecting to new AP"));
+
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+        DEBUG_WM(F("Failed to connect."));
+		continue;
+      } else {
+        //connected
+        WiFi.softAPdisconnect(true);
+		delay(1000);
+        WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+
+      if (_shouldBreakAfterConfig) {
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+    }
+    yield();
+  }
+
+  return  WiFi.status() == WL_CONNECTED;
 }
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
@@ -170,8 +337,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
-
     if (connect) {
       connect = false;
       delay(2000);
@@ -182,6 +347,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         DEBUG_WM(F("Failed to connect."));
       } else {
         //connected
+        WiFi.softAPdisconnect(true);
+		delay(1000);
         WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
@@ -204,12 +371,72 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
 
-  server.reset();
-  dnsServer.reset();
+//   server.reset();
+//   dnsServer.reset();
 
   return  WiFi.status() == WL_CONNECTED;
 }
 
+int WiFiManager::connectWifiSTA(String ssid, String pass) {
+  DEBUG_WM(F("Connecting as wifi client STA..."));
+
+  String ssidSTA = "";
+  String passSTA = "";
+  //fix for auto connect racing issue
+  if (WiFi.status() == WL_CONNECTED && ssid == WiFi.SSID()) {
+    DEBUG_WM("Already connected. Bailing out.");
+    return WL_CONNECTED;
+  }
+  //check if we have ssid and pass and force those, if not, try with last saved values
+  if (ssid != "" && ssid != WiFi.SSID()) {
+
+    ssidSTA = WiFi.SSID();
+    passSTA = WiFi.psk();
+    WiFi.disconnect(true);
+	delay(100);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid.c_str(), pass.c_str());
+    delay(3000);
+  } else {
+    if (WiFi.SSID()) {
+      DEBUG_WM("Using last saved values, should be faster");
+      //trying to fix connection in progress hanging
+      ETS_UART_INTR_DISABLE();
+      wifi_station_disconnect();
+      ETS_UART_INTR_ENABLE();
+
+      WiFi.begin();
+    } else {
+      DEBUG_WM("No saved credentials");
+    }
+  }
+
+  int connRes = waitForConnectResult();
+  DEBUG_WM ("Connection result: ");
+  DEBUG_WM ( connRes );
+  //not connected, WPS enabled, no pass - first attempt
+  if (connRes != WL_CONNECTED) {
+	  WiFi.disconnect(true);
+	  delay(100);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssidSTA.c_str(), passSTA.c_str());
+	delay(3000);
+    DEBUG_WM(F("Failed to connect STA: "));
+    DEBUG_WM(ssid);
+    DEBUG_WM(F("Reconnect to:"));
+    DEBUG_WM(ssidSTA);
+    connRes = waitForConnectResult();
+    DEBUG_WM(F("Old IP address: "));
+    DEBUG_WM(WiFi.localIP());
+  }
+  else
+  {
+    DEBUG_WM(F("Success!"));
+    DEBUG_WM(F("New IP address: "));
+    DEBUG_WM(WiFi.localIP());
+  }
+  return connRes;
+}
 
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
@@ -228,6 +455,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
+    delay(3000);
   } else {
     if (WiFi.SSID()) {
       DEBUG_WM("Using last saved values, should be faster");
@@ -237,6 +465,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       ETS_UART_INTR_ENABLE();
 
       WiFi.begin();
+      delay(3000);
     } else {
       DEBUG_WM("No saved credentials");
     }
@@ -365,7 +594,7 @@ void WiFiManager::handleRoot() {
   page += "<h1>";
   page += _apName;
   page += "</h1>";
-  page += F("<h3>WiFiManager</h3>");
+  page += F("<h3>SoftDreams</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += FPSTR(HTTP_END);
 
@@ -373,6 +602,29 @@ void WiFiManager::handleRoot() {
 
 }
 
+/** Handle root STA or redirect to captive portal */
+void WiFiManager::handleRootSTA() {
+  DEBUG_WM(F("Handle root STA"));
+  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+    return;
+  }
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Options");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += "<h1>";
+  page += WiFi.SSID();
+  page += "</h1>";
+  page += F("<h3>SoftDreams</h3>");
+  page += FPSTR(HTTP_PORTAL_OPTIONS);
+  page += FPSTR(HTTP_END);
+
+  server->send(200, "text/html", page);
+
+}
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
 
@@ -529,6 +781,103 @@ void WiFiManager::handleWifi(boolean scan) {
 }
 
 /** Handle the WLAN save form and redirect to WLAN config page again */
+void WiFiManager::handleWifiSaveSTA() {
+  DEBUG_WM(F("WiFi save STA"));
+
+  //SAVE/connect here
+  _ssid = server->arg("s").c_str();
+  _pass = server->arg("p").c_str();
+
+  //parameters
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+    //read parameter
+    String value = server->arg(_params[i]->getID()).c_str();
+    //store it in array
+    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    DEBUG_WM(F("Parameter"));
+    DEBUG_WM(_params[i]->getID());
+    DEBUG_WM(value);
+  }
+
+  if (server->arg("ip") != "") {
+    DEBUG_WM(F("static ip"));
+    DEBUG_WM(server->arg("ip"));
+    //_sta_static_ip.fromString(server->arg("ip"));
+    String ip = server->arg("ip");
+    optionalIPFromString(&_sta_static_ip, ip.c_str());
+  }
+  if (server->arg("gw") != "") {
+    DEBUG_WM(F("static gateway"));
+    DEBUG_WM(server->arg("gw"));
+    String gw = server->arg("gw");
+    optionalIPFromString(&_sta_static_gw, gw.c_str());
+  }
+  if (server->arg("sn") != "") {
+    DEBUG_WM(F("static netmask"));
+    DEBUG_WM(server->arg("sn"));
+    String sn = server->arg("sn");
+    optionalIPFromString(&_sta_static_sn, sn.c_str());
+  }
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Credentials Saved");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_SAVED);
+  page += FPSTR(HTTP_END);
+
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent wifi save page STA"));
+
+  connect = true; //signal ready to connect/reset
+
+  for (int i = 0; i < 10; i++)
+  {
+    //DNS
+    dnsServer->processNextRequest();
+    //HTTP
+    server->handleClient();
+    if (connect) {
+      connect = false;
+      delay(2000);
+      DEBUG_WM(F("Connecting to new STA"));
+
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifiSTA(_ssid, _pass) != WL_CONNECTED) {
+        DEBUG_WM(F("Failed to connect."));
+      } else {
+        //connected
+        WiFi.mode(WIFI_STA);
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+
+      if (_shouldBreakAfterConfig) {
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        break;
+      }
+    }
+  }
+
+  yield();
+}
+
+/** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
 
@@ -655,7 +1004,7 @@ void WiFiManager::handleReset() {
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
   server->send ( 204, "text/plain", "");
-}*/
+  }*/
 
 void WiFiManager::handleNotFound() {
   if (captivePortal()) { // If captive portal redirect instead of displaying the error page.

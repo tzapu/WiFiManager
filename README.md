@@ -1,3 +1,18 @@
+# Doanh Văn Lương
+####Change: now you can configure even you have connected already if you connected wifi, link to change your wifi is your IP address.
+see Example: AutoConnectWithServer.ino
+ - just add
+```
+wifiManager.AccessDNSServer();
+```
+to loop() function like this:
+```
+loop()
+{
+  wifiManager.AccessDNSServer();
+}
+```
+
 # WiFiManager
 ESP8266 WiFi Connection manager with fallback web configuration portal
 
