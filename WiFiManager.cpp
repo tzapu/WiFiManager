@@ -371,8 +371,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
 
-  server.reset();
-  dnsServer.reset();
+//   server.reset();
+//   dnsServer.reset();
 
   return  WiFi.status() == WL_CONNECTED;
 }
