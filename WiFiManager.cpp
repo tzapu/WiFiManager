@@ -149,6 +149,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   return startConfigPortal(apName, apPassword);
 }
 
+boolean WiFiManager::startConfigPortal() {
+  String ssid = "ESP" + String(ESP.getChipId());
+  return startConfigPortal(ssid.c_str(), NULL);
+}
+
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP_STA);
