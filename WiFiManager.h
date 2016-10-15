@@ -29,6 +29,7 @@ const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div style='text-align
 const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/><form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form><br/><form action=\"/i\" method=\"get\"><button>Info</button></form><br/><form action=\"/r\" method=\"post\"><button>Reset</button></form>";
 const char HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
 const char HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/>";
+const char HTTP_FORM_LABEL[] PROGMEM      = "<label for=\"{i}\">{p}</label>";
 const char HTTP_FORM_PARAM[] PROGMEM      = "<br/><input id='{i}' name='{n}' length={l} placeholder='{p}' value='{v}' {c}>";
 const char HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>save</button></form>";
 const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wifi\">Scan</a></div>";
@@ -37,25 +38,33 @@ const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
 
+#define WFM_LABEL_BEFORE 1
+#define WFM_LABEL_AFTER 2
+#define WFM_NO_LABEL 0
+
 class WiFiManagerParameter {
   public:
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
+    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
     const char *getID();
     const char *getValue();
     const char *getPlaceholder();
     int         getValueLength();
+    int         getLabelPlacement();
     const char *getCustomHTML();
   private:
     const char *_id;
     const char *_placeholder;
     char       *_value;
     int         _length;
+    int         _labelPlacement;
     const char *_customHTML;
 
     void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
+    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
     friend class WiFiManager;
 };

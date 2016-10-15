@@ -17,22 +17,23 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _placeholder = NULL;
   _length = 0;
   _value = NULL;
-
+  _labelPlacement = WFM_LABEL_BEFORE;
   _customHTML = custom;
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "");
+  init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom);
+  init(id, placeholder, defaultValue, length, custom, WFM_LABEL_BEFORE);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
+void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
   _id = id;
   _placeholder = placeholder;
   _length = length;
+  _labelPlacement = labelPlacement;
   _value = new char[length + 1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
@@ -55,6 +56,9 @@ const char* WiFiManagerParameter::getPlaceholder() {
 }
 int WiFiManagerParameter::getValueLength() {
   return _length;
+}
+int WiFiManagerParameter::getLabelPlacement() {
+  return _labelPlacement;
 }
 const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
@@ -115,8 +119,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
-  //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
-  server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
+  //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
@@ -471,7 +474,22 @@ void WiFiManager::handleWifi(boolean scan) {
       break;
     }
 
-    String pitem = FPSTR(HTTP_FORM_PARAM);
+    //String pitem = FPSTR(HTTP_FORM_PARAM);
+    String pitem;
+    switch (_params[i]->getLabelPlacement()) {
+      case WFM_LABEL_BEFORE:
+        pitem = FPSTR(HTTP_FORM_LABEL);
+        pitem += FPSTR(HTTP_FORM_PARAM);
+        break;
+      case WFM_LABEL_AFTER:
+        pitem = FPSTR(HTTP_FORM_PARAM);
+        pitem += FPSTR(HTTP_FORM_LABEL);
+        break;
+      default:
+        // WFM_NO_LABEL
+        pitem = FPSTR(HTTP_FORM_PARAM);
+        break;
+    }
     if (_params[i]->getID() != NULL) {
       pitem.replace("{i}", _params[i]->getID());
       pitem.replace("{n}", _params[i]->getID());
