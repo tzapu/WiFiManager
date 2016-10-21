@@ -175,8 +175,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
-
+    // this helps us to exit config portal from custom method
+    if ( _isConfigPortalExitable != NULL && _isConfigPortalExitable()) {
+        break;
+    }
     if (connect) {
       connect = false;
       delay(2000);
@@ -352,6 +354,10 @@ void WiFiManager::setMinimumSignalQuality(int quality) {
 
 void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
+}
+
+void WiFiManager::setConfigPortalExitable(boolean (*func)(void) ) {
+  __isConfigPortalExitable = func;
 }
 
 /** Handle root or redirect to captive portal */
