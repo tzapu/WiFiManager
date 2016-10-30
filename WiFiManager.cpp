@@ -71,7 +71,13 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 WiFiManager::WiFiManager() {
+	//Do a network scan before setting up an access point so as not to close WiFiNetwork while scanning.
+	numberOfNetworks = scanWifiNetworks(networkIndicesptr);
 }
+WiFiManager::~WiFiManager() {
+    free(networkIndices); //indices array no longer required so free memory
+}
+
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
   _params[_paramsCount] = p;
@@ -125,8 +131,7 @@ void WiFiManager::setupConfigPortal() {
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on("/", std::bind(&WiFiManager::handleRoot, this));
-  server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
-  server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
+  server->on("/wifi", std::bind(&WiFiManager::handleWifi, this));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/close", std::bind(&WiFiManager::handleServerClose, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
@@ -179,7 +184,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 boolean  WiFiManager::startConfigPortal() {
   String ssid = "ESP" + String(ESP.getChipId());
-  return startConfigPortal(ssid.c_str());
+  return startConfigPortal(ssid.c_str(),NULL);
 }
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
@@ -455,7 +460,7 @@ void WiFiManager::handleRoot() {
 }
 
 /** Wifi config page handler */
-void WiFiManager::handleWifi(boolean scan) {
+void WiFiManager::handleWifi() {
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
@@ -465,47 +470,36 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-
-  if (scan) {
-    int n;
-    int *indices;
-    int **indicesptr = &indices;
-    //Space for indices array allocated on heap in scanWifiNetworks
-    //and should be freed when indices no longer required.
-    n = scanWifiNetworks(indicesptr);
-    DEBUG_WM(F("scanWifiNetworks done"));
-    if (n == 0) {
-      page += F("No networks found. Refresh to scan again.");
+  page += F("<h2>Configuration</h2>");
+  //Print list of WiFi networks that were found in earlier scan
+    if (numberOfNetworks == 0) {
+      page += F("WiFi scan found no networks. Restart configuration portal to scan again.");
     } else {
       //display networks in page
-      for (int i = 0; i < n; i++) {
-        if(indices[i] == -1) continue; // skip dups and those that are below the required quality
+      for (int i = 0; i < numberOfNetworks; i++) {
+        if(networkIndices[i] == -1) continue; // skip dups and those that are below the required quality
 
-        DEBUG_WM(WiFi.SSID(indices[i]));
-        DEBUG_WM(WiFi.RSSI(indices[i]));
-        int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
+        DEBUG_WM(WiFi.SSID(networkIndices[i]));
+        DEBUG_WM(WiFi.RSSI(networkIndices[i]));
+        int quality = getRSSIasQuality(WiFi.RSSI(networkIndices[i]));
 
         String item = FPSTR(HTTP_ITEM);
         String rssiQ;
         rssiQ += quality;
-        item.replace("{v}", WiFi.SSID(indices[i]));
+        item.replace("{v}", WiFi.SSID(networkIndices[i]));
         item.replace("{r}", rssiQ);
-        if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
+        if (WiFi.encryptionType(networkIndices[i]) != ENC_TYPE_NONE) {
           item.replace("{i}", "l");
         } else {
-          item.replace("{i}", "");
+            item.replace("{i}", "");
         }
         //DEBUG_WM(item);
         page += item;
         delay(0);
-      }
-
-      page += "<br/>";
-      free(indices); //indices array no longer required so free memory
+        }
+    page += "<br/>";
     }
-  }
 
-  page += F("<h2>Configuration</h2>");
   page += FPSTR(HTTP_FORM_START);
   char parLength[2];
   // add the extra parameters to the form
@@ -730,9 +724,7 @@ void WiFiManager::handleInfo() {
   page += F("<tr><td><a href=\"/\">/</a></td>");
   page += F("<td>Menu page.</td></tr>");
   page += F("<tr><td><a href=\"/wifi\">/wifi</a></td>");
-  page += F("<td>Enter WiFI information after conducting a WiFi Scan.</td></tr>");
-  page += F("<tr><td><a href=\"/0wifi\">/0wifi</a></td>");
-  page += F("<td>Enter WiFI information without conducting a WiFi Scan.</td></tr>");
+  page += F("<td>Show WiFi scan results and enter WiFi configuration.</td></tr>");
   page += F("<tr><td><a href=\"/wifisave\">/wifisave\</a></td>");
   page += F("<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>");
   page += F("<tr><td><a href=\"/close\">/close</a></td>");
