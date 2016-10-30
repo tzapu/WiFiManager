@@ -11,7 +11,8 @@ This is an extensive modification of an existing library. The major changes are:
 - Provides [guidance](#user-guidance-at-the-same-address-regardless-of-network) to users when they are not connected to the correct network.
 - Supports [configuration from apps](#programmatic-configuration) including the [ESP Connect](https://play.google.com/store/apps/details?id=au.com.umranium.espconnect) Android app. 
 - Relies on [automatic connectivity.](#relies-on-automatic-connectivity)
-- [Configuration portal initiation not automatic](#configuration-portal-initiation-not-automatic) when a configured WiFi network is not visible.
+- Configuration portal initiation [not automatic](#configuration-portal-initiation-not-automatic) when a configured WiFi network is not visible.
+- Configuration portal initiated by [double pressing](#configuration-portal-initiated-by-double-pressing-the-reset-button) the reset button. 
 - Selectively operates in [dual mode](#selectively-operates-in-dual-mode)
 
 This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
@@ -23,11 +24,11 @@ This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 
    - [Programmatic Configuration](#programmatic-configuration)
    - [Relies On Automatic Connectivity](#relies-on-automatic-connectivity)
    - [Configuration Portal Initiation Not Automatic](#configuration-portal-initiation-not-automatic)
+   - [Configuration portal initiated by double pressing the reset button ](#configuration-portal-initiated-by-double-pressing-the-reset-button) 
    - [Selectively Operates In Dual Mode](#selectively-operates-in-dual-mode)
  - [How It Works](#how-it-works)
  - [How It Looks](#how-it-looks)
  - [Wishlist](#wishlist)
- - [Evidence The Premise Is Wrong And The Problems It Causes](#evidence-the-premise-is-wrong-and-the-problems-it-causes)
  - [Quick Start](#quick-start)
    - [Installing](#installing)
      - [From Github](#checkout-from-github)
@@ -68,9 +69,14 @@ An ESP8266 stores access point credentials in non volatile memory so these detai
 Older versions of the Espressif library [had a bug](https://github.com/esp8266/Arduino/issues/1997) so that trying to use calls to the Espressif library to connect to a network can sometimes cause the WiFi connectivity to fail until it is rebooted and occasionally can also brick the ESP8266. If you have a device bricked this way it [can be recovered](https://github.com/kentaylor/EraseEsp8266Flash).
 
 ### Configuration Portal Initiation Not Automatic
-WiFi networks can be unavailable temporarily and only a human can know whether the solution to failing to connect is to change the WiFi connection data. Therefore a configuration portal is never initiated automatically when the ESP device can not connect to the configured WiFi access point. 
+WiFi networks can be unavailable temporarily and only a human can know whether the solution to failing to connect is to change the WiFi connection data. Therefore a configuration portal is not initiated automatically when the ESP device can not connect to the configured WiFi access point. 
 
-The configuration portal is launched if no WiFi configuration data has been stored or a button is pressed. A configuration portal can be launched on start up, if programmed that way,  but this is inadvisable for most use cases.
+The configuration portal is launched if no WiFi configuration data has been stored or a button is pressed. On a Node MCU board the Flash button can be reused as the configuration portal button. 
+
+A configuration portal can be launched on every start up for a minute or so, [if programmed that way](/tree/master/examples/ConfigOnStartup "Example of a configuration portal launched at start up"), but the delay in application start up is unacceptible for most use cases.
+
+### Configuration portal initiated by double pressing the reset button.
+This method avoids the use of a pin for launching the configuration portal.  In the [provided example](/tree/master/examples/ConfigOnDoubleReset "Launch configuration on double reset example")  a double press on a button connected to the reset pin can be used to initiate a configuration portal. This works well on development boards that have a reset button like the [Wemos](https://www.wemos.cc/product/d1-mini-pro.html).
 
 ### Selectively Operates In Dual Mode
 The ESP8266 can simultaneously connect to a Wifi network and run it's own WiFi network in which case it switches the radio channel of it's own network to match the network to which it is attached. When it is searching for a network, the radio channel is changing all the time which makes connecting to it's network flaky. 
@@ -243,4 +249,61 @@ The options are:
 - inject custom head element
 You can use this to any html bit to the head of the configuration portal. If you add a `<style>` element, bare in mind it overwrites the included css, not replaces.
 ```cpp
-wifiManager.setCustomHeadElement("<style>html{filter: invert(100%); -webkit-filter: invert(100%);}<
+wifiManager.setCustomHeadElement("<style>html{filter: invert(100%); -webkit-filter: invert(100%);}</style>");
+```
+- inject a custom bit of html in the configuration form
+```cpp
+WiFiManagerParameter custom_text("<p>This is just a text paragraph</p>");
+wifiManager.addParameter(&custom_text);
+```
+- inject a custom bit of html in a configuration form element
+Just add the bit you want added as the last parameter to the custom parameter constructor.
+```cpp
+WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "iot.eclipse", 40, " readonly");
+```
+
+#### Filter Networks
+You can filter networks based on signal quality and show/hide duplicate networks.
+
+- If you would like to filter low signal quality networks you can tell WiFiManager to not show networks below an arbitrary quality %;
+```cpp
+wifiManager.setMinimumSignalQuality(10);
+```
+will not show networks under 10% signal quality. If you omit the parameter it defaults to 8%;
+
+- You can also remove or show duplicate networks (default is remove).
+Use this function to show (or hide) all networks.
+```cpp
+wifiManager.setRemoveDuplicateAPs(false);
+```
+
+#### Debug
+Debug is enabled by default on Serial. To disable add before `startConfigPortal()`
+```cpp
+wifiManager.setDebugOutput(false);
+```
+
+## Troubleshooting
+If you get compilation errors, more often than not, you may need to install a newer version of the ESP8266 core for Arduino.
+
+Tested down to ESP8266 core 2.0.0. 
+
+Sometimes, the library will only work if you update the ESP8266 core to the latest version because I am using some newly added function.
+
+If you connect to the created configuration Access Point but the configuration portal does not show up, just open a browser and type in the IP of the web portal, by default `192.168.4.1`.
+
+
+## Releases
+#### 0.11
+- forked from this version of the tzapu's WiFi Manager.
+
+See [tzapu's version](https://github.com/tzapu/WiFiManager) for previous release information.
+
+
+### Contributions and thanks
+Forked from [tzapu](https://github.com/tzapu/WiFiManager) and additional contributions from [Battika](https://github.com/battika) and  [DataCute](https://github.com/datacute/DoubleResetDetector "Double Reset Detector Repository"). Android partner app by [Umran Abdulla](https://play.google.com/store/apps/details?id=au.com.umranium.espconnect).
+
+
+#### Inspiration
+I expected to knock the WiFi connection code over in an afternoon after being inspired by
+http://www.esp8266.com/viewtopic.php?f=29&t=2520 . It was taking longer. Then I came across tzapu's implementation which failed for me and this is my attempt to address the issues I discovered. Some weeks have gone by.

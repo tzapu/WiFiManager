@@ -1,14 +1,17 @@
 /*
-This example will open a configuration portal for 60 seconds when first powered up.
-ConfigOnSwitch is a a bettter example for most situations but this has the advantage 
-that no pins or buttons are required on the ESP8266 device at the cost of delaying 
-the user sketch for the period that the configuration portal is open.
+This example will open a configuration portal when the reset button is pressed twice. 
+This method works well on Wemos boards which have a single reset button on board. It avoids using a pin for launching the configuration portal.
 
-Also in this example a password is required to connect to the configuration portal 
-network. This is inconvenient but means that only those who know the password or those 
-already connected to the target WiFi network can access the configuration portal and 
-the WiFi network credentials will be sent from the browser over an encrypted connection and
-can not be read by observers.
+How It Works
+When the ESP8266 loses power all data in RAM is lost but when it is reset the contents of a small region of RAM is preserved. So when the device starts up it checks this region of ram for a flag to see if it has been recently reset. If so it launches a configuration portal, if not it sets the reset flag. After running for a while this flag is cleared so that it will only launch the configuration portal in response to closely spaced resets.
+
+Settings
+There are two values to be set in the sketch.
+
+DRD_TIMEOUT - Number of seconds to wait for the second reset. Set to 10 in the example.
+DRD_ADDRESS - The address in RTC RAM to store the flag. This memory must not be used for other purposes in the same sketch. Set to 0 in the example.
+
+This example, contributed by DataCute needs the Double Reset Detector library from https://github.com/datacute/DoubleResetDetector .
 */
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
@@ -62,7 +65,7 @@ void setup() {
 
     //it starts an access point 
     //and goes into a blocking loop awaiting configuration
-    if (!wifiManager.startConfigPortal("ESP8266","password")) {//Delete these two parameters if you do not want a WiFi password on your configuration access point
+    if (!wifiManager.startConfigPortal()) {
       Serial.println("Not connected to WiFi but continuing anyway.");
     } else {
       //if you get here you have connected to the WiFi

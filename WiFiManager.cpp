@@ -266,7 +266,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting wifi with new parameters..."));
   if (ssid != "") {
-	resetSettings(); /*Disconnect and wipe out old values. If you don't do this
+	resetSettings(); /*Disconnect from the network and wipe out old values
+	if no values were entered into form. If you don't do this
     esp8266 will sometimes lock up when SSID or password is different to
 	the already stored values and device is in the process of trying to connect
 	to the network. Mostly it doesn't but occasionally it does.
@@ -637,7 +638,7 @@ void WiFiManager::handleWifiSave() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += FPSTR(HTTP_SAVED);
-  page.replace("{v}", "ESP" + String(ESP.getChipId()));
+  page.replace("{v}", _apName);
   page.replace("{x}", _ssid);
   page += FPSTR(HTTP_END);
 
