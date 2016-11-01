@@ -18,7 +18,7 @@ This is an extensive modification of an existing library. The major changes are:
 This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
 ## Contents
- - [Features](#Features)
+ - [Features](#features)
    - [Portal Continues To Exist After Configuration](#portal-continues-to-exist-after-configuration)
    - [User Guidance At The Same Address Regardless of Network](#user-guidance-at-the-same-address-regardless-of-network)
    - [Programmatic Configuration](#programmatic-configuration)
@@ -40,7 +40,7 @@ This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 
    - [On Demand Configuration](#on-demand-configuration-portal)
    - [Custom Parameters](#custom-parameters)
    - [Custom IP Configuration](#custom-ip-configuration)
-   - [Custom HTML, CSS, Javascript](#Custom-HTML,-CSS,-Javascript)
+   - [Custom HTML, CSS, Javascript](#custom-html-css-javascript)
    - [Filter Low Quality Networks](#filter-networks)
    - [Debug Output](#debug)
  - [Troubleshooting](#troubleshooting)
@@ -56,7 +56,7 @@ The Tzapu version of WiFi Manager appropriates the procedure for connecting the 
 It is arguable whether manual or automatic portal closure is better for browser based configuration but manual closure is undoubtedly better for app based configuration.
 
 ### User Guidance At The Same Address Regardless of Network
-Feedback is provided at the same [web address](wifi.urremote.com) when connected to the internet as when connected to the ESP device network and requests to any domain name are redirected to this domain name on the device. The IP address 192.168.1.4 works as well but doesn't exist on the internet. This avoids confusion when the browsing computer is connected to the wrong network which can occur because:-
+Feedback is provided at the same web address, [wifi.urremote.com](http://wifi.urremote.com), when connected to the internet and when connected to the ESP device network. Any requests to any domain name are redirected to this domain name on the device. The IP address 192.168.1.4 works as well but doesn't exist on the internet. This avoids confusion when the browsing computer is connected to the wrong network which can occur because:-
 - Often a user fails to realise they need to change WiFi networks.
 - During configuation the device network is temporarily shut down and restarted which often causes the browsing device to swap networks in the background leaving the user unaware of the network change.
 
@@ -73,10 +73,10 @@ WiFi networks can be unavailable temporarily and only a human can know whether t
 
 The configuration portal is launched if no WiFi configuration data has been stored or a button is pressed. On a Node MCU board the Flash button can be reused as the configuration portal button. 
 
-A configuration portal can be launched on every start up for a minute or so, [if programmed that way](/tree/master/examples/ConfigOnStartup "Example of a configuration portal launched at start up"), but the delay in application start up is unacceptible for most use cases.
+A configuration portal can be launched on every start up for a minute or so, [if programmed that way](examples/ConfigOnStartup "Example of a configuration portal launched at start up"), but the delay in application start up is unacceptible for most use cases.
 
 ### Configuration portal initiated by double pressing the reset button.
-This method avoids the use of a pin for launching the configuration portal.  In the [provided example](/tree/master/examples/ConfigOnDoubleReset "Launch configuration on double reset example")  a double press on a button connected to the reset pin can be used to initiate a configuration portal. This works well on development boards that have a reset button like the [Wemos](https://www.wemos.cc/product/d1-mini-pro.html).
+This method avoids the use of a pin for launching the configuration portal.  In the [provided example](examples/ConfigOnDoubleReset "Launch configuration on double reset example")  a double press on a button connected to the reset pin can be used to initiate a configuration portal. This works well on development boards that have a reset button like the [Wemos](https://www.wemos.cc/product/d1-mini-pro.html).
 
 ### Selectively Operates In Dual Mode
 The ESP8266 can simultaneously connect to a Wifi network and run it's own WiFi network in which case it switches the radio channel of it's own network to match the network to which it is attached. When it is searching for a network, the radio channel is changing all the time which makes connecting to it's network flaky. 
@@ -87,7 +87,7 @@ While trying to connect to the new network it's own WiFi network will necesarily
 
 ## How It Works
 
-- The [ConfigOnSwitch](https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch) example shows how it works and should be used as the basis for a sketch that uses this library.
+- The [ConfigOnSwitch](examples/ConfigOnswitch) example shows how it works and should be used as the basis for a sketch that uses this library.
 - The concept of ConfigOnSwitch is that a new ESP8266 will start a WiFi configuration portal when powered up and save the configuration data in non volatile memory. Thereafter, the configuration portal will only be started again if a button is pushed on the ESP8266 module.
 - Using any WiFi enabled device with a browser (computer, phone, tablet) connect to the newly created Access Point and type in any http address.
 - Because of the Captive Portal and the DNS server you will either get a 'Join to network' type of popup or get any domain you try to access redirected to the configuration portal.
@@ -119,8 +119,8 @@ While trying to connect to the new network it's own WiFi network will necesarily
 See ["Installing Arduino libraries"](https://www.arduino.cc/en/Guide/Libraries) and use the Importing a .zip Library method or preferably use manual installation as you can checkout the release from github and use that. This makes it easier to keep current with updates. Installing using the  Library Manager does not work with this version of the library.
 
 ####  Checkout from github
-__Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
-- Checkout library to your Arduino libraries folder
+Github version works with release 2.0.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
+- Checkout [library](https://github.com/kentaylor/WiFiManager) to your Arduino libraries folder. Must be [https://github.com/kentaylor/WiFiManager](https://github.com/kentaylor/WiFiManager) version.
 
 ### Using
 - Include in your sketch
@@ -147,7 +147,7 @@ While in AP mode, connect to it then open a browser to the gateway IP, default 1
 Once WiFi network information is saved in the ESP8266, it will try to connect to WiFi every time it is started without requiring any function calls in the sketch.
 
 
-Also see [ConfigOnSwitch example](https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch).
+Also see [ConfigOnSwitch example](examples/ConfigOnswitch).
 
 ## Documentation
 
@@ -156,7 +156,7 @@ You can password protect the configuration access point.  Simply add an SSID as 
 A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
 The guidelines are that a wifi password must consist of 8 to 63 ASCII-encoded characters in the range of 32 to 126 (decimal)
 ```cpp
-wifiManager.startConfigPortal()
+wifiManager.startConfigPortal( SSID , password )
 ```
 
 #### Callbacks
@@ -164,7 +164,7 @@ wifiManager.startConfigPortal()
 ##### Save settings
 This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
 
-See [AutoConnectWithFSParameters Example](https://github.com/kentaylor/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
+See [AutoConnectWithFSParameters Example](examples/AutoConnectWithFSParameters).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -204,28 +204,9 @@ void loop() {
 See  [ConfigOnSwitch](https://github.com/kentaylor/WiFiManager/tree/master/examples/ConfigOnswitch) example for a more complex version.
 
 #### Custom Parameters
-You can use WiFiManager to collect more parameters than just SSID and password.
-This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
-**You are responsible for saving and loading these custom values.** The library just collects and displays the data for you as a convenience.
-Usage scenario would be:
-- load values from somewhere (EEPROM/FS) or generate some defaults
-- add the custom parameters to WiFiManager using
- ```cpp
- // id/name, placeholder/prompt, default, length
- WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
- wifiManager.addParameter(&custom_mqtt_server);
+Many applications need configuration parameters like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, etc. While it is possible to use WiFiManager to collect additional parameters it is better to read these parameters from a web service once WiFiManager has been used to connect to the internet. This makes WiFiManager simple to code and use, parameters can be edited on a regular web server and can be changed remotely after deployment. A web service that can provide these parameters is at [configure.urremote.com](http://configure.urremote.com/).
 
- ```
-- start configuration portal and you can set /change the values
-- once configuration is done and connection is established [save config callback]() is called
-- once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
- ```cpp
- mqtt_server = custom_mqtt_server.getValue();
- ```  
-This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
-You should also take a look at adding custom HTML to your form.
-
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters)
+To capture other parameters with WiFiManager is a lot more involved than all the other features and requires adding custom HTML to your form. If you want to do it with WiFiManager see the example [ConfigOnSwitchFS](examples/ConfigOnSwitchFS)
 
 #### Custom IP Configuration
 You can set a custom IP for both AP (access point, config mode) and STA (station mode, client mode, normal project state)
