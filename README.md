@@ -26,6 +26,8 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
    - [Custom IP Configuration](#custom-ip-configuration)
    - [Filter Low Quality Networks](#filter-networks)
    - [Debug Output](#debug)
+   - [Localization](#localization)
+   - [Web](#web)
  - [Troubleshooting](#troubleshooting)
  - [Releases](#releases)
  - [Contributors](#contributions-and-thanks)
@@ -261,6 +263,68 @@ Debug is enabled by default on Serial. To disable add before autoConnect
 wifiManager.setDebugOutput(false);
 ```
 
+#### Localization
+
+All web content can be translated, so the only non-translatable output
+is the serial debug output. To keep the output as compact as possible
+there can be only one active language which need to be chosen during
+compile-time. Currently only **English** (*en*, selected by default) and
+**German** (*de*) are supported.
+
+You can **choose** a language by defining LANG_*TOKEN*, e.g. *LANG_DE* for
+German **before** including WiFiManager.
+If you are using [PlatformIO](http://platformio.org), this can be
+easily achieved by setting `build_flags = -D LANG_DE` in your *platformio.ini*.
+
+You can **add a new language** by just adding it to the *translation.json* file in the *web* subdirectory. Just refer to the German part
+(*de* keys) as example. Afterwards the web need to be recompiled as
+described in the next sub-section. Please HTML-encode all special
+characters.
+
+#### Web
+
+The web is generated from the template file *web/web.html*, which is
+a regular HTML and can be directly viewed in a supported browser.
+It is compiled into the file *web/web.h* which is used by the
+WiFiManager code. Therefore the web is processed, minified
+(i.e. whitespaces and comments are stripped) and converted into a
+C++ header file.
+
+By default no content from the web is used, so examples and tests can be
+added without side-effects. If a part need to be accessed, this can be
+done by placing comments in the form
+
+```html
+<!-- HTTP_MYKEY -->
+<h4>My HTML</h4>
+<!-- /HTTP_MYKEY -->
+```
+
+in the HTML. After building the web it gets available
+as `HTTP_MYKEY`. It is required to use both, the *HTTP* prefix
+and uppercase letters only.
+
+In addition to pure static content, **templates** can be defined
+by using a lowercase name surrounded by curly braces, for example
+
+```html
+<!-- HTTP_MYTITLE -->
+<h1>{title}</h1>
+<!-- /HTTP_MYTITLE -->
+```
+
+The resulting C++ macro `HTTP_MYTITLE(title)` now accepts
+a parameter which is placed in the corresponding location.
+There is no limit in the number of templates used inside
+a single HTTP snippet, but the names need to be unique.
+The parameters in the resulting macro will be in the same
+order as the occur in the source HTML.
+
+**Building the web** requires a current (>= 6.0)
+[node.js](https://nodejs.org) installation. Run `npm install`
+in the *web* subdirectory to install the required depencendies
+and `npm run build` to start the build process.
+
 ## Troubleshooting
 If you get compilation errors, more often than not, you may need to install a newer version of the ESP8266 core for Arduino.
 
@@ -362,6 +426,8 @@ __THANK YOU__
 [jonathanendersby](https://github.com/jonathanendersby)
 
 [walthercarsten](https://github.com/walthercarsten)
+
+[thewilli](https://github.com/thewilli)
 
 Sorry if i have missed anyone.
 

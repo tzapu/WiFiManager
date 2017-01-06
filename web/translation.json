@@ -1,0 +1,116 @@
+{
+  "html": {
+    "Scan": {
+      "de": "scannen"
+    },
+    "save": {
+      "de": "speichern"
+    },
+    "Configure WiFi": {
+      "de": "WiFi konfigurieren"
+    },
+    "Configure WiFi (No Scan)": {
+      "de": "WiFi konfigurieren (kein Scan)"
+    },
+    "Info": {
+      "de": "Info"
+    },
+    "Reset": {
+      "de": "Zur&uuml;cksetzen"
+    },
+    "Credentials Saved": {
+      "de": "Zugangsdaten gespeichert"
+    },
+    "Trying to connect ESP to network.": {
+      "de": "Versuche den ESP mit dem Netzwerk zu verbinden."
+    },
+    "If it fails reconnect to AP to try again.": {
+      "de": "Wenn es fehlschl&auml;gt, verbinde Dich wieder mit dem AP und versuche es erneut."
+    },
+    "SSID": {
+      "de": "SSID"
+    },
+    "password": {
+      "de": "Passwort"
+    },
+    "Chip ID": {
+      "de": "Chip ID"
+    },
+    "Flash Chip ID": {
+      "de": "Flash Chip ID"
+    },
+    "IDE Flash Size": {
+      "de": "IDE Flash Gr&ouml;&szlig;e"
+    },
+    "Real Flash Size": {
+      "de": "Echte Flash Gr&ouml;&szlig;e"
+    },
+    "Soft AP IP": {
+      "de": "Soft AP IP"
+    },
+    "Soft AP MAC": {
+      "de": "Soft AP MAC"
+    },
+    "Station MAC": {
+      "de": "Station MAC"
+    }
+  },
+  "cpp": {
+    "TITLE_OPTIONS": {
+      "en": "Options",
+      "de": "Optionen"
+    },
+    "TITLE_CONFIG": {
+      "en": "Config ESP",
+      "de": "ESP konfigureren"
+    },
+    "TITLE_RESET": {
+      "en": "Reset",
+      "de": "Zur&uuml;cksetzen"
+    },
+    "TITLE_INFO": {
+      "en": "Info",
+      "de": "Informationen"
+    },
+    "TITLE_SAVED": {
+      "en": "Credentials Saved",
+      "de": "Zugangsdaten gespeichert"
+    },
+    "MESSAGE_NONETWORKS": {
+      "en": "No networks found. Refresh to scan again.",
+      "de": "Keine Netzwerke gefunden. Neu laden um erneut zu scannen."
+    },
+    "MESSAGE_RESET": {
+      "en": "Module will reset in a few seconds.",
+      "de": "Modul wird in ein paar Sekunden zur&uuml;ckgesetzt."
+    },
+    "MESSAGE_NOTFOUND": {
+      "en": "File Not Found",
+      "de": "Datei nicht gefunden"
+    },
+    "MESSAGE_NOTFOUND_URI": {
+      "en": "URI",
+      "de": "URI"
+    },
+    "MESSAGE_NOTFOUND_METHOD": {
+      "en": "Method",
+      "de": "Methode"
+    },
+    "MESSAGE_NOTFOUND_ARGS": {
+      "en": "Arguments",
+      "de": "Argumente"
+    },
+    "OPTION_STATICIP": {
+      "en": "Static IP",
+      "de": "Statische IP"
+    },
+    "OPTION_STATICGW": {
+      "en": "Static Gateway",
+      "de": "Statisches Gateway"
+    },
+    "OPTION_STATICSN": {
+      "en": "Subnet",
+      "de": "Subnetz"
+    }
+  }
+}
