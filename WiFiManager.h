@@ -22,6 +22,16 @@ extern "C" {
   #include "user_interface.h"
 }
 
+/**
+ * State constants
+ */
+#define WIFIMANAGER_STATE_INIT             0
+#define WIFIMANAGER_STATE_CONNECTING       1
+#define WIFIMANAGER_STATE_CONFIG_PORTAL   10
+#define WIFIMANAGER_STATE_CHECKING        11
+#define WIFIMANAGER_STATE_DEACTIVATED    255
+
+
 const char HTTP_HEAD[] PROGMEM            = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
 const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==\") no-repeat left center;background-size: 1em;}</style>";
 const char HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
@@ -73,8 +83,16 @@ class WiFiManager
     boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
+    // You can stop an already running config portal with this.
+    // It will destroy the web and dns server, and also make shure that
+    // the wifi is in STA mode
+    void          deactivateConfigPortal();
+
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
+
+    // In non blocking mode call this method from your loop to process next events
+    void          process();
 
     void          resetSettings();
 
@@ -87,6 +105,9 @@ class WiFiManager
     //sets timeout for which to attempt connecting, usefull if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
 
+
+    // Turn on non-blocking mode. This should be called before autoConnect
+    void          setNonBlocking(boolean nonBlocking);
 
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
@@ -122,13 +143,18 @@ class WiFiManager
     void          setupConfigPortal();
     void          startWPS();
 
-    const char*   _apName                 = "no-net";
-    const char*   _apPassword             = NULL;
+    char          currentState            = WIFIMANAGER_STATE_INIT;
+    void          processConfigPortal();
+
+    boolean       _nonBlocking            = false;
+    String        _apName                 = "no-net";
+    String        _apPassword             = "";
     String        _ssid                   = "";
     String        _pass                   = "";
     unsigned long _configPortalTimeout    = 0;
-    unsigned long _connectTimeout         = 0;
+    unsigned long _connectTimeout         = 30000;
     unsigned long _configPortalStart      = 0;
+    unsigned long _connectionStart        = 0;
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -151,6 +177,9 @@ class WiFiManager
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
+    void          leaveConnecting(uint8_t status);
+    void          afterConnected();
+    boolean       block();
 
     void          handleRoot();
     void          handleWifi(boolean scan);

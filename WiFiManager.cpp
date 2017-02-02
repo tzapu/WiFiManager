@@ -87,11 +87,11 @@ void WiFiManager::setupConfigPortal() {
 
   DEBUG_WM(F("Configuring access point... "));
   DEBUG_WM(_apName);
-  if (_apPassword != NULL) {
-    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
+  if (_apPassword != "") {
+    if (_apPassword.length() < 8 || _apPassword.length() > 63) {
       // fail passphrase to short or long!
       DEBUG_WM(F("Invalid AccessPoint password. Ignoring"));
-      _apPassword = NULL;
+      _apPassword = "";
     }
     DEBUG_WM(_apPassword);
   }
@@ -102,10 +102,10 @@ void WiFiManager::setupConfigPortal() {
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
-  if (_apPassword != NULL) {
-    WiFi.softAP(_apName, _apPassword);//password option
+  if (_apPassword != "") {
+    WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
-    WiFi.softAP(_apName);
+    WiFi.softAP(_apName.c_str());
   }
 
   delay(500); // Without delay I've seen the IP address blank
@@ -140,6 +140,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
 
+  _apName = apName;
+  _apPassword = apPassword;
+
   // read eeprom for ssid and pass
   //String ssid = getSSID();
   //String pass = getPassword();
@@ -147,14 +150,36 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  if (connectWifi("", "") == WL_CONNECTED)   {
-    DEBUG_WM(F("IP Address:"));
-    DEBUG_WM(WiFi.localIP());
-    //connected
+  currentState = WIFIMANAGER_STATE_CONNECTING;
+  if (connectWifi("", "") == WL_CONNECTED) {
+    afterConnected();
     return true;
   }
 
-  return startConfigPortal(apName, apPassword);
+  if (!_nonBlocking) return block();
+
+  return true;
+
+}
+
+/**
+ * Process events for the current state
+ */
+void WiFiManager::process() {
+  switch (currentState) {
+    case WIFIMANAGER_STATE_CONNECTING:
+    case WIFIMANAGER_STATE_CHECKING:
+      waitForConnectResult();
+      return;
+
+    case WIFIMANAGER_STATE_CONFIG_PORTAL:
+      return processConfigPortal();
+
+
+    default:
+      return;
+
+  }
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -167,8 +192,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   WiFi.mode(WIFI_AP_STA);
   DEBUG_WM("SET AP STA");
 
-  _apName = apName;
-  _apPassword = apPassword;
+  if (apName != NULL) {
+    _apName = apName;
+    _apPassword = apPassword;
+  }
 
   //notify we entered AP mode
   if ( _apcallback != NULL) {
@@ -178,51 +205,48 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+  currentState = WIFIMANAGER_STATE_CONFIG_PORTAL;
+
+  if (!_nonBlocking) return block();
+
+  return true;
+}
+
+// Process incoming http and dns requests
+void WiFiManager::processConfigPortal() {
+  if (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
     //DNS
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
 
     if (connect) {
       connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
 
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
-      } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
-      }
+      currentState = WIFIMANAGER_STATE_CHECKING;
 
-      if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
+      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+        leaveConnecting(WL_CONNECTED);
       }
+      
     }
-    yield();
+    return;
   }
 
-  server.reset();
-  dnsServer.reset();
-
-  return  WiFi.status() == WL_CONNECTED;
+  deactivateConfigPortal();
 }
 
+void WiFiManager::deactivateConfigPortal() {
+  DEBUG_WM(F("Portal deactivated"));
+
+  currentState = WIFIMANAGER_STATE_DEACTIVATED;
+  server.reset();
+  dnsServer.reset();
+  WiFi.mode(WIFI_STA);
+}
 
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
@@ -254,46 +278,103 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       DEBUG_WM("No saved credentials");
     }
   }
-
-  int connRes = waitForConnectResult();
-  DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( connRes );
-  //not connected, WPS enabled, no pass - first attempt
-  if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
-    startWPS();
-    //should be connected at the end of WPS
-    connRes = waitForConnectResult();
-  }
-  return connRes;
 }
 
+/**
+ * This is the general event processor waiting for wifi
+ * connection. It doesn't matter why we're waiting for: we'll
+ * get here. When a connection is established, or failed
+ * permanently, or the time is out, then we call
+ * leaveConnecting method to decide where to go from the current state
+ */
 uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) {
-    return WiFi.waitForConnectResult();
-  } else {
-    DEBUG_WM (F("Waiting for connection result with time out"));
-    unsigned long start = millis();
-    boolean keepConnecting = true;
-    uint8_t status;
-    while (keepConnecting) {
-      status = WiFi.status();
-      if (millis() > start + _connectTimeout) {
-        keepConnecting = false;
-        DEBUG_WM (F("Connection timed out"));
+  if (!_connectionStart) {
+   _connectionStart = millis();
+  }
+  uint8_t status;
+
+  status = WiFi.status();
+
+  if (_connectTimeout && millis() > _connectionStart + _connectTimeout)
+  {
+    DEBUG_WM (F("Connection timed out"));
+    leaveConnecting(status);
+  }
+  if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+    leaveConnecting(status);
+  }
+  return status;
+}
+
+// Move to the next state from connection
+void WiFiManager::leaveConnecting(uint8_t status) {
+  _connectionStart = 0;
+  switch (currentState) {
+    case WIFIMANAGER_STATE_CONNECTING:
+      if (status == WL_CONNECTED) {
+        afterConnected();
+      } else if (_tryWPS) {
+        startWPS();
+      } else {
+        startConfigPortal(NULL, NULL);
       }
-      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
-        keepConnecting = false;
+      break;
+
+    case WIFIMANAGER_STATE_CHECKING:
+      if (status == WL_CONNECTED) {
+        afterConnected();
       }
-      delay(100);
-    }
-    return status;
+
+      if (status == WL_CONNECTED || _shouldBreakAfterConfig) {
+        // we stop either if there's a connection or
+        //flag set to exit after config after trying to connect
+        //notify that configuration has changed and any optional parameters should be saved
+        if ( _savecallback != NULL) {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        deactivateConfigPortal();
+
+      } else {
+        DEBUG_WM(F("Failed to connect."));
+        currentState = WIFIMANAGER_STATE_CONFIG_PORTAL;
+      }
+      break;
   }
 }
 
 void WiFiManager::startWPS() {
   DEBUG_WM("START WPS");
+  // TODO: this is currently blocking
   WiFi.beginWPSConfig();
   DEBUG_WM("END WPS");
+
+  if (WiFi.status() == WL_CONNECTED) {
+    afterConnected();
+  } else {
+    startConfigPortal(NULL, NULL);
+  }
+}
+
+/**
+ * Do anything that's necessary after we're connected to a netwrok
+ */
+void WiFiManager::afterConnected() {
+  DEBUG_WM(F("IP Address:"));
+  DEBUG_WM(WiFi.localIP());
+  currentState = WIFIMANAGER_STATE_DEACTIVATED;
+}
+
+/**
+ * Block until process is ended
+ */
+boolean WiFiManager::block() {
+  while (!_nonBlocking && currentState != WIFIMANAGER_STATE_DEACTIVATED) {
+    yield();
+    delay(20);
+    process();
+  }
+  return WiFi.status() == WL_CONNECTED;
 }
 /*
   String WiFiManager::getSSID() {
@@ -336,6 +417,10 @@ void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
 
 void WiFiManager::setConnectTimeout(unsigned long seconds) {
   _connectTimeout = seconds * 1000;
+}
+
+void WiFiManager::setNonBlocking(boolean nonBlocking) {
+  _nonBlocking = nonBlocking;
 }
 
 void WiFiManager::setDebugOutput(boolean debug) {
