@@ -1,0 +1,15 @@
+{
+  "name": "wifimanager-web",
+  "version": "1.0.0",
+  "description": "generates c++ header file from WiFiManager web",
+  "scripts": {
+    "build": "webpack -p"
+  },
+  "author": "Willi Eggeling <mail@wje-online.de>",
+  "license": "MIT",
+  "dependencies": {
+    "html-loader": "^0.4.4",
+    "lodash": "^4.17.4",
+    "webpack": "^1.14.0"
+  }
+}
