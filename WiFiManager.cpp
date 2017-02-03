@@ -68,6 +68,14 @@ WiFiManager::WiFiManager() {
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
+  if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
+  {
+    //Max parameters exceeded!
+	DEBUG_WM("WIFI_MANAGER_MAX_PARAMS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
+	DEBUG_WM("Skipping parameter with ID:");
+	DEBUG_WM(p->getID());
+	return;
+  }
   _params[_paramsCount] = p;
   _paramsCount++;
   DEBUG_WM("Adding parameter");
