@@ -8,6 +8,6 @@
     "url": "https://github.com/tzapu/WiFiManager.git"
   },
   "frameworks": "arduino",
-  "platforms": "espressif",
-  "version": "0.10"
+  "platforms": "espressif8266",
+  "version": "0.12"
 }

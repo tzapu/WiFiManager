@@ -35,16 +35,21 @@ void setup() {
   //reset settings - for testing
   //wifiManager.resetSettings();
 
-  //set static ip 
-  //the commented bit only works for ESP8266 core 2.1.0 or newer
-  /*IPAddress _ip,_gw,_sn;
-  _ip.fromString(static_ip);
-  _gw.fromString(static_gw);
-  _sn.fromString(static_sn);
-*/
+  //set static ip
+  //block1 should be used for ESP8266 core 2.1.0 or newer, otherwise use block2
+
+  //start-block1
+  //IPAddress _ip,_gw,_sn;
+  //_ip.fromString(static_ip);
+  //_gw.fromString(static_gw);
+  //_sn.fromString(static_sn);
+  //end-block1
+
+  //start-block2
   IPAddress _ip = IPAddress(10, 0, 1, 78);
   IPAddress _gw = IPAddress(10, 0, 1, 1);
   IPAddress _sn = IPAddress(255, 255, 255, 0);
+  //end-block2
   
   wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
 
