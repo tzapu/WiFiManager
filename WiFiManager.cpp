@@ -178,7 +178,14 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+  while(1){
+
+    // do timeout if configPortalTimeout set and ap does not have client
+    if(_configPortalTimeout!= 0 
+        && millis() > _configPortalStart + _configPortalTimeout
+        && wifi_softap_get_station_num() == 0
+      ) break;
+
     //DNS
     dnsServer->processNextRequest();
     //HTTP
