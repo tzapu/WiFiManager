@@ -12,6 +12,8 @@
 
 #include "WiFiManager.h"
 
+// PARAMETERS
+
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id = NULL;
   _placeholder = NULL;
@@ -64,9 +66,6 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
-WiFiManager::WiFiManager() {
-}
-
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
   {
@@ -82,7 +81,11 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
+WiFiManager::WiFiManager() {
+}
+
 void WiFiManager::setupConfigPortal() {
+  // setup dns and web servers
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
 
@@ -91,28 +94,21 @@ void WiFiManager::setupConfigPortal() {
 
   DEBUG_WM(F("Configuring access point... "));
   DEBUG_WM(_apName);
-  if (_apPassword != NULL) {
-    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
-      // fail passphrase to short or long!
-      DEBUG_WM(F("Invalid AccessPoint password. Ignoring"));
-      _apPassword = NULL;
-    }
-    DEBUG_WM(_apPassword);
-  }
 
-  //optional soft ip config
+  // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet"));
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
+  // start soft AP with pass or anonymous
   if (_apPassword != NULL) {
     WiFi.softAP(_apName, _apPassword);//password option
   } else {
     WiFi.softAP(_apName);
   }
 
-  delay(500); // Without delay I've seen the IP address blank
+  delay(500); // slight delay to make sure we have a password
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
 
@@ -120,7 +116,7 @@ void WiFiManager::setupConfigPortal() {
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
 
-  /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
+  /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on("/", std::bind(&WiFiManager::handleRoot, this));
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
@@ -129,9 +125,9 @@ void WiFiManager::setupConfigPortal() {
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
-
 }
 
 boolean WiFiManager::autoConnect() {
@@ -143,17 +139,17 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
 
-  // read eeprom for ssid and pass
+  // read eeprom for ssid and pass, deprecated
   //String ssid = getSSID();
   //String pass = getPassword();
 
-  // attempt to connect; should it fail, fall back to AP
+  // attempt to connect using saved settings, on fail fallback to AP config portal
   WiFi.mode(WIFI_STA);
 
   if (connectWifi("", "") == WL_CONNECTED)   {
+    //connected
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
-    //connected
     return true;
   }
 
@@ -178,34 +174,38 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   WiFi.mode(WIFI_AP_STA);
   DEBUG_WM("SET AP STA");
 
-  _apName = apName;
+  _apName     = apName;
   _apPassword = apPassword;
+  if(!validApPassword) return;
 
-  //notify we entered AP mode
+  // do AP callback if set
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
 
   connect = false;
+  
+  // init configportal
   setupConfigPortal();
 
+  // blocking loop waiting for config
   while(1){
 
-    // check if timeout
+    // check if timed out
     if(configPortalHasTimeout()) break;
 
-    //DNS
+    //DNS handler
     dnsServer->processNextRequest();
-    //HTTP
+    //HTTP handler
     server->handleClient();
 
-
+    // Waiting for save...
     if (connect) {
       connect = false;
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
 
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+      // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
       } else {
@@ -238,28 +238,32 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   return  WiFi.status() == WL_CONNECTED;
 }
 
-
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
 
-  // check if we've got static_ip settings, if we do, use those.
+  // Setup static IP config if provided
   if (_sta_static_ip) {
     DEBUG_WM(F("Custom STA IP/GW/Subnet"));
     WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     DEBUG_WM(WiFi.localIP());
   }
-  //fix for auto connect racing issue
+
+  // fix for auto connect racing issue
+  // @todo why is this here, what issue?, should be making sure its actually ssid == ssid should it not?
   if (WiFi.status() == WL_CONNECTED) {
-    DEBUG_WM("Already connected. Bailing out.");
+    DEBUG_WM("Already connected. Exiting");
     return WL_CONNECTED;
   }
-  //check if we have ssid and pass and force those, if not, try with last saved values
+
+  // if ssid argument provided connect to that
   if (ssid != "") {
+    DEBUG_WM("Connecting to new AP");    
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
+    // connect using saved ssid if there is one
     if (WiFi.SSID()) {
-      DEBUG_WM("Using last saved values, should be faster");
-      //trying to fix connection in progress hanging
+      DEBUG_WM("Connecting to saved AP");
+      // trying to fix connection in progress hanging, explain why ??
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
@@ -273,12 +277,15 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
-  //not connected, WPS enabled, no pass - first attempt
+
+  // do WPS, if WPS options enabled and not connected and no password was supplied
+  // @todo this seems like wrong place for this, is it a fallback or option?
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
     startWPS();
-    //should be connected at the end of WPS
+    // should be connected at the end of WPS
     connRes = waitForConnectResult();
   }
+
   return connRes;
 }
 
@@ -331,16 +338,20 @@ void WiFiManager::startWPS() {
   return _pass;
   }
 */
+
+// GETTERS
 String WiFiManager::getConfigPortalSSID() {
   return _apName;
 }
 
+// SETTERS
 void WiFiManager::resetSettings() {
-  DEBUG_WM(F("settings invalidated"));
-  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
+  DEBUG_WM(F("SETTINGS ERASED"));
+  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA.")); // @todo WHUT?
   WiFi.disconnect(true);
   //delay(200);
 }
+
 void WiFiManager::setTimeout(unsigned long seconds) {
   setConfigPortalTimeout(seconds);
 }
@@ -377,10 +388,14 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
 
-/** Handle root or redirect to captive portal */
+
+
+/** 
+ * HTTPD CALLBACK root or redirect to captive portal
+ */
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("Handle root"));
-  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
+  if (captivePortal()) { // If captive portal redirect instead of displaying the page.
     return;
   }
 
@@ -401,7 +416,9 @@ void WiFiManager::handleRoot() {
 
 }
 
-/** Wifi config page handler */
+/** 
+ * HTTPD CALLBACK Wifi config page handler
+ */
 void WiFiManager::handleWifi(boolean scan) {
 
   String page = FPSTR(HTTP_HEAD);
@@ -571,7 +588,9 @@ void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM(F("Sent config page"));
 }
 
-/** Handle the WLAN save form and redirect to WLAN config page again */
+/** 
+ * HTTPD CALLBACK save form and redirect to WLAN config page again
+ */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
 
@@ -629,7 +648,9 @@ void WiFiManager::handleWifiSave() {
   connect = true; //signal ready to connect/reset
 }
 
-/** Handle the info page */
+/** 
+ * HTTPD CALLBACK info page
+ */
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("Info"));
 
@@ -669,7 +690,9 @@ void WiFiManager::handleInfo() {
   DEBUG_WM(F("Sent info page"));
 }
 
-/** Handle the reset page */
+/** 
+ * HTTPD CALLBACK reset page
+ */
 void WiFiManager::handleReset() {
   DEBUG_WM(F("Reset"));
 
@@ -689,17 +712,23 @@ void WiFiManager::handleReset() {
   delay(2000);
 }
 
-
-
-//removed as mentioned here https://github.com/tzapu/WiFiManager/issues/114
-/*void WiFiManager::handle204() {
+/**
+ * HTTPD CALLBACK 204
+ * @note removed as mentioned here https://github.com/tzapu/WiFiManager/issues/114
+ */
+/*
+void WiFiManager::handle204() {
   DEBUG_WM(F("204 No Response"));
   server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server->sendHeader("Pragma", "no-cache");
   server->sendHeader("Expires", "-1");
   server->send ( 204, "text/plain", "");
-}*/
+}
+*/
 
+/**
+ * HTTPD CALLBACK 404
+ */
 void WiFiManager::handleNotFound() {
   if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
     return;
@@ -722,8 +751,11 @@ void WiFiManager::handleNotFound() {
   server->send ( 404, "text/plain", message );
 }
 
-
-/** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
+/**
+ * HTTPD redirector
+ * Redirect to captive portal if we got a request for another domain. 
+ * Return true in that case so the page handler do not try to handle the request again. 
+ */
 boolean WiFiManager::captivePortal() {
   if (!isIp(server->hostHeader()) ) {
     DEBUG_WM(F("Request redirected to captive portal"));
@@ -734,6 +766,8 @@ boolean WiFiManager::captivePortal() {
   }
   return false;
 }
+
+// MORE SETTERS
 
 //start up config portal callback
 void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
@@ -755,7 +789,7 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
 }
 
-
+// HELPERS
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
@@ -797,4 +831,18 @@ String WiFiManager::toStringIp(IPAddress ip) {
   }
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
+}
+
+bool WiFiManager::validApPassword(){
+  // check that ap password is valid, return false
+  if (_apPassword != NULL) {
+    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
+      DEBUG_WM(F("AccessPoint password is INVALID"));
+      _apPassword = NULL;
+      return false; // @todo FATAL or fallback to NULL ?
+    }
+    DEBUG_WM(F("AccessPoint Password is VALID"));
+    DEBUG_WM(_apPassword);
+  }
+  return true;
 }
