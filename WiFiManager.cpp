@@ -835,6 +835,7 @@ String WiFiManager::toStringIp(IPAddress ip) {
 
 boolean WiFiManager::validApPassword(){
   // check that ap password is valid, return false
+  if (_apPassword == "") _apPassword = NULL;
   if (_apPassword != NULL) {
     if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
       DEBUG_WM(F("AccessPoint password is INVALID"));
