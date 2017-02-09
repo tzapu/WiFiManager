@@ -176,7 +176,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   _apName     = apName;
   _apPassword = apPassword;
-  if(!validApPassword) return;
+  if(!validApPassword()) return false;
 
   // do AP callback if set
   if ( _apcallback != NULL) {
@@ -833,7 +833,7 @@ String WiFiManager::toStringIp(IPAddress ip) {
   return res;
 }
 
-bool WiFiManager::validApPassword(){
+boolean WiFiManager::validApPassword(){
   // check that ap password is valid, return false
   if (_apPassword != NULL) {
     if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {

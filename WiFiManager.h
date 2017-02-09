@@ -170,7 +170,6 @@ class WiFiManager
     void          handle204();
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
-    boolean       validApPassword();
     
     // DNS server
     const byte    DNS_PORT = 53;
@@ -179,6 +178,7 @@ class WiFiManager
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
+    boolean       validApPassword();
 
     boolean       connect;
     boolean       _debug = true;
