@@ -108,7 +108,7 @@ void WiFiManager::setupConfigPortal() {
     WiFi.softAP(_apName);
   }
 
-  delay(500); // slight delay to make sure we have a password
+  delay(500); // slight delay to make sure we have an AP IP
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
 
