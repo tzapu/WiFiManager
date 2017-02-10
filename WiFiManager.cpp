@@ -151,6 +151,14 @@ bool WiFiManager::startAP(){
   return ret;
 }
 
+boolean WiFiManager::configPortalHasTimeout(){
+    if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
+      _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
+      return false;
+    }
+    return (millis() > _configPortalStart + _configPortalTimeout);
+}
+
 void WiFiManager::setupConfigPortal() {
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
