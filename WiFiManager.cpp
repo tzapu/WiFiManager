@@ -209,9 +209,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // blocking loop waiting for config
   while(1){
     // check if timed out
-    if(configPortalHasTimeout()) return stopConfigPortal();
+    if(configPortalHasTimeout()){
+      stopConfigPortal();
+      return WiFi.status() == WL_CONNECTED; //returns connected bool, ok I guess
+    }
     ret = handleConfigPortal();
-    if(ret == WL_CONNECTED || ret == WL_CONNECT_FAILED) return ret;
+    if(ret != WL_IDLE_STATUS) return ret == WL_CONNECTED;
     yield();
   }
   return false;
