@@ -211,7 +211,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timed out
     if(configPortalHasTimeout()) return stopConfigPortal();
     ret = handleConfigPortal();
-    if(ret == WL_CONNECTED) return true;
+    if(ret == WL_CONNECTED || ret == WL_CONNECT_FAILED) return ret;
     yield();
   }
   return false;
