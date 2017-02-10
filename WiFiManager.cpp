@@ -267,8 +267,9 @@ boolean WiFiManager::stopConfigPortal(){
   dnsServer.reset();
 
   // turn off AP
-  DEBUG_WM(F("disconnect configportal"));          
-  WiFi.softAPdisconnect();  
+  DEBUG_WM(F("disconnect configportal"));
+  // WiFi.mode(WIFI_STA);
+  WiFi.softAPdisconnect(false);  
   return false;
 }
 
@@ -277,6 +278,8 @@ boolean WiFiManager::stopConfigPortal(){
 // clean up, flow is convoluted, and causes bugs
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
+  
+  bool waitforconx = true;
 
   // Setup static IP config if provided
   if (_sta_static_ip) {
@@ -300,7 +303,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.persistent(false);
   } else {
     // connect using saved ssid if there is one
-    if (WiFi.SSID()) {
+    if (WiFi.SSID() != "") {
       DEBUG_WM("Connecting to saved AP");
       // trying to fix connection in progress hanging, explain why ??
       ETS_UART_INTR_DISABLE();
@@ -310,9 +313,11 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       WiFi.begin();
     } else {
       DEBUG_WM("No saved credentials");
+      waitforconx = false;
     }
   }
-  int connRes = waitForConnectResult();
+
+  int connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
 
