@@ -91,6 +91,34 @@ WiFiManager::~WiFiManager() {
   WiFi.persistent(true); // @todo restore original
 }
 
+// AUTOCONNECT
+boolean WiFiManager::autoConnect() {
+  String ssid = "ESP" + String(ESP.getChipId());
+  return autoConnect(ssid.c_str(), NULL);
+}
+
+boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
+  DEBUG_WM(F(""));
+  DEBUG_WM(F("AutoConnect"));
+
+  // read eeprom for ssid and pass, deprecated
+  //String ssid = getSSID();
+  //String pass = getPassword();
+
+  // attempt to connect using saved settings, on fail fallback to AP config portal
+  // WiFi.mode(WIFI_STA); // why, should not be needed
+
+  if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
+    //connected
+    DEBUG_WM(F("IP Address:"));
+    DEBUG_WM(WiFi.localIP());
+    return true;
+  }
+
+  return startConfigPortal(apName, apPassword);
+}
+
+// CONFIG PORTAL
 bool WiFiManager::startAP(){
   DEBUG_WM(F("Configuring access point with with SSID ... "));
   DEBUG_WM(_apName);
@@ -149,40 +177,6 @@ void WiFiManager::setupConfigPortal() {
   
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
-}
-
-boolean WiFiManager::autoConnect() {
-  String ssid = "ESP" + String(ESP.getChipId());
-  return autoConnect(ssid.c_str(), NULL);
-}
-
-boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
-  DEBUG_WM(F(""));
-  DEBUG_WM(F("AutoConnect"));
-
-  // read eeprom for ssid and pass, deprecated
-  //String ssid = getSSID();
-  //String pass = getPassword();
-
-  // attempt to connect using saved settings, on fail fallback to AP config portal
-  // WiFi.mode(WIFI_STA); // why, should not be needed
-
-  if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
-    //connected
-    DEBUG_WM(F("IP Address:"));
-    DEBUG_WM(WiFi.localIP());
-    return true;
-  }
-
-  return startConfigPortal(apName, apPassword);
-}
-
-boolean WiFiManager::configPortalHasTimeout(){
-    if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
-      _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
-      return false;
-    }
-    return (millis() > _configPortalStart + _configPortalTimeout);
 }
 
 boolean WiFiManager::startConfigPortal() {
