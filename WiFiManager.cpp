@@ -114,6 +114,12 @@ bool WiFiManager::startAP(){
   delay(500); // slight delay to make sure we have an AP IP
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
+
+  // do AP callback if set
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
+  
   return ret;
 }
 
@@ -194,11 +200,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apName     = apName;
   _apPassword = apPassword;
   if(!validApPassword()) return false;
-
-  // do AP callback if set
-  if ( _apcallback != NULL) {
-    _apcallback(this);
-  }
 
   connect = false; // global
   
