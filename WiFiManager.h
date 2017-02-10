@@ -74,6 +74,7 @@ class WiFiManager
 {
   public:
     WiFiManager();
+    ~WiFiManager();
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -130,6 +131,7 @@ class WiFiManager
 
     void          setupConfigPortal();
     void          startWPS();
+    bool          startAP();
 
     const char*   _apName                 = "no-net";
     const char*   _apPassword             = NULL;
@@ -160,6 +162,7 @@ class WiFiManager
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
+    uint8_t       waitForConnectResult(uint16_t timeout);
 
     void          handleRoot();
     void          handleWifi(boolean scan);
@@ -170,7 +173,9 @@ class WiFiManager
     void          handle204();
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
-    
+    boolean       stopConfigPortal();
+    uint8_t       handleConfigPortal();
+
     // DNS server
     const byte    DNS_PORT = 53;
 

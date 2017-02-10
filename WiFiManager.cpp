@@ -81,18 +81,18 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
-WiFiManager::WiFiManager() {
+// constructor
+WiFiManager::WiFiManager() {  
+  WiFi.persistent(false);
 }
 
-void WiFiManager::setupConfigPortal() {
-  // setup dns and web servers
-  dnsServer.reset(new DNSServer());
-  server.reset(new ESP8266WebServer(80));
+// destructor
+WiFiManager::~WiFiManager() {
+  WiFi.persistent(true); // @todo restore original
+}
 
-  DEBUG_WM(F(""));
-  _configPortalStart = millis();
-
-  DEBUG_WM(F("Configuring access point... "));
+bool WiFiManager::startAP(){
+  DEBUG_WM(F("Configuring access point with with SSID ... "));
   DEBUG_WM(_apName);
 
   // setup optional soft AP static ip config
@@ -101,16 +101,31 @@ void WiFiManager::setupConfigPortal() {
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
+  bool ret = true;
+
   // start soft AP with pass or anonymous
   if (_apPassword != NULL) {
-    WiFi.softAP(_apName, _apPassword);//password option
+    ret = WiFi.softAP(_apName, _apPassword);//password option
   } else {
-    WiFi.softAP(_apName);
+    DEBUG_WM(F("AP has anonymous access"));    
+    ret = WiFi.softAP(_apName);
   }
 
   delay(500); // slight delay to make sure we have an AP IP
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
+  return ret;
+}
+
+void WiFiManager::setupConfigPortal() {
+  // setup dns and web servers
+  dnsServer.reset(new DNSServer());
+  server.reset(new ESP8266WebServer(80));
+
+  DEBUG_WM(F("setupConfigPortal"));
+  _configPortalStart = millis();
+
+  if(!startAP()) DEBUG_WM("There was an error stating the AP");
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -144,9 +159,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   //String pass = getPassword();
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  WiFi.mode(WIFI_STA);
+  // WiFi.mode(WIFI_STA); // why, should not be needed
 
-  if (connectWifi("", "") == WL_CONNECTED)   {
+  if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
@@ -171,7 +186,9 @@ boolean WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  WiFi.mode(WIFI_AP_STA);
+  // @todo AP_STA will constantly try to connect to old aps in background, if not allowing background configportal , maybe turn off STA
+  WiFi.mode(WIFI_AP);
+  // WiFi.mode(WIFI_AP_STA);
   DEBUG_WM("SET AP STA");
 
   _apName     = apName;
@@ -183,17 +200,25 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     _apcallback(this);
   }
 
-  connect = false;
+  connect = false; // global
   
   // init configportal
   setupConfigPortal();
+  uint8_t ret;
 
   // blocking loop waiting for config
   while(1){
-
     // check if timed out
-    if(configPortalHasTimeout()) break;
+    if(configPortalHasTimeout()) return stopConfigPortal();
+    ret = handleConfigPortal();
+    if(ret == WL_CONNECTED) return true;
+    yield();
+  }
+  return false;
+}
 
+//@todo need enums for return, using 3 esp enums for now
+uint8_t WiFiManager::handleConfigPortal(){
     //DNS handler
     dnsServer->processNextRequest();
     //HTTP handler
@@ -206,38 +231,44 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       DEBUG_WM(F("Connecting to new AP"));
 
       // attempt sta connection to submitted _ssid, _pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
-      } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
+      if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+        DEBUG_WM(F("Connect to new AP SUCCESS"));        
+        stopConfigPortal();
+        return WL_CONNECTED; // success
       }
+
+      DEBUG_WM(F("Failed to connect."));
 
       if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
+        // this is more of an exiting callback than a save
+        stopConfigPortal(); // fail
+        return WL_CONNECT_FAILED;
       }
     }
-    yield();
+
+    return WL_IDLE_STATUS;
+}
+
+boolean WiFiManager::stopConfigPortal(){
+  // do save callback
+  if ( _savecallback != NULL) {
+    //todo: confirm or verify data was saved
+    _savecallback();
   }
 
+  // @todo does this unload them enough ?
   server.reset();
   dnsServer.reset();
 
-  return  WiFi.status() == WL_CONNECTED;
+  // turn off AP
+  DEBUG_WM(F("disconnect configportal"));          
+  WiFi.softAPdisconnect();  
+  return false;
 }
 
+// @todo refactor this up into seperate functions
+// one for connecting to flash , one for new client
+// clean up, flow is convoluted, and causes bugs
 int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
 
@@ -249,16 +280,18 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   // fix for auto connect racing issue
-  // @todo why is this here, what issue?, should be making sure its actually ssid == ssid should it not?
-  if (WiFi.status() == WL_CONNECTED) {
+  // @todo this had to be fixed, it will not let you set a new wifi, if still connected to another, as it just returns
+  if (WiFi.status() == WL_CONNECTED && (ssid=="" || WiFi.SSID() == ssid)) {
     DEBUG_WM("Already connected. Exiting");
     return WL_CONNECTED;
   }
 
   // if ssid argument provided connect to that
   if (ssid != "") {
-    DEBUG_WM("Connecting to new AP");    
+    DEBUG_WM("Connecting to new AP");
+    WiFi.persistent(true);
     WiFi.begin(ssid.c_str(), pass.c_str());
+    WiFi.persistent(false);
   } else {
     // connect using saved ssid if there is one
     if (WiFi.SSID()) {
@@ -273,7 +306,6 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       DEBUG_WM("No saved credentials");
     }
   }
-
   int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
@@ -289,27 +321,28 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   return connRes;
 }
 
+// @todo uses _connectTimeout for wifi save also, add timeout argument to bypass?
+ 
+uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
+  return waitForConnectResult(timeout * 1000);
+}
+
 uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) {
-    return WiFi.waitForConnectResult();
-  } else {
-    DEBUG_WM (F("Waiting for connection result with time out"));
-    unsigned long start = millis();
-    boolean keepConnecting = true;
-    uint8_t status;
-    while (keepConnecting) {
-      status = WiFi.status();
-      if (millis() > start + _connectTimeout) {
-        keepConnecting = false;
-        DEBUG_WM (F("Connection timed out"));
-      }
-      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
-        keepConnecting = false;
-      }
-      delay(100);
+  if (_connectTimeout == 0) return WiFi.waitForConnectResult();
+  
+  DEBUG_WM (F("connectTimeout set, waiting for connect...."));
+  uint8_t status;
+  int timeout = millis() + _connectTimeout;
+  
+  while(millis() < timeout) {
+    status = WiFi.status();
+    if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+      return status;
     }
-    return status;
+    DEBUG_WM (".");
+    delay(100);
   }
+  return status;
 }
 
 void WiFiManager::startWPS() {
@@ -387,8 +420,6 @@ void WiFiManager::setMinimumSignalQuality(int quality) {
 void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
-
-
 
 /** 
  * HTTPD CALLBACK root or redirect to captive portal
