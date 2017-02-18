@@ -122,6 +122,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
+  server->on("/exit", std::bind(&WiFiManager::handleExit, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -649,6 +650,25 @@ void WiFiManager::handleInfo() {
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
+}
+
+/** Handle the exit page */
+void WiFiManager::handleExit() {
+  DEBUG_WM(F("Exit"));
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Info");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("Exiting configuration setup");
+  page += FPSTR(HTTP_END);
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent exit page"));
+  connect = true;
+  delay(5000);
 }
 
 /** Handle the reset page */
