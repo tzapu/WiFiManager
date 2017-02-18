@@ -668,6 +668,7 @@ void WiFiManager::handleExit() {
 
   DEBUG_WM(F("Sent exit page"));
   connect = true;
+  setBreakAfterConfig(true);
   delay(5000);
 }
 
