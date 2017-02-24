@@ -36,7 +36,7 @@ const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying 
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
-#define WIFI_MANAGER_MAX_API_ENDPOINTS 10
+#define WIFI_MANAGER_MAX_API_ENDPOINTS 15
 
 class WiFiManagerParameter {
   public:

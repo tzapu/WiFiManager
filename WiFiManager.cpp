@@ -65,6 +65,13 @@ WiFiManager::WiFiManager() {
 
 //store the api endpoints
 void WiFiManager::addAPIEndpoint(char const *endpoint, void (*callback)(WiFiManager* wifiManager)) {
+  if (_endpointCount + 1 > WIFI_MANAGER_MAX_API_ENDPOINTS) {
+    DEBUG_WM("WIFI_MANAGER_MAX_API_ENDPOINTS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
+    DEBUG_WM("Skipping endpoint with url:");
+    DEBUG_WM(endpoint);
+    return;
+  }
+
   _endpoint[_endpointCount] = endpoint;
   _endpointCallback[_endpointCount] = callback;
   _endpointCount++;
