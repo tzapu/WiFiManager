@@ -66,7 +66,7 @@ class WiFiManagerParameter {
 class WiFiManager
 {
   public:
-    WiFiManager();
+    WiFiManager(HardwareSerial &hser = Serial);
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -115,6 +115,8 @@ class WiFiManager
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
+	
+	HardwareSerial &_debugSerial;
 
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;
@@ -166,7 +168,7 @@ class WiFiManager
 
     // DNS server
     const byte    DNS_PORT = 53;
-
+    
     //helpers
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
