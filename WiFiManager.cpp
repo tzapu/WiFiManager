@@ -643,6 +643,11 @@ void WiFiManager::handleInfo() {
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+  if (mainProgramVersion){
+    page += F("<dt>Program version</dt><dd>");
+    page += String(mainProgramVersion);
+    page += F("</dd>");
+  }
   page += F("<dt>WifiManager version</dt><dd>");
   page += WIFI_MANAGER_VERSION;
   page += F("</dd>");
