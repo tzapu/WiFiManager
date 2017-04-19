@@ -66,7 +66,7 @@ class WiFiManagerParameter {
 class WiFiManager
 {
   public:
-    WiFiManager(HardwareSerial &hser = Serial);
+    WiFiManager(Print &prn = Serial);
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -118,7 +118,8 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
 	
-	HardwareSerial &_debugSerial;
+	// Serial or logger
+	Print &_debugPrint; 
 
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;

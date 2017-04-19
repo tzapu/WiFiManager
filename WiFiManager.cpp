@@ -60,7 +60,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
-WiFiManager::WiFiManager(HardwareSerial &hser):_debugSerial(hser) {
+WiFiManager::WiFiManager(Print &prn):_debugPrint(prn) {
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
@@ -750,8 +750,8 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    _debugSerial.print("*WM: ");
-    _debugSerial.println(text);
+    _debugPrint.print("*WM: ");
+    _debugPrint.println(text);
   }
 }
 
