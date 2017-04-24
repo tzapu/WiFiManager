@@ -60,7 +60,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
-WiFiManager::WiFiManager(Print &prn):_debugPrint(prn) {
+WiFiManager::WiFiManager(TPrint &prn):_debugPrint(prn) {
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
