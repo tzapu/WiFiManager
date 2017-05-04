@@ -500,7 +500,7 @@ void WiFiManager::handleWifi(boolean scan) {
     page += "<br/>";
   }
 
-  if (_sta_show_static_fields) {
+  if (_sta_show_static_fields || _sta_static_ip) {
 
     String item = FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "ip");
