@@ -65,6 +65,8 @@ class WiFiManager
 {
   public:
     WiFiManager();
+    WiFiManager(int max_params);
+    ~WiFiManager();
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -119,6 +121,7 @@ class WiFiManager
 
     //const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
+    void          init(int max_params);
     void          setupConfigPortal();
     void          startWPS();
 
@@ -176,7 +179,8 @@ class WiFiManager
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
-    WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
+    int                    _max_params;
+    WiFiManagerParameter** _params;
 
     template <typename Generic>
     void          DEBUG_WM(Generic text);

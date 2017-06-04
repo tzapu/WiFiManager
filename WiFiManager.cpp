@@ -60,14 +60,37 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
+
 WiFiManager::WiFiManager() {
+    init(WIFI_MANAGER_MAX_PARAMS);
+}
+
+WiFiManager::WiFiManager(int max_params) {
+    init(max_params);
+}
+
+void WiFiManager::init(int max_params)
+{
+    DEBUG_WM(F("setting max_params to:"));
+    DEBUG_WM(max_params);
+    _max_params = max_params;
+    _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
+}
+
+WiFiManager::~WiFiManager()
+{
+    if (_params != NULL)
+    {
+        DEBUG_WM(F("freeing allocated params!"));
+        free(_params);
+    }
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
-  if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
+  if(_paramsCount + 1 > _max_params)
   {
     //Max parameters exceeded!
-	DEBUG_WM("WIFI_MANAGER_MAX_PARAMS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
+	DEBUG_WM("max_params value exceeded, use WiFiManager(int max_params) constructor with a larger value!");
 	DEBUG_WM("Skipping parameter with ID:");
 	DEBUG_WM(p->getID());
 	return;
