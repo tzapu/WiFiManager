@@ -159,6 +159,14 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword, boo
   return startConfigPortal(apName, apPassword);
 }
 
+boolean WiFiManager::configPortalHasTimeout(){
+    if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
+      _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
+      return false;
+    }
+    return (millis() > _configPortalStart + _configPortalTimeout);
+}
+
 boolean WiFiManager::startConfigPortal() {
   String ssid = "ESP" + String(ESP.getChipId());
   return startConfigPortal(ssid.c_str(), NULL);
@@ -180,7 +188,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
+  while(1){
+
+    // check if timeout
+    if(configPortalHasTimeout()) break;
+
     //DNS
     dnsServer->processNextRequest();
     //HTTP
