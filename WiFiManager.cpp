@@ -336,6 +336,8 @@ void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
   DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
+  if (_resetcallback != NULL)
+      _resetcallback();
   //delay(200);
 }
 void WiFiManager::setTimeout(unsigned long seconds) {
@@ -725,6 +727,11 @@ void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
 //start up save config callback
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
+}
+
+//start up reset config callback
+void WiFiManager::setConfigResetCallback(void(*func)(void)) {
+    _resetcallback = func;
 }
 
 //sets a custom element to add to head, like a new style tag
