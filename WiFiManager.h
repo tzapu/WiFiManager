@@ -65,7 +65,7 @@ class WiFiManager
 {
   public:
     WiFiManager();
-    WiFiManager(int max_params);
+    WiFiManager(int max_params=10);
     ~WiFiManager();
 
     boolean       autoConnect();

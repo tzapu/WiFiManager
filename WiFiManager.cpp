@@ -61,10 +61,6 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 
-WiFiManager::WiFiManager() {
-    init(WIFI_MANAGER_MAX_PARAMS);
-}
-
 WiFiManager::WiFiManager(int max_params) {
     init(max_params);
 }
