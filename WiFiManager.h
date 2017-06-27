@@ -121,7 +121,6 @@ class WiFiManager
 
     //const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
 
-    void          init(int max_params);
     void          setupConfigPortal();
     void          startWPS();
 
