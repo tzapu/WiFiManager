@@ -64,7 +64,6 @@ class WiFiManagerParameter {
 class WiFiManager
 {
   public:
-    WiFiManager();
     WiFiManager(int max_params=10);
     ~WiFiManager();
 
