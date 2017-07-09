@@ -79,12 +79,12 @@ class WiFiManager
     void          resetSettings();
 
     //sets timeout before webserver loop ends and exits even if there has been no setup.
-    //usefully for devices that failed to connect at some point and got stuck in a webserver loop
+    //useful for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds setConfigPortalTimeout is a new name for setTimeout
     void          setConfigPortalTimeout(unsigned long seconds);
     void          setTimeout(unsigned long seconds);
 
-    //sets timeout for which to attempt connecting, usefull if you get a lot of failed connects
+    //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
 
 
@@ -101,7 +101,7 @@ class WiFiManager
     void          setSaveConfigCallback( void (*func)(void) );
     //adds a custom parameter
     void          addParameter(WiFiManagerParameter *p);
-    //if this is set, it will exit after config, even if connection is unsucessful.
+    //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
     //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
     //TODO
