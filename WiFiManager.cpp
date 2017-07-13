@@ -33,12 +33,13 @@ void WiFiManagerParameter::init(const char *id, const char *placeholder, const c
   _id = id;
   _placeholder = placeholder;
   _length = length;
+  // value arrays must be of the size length + 1 because char arrays are nul terminated
   _value = new char[length + 1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
   }
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
+    strncpy(_value, defaultValue, length + 1);
   }
 
   _customHTML = custom;
@@ -485,7 +486,9 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   page += FPSTR(HTTP_FORM_START);
-  char parLength[2];
+  
+  // max length of a parameter is two digits (=99) because a char array is nul terminated
+  char parLength[3];
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++) {
     if (_params[i] == NULL) {
@@ -497,7 +500,7 @@ void WiFiManager::handleWifi(boolean scan) {
       pitem.replace("{i}", _params[i]->getID());
       pitem.replace("{n}", _params[i]->getID());
       pitem.replace("{p}", _params[i]->getPlaceholder());
-      snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+      snprintf(parLength, 3, "%d", _params[i]->getValueLength());
       pitem.replace("{l}", parLength);
       pitem.replace("{v}", _params[i]->getValue());
       pitem.replace("{c}", _params[i]->getCustomHTML());
@@ -571,7 +574,7 @@ void WiFiManager::handleWifiSave() {
     //read parameter
     String value = server->arg(_params[i]->getID()).c_str();
     //store it in array
-    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    value.toCharArray(_params[i]->_value, _params[i]->_length + 1);
     DEBUG_WM(F("Parameter"));
     DEBUG_WM(_params[i]->getID());
     DEBUG_WM(value);
