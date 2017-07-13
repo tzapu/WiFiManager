@@ -68,7 +68,10 @@ class WiFiManager
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
-
+    
+   //Attemp to connect wifi, return true if success
+    boolean       ConnectWifi();
+   
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
