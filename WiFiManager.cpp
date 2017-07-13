@@ -157,6 +157,23 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   return startConfigPortal(apName, apPassword);
 }
 
+boolean WiFiManager::ConnectWifi(){
+    DEBUG_WM(F(""));
+    DEBUG_WM(F("Attempt to Connect Wifi"));
+
+    // attempt to connect;
+    WiFi.mode(WIFI_STA);
+
+    if (connectWifi("", "") == WL_CONNECTED)   {
+      DEBUG_WM(F("IP Address:"));
+      DEBUG_WM(WiFi.localIP());
+      //connected
+      return true;
+    }
+
+    return false;
+}
+
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
