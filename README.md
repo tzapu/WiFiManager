@@ -46,13 +46,16 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - [x] remove dependency on EEPROM library
 - [x] move HTML Strings to PROGMEM
 - [x] cleanup and streamline code (although this is ongoing)
-- [ ] if timeout is set, extend it when a page is fetched in AP mode
+- [x] if timeout is set, extend it when a page is fetched in AP mode
 - [x] add ability to configure more parameters than ssid/password
 - [x] maybe allow setting ip of ESP after reboot
 - [x] add to Arduino Library Manager
 - [x] add to PlatformIO
 - [ ] add multiple sets of network credentials
 - [x] allow users to customize CSS
+- [ ] ESP32 support or instructions
+- [ ] rewrite documentation for simplicity, based on scenarios/goals
+- [ ] rely on the SDK's built in auto connect more than forcing a connect
 
 ## Quick Start
 
