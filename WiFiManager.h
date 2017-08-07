@@ -107,6 +107,7 @@ class WiFiManager
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
+    void          setCustomSavedElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
 
@@ -144,6 +145,7 @@ class WiFiManager
     boolean       _tryWPS                 = false;
 
     const char*   _customHeadElement      = "";
+    const char*   _customSavedElement     = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);
