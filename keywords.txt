@@ -26,11 +26,13 @@ setAPStaticIPConfig	KEYWORD2
 setSTAStaticIPConfig KEYWORD2
 setAPCallback	KEYWORD2
 setSaveConfigCallback KEYWORD2
+addAPIEndpoint KEYWORD2 
 addParameter KEYWORD2
 getID KEYWORD2
 getValue KEYWORD2
 getPlaceholder KEYWORD2
 getValueLength KEYWORD2
+sendResponse KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

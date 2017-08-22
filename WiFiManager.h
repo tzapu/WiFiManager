@@ -36,6 +36,7 @@ const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying 
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
+#define WIFI_MANAGER_MAX_API_ENDPOINTS 15
 
 class WiFiManagerParameter {
   public:
@@ -99,6 +100,8 @@ class WiFiManager
     void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
+    //adds a custom api endpoint
+    void          addAPIEndpoint(char const *endpoint, void (*func)(WiFiManager*));
     //adds a custom parameter
     void          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
@@ -109,6 +112,8 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    //send a response to the api endpoint
+    void          sendResponse(int code, const char* contentType, const String& content);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -161,6 +166,12 @@ class WiFiManager
     void          handle204();
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
+
+    // Custom API 
+    int _endpointCount = 0;
+
+    const char* _endpoint[WIFI_MANAGER_MAX_API_ENDPOINTS];
+    void (*_endpointCallback[WIFI_MANAGER_MAX_API_ENDPOINTS])(WiFiManager*);
 
     // DNS server
     const byte    DNS_PORT = 53;

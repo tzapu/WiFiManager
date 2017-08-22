@@ -63,6 +63,23 @@ const char* WiFiManagerParameter::getCustomHTML() {
 WiFiManager::WiFiManager() {
 }
 
+//store the api endpoints
+void WiFiManager::addAPIEndpoint(char const *endpoint, void (*callback)(WiFiManager* wifiManager)) {
+  if (_endpointCount + 1 > WIFI_MANAGER_MAX_API_ENDPOINTS) {
+    DEBUG_WM("WIFI_MANAGER_MAX_API_ENDPOINTS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
+    DEBUG_WM("Skipping endpoint with url:");
+    DEBUG_WM(endpoint);
+    return;
+  }
+
+  _endpoint[_endpointCount] = endpoint;
+  _endpointCallback[_endpointCount] = callback;
+  _endpointCount++;
+
+  DEBUG_WM("Adding endpoint");
+  DEBUG_WM(endpoint);
+}
+
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
   {
@@ -126,11 +143,19 @@ void WiFiManager::setupConfigPortal() {
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  
+  // Register the api endpoints and it's callbacks
+  for (int i = 0; i < _endpointCount; i++) {
+    server->on(_endpoint[i], [&, i, this]() {
+      _endpointCallback[i](this);
+    });
+  }
+
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
 
 }
-
+  
 boolean WiFiManager::autoConnect() {
   String ssid = "ESP" + String(ESP.getChipId());
   return autoConnect(ssid.c_str(), NULL);
@@ -731,6 +756,11 @@ void WiFiManager::setCustomHeadElement(const char* element) {
 //if this is true, remove duplicated Access Points - defaut true
 void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
+}
+
+//send a response to the api endpoint
+void WiFiManager::sendResponse(int code, const char* contentType, const String& content) {
+  server->send(code, contentType, content);
 }
 
 
