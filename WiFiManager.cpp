@@ -25,6 +25,10 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
   init(id, placeholder, defaultValue, length, "");
 }
 
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const String &defaultValue, int length, const char *custom) {
+  init(id, placeholder, defaultValue.c_str(), max(defaultValue.length(), length), custom);
+}
+
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
   init(id, placeholder, defaultValue, length, custom);
 }
@@ -60,7 +64,7 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
-WiFiManager::WiFiManager() {
+WiFiManager::WiFiManager(TPrint &prn):_debugPrint(prn) {
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
@@ -646,6 +650,14 @@ void WiFiManager::handleInfo() {
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+  if (mainProgramVersion){
+    page += F("<dt>Program version</dt><dd>");
+    page += String(mainProgramVersion);
+    page += F("</dd>");
+  }
+  page += F("<dt>WifiManager version</dt><dd>");
+  page += WIFI_MANAGER_VERSION;
+  page += F("</dd>");
   page += F("</dl>");
   page += FPSTR(HTTP_END);
 
@@ -738,8 +750,8 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    Serial.print("*WM: ");
-    Serial.println(text);
+    _debugPrint.print("*WM: ");
+    _debugPrint.println(text);
   }
 }
 

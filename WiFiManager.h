@@ -22,6 +22,16 @@ extern "C" {
   #include "user_interface.h"
 }
 
+#define WIFI_MANAGER_VERSION "0.13";
+
+//#define USE_XLOG                // uncomment to use telnet logger
+#ifdef USE_XLOG
+#include <xlogger.h>              // serial/telnet logger library https://github.com/merlokk/xlogger
+  using TPrint = xLogger;
+#else
+  using TPrint = Print;
+#endif
+
 const char HTTP_HEAD[] PROGMEM            = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
 const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==\") no-repeat left center;background-size: 1em;}</style>";
 const char HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
@@ -41,6 +51,7 @@ class WiFiManagerParameter {
   public:
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
+    WiFiManagerParameter(const char *id, const char *placeholder, const String &defaultValue, int length, const char *custom = "");
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
 
     const char *getID();
@@ -60,11 +71,13 @@ class WiFiManagerParameter {
     friend class WiFiManager;
 };
 
-
 class WiFiManager
 {
   public:
-    WiFiManager();
+    WiFiManager(TPrint &prn);
+#ifndef USE_XLOG   // empty constructor is only for Print
+    WiFiManager():_debugPrint(Serial) {}
+#endif
 
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -109,10 +122,15 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+	
+	char * mainProgramVersion = NULL;
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
+	
+	// Serial or logger
+	TPrint &_debugPrint; 
 
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;
@@ -164,7 +182,7 @@ class WiFiManager
 
     // DNS server
     const byte    DNS_PORT = 53;
-
+    
     //helpers
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
