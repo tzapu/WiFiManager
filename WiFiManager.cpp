@@ -133,11 +133,11 @@ bool WiFiManager::startAP(){
   bool ret = true;
 
   // start soft AP with password or anonymous
-  if (_apPassword != NULL) {
-    ret = WiFi.softAP(_apName, _apPassword);//password option
+  if (_apPassword != "") {
+    ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
     DEBUG_WM(F("AP has anonymous access"));    
-    ret = WiFi.softAP(_apName);
+    ret = WiFi.softAP(_apName.c_str());
   }
 
   delay(500); // slight delay to make sure we get an AP IP
@@ -205,7 +205,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   DEBUG_WM("Enabling AP");
 
-  _apName     = apName;
+  _apName     = apName; // @todo check valid apname ?
   _apPassword = apPassword;
   if(!validApPassword()) return false;
 
@@ -217,8 +217,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   uint8_t state;
   bool result = false;
 
-  if(!_configPortalIsBlocking) return result;
+  if(!_configPortalIsBlocking){
+  	DEBUG_WM(F("Config Portal Running, non blocking/processing"));
+  	return result;
+  }
 
+  DEBUG_WM(F("Config Portal Running, blocking"));
   // blocking loop waiting for config
   while(1){
 
@@ -815,7 +819,8 @@ void WiFiManager::handleNotFound() {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal() {
-  if (!isIp(server->hostHeader()) ) {
+DEBUG_WM(server->hostHeader());
+  if (!isIp(server->hostHeader()) && false) {
     DEBUG_WM(F("Request redirected to captive portal"));
     server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
     server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
@@ -893,12 +898,12 @@ String WiFiManager::toStringIp(IPAddress ip) {
 
 boolean WiFiManager::validApPassword(){
   // check that ap password is valid, return false
-  if (_apPassword == "") _apPassword = NULL;
-  if (_apPassword != NULL) {
-    if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
+  if (_apPassword == NULL) _apPassword = "";
+  if (_apPassword != "") {
+    if (_apPassword.length() < 8 || _apPassword.length() > 63) {
       DEBUG_WM(F("AccessPoint set password is INVALID"));
-      _apPassword = NULL;
-      return false; // @todo FATAL or fallback to NULL ?
+      _apPassword = "";
+      return false; // @todo FATAL or fallback to empty ?
     }
     DEBUG_WM(F("AccessPoint set password is VALID"));
     DEBUG_WM(_apPassword);

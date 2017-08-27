@@ -134,8 +134,8 @@ class WiFiManager
     void          startWPS();
     bool          startAP();
 
-    const char*   _apName                 = "no-net";
-    const char*   _apPassword             = NULL;
+    String   _apName                      = "no-net";
+    String   _apPassword                  = "";
     String        _ssid                   = "";
     String        _pass                   = "";
     unsigned long _configPortalTimeout    = 0;
@@ -155,7 +155,7 @@ class WiFiManager
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
-    boolean       _configPortalIsBlocking = true;
+    boolean       _configPortalIsBlocking = false;
 
     const char*   _customHeadElement      = "";
 
