@@ -202,7 +202,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     DEBUG_WM("Disabling STA");
   }
   else wifimode(WIFI_AP_STA);
-  
+
   DEBUG_WM("Enabling AP");
 
   _apName     = apName;
@@ -213,20 +213,28 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   
   // init configportal
   setupConfigPortal();
-  uint8_t ret;
+  uint8_t state;
+  bool result = false;
 
   // blocking loop waiting for config
   while(1){
+
     // check if timed out
     if(configPortalHasTimeout()){
       stopConfigPortal();
-      return WiFi.status() == WL_CONNECTED; //returns connected bool, ok I guess
+      result = WiFi.status() == WL_CONNECTED; //returns connected bool, ok I guess
+      break;
     }
-    ret = handleConfigPortal();
-    if(ret != WL_IDLE_STATUS) return ret == WL_CONNECTED;
+
+    state = handleConfigPortal();
+
+    if(state != WL_IDLE_STATUS){
+    	result == WL_CONNECTED;
+    	break;
+    }
     yield();
   }
-  return false;
+  return result;
 }
 
 //using esp enums returns for now, should be fine
