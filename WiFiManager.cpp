@@ -106,15 +106,16 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   //String pass = getPassword();
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  // WiFi.mode(WIFI_STA); // why, should not be needed
+  if((WiFi.getMode() & WIFI_STA) == 0) wifimode(WIFI_STA); // if STA not on, turn it on
 
+  // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     return true;
   }
-
+  	// not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
 
@@ -131,7 +132,7 @@ bool WiFiManager::startAP(){
 
   bool ret = true;
 
-  // start soft AP with pass or anonymous
+  // start soft AP with password or anonymous
   if (_apPassword != NULL) {
     ret = WiFi.softAP(_apName, _apPassword);//password option
   } else {
@@ -139,7 +140,7 @@ bool WiFiManager::startAP(){
     ret = WiFi.softAP(_apName);
   }
 
-  delay(500); // slight delay to make sure we have an AP IP
+  delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
 
@@ -167,7 +168,7 @@ void WiFiManager::setupConfigPortal() {
   DEBUG_WM(F("setupConfigPortal"));
   _configPortalStart = millis();
 
-  if(!startAP()) DEBUG_WM("There was an error stating the AP");
+  if(!startAP()) DEBUG_WM("There was an error stating the AP"); // @bug startAP returns unreliable success status
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -194,10 +195,15 @@ boolean WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  // @todo AP_STA will constantly try to connect to old aps in background, if not allowing background configportal , maybe turn off STA
-  WiFi.mode(WIFI_AP);
-  // WiFi.mode(WIFI_AP_STA);
-  DEBUG_WM("SET AP STA");
+  if(!WiFi.isConnected()){
+    // this fixes most ap problems, simply doing mode(WIFI_AP) does not work if sta connection is hanging
+    wifioff();
+    wifimode(WIFI_AP);
+    DEBUG_WM("Disabling STA");
+  }
+  else wifimode(WIFI_AP_STA);
+  
+  DEBUG_WM("Enabling AP");
 
   _apName     = apName;
   _apPassword = apPassword;
@@ -223,7 +229,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   return false;
 }
 
-//@todo need enums for return, using 3 esp enums for now
+//using esp enums returns for now, should be fine
 uint8_t WiFiManager::handleConfigPortal(){
     //DNS handler
     dnsServer->processNextRequest();
@@ -262,15 +268,21 @@ boolean WiFiManager::stopConfigPortal(){
     _savecallback();
   }
 
-  // @todo does this unload them enough ?
+  //DNS handler
+  dnsServer->processNextRequest();
+  //HTTP handler
+  server->handleClient();
+
+  // @todo does this free memory?
   server.reset();
   dnsServer.reset();
 
   // turn off AP
   DEBUG_WM(F("disconnect configportal"));
-  // WiFi.mode(WIFI_STA);
-  WiFi.softAPdisconnect(false);  
-  return false;
+  bool ret = WiFi.softAPdisconnect(false);
+  if(!ret)DEBUG_WM(F("disconnect configportal error"));
+  wifimode(WIFI_STA); // set back to sta, @todo use preservation variable
+  return ret;
 }
 
 // @todo refactor this up into seperate functions
@@ -288,12 +300,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-  // fix for auto connect racing issue
-  // @todo this had to be fixed, it will not let you set a new wifi, if still connected to another, as it just returns
-  if (WiFi.status() == WL_CONNECTED && (ssid=="" || WiFi.SSID() == ssid)) {
-    DEBUG_WM("Already connected. Exiting");
-    return WL_CONNECTED;
-  }
+  wifimode(WIFI_AP_STA); // turn sta back on so begin does not call enablesta->mode
+  wifioff(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
   if (ssid != "") {
@@ -305,11 +313,6 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     // connect using saved ssid if there is one
     if (WiFi.SSID() != "") {
       DEBUG_WM("Connecting to saved AP");
-      // trying to fix connection in progress hanging, explain why ??
-      ETS_UART_INTR_DISABLE();
-      wifi_station_disconnect();
-      ETS_UART_INTR_ENABLE();
-
       WiFi.begin();
     } else {
       DEBUG_WM("No saved credentials");
@@ -339,8 +342,11 @@ uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
 }
 
 uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) return WiFi.waitForConnectResult();
-  
+  if (_connectTimeout == 0){
+    DEBUG_WM (F("connectTimeout not set, ESP waitForConnectResult..."));
+    return WiFi.waitForConnectResult();
+  }
+
   DEBUG_WM (F("connectTimeout set, waiting for connect...."));
   uint8_t status;
   int timeout = millis() + _connectTimeout;
@@ -880,12 +886,32 @@ boolean WiFiManager::validApPassword(){
   if (_apPassword == "") _apPassword = NULL;
   if (_apPassword != NULL) {
     if (strlen(_apPassword) < 8 || strlen(_apPassword) > 63) {
-      DEBUG_WM(F("AccessPoint password is INVALID"));
+      DEBUG_WM(F("AccessPoint set password is INVALID"));
       _apPassword = NULL;
       return false; // @todo FATAL or fallback to NULL ?
     }
-    DEBUG_WM(F("AccessPoint Password is VALID"));
+    DEBUG_WM(F("AccessPoint set password is VALID"));
     DEBUG_WM(_apPassword);
   }
   return true;
+}
+
+// set mode without persistent
+bool WiFiManager::wifimode(WiFiMode_t m) {
+    if(wifi_get_opmode() == (uint8) m) {
+        return true;
+    }
+    bool ret;
+    ETS_UART_INTR_DISABLE();
+    ret = wifi_set_opmode_current(m);
+    ETS_UART_INTR_ENABLE();
+    return ret;
+}
+
+// sta disconnect without persistent
+bool WiFiManager::wifioff() {
+    DEBUG_WM(F("wifi disconncting"));
+    if((WiFi.getMode() & WIFI_STA) != 0) {
+        return wifi_station_disconnect();
+    }
 }

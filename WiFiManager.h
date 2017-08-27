@@ -175,6 +175,8 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
     uint8_t       handleConfigPortal();
+    bool          wifimode(WiFiMode_t m);
+    bool          wifioff();
 
     // DNS server
     const byte    DNS_PORT = 53;
