@@ -134,8 +134,8 @@ class WiFiManager
     void          startWPS();
     bool          startAP();
 
-    String   _apName                      = "no-net";
-    String   _apPassword                  = "";
+    String        _apName                 = "no-net";
+    String        _apPassword             = "";
     String        _ssid                   = "";
     String        _pass                   = "";
     unsigned long _configPortalTimeout    = 0;

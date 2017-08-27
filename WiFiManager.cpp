@@ -70,10 +70,10 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
   {
     //Max parameters exceeded!
-	DEBUG_WM("WIFI_MANAGER_MAX_PARAMS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
-	DEBUG_WM("Skipping parameter with ID:");
-	DEBUG_WM(p->getID());
-	return;
+    DEBUG_WM("WIFI_MANAGER_MAX_PARAMS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
+    DEBUG_WM("Skipping parameter with ID:");
+    DEBUG_WM(p->getID());
+    return;
   }
   _params[_paramsCount] = p;
   _paramsCount++;
@@ -115,7 +115,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(WiFi.localIP());
     return true;
   }
-  	// not connected start configportal
+  // not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
 
@@ -209,7 +209,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apPassword = apPassword;
   if(!validApPassword()) return false;
 
-  configPortalActive = true;	
+  configPortalActive = true;    
   connect = false; // global
   
   // init configportal
@@ -218,8 +218,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   bool result = false;
 
   if(!_configPortalIsBlocking){
-  	DEBUG_WM(F("Config Portal Running, non blocking/processing"));
-  	return result;
+    DEBUG_WM(F("Config Portal Running, non blocking/processing"));
+    return result;
   }
 
   DEBUG_WM(F("Config Portal Running, blocking"));
@@ -236,8 +236,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     state = handleConfigPortal();
 
     if(state != WL_IDLE_STATUS){
-    	result == WL_CONNECTED;
-    	break;
+        result == WL_CONNECTED;
+        break;
     }
     yield();
   }
@@ -245,11 +245,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 boolean WiFiManager::process(){
-	if(configPortalActive){
-  		uint8_t state = handleConfigPortal();
- 	  	return state == WL_CONNECTED;
- 	}
- 	return false;
+    if(configPortalActive){
+        uint8_t state = handleConfigPortal();
+        return state == WL_CONNECTED;
+    }
+    return false;
 }
 
 //using esp enums returns for now, should be fine
