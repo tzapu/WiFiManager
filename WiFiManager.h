@@ -155,7 +155,7 @@ class WiFiManager
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
-    boolean       _configPortalIsBlocking = false;
+    boolean       _configPortalIsBlocking = true;
 
     const char*   _customHeadElement      = "";
 
