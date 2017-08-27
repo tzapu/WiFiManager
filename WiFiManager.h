@@ -82,6 +82,7 @@ class WiFiManager
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
+    boolean       process();
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
@@ -148,11 +149,13 @@ class WiFiManager
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
 
+    // option parameters
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
+    boolean       _configPortalIsBlocking = false;
 
     const char*   _customHeadElement      = "";
 
@@ -188,6 +191,7 @@ class WiFiManager
     boolean       validApPassword();
 
     boolean       connect;
+    boolean       configPortalActive = false;
     boolean       _debug = true;
 
     void (*_apcallback)(WiFiManager*) = NULL;

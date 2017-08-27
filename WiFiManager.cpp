@@ -209,12 +209,15 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apPassword = apPassword;
   if(!validApPassword()) return false;
 
+  configPortalActive = true;	
   connect = false; // global
   
   // init configportal
   setupConfigPortal();
   uint8_t state;
   bool result = false;
+
+  if(!_configPortalIsBlocking) return result;
 
   // blocking loop waiting for config
   while(1){
@@ -235,6 +238,14 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     yield();
   }
   return result;
+}
+
+boolean WiFiManager::process(){
+	if(configPortalActive){
+  		uint8_t state = handleConfigPortal();
+ 	  	return state == WL_CONNECTED;
+ 	}
+ 	return false;
 }
 
 //using esp enums returns for now, should be fine
@@ -290,6 +301,7 @@ boolean WiFiManager::stopConfigPortal(){
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal error"));
   wifimode(WIFI_STA); // set back to sta, @todo use preservation variable
+  configPortalActive = false;
   return ret;
 }
 
