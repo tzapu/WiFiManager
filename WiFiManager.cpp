@@ -852,6 +852,11 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
 }
 
+//if this is true, remove duplicated Access Points - defaut true
+void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
+  _configPortalIsBlocking = shoudlBlock;
+}
+
 // HELPERS
 
 template <typename Generic>

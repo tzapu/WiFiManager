@@ -114,7 +114,9 @@ class WiFiManager
     void          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
-    //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
+    //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
+    void          setConfigPortalBlocking(boolean shouldBlock);
+
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
@@ -155,7 +157,7 @@ class WiFiManager
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
-    boolean       _configPortalIsBlocking = false;
+    boolean       _configPortalIsBlocking = true;
 
     const char*   _customHeadElement      = "";
 
