@@ -43,16 +43,19 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
 
 ## Wishlist
-- ~~remove dependency on EEPROM library~~
-- ~~move HTML Strings to PROGMEM~~
-- ~~cleanup and streamline code~~ (although this is ongoing)
-- if timeout is set, extend it when a page is fetched in AP mode
-- ~~add ability to configure more parameters than ssid/password~~
-- ~~maybe allow setting ip of ESP after reboot~~
-- ~~add to Arduino Library Manager~~
-- ~~add to PlatformIO~~
-- add multiple sets of network credentials
-- ~~allow users to customize CSS~~
+- [x] remove dependency on EEPROM library
+- [x] move HTML Strings to PROGMEM
+- [x] cleanup and streamline code (although this is ongoing)
+- [x] if timeout is set, extend it when a page is fetched in AP mode
+- [x] add ability to configure more parameters than ssid/password
+- [x] maybe allow setting ip of ESP after reboot
+- [x] add to Arduino Library Manager
+- [x] add to PlatformIO
+- [ ] add multiple sets of network credentials
+- [x] allow users to customize CSS
+- [ ] ESP32 support or instructions
+- [ ] rewrite documentation for simplicity, based on scenarios/goals
+- [ ] rely on the SDK's built in auto connect more than forcing a connect
 
 ## Quick Start
 
