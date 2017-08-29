@@ -245,7 +245,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 boolean WiFiManager::process(){
-    if(configPortalActive){
+    if(configPortalActive && !_configPortalIsBlocking){
         uint8_t state = handleConfigPortal();
         return state == WL_CONNECTED;
     }
@@ -559,6 +559,7 @@ void WiFiManager::handleWifi(boolean scan) {
           rssiQ += quality;
           item.replace("{v}", WiFi.SSID(indices[i]));
           item.replace("{r}", rssiQ);
+          item.replace("{q}", (String)round(map(quality,0,100,1,4)));
           if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
             item.replace("{i}", "l");
           } else {
