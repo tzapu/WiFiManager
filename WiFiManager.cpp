@@ -820,8 +820,8 @@ void WiFiManager::handleNotFound() {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal() {
-DEBUG_WM(server->hostHeader());
-  if (!isIp(server->hostHeader()) && false) {
+  DEBUG_WM(server->hostHeader());
+  if (!isIp(server->hostHeader())) {
     DEBUG_WM(F("Request redirected to captive portal"));
     server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
     server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
