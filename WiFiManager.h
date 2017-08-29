@@ -125,11 +125,13 @@ class WiFiManager
     //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
     void          setConfigPortalBlocking(boolean shouldBlock);
 
-    //TODO
+
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    //wrapper for esp wifi persistent, set esp wifi persistent through wifimanager so we can save status and restore as needed
+    void          setRestorePersistent(boolean persistent);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -144,6 +146,11 @@ class WiFiManager
     void          startWPS();
     bool          startAP();
 
+    // typedef enum WiFiMode 
+    // {
+    //     WIFI_OFF = 0, WIFI_STA = 1, WIFI_AP = 2, WIFI_AP_STA = 3
+    // } WiFiMode_t;
+
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = "";
@@ -151,6 +158,8 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
+    boolean       _userpersistent         = true;
+    WiFiMode_t    _usermode               = WIFI_OFF;
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;

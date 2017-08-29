@@ -82,13 +82,17 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 }
 
 // constructor
-WiFiManager::WiFiManager() {  
-  WiFi.persistent(false);
+WiFiManager::WiFiManager() {
+  _usermode = WiFi.getMode();
+  WiFi.persistent(false); // disable persistent so scannetworks and mode switching is not saved
 }
 
 // destructor
 WiFiManager::~WiFiManager() {
-  WiFi.persistent(true); // @todo restore original
+  if(_userpersistent) WiFi.persistent(true); // reenable persistent
+  WiFi.mode(_usermode);
+  DEBUG_WM(_usermode);
+  DEBUG_WM(F("unloading"));
 }
 
 // AUTOCONNECT
@@ -121,7 +125,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 // CONFIG PORTAL
 bool WiFiManager::startAP(){
-  DEBUG_WM(F("Configuring access point with with SSID ... "));
+  DEBUG_WM(F("Configuring access point with with SSID of ... "));
   DEBUG_WM(_apName);
 
   // setup optional soft AP static ip config
@@ -303,7 +307,7 @@ boolean WiFiManager::stopConfigPortal(){
   // turn off AP
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
-  if(!ret)DEBUG_WM(F("disconnect configportal error"));
+  if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
   wifimode(WIFI_STA); // set back to sta, @todo use preservation variable
   configPortalActive = false;
   return ret;
@@ -422,7 +426,9 @@ String WiFiManager::getConfigPortalSSID() {
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
   DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA.")); // @todo WHUT?
+  WiFi.persistent(true);
   WiFi.disconnect(true);
+  WiFi.persistent(false);
   //delay(200);
 }
 
@@ -856,6 +862,12 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 //if this is true, remove duplicated Access Points - defaut true
 void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
   _configPortalIsBlocking = shoudlBlock;
+}
+
+//wrapper for ESP wifi.persistent so we can remember it as WIFi._persistent is protected
+void WiFiManager::setRestorePersistent(boolean persistent) {
+  _userpersistent = persistent;
+  if(!persistent) DEBUG_WM(F("persistent is off"));
 }
 
 // HELPERS
