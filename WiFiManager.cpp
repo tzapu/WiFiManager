@@ -335,7 +335,9 @@ String WiFiManager::getConfigPortalSSID() {
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
   DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
+  WiFi.persistent(true);
   WiFi.disconnect(true);
+  WiFi.persistent(false);
   //delay(200);
 }
 void WiFiManager::setTimeout(unsigned long seconds) {
