@@ -41,7 +41,7 @@ void WiFiManagerParameter::init(const char *id, const char *placeholder, const c
     _value[i] = 0;
   }
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
+    strncpy(_value, defaultValue, length+1); // length+1 due to null terminated string
   }
 
   _customHTML = custom;
@@ -84,7 +84,7 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
 // constructor
 WiFiManager::WiFiManager() {
   _usermode = WiFi.getMode();
-  WiFi.persistent(false); // disable persistent so scannetworks and mode switching is not saved
+  WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
 }
 
 // destructor
@@ -309,6 +309,7 @@ boolean WiFiManager::stopConfigPortal(){
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
   wifimode(WIFI_STA); // set back to sta, @todo use preservation variable
+  WiFi.mode(_usermode);
   configPortalActive = false;
   return ret;
 }
@@ -575,7 +576,7 @@ void WiFiManager::handleWifi(boolean scan) {
           page += item;
           delay(0);
         } else {
-          DEBUG_WM(F("Skipping due to quality"));
+          DEBUG_WM(F("Skipping , does not meet _minimumQuality"));
         }
 
       }
@@ -659,12 +660,10 @@ void WiFiManager::handleWifi(boolean scan) {
 
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
-
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
-
 
   DEBUG_WM(F("Sent config page"));
 }
