@@ -382,6 +382,7 @@ uint8_t WiFiManager::waitForConnectResult() {
   
   while(millis() < timeout) {
     status = WiFi.status();
+    // @todo detect additional states, connect happens, then dhcp then get ip, there is some delay here, make sure not to timeout if waiting on IP
     if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
       return status;
     }
@@ -673,7 +674,7 @@ void WiFiManager::handleWifi(boolean scan) {
  */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
-
+    
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
   _pass = server->arg("p").c_str();
