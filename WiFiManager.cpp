@@ -633,6 +633,41 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
 
+  //not connected, test known APs
+  if (waitForConnectResult(_connectTimeout ? 10000 : _connectTimeout) != WL_CONNECTED && _apList_size) {
+    DEBUG_WM(F("Scan for known APs"));
+    int n = WiFi.scanNetworks();
+    if (n == 0) {
+      DEBUG_WM(F("No networks found"));
+    } else {
+      // search for strongest networks
+      int8_t best = -1;
+      int32_t best_rssi = -100000;
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < _apList_size; j++) {
+          if (WiFi.SSID(i) == _apList[j].ssid && WiFi.RSSI(i) > best_rssi) {
+            best = j;
+            best_rssi = WiFi.RSSI(i);
+          }
+        }
+      }
+      // connect to known AP
+      if (best >= 0) {
+        DEBUG_WM ("Connecting to: ");
+        DEBUG_WM (_apList[best].ssid);
+        WiFi.begin(_apList[best].ssid.c_str(), _apList[best].pass.c_str());
+      }
+    }
+  }
+				
+  connRes = waitForConnectResult();
+  DEBUG_WM ("Connection result: ");
+  DEBUG_WM ( connRes );
+  if (ssid != "" && connRes == WL_CONNECTED ) {
+    // add to known APs
+    addAP(ssid.c_str(), pass.c_str());
+  }
+
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
@@ -781,6 +816,28 @@ String WiFiManager::getHTTPHead(String title){
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   return page;
+}
+
+boolean WiFiManager::addAP(char const *ssid, char const *password) {
+  if ( _apList_size < WIFI_MANAGER_MAX_NETWORKS ) {
+    _apList[_apList_size].ssid = ssid;
+    if ( password )
+      _apList[_apList_size].pass = password;
+    else
+      _apList[_apList_size].pass = "";
+    _apList_size++;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+const WiFiManagerCredentials *WiFiManager::getAP(uint8_t index) const {
+  if ( index < _apList_size ) {
+    return &_apList[index];
+  } else {
+    return NULL;
+  }
 }
 
 /** 
