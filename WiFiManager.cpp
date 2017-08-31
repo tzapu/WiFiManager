@@ -265,11 +265,43 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     } else {
       DEBUG_WM("No saved credentials");
     }
-  }
 
+    //not connected, test known APs
+    if (waitForConnectResult(_connectTimeout ? 10000 : _connectTimeout) != WL_CONNECTED && _apList_size) {
+      DEBUG_WM(F("Scan for known APs"));
+      int n = WiFi.scanNetworks();
+      if (n == 0) {
+        DEBUG_WM(F("No networks found"));
+      } else {
+        // search for strongest networks
+        int8_t best = -1;
+        int32_t best_rssi = -100000;
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < _apList_size; j++) {
+            if (WiFi.SSID(i) == _apList[j].ssid && WiFi.RSSI(i) > best_rssi) {
+              best = j;
+              best_rssi = WiFi.RSSI(i);
+            }
+          }
+        }
+        // connect to known AP
+        if (best >= 0) {
+          DEBUG_WM ("Connecting to: ");
+          DEBUG_WM (_apList[best].ssid);
+          WiFi.begin(_apList[best].ssid.c_str(), _apList[best].pass.c_str());
+        }
+      }
+    }
+  }				
+				
   int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
   DEBUG_WM ( connRes );
+  if (ssid != "" && connRes == WL_CONNECTED ) {
+    // add to known APs
+    addAP(ssid.c_str(), pass.c_str());
+  }
+
   //not connected, WPS enabled, no pass - first attempt
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
     startWPS();
@@ -279,8 +311,10 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   return connRes;
 }
 
-uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) {
+uint8_t WiFiManager::waitForConnectResult(unsigned long timeout) {
+  if ( !timeout )
+    timeout = _connectTimeout;
+  if (timeout == 0) {
     return WiFi.waitForConnectResult();
   } else {
     DEBUG_WM (F("Waiting for connection result with time out"));
@@ -289,7 +323,7 @@ uint8_t WiFiManager::waitForConnectResult() {
     uint8_t status;
     while (keepConnecting) {
       status = WiFi.status();
-      if (millis() > start + _connectTimeout) {
+      if (millis() > start + timeout) {
         keepConnecting = false;
         DEBUG_WM (F("Connection timed out"));
       }
@@ -338,6 +372,29 @@ void WiFiManager::resetSettings() {
   WiFi.disconnect(true);
   //delay(200);
 }
+
+boolean WiFiManager::addAP(char const *ssid, char const *password) {
+  if ( _apList_size < WIFI_MANAGER_MAX_NETWORKS ) {
+    _apList[_apList_size].ssid = ssid;
+    if ( password )
+      _apList[_apList_size].pass = password;
+    else
+      _apList[_apList_size].pass = "";
+    _apList_size++;
+  } else {
+    return false;
+  }
+}
+
+const WiFiManagerCredentials *WiFiManager::getAP(uint8_t index) const {
+  if ( index < _apList_size ) {
+    return &_apList[index];
+  } else {
+    return NULL;
+  }
+}
+
+
 void WiFiManager::setTimeout(unsigned long seconds) {
   setConfigPortalTimeout(seconds);
 }

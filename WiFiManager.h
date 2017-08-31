@@ -36,7 +36,8 @@ const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying 
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
-
+#define WIFI_MANAGER_MAX_NETWORKS 10
+    
 class WiFiManagerParameter {
   public:
     WiFiManagerParameter(const char *custom);
@@ -60,6 +61,10 @@ class WiFiManagerParameter {
     friend class WiFiManager;
 };
 
+struct WiFiManagerCredentials {
+  String ssid;
+  String pass;
+};
 
 class WiFiManager
 {
@@ -73,6 +78,13 @@ class WiFiManager
     boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
+    //add an AP to the list of known access points to be connected to
+    boolean       addAP(char const *ssid, char const *password = NULL);
+	  //returns the SSID and password for a pre-configured access point
+    //or NULL if no access point was found for the given index
+    //the returned values are read-only!
+	  const WiFiManagerCredentials *getAP(uint8_t index) const;
+	
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
 
@@ -150,7 +162,7 @@ class WiFiManager
 
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
-    uint8_t       waitForConnectResult();
+    uint8_t       waitForConnectResult(unsigned long timeout = 0);
 
     void          handleRoot();
     void          handleWifi(boolean scan);
@@ -178,6 +190,9 @@ class WiFiManager
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
 
+    uint8_t       _apList_size = 0;
+    WiFiManagerCredentials _apList[WIFI_MANAGER_MAX_NETWORKS];
+    
     template <typename Generic>
     void          DEBUG_WM(Generic text);
 

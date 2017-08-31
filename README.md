@@ -51,7 +51,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - [x] maybe allow setting ip of ESP after reboot
 - [x] add to Arduino Library Manager
 - [x] add to PlatformIO
-- [ ] add multiple sets of network credentials
+- [x] add multiple sets of network credentials
 - [x] allow users to customize CSS
 - [ ] ESP32 support or instructions
 - [ ] rewrite documentation for simplicity, based on scenarios/goals
@@ -181,6 +181,26 @@ void loop() {
 }
 ```
 See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemandConfigPortal)
+
+#### Multiple Networks
+You can add known networks and their credentials. WiFiManager will try to connect to the last network the ESP was connected to. If this fails, it will connect to the strongest network in your network list.
+```cpp
+wifiManager.addAP("myAP", "myPassword");
+wifiManager.addAP("guest"); // or without password
+```
+
+You can get the saved SSIDs and passwords for a network in the list with ` wifiManager.getAP(index)`. This will return a pointer to the network data, or NULL is the index is not valid (e.g. list is smaller than index).
+
+When you connect to a new access point, it will automatically be added to the list of known networks. This can be used to dynamically build a list of all your networks.
+**However, you are responsible for saving and loading these custom values.**
+
+Example usage: printing all known networks after connection
+```cpp
+for (int i = 0; auto ap = wifiManager.getAP(i); i++ )
+  Serial.println(ap->ssid + ", " + ap->pass);
+```
+See the *AutoConnectMultipleNetworks* example.
+
 
 #### Custom Parameters
 You can use WiFiManager to collect more parameters than just SSID and password.
