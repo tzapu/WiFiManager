@@ -674,7 +674,7 @@ void WiFiManager::handleWifi(boolean scan) {
  */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
-    
+
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
   _pass = server->arg("p").c_str();
@@ -864,7 +864,7 @@ void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
   _configPortalIsBlocking = shoudlBlock;
 }
 
-//wrapper for ESP wifi.persistent so we can remember it as WIFi._persistent is protected
+//setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
 void WiFiManager::setRestorePersistent(boolean persistent) {
   _userpersistent = persistent;
   if(!persistent) DEBUG_WM(F("persistent is off"));
