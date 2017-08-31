@@ -130,7 +130,7 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
-    //wrapper for esp wifi persistent, set esp wifi persistent through wifimanager so we can save status and restore as needed
+    //setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
     void          setRestorePersistent(boolean persistent);
 
   private:
