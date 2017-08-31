@@ -300,6 +300,11 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "" && connRes == WL_CONNECTED ) {
     // add to known APs
     addAP(ssid.c_str(), pass.c_str());
+    // notify application about adding a new network
+    if ( _savecallback != NULL) {
+       _savecallback();
+    }
+
   }
 
   //not connected, WPS enabled, no pass - first attempt
