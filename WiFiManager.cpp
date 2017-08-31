@@ -666,6 +666,11 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "" && connRes == WL_CONNECTED ) {
     // add to known APs
     addAP(ssid.c_str(), pass.c_str());
+    // notify application about adding a new network
+    if ( _savecallback != NULL) {
+       _savecallback();
+    }
+
   }
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
