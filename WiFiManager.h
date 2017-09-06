@@ -169,6 +169,7 @@ class WiFiManager
     void          handleWifiSave();
     void          handleInfo();
     void          handleReset();
+	void          handleDelete();
     void          handleNotFound();
     void          handle204();
     boolean       captivePortal();

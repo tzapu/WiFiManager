@@ -123,6 +123,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
+  server->on("/del", std::bind(&WiFiManager::handleDelete, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
@@ -542,6 +543,20 @@ void WiFiManager::handleWifi(boolean scan) {
         }
 
       }
+	  // show saved networks
+      for (int j = 0; j < _apList_size; j++) {
+        String item = FPSTR(HTTP_ITEM);
+        item.replace("{v}", _apList[j].ssid);
+        item.replace("{r}", "<a href=\"/del?s="+_apList[j].ssid+"\">X</a>");
+        if ( _apList[j].pass.length() ) {
+          item.replace("{i}", "l");
+        } else {
+          item.replace("{i}", "");
+        }
+        page += item;
+        delay(0);
+      }
+      
       page += "<br/>";
     }
   }
@@ -737,6 +752,30 @@ void WiFiManager::handleReset() {
   delay(5000);
   ESP.reset();
   delay(2000);
+}
+
+/** Handle the removal of a known AP */
+void WiFiManager::handleDelete() {
+  DEBUG_WM(F("WiFi delete"));
+
+  String ssid = server->arg("s");
+  
+  // search SSID
+  int j;
+  for (j = 0; j < _apList_size; j++) {
+    if ( ssid == _apList[j].ssid)
+		break;
+  }
+  if ( j < _apList_size ) {
+    // shift list
+    _apList_size--;
+    for (; j < _apList_size; j++) {
+      _apList[j].ssid = _apList[j+1].ssid;
+      _apList[j].pass = _apList[j+1].pass;
+    }
+  }
+  
+  handleWifi(true);
 }
 
 void WiFiManager::handleNotFound() {
