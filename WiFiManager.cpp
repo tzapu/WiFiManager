@@ -406,6 +406,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
   server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this, false));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
+  server->on((String)FPSTR(R_delete), std::bind(&WiFiManager::handleDelete, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
   server->begin(); // Web server start
@@ -1065,6 +1066,22 @@ String WiFiManager::WiFiManager::getScanItemOut(){
 
       }
       page += FPSTR(HTTP_BR);
+
+	    // show saved networks
+      for (int j = 0; j < _apList_size; j++) {
+        String item = FPSTR(HTTP_ITEM);
+        item.replace(FPSTR(T_v), _apList[j].ssid);
+        item.replace(FPSTR(T_r), "<a href=\"" + (String)FPSTR(R_delete) + "?s="+_apList[j].ssid+"\">X</a>");
+        if ( _apList[j].pass.length() ) {
+          item.replace(FPSTR(T_i), "l");
+        } else {
+          item.replace(FPSTR(T_i), "");
+        }
+        page += item;
+        delay(0);
+      }
+      
+      page += "<br/>";
     }
 
     return page;
@@ -1603,6 +1620,30 @@ void WiFiManager::handleErase(boolean opt) {
   	DEBUG_WM(F("RESETTING ESP"));
   	reboot();
   }	
+}
+
+/** Handle the removal of a known AP */
+void WiFiManager::handleDelete() {
+  DEBUG_WM(F("WiFi delete"));
+
+  String ssid = server->arg("s");
+  
+  // search SSID
+  int j;
+  for (j = 0; j < _apList_size; j++) {
+    if ( ssid == _apList[j].ssid)
+		break;
+  }
+  if ( j < _apList_size ) {
+    // shift list
+    _apList_size--;
+    for (; j < _apList_size; j++) {
+      _apList[j].ssid = _apList[j+1].ssid;
+      _apList[j].pass = _apList[j+1].pass;
+    }
+  }
+  
+  handleWifi(true);
 }
 
 /** 
