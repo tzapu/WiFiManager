@@ -36,7 +36,7 @@ const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wi
 const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
-#define WIFI_MANAGER_MAX_PARAMS 10
+#define WIFI_MANAGER_MAX_PARAMS 20
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
@@ -75,8 +75,8 @@ class WiFiManager
   public:
     WiFiManager();
 
-    boolean       autoConnect();
-    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
+    boolean       autoConnect(boolean showStaticIPFields = false);
+    boolean       autoConnect(char const *apName, char const *apPassword = NULL, boolean showStaticIPFields = false);
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();
@@ -145,6 +145,7 @@ class WiFiManager
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
+    boolean       _sta_show_static_fields = false;
 
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
