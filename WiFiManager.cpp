@@ -560,15 +560,18 @@ void WiFiManager::handleWifi(boolean scan) {
         DEBUG_WM(WiFi.SSID(indices[i]));
         DEBUG_WM(WiFi.RSSI(indices[i]));
         int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
+        uint8_t enc_type = WiFi.encryptionType(indices[i]);
 
         if (_minimumQuality == -1 || _minimumQuality < quality) {
           String item = FPSTR(HTTP_ITEM);
           String rssiQ;
           rssiQ += quality;
-          item.replace("{v}", WiFi.SSID(indices[i]));
-          item.replace("{r}", rssiQ);
-          item.replace("{q}", (String)round(map(quality,0,100,1,4)));
-          if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
+          item.replace("{v}", WiFi.SSID(indices[i])); // ssid no encoding
+          item.replace("{R}", (String)WiFi.RSSI(indices[i])); // rssi
+          item.replace("{e}", encryptionTypeStr(enc_type));
+          item.replace("{r}", rssiQ); // qualitypercent
+          item.replace("{q}", (String)round(map(quality,0,100,1,4))); //quality icon 1-4
+          if (enc_type != ENC_TYPE_NONE) {
             item.replace("{i}", "l");
           } else {
             item.replace("{i}", "");
@@ -616,7 +619,7 @@ void WiFiManager::handleWifi(boolean scan) {
       snprintf(parLength, 5, "%d", _params[i]->getValueLength());
       pitem.replace("{l}", parLength);
       pitem.replace("{v}", _params[i]->getValue());
-      pitem.replace("{c}", _params[i]->getCustomHTML());
+      pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
     } else {
       pitem = _params[i]->getCustomHTML();
     }
@@ -927,6 +930,23 @@ boolean WiFiManager::validApPassword(){
     DEBUG_WM(_apPassword);
   }
   return true;
+}
+
+String WiFiManager::encryptionTypeStr(uint8_t authmode) {
+    switch(authmode) {
+        case ENC_TYPE_NONE:
+            return "None";
+        case ENC_TYPE_WEP:
+            return "WEP";
+        case ENC_TYPE_TKIP:
+            return "WPA_PSK";
+        case ENC_TYPE_CCMP:
+            return "WPA2_PSK";
+        case ENC_TYPE_AUTO:
+            return "WPA_WPA2_PSK";
+        default:
+            return "Unknown";
+    }
 }
 
 // set mode without persistent
