@@ -176,6 +176,7 @@ class WiFiManager
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
+    boolean       _sta_show_static_fields = true;
 
     // option parameters
     int           _paramsCount            = 0;
