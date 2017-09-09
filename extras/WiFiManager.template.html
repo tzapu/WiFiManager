@@ -124,6 +124,13 @@ a:hover {
     color: #d9534f;
 }
 
+dt {
+	font-weight: bold;
+}
+dd {
+	margin: 0;
+	padding: 0 0 0.5em 0;
+}
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
@@ -189,8 +196,18 @@ a:hover {
 			<div class='msg'><h4>Information</h4>Connected to AP: homeAP</div>
 			<div class='msg D'><h4>Connect Failed</h4>An error occured</div>
 			<!-- /SAMPLE -->
-
-
+			<!-- SAMPLE -->
+			<h2>/info</h3><hr>
+			<dl>
+				<dt>Chip ID</dt><dd>123456</dd>
+				<dt>Flash Chip ID</dt><dd>1234556</dd>
+				<dt>IDE Flash Size</dt><dd>4194304 bytes</dd>
+				<dt>Real Flash Size</dt><dd>4194304 bytes</dd>
+				<dt>Soft AP IP</dt><dd>192.168.4.1</dd>
+				<dt>Soft AP MAC</dt><dd>00:00:00:00:00:00</dd>
+				<dt>Station MAC</dt><dd>00:00:00:00:00:00</dd>
+			</dl>
+			<!-- /SAMPLE -->
 <!-- HTTP_END -->
     </div>
 	</body>
