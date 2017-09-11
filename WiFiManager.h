@@ -221,6 +221,7 @@ class WiFiManager
     String        toStringIp(IPAddress ip);
     boolean       validApPassword();
     String        encryptionTypeStr(uint8_t authmode);
+    void          reportStatus(String &page);
 
     boolean       connect;
     boolean       configPortalActive = false;

@@ -749,35 +749,140 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += F("<dl>");
+
+  page += "<div class='msg P'>";
+  reportStatus(page);
+  page +="</div>";
+  // @todo add versioning here
+  
+  page += F("<h3>esp8266</h3><hr><dl>");
   page += F("<dt>Chip ID</dt><dd>");
   page += ESP.getChipId();
   page += F("</dd>");
+
   page += F("<dt>Flash Chip ID</dt><dd>");
   page += ESP.getFlashChipId();
   page += F("</dd>");
+
   page += F("<dt>IDE Flash Size</dt><dd>");
   page += ESP.getFlashChipSize();
   page += F(" bytes</dd>");
-  page += F("<dt>Real Flash Size</dt><dd>");
+
+  page += F("<dt>Actual Flash Size</dt><dd>");
   page += ESP.getFlashChipRealSize();
   page += F(" bytes</dd>");
-  page += F("<dt>Soft AP IP</dt><dd>");
+
+  page += F("<dt>SDK Version</dt><dd>");
+  page += system_get_sdk_version();
+  page += F("</dd>");
+
+  page += F("<dt>Core Version</dt><dd>");
+  page += ESP.getCoreVersion();
+  page += F("</dd>");
+
+  page += F("<dt>Boot Version</dt><dd>");
+  page += system_get_boot_version();
+  page += F("</dd>");
+
+  page += F("<dt>CPU Frequency</dt><dd>");
+  page += ESP.getCpuFreqMHz();
+  page += F("MHz</dd>");
+
+  // heap is dynamic, would have to have a known starting for graph
+  // uint32_t heapstart = 47000;
+  // page += F("<dt>Memory Heap</dt><dd>");
+  // page += F("Used/Total bytes<br/>");
+  // page += (heapstart)-ESP.getFreeHeap();
+  // page += "/";
+  // page += (heapstart);
+  // page += "<br/><progress value='" + (String)((heapstart)-ESP.getFreeHeap()) + "' max='" + (String)(heapstart) + "'></progress>";
+  // page += F("</dd>");
+
+  page += F("<dt>Memory - Free Heap</dt><dd>");
+  page += ESP.getFreeHeap();
+  page += F(" bytes available</dd>");
+
+  page += F("<dt>Memory - Sketch Size</dt><dd>");
+  page += F("Used/Total bytes<br/>");
+  page += (ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace();
+  page += "/";
+  page += (ESP.getSketchSize()+ESP.getFreeSketchSpace());
+  page += F("<br/><progress value='");
+  page += (String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace());
+  page += F("' max='");
+  page += (String)(ESP.getSketchSize()+ESP.getFreeSketchSpace());
+  page += F("'></progress></dd>");
+
+  page += F("<dt>Last reset reason</dt><dd>");
+  page += ESP.getResetReason();
+  page += F("</dd>");
+
+  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>");
   page += WiFi.softAPIP().toString();
   page += F("</dd>");
-  page += F("<dt>Soft AP MAC</dt><dd>");
+
+  page += F("<dt>Access Point MAC</dt><dd>");
   page += WiFi.softAPmacAddress();
   page += F("</dd>");
+
+  page += F("<dt>SSID</dt><dd>");
+  page += WiFi.SSID();
+  page += F("</dd>");
+
+  page += F("<dt>Station IP</dt><dd>");
+  page += WiFi.localIP().toString(); 
+  page += F("</dd>");
+
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+
   page += F("</dl>");
+
+  page += F("<br/><h3>Available Pages</h3><hr>");
+  page += F("<table class='table'>");
+  page += F("<thead><tr><th>Page</th><th>Function</th></tr></thead><tbody>");
+  page += F("<tr><td><a href='/'>/</a></td>");
+  page += F("<td>Menu page.</td></tr>");
+  page += F("<tr><td><a href='/wifi'>/wifi</a></td>");
+  page += F("<td>Show WiFi scan results and enter WiFi configuration.</td></tr>");
+  page += F("<tr><td><a href='/wifisave'>/wifisave</a></td>");
+  page += F("<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>");
+  page += F("<tr><td><a href='/close'>/close</a></td>");
+  page += F("<td>Close the configuration server and configuration WiFi network.</td></tr>");
+  page += F("<tr><td><a href='/i'>/i</a></td>");
+  page += F("<td>Information page</td></tr>");
+  page += F("<tr><td><a href='/r'>/r</a></td>");
+  page += F("<td>Delete WiFi configuration and reboot. ESP device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>");
+  // @todo add callback here
+  page += F("</table>");
+  page += F("<p/>More information about WiFiManager at <a href=\"https://github.com/tzapu/WiFiManager\">https://github.com/tzapu/WiFiManager</a>.");
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
+}
+
+void WiFiManager::reportStatus(String &page){
+  if (WiFi.SSID() != ""){
+	  page += F("Configured to connect to access point ");
+	  page += WiFi.SSID();
+	  if (WiFi.status()==WL_CONNECTED){
+		  page += F(" and <strong>currently connected</strong> on IP <a href=\"http://");
+		  page += WiFi.localIP().toString();
+		  page += F("/\">");
+		  page += WiFi.localIP().toString();
+		  page += F("</a>");
+	   }
+	  else {
+		  page += F(" but <strong>not currently connected</strong> to network.");
+	  }
+    }
+    else {
+		page += F("No network currently configured.");
+	}
 }
 
 /** 
