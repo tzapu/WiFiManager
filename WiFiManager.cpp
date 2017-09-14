@@ -592,78 +592,103 @@ void WiFiManager::handleWifi(boolean scan) {
     }
   }
 
-  page += FPSTR(HTTP_FORM_START);
-  char parLength[5];
-  // add the extra parameters to the form
-  for (int i = 0; i < _paramsCount; i++) {
-    if (_params[i] == NULL) {
-      break;
-    }
+  String pitem = FPSTR(HTTP_FORM_START);
+  pitem.replace("{v}", WiFi.SSID());
+  page += pitem;
 
-    //String pitem = FPSTR(HTTP_FORM_PARAM);
-    String pitem;
-    switch (_params[i]->getLabelPlacement()) {
-      case WFM_LABEL_BEFORE:
-        pitem = FPSTR(HTTP_FORM_LABEL);
-        pitem += FPSTR(HTTP_FORM_PARAM);
-        break;
-      case WFM_LABEL_AFTER:
-        pitem = FPSTR(HTTP_FORM_PARAM);
-        pitem += FPSTR(HTTP_FORM_LABEL);
-        break;
-      default:
-        // WFM_NO_LABEL
-        pitem = FPSTR(HTTP_FORM_PARAM);
-        break;
-    }
-    if (_params[i]->getID() != NULL) {
-      pitem.replace("{i}", _params[i]->getID());
-      pitem.replace("{n}", _params[i]->getID());
-      pitem.replace("{p}", _params[i]->getPlaceholder());
-      snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-      pitem.replace("{l}", parLength);
-      pitem.replace("{v}", _params[i]->getValue());
-      pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
-    } else {
-      pitem = _params[i]->getCustomHTML();
-    }
 
-    page += pitem;
-  }
-  if (_params[0] != NULL) {
-    page += "<br/>";
+  if(_paramsCount > 0){
+
+    page += FPSTR(HTTP_FORM_PARAM_START);
+
+    char parLength[5];
+    // add the extra parameters to the form
+    for (int i = 0; i < _paramsCount; i++) {
+      if (_params[i] == NULL) {
+        break;
+      }
+
+     String pitem;
+      switch (_params[i]->getLabelPlacement()) {
+        case WFM_LABEL_BEFORE:
+          pitem = FPSTR(HTTP_FORM_LABEL);
+          pitem += FPSTR(HTTP_FORM_PARAM);
+          break;
+        case WFM_LABEL_AFTER:
+          pitem = FPSTR(HTTP_FORM_PARAM);
+          pitem += FPSTR(HTTP_FORM_LABEL);
+          break;
+        default:
+          // WFM_NO_LABEL
+          pitem = FPSTR(HTTP_FORM_PARAM);
+          break;
+      }
+      if (_params[i]->getID() != NULL) {
+        pitem.replace("{i}", _params[i]->getID());
+        pitem.replace("{n}", _params[i]->getID());
+        pitem.replace("{p}", "{t}");
+        pitem.replace("{t}", _params[i]->getPlaceholder());
+        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
+        pitem.replace("{l}", parLength);
+        pitem.replace("{v}", _params[i]->getValue());
+        pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
+      } else {
+        pitem = _params[i]->getCustomHTML();
+      }
+
+      page += pitem;
+    }
+    if (_params[0] != NULL) {
+      page += FPSTR(HTTP_FORM_PARAM_END);
+    }
   }
 
   if (_sta_show_static_fields || _sta_static_ip) {
 
-    String item = FPSTR(HTTP_FORM_PARAM);
+    // @todo how do we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
+    // @todo move titles to params for i18n
+    
+    String item = FPSTR(HTTP_FORM_LABEL);
+    item += FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
-    item.replace("{p}", "Static IP");
+    item.replace("{p}", "{t}");
+    item.replace("{t}", "Static IP");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_ip ? _sta_static_ip.toString() : ""));
 
+    // IPAddress sta_ip = WiFi.localIP();
+    // item.replace("{p}", sta_ip.toString());
+
     page += item;
 
-    item = FPSTR(HTTP_FORM_PARAM);
+    item = FPSTR(HTTP_FORM_LABEL);
+    item += FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "gw");
     item.replace("{n}", "gw");
-    item.replace("{p}", "Static Gateway");
+    item.replace("{p}", "{t}");    
+    item.replace("{t}", "Static Gateway");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_gw ? _sta_static_gw.toString() : ""));
 
+    // IPAddress sta_gateway = WiFi.gatewayIP();
+    // item.replace("{p}", sta_gateway.toString());
+
     page += item;
 
-    item = FPSTR(HTTP_FORM_PARAM);
+    item = FPSTR(HTTP_FORM_LABEL);
+    item += FPSTR(HTTP_FORM_PARAM);
     item.replace("{i}", "sn");
     item.replace("{n}", "sn");
-    item.replace("{p}", "Subnet");
+    item.replace("{p}", "{t}");    
+    item.replace("{t}", "Subnet");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_sn ? _sta_static_sn.toString() : ""));
 
+    // IPAddress sta_subnet = WiFi.subnetMask();
+    // item.replace("{p}", sta_subnet.toString());
     page += item;
-
-    page += "<br/>";
+    page += "<br/>"; // @todo remove these, use css
   }
 
   page += FPSTR(HTTP_FORM_END);
