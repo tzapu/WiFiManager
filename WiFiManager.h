@@ -148,6 +148,8 @@ class WiFiManager
     //if true, always show static net inputs, IP, subnet, gateway, if false, only show when already set.
     void          setShowStaticFields(boolean alwaysShow);
 
+    void          setCaptivePortalEnable(boolean enabled);
+
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
@@ -175,6 +177,7 @@ class WiFiManager
     unsigned long _configPortalStart      = 0;
     boolean       _userpersistent         = true;
     WiFiMode_t    _usermode               = WIFI_OFF;
+    boolean       _enableCaptivePortal    = true;
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;

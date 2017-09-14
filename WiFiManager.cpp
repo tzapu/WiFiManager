@@ -536,7 +536,7 @@ void WiFiManager::handleWifi(boolean scan) {
 
 String WiFiManager::getScanItemOut(){
     String page;
-    
+
     int n = WiFi.scanNetworks();
     DEBUG_WM(F("Scan done"));
     if (n == 0) {
@@ -987,6 +987,9 @@ void WiFiManager::handleNotFound() {
  */
 boolean WiFiManager::captivePortal() {
   DEBUG_WM(server->hostHeader());
+  
+  if(!_enableCaptivePortal) return true; // skip redirections
+
   if (!isIp(server->hostHeader())) {
     DEBUG_WM(F("Request redirected to captive portal"));
     server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
@@ -1034,6 +1037,9 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
   _sta_show_static_fields = alwaysShow;
 }
 
+void WiFiManager::setCaptivePortalEnable(boolean enabled){
+  _enableCaptivePortal = enabled;
+}
 
 // HELPERS
 
