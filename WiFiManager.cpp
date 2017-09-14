@@ -1012,6 +1012,11 @@ void WiFiManager::setRestorePersistent(boolean persistent) {
   if(!persistent) DEBUG_WM(F("persistent is off"));
 }
 
+void WiFiManager::setShowStaticFields(boolean alwaysShow){
+  _sta_show_static_fields = alwaysShow;
+}
+
+
 // HELPERS
 
 template <typename Generic>

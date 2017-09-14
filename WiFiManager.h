@@ -145,6 +145,8 @@ class WiFiManager
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
     //setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
     void          setRestorePersistent(boolean persistent);
+    //if true, always show static net inputs, IP, subnet, gateway, if false, only show when already set.
+    void          setShowStaticFields(boolean alwaysShow);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
