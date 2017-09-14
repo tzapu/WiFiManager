@@ -756,6 +756,11 @@ void WiFiManager::handleInfo() {
   // @todo add versioning here
   
   page += F("<h3>esp8266</h3><hr><dl>");
+
+  page += F("<dt>Uptime</dt><dd>");
+  page += (String)(system_get_time() / 1000000 / 60) + " mins ";
+  page += (String)((system_get_time() / 1000000)%60) + " secs";
+
   page += F("<dt>Chip ID</dt><dd>");
   page += ESP.getChipId();
   page += F("</dd>");
