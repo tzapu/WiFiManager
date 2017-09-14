@@ -514,6 +514,29 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_HEAD_END);
 
   if (scan) {
+    page += getScanItemOut();
+  }
+
+  String pitem = FPSTR(HTTP_FORM_START);
+  pitem.replace("{v}", WiFi.SSID());
+  page += pitem;
+
+  page += getStaticOut();
+  page += getParamOut();
+
+  page += FPSTR(HTTP_FORM_END);
+  page += FPSTR(HTTP_SCAN_LINK);
+  page += FPSTR(HTTP_END);
+
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("Sent config page"));
+}
+
+String WiFiManager::getScanItemOut(){
+    String page;
+    
     int n = WiFi.scanNetworks();
     DEBUG_WM(F("Scan done"));
     if (n == 0) {
@@ -590,59 +613,11 @@ void WiFiManager::handleWifi(boolean scan) {
       }
       page += "<br/>";
     }
-  }
+    return page;
+}
 
-  String pitem = FPSTR(HTTP_FORM_START);
-  pitem.replace("{v}", WiFi.SSID());
-  page += pitem;
-
-
-  if(_paramsCount > 0){
-
-    page += FPSTR(HTTP_FORM_PARAM_START);
-
-    char parLength[5];
-    // add the extra parameters to the form
-    for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL) {
-        break;
-      }
-
-     String pitem;
-      switch (_params[i]->getLabelPlacement()) {
-        case WFM_LABEL_BEFORE:
-          pitem = FPSTR(HTTP_FORM_LABEL);
-          pitem += FPSTR(HTTP_FORM_PARAM);
-          break;
-        case WFM_LABEL_AFTER:
-          pitem = FPSTR(HTTP_FORM_PARAM);
-          pitem += FPSTR(HTTP_FORM_LABEL);
-          break;
-        default:
-          // WFM_NO_LABEL
-          pitem = FPSTR(HTTP_FORM_PARAM);
-          break;
-      }
-      if (_params[i]->getID() != NULL) {
-        pitem.replace("{i}", _params[i]->getID());
-        pitem.replace("{n}", _params[i]->getID());
-        pitem.replace("{p}", "{t}");
-        pitem.replace("{t}", _params[i]->getPlaceholder());
-        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-        pitem.replace("{l}", parLength);
-        pitem.replace("{v}", _params[i]->getValue());
-        pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
-      } else {
-        pitem = _params[i]->getCustomHTML();
-      }
-
-      page += pitem;
-    }
-    if (_params[0] != NULL) {
-      page += FPSTR(HTTP_FORM_PARAM_END);
-    }
-  }
-
+String WiFiManager::getStaticOut(){
+  String page;
   if (_sta_show_static_fields || _sta_static_ip) {
 
     // @todo how do we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
@@ -690,15 +665,58 @@ void WiFiManager::handleWifi(boolean scan) {
     page += item;
     page += "<br/>"; // @todo remove these, use css
   }
+  return page;
+}
 
-  page += FPSTR(HTTP_FORM_END);
-  page += FPSTR(HTTP_SCAN_LINK);
-  page += FPSTR(HTTP_END);
+String WiFiManager::getParamOut(){
+  String page;
 
-  server->sendHeader("Content-Length", String(page.length()));
-  server->send(200, "text/html", page);
+  if(_paramsCount > 0){
 
-  DEBUG_WM(F("Sent config page"));
+    page += FPSTR(HTTP_FORM_PARAM_START);
+
+    char parLength[5];
+    // add the extra parameters to the form
+    for (int i = 0; i < _paramsCount; i++) {
+      if (_params[i] == NULL) {
+        break;
+      }
+
+     String pitem;
+      switch (_params[i]->getLabelPlacement()) {
+        case WFM_LABEL_BEFORE:
+          pitem = FPSTR(HTTP_FORM_LABEL);
+          pitem += FPSTR(HTTP_FORM_PARAM);
+          break;
+        case WFM_LABEL_AFTER:
+          pitem = FPSTR(HTTP_FORM_PARAM);
+          pitem += FPSTR(HTTP_FORM_LABEL);
+          break;
+        default:
+          // WFM_NO_LABEL
+          pitem = FPSTR(HTTP_FORM_PARAM);
+          break;
+      }
+      if (_params[i]->getID() != NULL) {
+        pitem.replace("{i}", _params[i]->getID());
+        pitem.replace("{n}", _params[i]->getID());
+        pitem.replace("{p}", "{t}");
+        pitem.replace("{t}", _params[i]->getPlaceholder());
+        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
+        pitem.replace("{l}", parLength);
+        pitem.replace("{v}", _params[i]->getValue());
+        pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
+      } else {
+        pitem = _params[i]->getCustomHTML();
+      }
+
+      page += pitem;
+    }
+    if (_params[0] != NULL) {
+      page += FPSTR(HTTP_FORM_PARAM_END);
+    }
+  }
+  return page;
 }
 
 /** 

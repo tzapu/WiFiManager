@@ -216,6 +216,10 @@ class WiFiManager
     bool          wifimode(WiFiMode_t m);
     bool          wifioff();
 
+    String        getParamOut();
+    String        getScanItemOut();
+    String        getStaticOut();
+
     // DNS server
     const byte    DNS_PORT = 53;
 
