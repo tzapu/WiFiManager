@@ -824,6 +824,7 @@ void WiFiManager::handleInfo() {
   
   page += F("<h3>esp8266</h3><hr><dl>");
 
+  // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
   page += (String)(system_get_time() / 1000000 / 60) + " mins ";
   page += (String)((system_get_time() / 1000000)%60) + " secs";
@@ -901,13 +902,43 @@ void WiFiManager::handleInfo() {
   page += WiFi.SSID();
   page += F("</dd>");
 
+  page += F("<dt>BSSID</dt><dd>");
+  page += WiFi.BSSIDstr();
+  page += F("</dd>");
+
   page += F("<dt>Station IP</dt><dd>");
   page += WiFi.localIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Station Gateway</dt><dd>");
+  page += WiFi.gatewayIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Station Subnet</dt><dd>");
+  page += WiFi.subnetMask().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>DNS Server</dt><dd>");
+  page += WiFi.dnsIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Hostname</dt><dd>");
+  page += WiFi.hostname();
   page += F("</dd>");
 
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+
+  page += F("<dt>Connected</dt><dd>");
+  page += WiFi.isConnected() ? "Yes" : "No";
+  page += F("</dd>");
+
+  page += F("<dt>Autoconnect</dt><dd>");
+  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
+  page += F("</dd>");
+
+
 
   page += F("</dl>");
 
