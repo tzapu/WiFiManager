@@ -581,27 +581,36 @@ String WiFiManager::getScanItemOut(){
         }
       }
 
+      // token precheck, to speed up replacements on large ap lists
+      String HTTP_ITEM_STR = FPSTR(HTTP_ITEM);
+      bool tok_r = HTTP_ITEM_STR.indexOf("{r}") > 0;
+      bool tok_R = HTTP_ITEM_STR.indexOf("{R}") > 0;
+      bool tok_e = HTTP_ITEM_STR.indexOf("{e}") > 0;
+      bool tok_q = HTTP_ITEM_STR.indexOf("{q}") > 0;
+      bool tok_i = HTTP_ITEM_STR.indexOf("{i}") > 0;
+ 
       //display networks in page
       for (int i = 0; i < n; i++) {
         if (indices[i] == -1) continue; // skip dups
-        DEBUG_WM(WiFi.SSID(indices[i]));
-        DEBUG_WM(WiFi.RSSI(indices[i]));
-        int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
+
+        DEBUG_WM("AP: " + (String)WiFi.RSSI(indices[i]) + " " + (String)WiFi.SSID(indices[i]));
+
+        int rssiperc = getRSSIasQuality(WiFi.RSSI(indices[i]));
         uint8_t enc_type = WiFi.encryptionType(indices[i]);
 
-        if (_minimumQuality == -1 || _minimumQuality < quality) {
+        if (_minimumQuality == -1 || _minimumQuality < rssiperc) {
           String item = FPSTR(HTTP_ITEM);
-          String rssiQ;
-          rssiQ += quality;
           item.replace("{v}", WiFi.SSID(indices[i])); // ssid no encoding
-          item.replace("{R}", (String)WiFi.RSSI(indices[i])); // rssi
-          item.replace("{e}", encryptionTypeStr(enc_type));
-          item.replace("{r}", rssiQ); // qualitypercent
-          item.replace("{q}", (String)round(map(quality,0,100,1,4))); //quality icon 1-4
-          if (enc_type != ENC_TYPE_NONE) {
-            item.replace("{i}", "l");
-          } else {
-            item.replace("{i}", "");
+          if(tok_e) item.replace("{e}", encryptionTypeStr(enc_type));
+          if(tok_r) item.replace("{r}", (String)rssiperc); // rssi percentage 0-100
+          if(tok_R) item.replace("{R}", (String)WiFi.RSSI(indices[i])); // rssi db
+          if(tok_q) item.replace("{q}", (String)round(map(rssiperc,0,100,1,4))); //quality icon 1-4
+          if(tok_i){
+            if (enc_type != ENC_TYPE_NONE) {
+              item.replace("{i}", "l");
+            } else {
+              item.replace("{i}", "");
+            }
           }
           //DEBUG_WM(item);
           page += item;
@@ -613,6 +622,7 @@ String WiFiManager::getScanItemOut(){
       }
       page += "<br/>";
     }
+
     return page;
 }
 
@@ -673,6 +683,16 @@ String WiFiManager::getParamOut(){
 
   if(_paramsCount > 0){
 
+    String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
+    HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
+    bool tok_i = HTTP_PARAM_temp.indexOf("{i}") > 0;
+    bool tok_n = HTTP_PARAM_temp.indexOf("{n}") > 0;
+    bool tok_p = HTTP_PARAM_temp.indexOf("{p}") > 0;
+    bool tok_t = HTTP_PARAM_temp.indexOf("{t}") > 0;
+    bool tok_l = HTTP_PARAM_temp.indexOf("{l}") > 0;
+    bool tok_v = HTTP_PARAM_temp.indexOf("{v}") > 0;
+    bool tok_c = HTTP_PARAM_temp.indexOf("{c}") > 0;
+
     page += FPSTR(HTTP_FORM_PARAM_START);
 
     char parLength[5];
@@ -698,14 +718,14 @@ String WiFiManager::getParamOut(){
           break;
       }
       if (_params[i]->getID() != NULL) {
-        pitem.replace("{i}", _params[i]->getID());
-        pitem.replace("{n}", _params[i]->getID());
-        pitem.replace("{p}", "{t}");
-        pitem.replace("{t}", _params[i]->getPlaceholder());
+        if(tok_i)pitem.replace("{i}", _params[i]->getID());
+        if(tok_n)pitem.replace("{n}", _params[i]->getID());
+        if(tok_p)pitem.replace("{p}", "{t}");
+        if(tok_t)pitem.replace("{t}", _params[i]->getPlaceholder());
         snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-        pitem.replace("{l}", parLength);
-        pitem.replace("{v}", _params[i]->getValue());
-        pitem.replace("{c}", _params[i]->getCustomHTML()); // additional attributes not html
+        if(tok_l)pitem.replace("{l}", parLength);
+        if(tok_v)pitem.replace("{v}", _params[i]->getValue());
+        if(tok_c)pitem.replace("{c}", _params[i]->getCustomHTML()); // meant for additional attributes, not html
       } else {
         pitem = _params[i]->getCustomHTML();
       }
@@ -716,6 +736,7 @@ String WiFiManager::getParamOut(){
       page += FPSTR(HTTP_FORM_PARAM_END);
     }
   }
+
   return page;
 }
 
