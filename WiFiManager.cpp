@@ -702,6 +702,7 @@ String WiFiManager::getParamOut(){
         break;
       }
 
+     // label before or after, this could probably be done via floats however
      String pitem;
       switch (_params[i]->getLabelPlacement()) {
         case WFM_LABEL_BEFORE:
@@ -717,6 +718,8 @@ String WiFiManager::getParamOut(){
           pitem = FPSTR(HTTP_FORM_PARAM);
           break;
       }
+
+      // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
         if(tok_i)pitem.replace("{i}", _params[i]->getID());
         if(tok_n)pitem.replace("{n}", _params[i]->getID());
