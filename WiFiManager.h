@@ -105,6 +105,8 @@ class WiFiManager
     boolean       startConfigPortal();
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
     boolean       process();
+    void          startWebPortal();
+    void          stopWebPortal();
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
@@ -237,6 +239,7 @@ class WiFiManager
 
     boolean       connect;
     boolean       configPortalActive = false;
+    boolean       webPortalActive    = false;
     boolean       _debug = true;
 
     void (*_apcallback)(WiFiManager*) = NULL;

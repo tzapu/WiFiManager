@@ -169,14 +169,12 @@ boolean WiFiManager::configPortalHasTimeout(){
 }
 
 void WiFiManager::setupConfigPortal() {
+
+  DEBUG_WM("Starting Web Portal");
+
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
   server.reset(new ESP8266WebServer(80));
-
-  DEBUG_WM(F("setupConfigPortal"));
-  _configPortalStart = millis();
-
-  if(!startAP()) DEBUG_WM("There was an error stating the AP"); // @bug startAP returns unreliable success status
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -194,6 +192,19 @@ void WiFiManager::setupConfigPortal() {
   
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
+}
+
+void WiFiManager::startWebPortal() {
+  if(configPortalActive || webPortalActive) return;
+  setupConfigPortal();
+  webPortalActive = true;
+}
+
+void WiFiManager::stopWebPortal() {
+  if(!configPortalActive && !webPortalActive) return;
+  DEBUG_WM("Stopping Web Portal");  
+  webPortalActive = false;
+  stopConfigPortal();
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -219,6 +230,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   configPortalActive = true;    
   connect = false; // global
+
+  DEBUG_WM(F("setupConfigPortal"));
+  _configPortalStart = millis();
+  if(!startAP()) DEBUG_WM("There was an error stating the AP"); // @bug startAP returns unreliable success status
   
   // init configportal
   setupConfigPortal();
@@ -253,7 +268,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 boolean WiFiManager::process(){
-    if(configPortalActive && !_configPortalIsBlocking){
+    if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
         uint8_t state = handleConfigPortal();
         return state == WL_CONNECTED;
     }
@@ -293,7 +308,9 @@ uint8_t WiFiManager::handleConfigPortal(){
 }
 
 boolean WiFiManager::stopConfigPortal(){
-  // do save callback
+  if(webPortalActive) return false;
+
+  // do save callback, @todo move out of here
   if ( _savecallback != NULL) {
     //todo: confirm or verify data was saved
     _savecallback();
@@ -307,6 +324,8 @@ boolean WiFiManager::stopConfigPortal(){
   // @todo does this free memory?
   server.reset();
   dnsServer.reset();
+
+  if(!configPortalActive) return false;
 
   // turn off AP
   DEBUG_WM(F("disconnect configportal"));
