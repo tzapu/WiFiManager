@@ -509,7 +509,7 @@ void WiFiManager::handleRoot() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   page += "<h1>";
-  page += _apName;
+  page += configPortalActive ? _apName : WiFi.localIP().toString();
   page += "</h1>";
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
