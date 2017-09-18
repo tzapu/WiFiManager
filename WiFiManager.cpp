@@ -95,7 +95,6 @@ WiFiManager::WiFiManager() {
 WiFiManager::~WiFiManager() {
   if(_userpersistent) WiFi.persistent(true); // reenable persistent
   WiFi.mode(_usermode);
-  DEBUG_WM(_usermode);
   DEBUG_WM(F("unloading"));
 }
 
@@ -160,6 +159,19 @@ bool WiFiManager::startAP(){
   return ret;
 }
 
+void WiFiManager::startWebPortal() {
+  if(configPortalActive || webPortalActive) return;
+  setupConfigPortal();
+  webPortalActive = true;
+}
+
+void WiFiManager::stopWebPortal() {
+  if(!configPortalActive && !webPortalActive) return;
+  DEBUG_WM("Stopping Web Portal");  
+  webPortalActive = false;
+  stopConfigPortal();
+}
+
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
@@ -192,19 +204,6 @@ void WiFiManager::setupConfigPortal() {
   
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
-}
-
-void WiFiManager::startWebPortal() {
-  if(configPortalActive || webPortalActive) return;
-  setupConfigPortal();
-  webPortalActive = true;
-}
-
-void WiFiManager::stopWebPortal() {
-  if(!configPortalActive && !webPortalActive) return;
-  DEBUG_WM("Stopping Web Portal");  
-  webPortalActive = false;
-  stopConfigPortal();
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -321,7 +320,8 @@ boolean WiFiManager::stopConfigPortal(){
   //HTTP handler
   server->handleClient();
 
-  // @todo does this free memory?
+  // @todo what is the proper way to shutdown and free the server up
+  server->stop();
   server.reset();
   dnsServer.reset();
 
