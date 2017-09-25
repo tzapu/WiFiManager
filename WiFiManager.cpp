@@ -15,12 +15,12 @@
 // PARAMETERS
 
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
-  _id = NULL;
-  _placeholder = NULL;
-  _length = 0;
-  _value = NULL;
+  _id             = NULL;
+  _placeholder    = NULL;
+  _length         = 0;
+  _value          = NULL;
   _labelPlacement = WFM_LABEL_BEFORE;
-  _customHTML = custom;
+  _customHTML     = custom;
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
@@ -36,11 +36,11 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
 }
 
 void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  _id = id;
-  _placeholder = placeholder;
-  _length = length;
+  _id             = id;
+  _placeholder    = placeholder;
+  _length         = length;
   _labelPlacement = labelPlacement;
-  _value = new char[length + 1];
+  _value          = new char[length + 1];
   for (int i = 0; i < length; i++) {
     _value[i] = 0;
   }
@@ -107,10 +107,6 @@ boolean WiFiManager::autoConnect() {
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
-
-  // read eeprom for ssid and pass, deprecated
-  //String ssid = getSSID();
-  //String pass = getPassword();
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
   if((WiFi.getMode() & WIFI_STA) == 0) wifimode(WIFI_STA); // if STA not on, turn it on
@@ -199,6 +195,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
+  server->on("/exit", std::bind(&WiFiManager::handleExit, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
@@ -213,13 +210,21 @@ boolean WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  if(!WiFi.isConnected()){
+  
+  bool disableSTA = false;
+
+  // @todo sometimes still cannot connect to AP for no known reason, no events in log either
+  if(!WiFi.isConnected() || disableSTA){
     // this fixes most ap problems, simply doing mode(WIFI_AP) does not work if sta connection is hanging
     wifioff();
     wifimode(WIFI_AP);
     DEBUG_WM("Disabling STA");
   }
-  else wifimode(WIFI_AP_STA);
+  else {
+    wifimode(WIFI_AP_STA);
+   }
+
+  WiFi.printDiag(Serial);
 
   DEBUG_WM("Enabling AP");
 
@@ -232,7 +237,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   DEBUG_WM(F("setupConfigPortal"));
   _configPortalStart = millis();
-  if(!startAP()) DEBUG_WM("There was an error stating the AP"); // @bug startAP returns unreliable success status
+  if(!startAP()) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
   
   // init configportal
   setupConfigPortal();
@@ -251,11 +256,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timed out
     if(configPortalHasTimeout()){
       stopConfigPortal();
-      result = WiFi.status() == WL_CONNECTED; //returns connected bool, ok I guess
+      result = portalTimeoutResult;
       break;
     }
 
     state = handleConfigPortal();
+
+    if(abort){
+      result = portalAbortResult;
+      break;
+    }
 
     if(state != WL_IDLE_STATUS){
         result == WL_CONNECTED;
@@ -263,6 +273,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
     yield();
   }
+
+  DEBUG_WM("config portal exiting");
   return result;
 }
 
@@ -331,8 +343,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
-  wifimode(WIFI_STA); // set back to sta, @todo use preservation variable
-  WiFi.mode(_usermode);
+  wifimode(_usermode); // restore users wifi mode
   configPortalActive = false;
   return ret;
 }
@@ -361,6 +372,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.persistent(true);
     WiFi.begin(ssid.c_str(), pass.c_str());
     WiFi.persistent(false);
+    //@todo catch failures in set_config
   } else {
     // connect using saved ssid if there is one
     if (WiFi.SSID() != "") {
@@ -497,7 +509,8 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
  * HTTPD CALLBACK root or redirect to captive portal
  */
 void WiFiManager::handleRoot() {
-  DEBUG_WM(F("Handle root"));
+  DEBUG_WM(F("HTTP Root"));
+
   if (captivePortal()) { // If captive portal redirect instead of displaying the page.
     return;
   }
@@ -525,6 +538,8 @@ void WiFiManager::handleRoot() {
  */
 void WiFiManager::handleWifi(boolean scan) {
 
+  DEBUG_WM("HTTP Wifi");
+
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Config ESP");
   page += FPSTR(HTTP_SCRIPT);
@@ -549,6 +564,7 @@ void WiFiManager::handleWifi(boolean scan) {
 
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
+  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
   DEBUG_WM(F("Sent config page"));
 }
@@ -766,7 +782,7 @@ String WiFiManager::getParamOut(){
  * HTTPD CALLBACK save form and redirect to WLAN config page again
  */
 void WiFiManager::handleWifiSave() {
-  DEBUG_WM(F("WiFi save"));
+  DEBUG_WM(F("HTTP WiFi save"));
 
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
@@ -827,7 +843,7 @@ void WiFiManager::handleWifiSave() {
  * HTTPD CALLBACK info page
  */
 void WiFiManager::handleInfo() {
-  DEBUG_WM(F("Info"));
+  DEBUG_WM(F("HTTP Info"));
 
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Info");
@@ -985,6 +1001,20 @@ void WiFiManager::handleInfo() {
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
+}
+
+
+/** 
+ * HTTPD CALLBACK root or redirect to captive portal
+ */
+void WiFiManager::handleExit() {
+  DEBUG_WM(F("HTTP Exit"));
+
+  String page = "Exiting";
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "text/html", page);
+  abort = true;
+  // stopConfigPortal();
 }
 
 void WiFiManager::reportStatus(String &page){
@@ -1205,8 +1235,8 @@ bool WiFiManager::wifimode(WiFiMode_t m) {
 
 // sta disconnect without persistent
 bool WiFiManager::wifioff() {
-    DEBUG_WM(F("wifi disconncting"));
     if((WiFi.getMode() & WIFI_STA) != 0) {
+        DEBUG_WM(F("wifi station disconnect"));
         return wifi_station_disconnect();
     }
 }

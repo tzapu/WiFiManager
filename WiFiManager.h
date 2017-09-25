@@ -44,7 +44,7 @@ const char HTTP_STYLE[] PROGMEM           = "<style>"
 
 const char HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div class='wrap'>";
-const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form>";
+const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form><br/><form action='/exit' method='GET'><button>Quit</button></form>";
 const char HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a><div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div></div>";
 // const char HTTP_ITEM[] PROGMEM         = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
 //const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==' width='13px'/>";
@@ -214,7 +214,8 @@ class WiFiManager
     void          handleInfo();
     void          handleReset();
     void          handleNotFound();
-    void          handle204();
+    void          handleExit();
+
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
@@ -238,9 +239,12 @@ class WiFiManager
     void          reportStatus(String &page);
 
     boolean       connect;
-    boolean       configPortalActive = false;
-    boolean       webPortalActive    = false;
-    boolean       _debug = true;
+    boolean       abort;
+    boolean       configPortalActive  = false;
+    boolean       webPortalActive     = false;
+    boolean       _debug              = true;
+    boolean       portalTimeoutResult = false;
+    boolean       portalAbortResult   = false;
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
