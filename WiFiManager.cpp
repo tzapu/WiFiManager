@@ -269,7 +269,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
 
     if(state != WL_IDLE_STATUS){
-        result == WL_CONNECTED;
+        result = state == WL_CONNECTED;
         break;
     }
     yield();
