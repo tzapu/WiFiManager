@@ -243,6 +243,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   setupConfigPortal();
   uint8_t state;
   bool result = false;
+  abort = false;
 
   if(!_configPortalIsBlocking){
     DEBUG_WM(F("Config Portal Running, non blocking/processing"));
