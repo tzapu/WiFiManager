@@ -381,9 +381,9 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     }
   }
 
-  int connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
+  uint8_t connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
   DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( connRes );
+  DEBUG_WM ( getConnResString(connRes) );
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
@@ -422,6 +422,22 @@ uint8_t WiFiManager::waitForConnectResult() {
     delay(100);
   }
   return status;
+}
+
+String WiFiManager::getConnResString(uint8_t status){
+    switch(status) {
+        case STATION_GOT_IP:
+            return "WL_CONNECTED";
+        case STATION_NO_AP_FOUND:
+            return "WL_NO_SSID_AVAIL";
+        case STATION_CONNECT_FAIL:
+        case STATION_WRONG_PASSWORD:
+            return "WL_CONNECT_FAILED";
+        case STATION_IDLE:
+            return "WL_IDLE_STATUS";
+        default:
+            return "WL_DISCONNECTED";
+    }
 }
 
 void WiFiManager::startWPS() {
