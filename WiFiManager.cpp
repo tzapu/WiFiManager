@@ -232,8 +232,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apPassword = apPassword;
   if(!validApPassword()) return false;
 
-  configPortalActive = true;    
-  connect = false; // global
+  // init configportal globals to known states
+  configPortalActive = true;
+  bool result = connect = abort = false; // loop flags, connect true success, abort true break
+  uint8_t state;
 
   DEBUG_WM(F("setupConfigPortal"));
   _configPortalStart = millis();
@@ -241,9 +243,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   
   // init configportal
   setupConfigPortal();
-  uint8_t state;
-  bool result = false;
-  abort = false;
 
   if(!_configPortalIsBlocking){
     DEBUG_WM(F("Config Portal Running, non blocking/processing"));
@@ -254,25 +253,22 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // blocking loop waiting for config
   while(1){
 
-    // check if timed out
-    if(configPortalHasTimeout()){
+    // if timed out or abort, break
+    if(configPortalHasTimeout() || abort){
       stopConfigPortal();
-      result = portalTimeoutResult;
+      result = abort ? portalAbortResult : portalTimeoutResult; // false, false
       break;
     }
 
     state = handleConfigPortal();
 
-    if(abort){
-      result = portalAbortResult;
-      break;
-    }
-
+    // status change, break
     if(state != WL_IDLE_STATUS){
-        result = state == WL_CONNECTED;
+        result = state == WL_CONNECTED; // true if connected
         break;
     }
-    yield();
+
+    yield(); // watchdog
   }
 
   DEBUG_WM("config portal exiting");
@@ -1022,7 +1018,6 @@ void WiFiManager::handleExit() {
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
   abort = true;
-  // stopConfigPortal();
 }
 
 void WiFiManager::reportStatus(String &page){
