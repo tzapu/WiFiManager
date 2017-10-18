@@ -1010,7 +1010,14 @@ void WiFiManager::handleInfo() {
 void WiFiManager::handleExit() {
   DEBUG_WM(F("HTTP Exit"));
 
-  String page = "Exiting";
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Exit");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+
+  page += "Exiting";
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
   abort = true;
