@@ -207,11 +207,6 @@ You should also take a look at adding custom HTML to your form.
 - Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
 
-NOTE: if your need more than 10 (the default) custom parameters you will need to use the alternate constructor:
-```cpp
-WiFiManager wifiManager(15); // pass the number of params you will be adding
-```
-
 #### Custom IP Configuration
 You can set a custom IP for both AP (access point, config mode) and STA (station mode, client mode, normal project state)
 
