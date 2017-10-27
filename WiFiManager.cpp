@@ -127,6 +127,10 @@ bool WiFiManager::startAP(){
   DEBUG_WM(F("Configuring access point with with SSID of ... "));
   DEBUG_WM(_apName);
 
+  // bool dis = WiFi.softAPdisconnect(false);
+  // DEBUG_WM(F("Stopping SOFTAP"));
+  // DEBUG_WM(dis ? "success" : "failed");
+
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet"));
@@ -135,13 +139,34 @@ bool WiFiManager::startAP(){
 
   bool ret = true;
 
+  // WiFi.mode(WIFI_AP); // is a known state nefore startap required ?
+
   // start soft AP with password or anonymous
   if (_apPassword != "") {
+    Serial.println((String)_apPassword.c_str());
     ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
     DEBUG_WM(F("AP has anonymous access"));    
     ret = WiFi.softAP(_apName.c_str());
   }
+
+  if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
+
+    struct softap_config conf;
+    wifi_softap_get_config(&conf);
+
+    const char* ssid = reinterpret_cast<const char*>(conf.ssid);
+    Serial.print("SSID (");
+    Serial.print(strlen(ssid));
+    Serial.print("): ");
+    Serial.println(ssid);
+
+    const char* passphrase = reinterpret_cast<const char*>(conf.password);
+    Serial.print("Passphrase (");
+    Serial.print(strlen(passphrase));
+    Serial.print("): ");
+    Serial.println(passphrase);
+
 
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address: "));
@@ -152,6 +177,8 @@ bool WiFiManager::startAP(){
     _apcallback(this);
   }
   
+  WiFi.printDiag(Serial);
+
   return ret;
 }
 
@@ -211,20 +238,20 @@ boolean WiFiManager::startConfigPortal() {
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   
-  bool disableSTA = false;
+  bool disableSTA = false; // debug, always disable sta
 
   // @todo sometimes still cannot connect to AP for no known reason, no events in log either
   if(!WiFi.isConnected() || disableSTA){
     // this fixes most ap problems, simply doing mode(WIFI_AP) does not work if sta connection is hanging
+    // @todo even if sta is connected, it is possible that softap connections will fail, IOS says "invalid password", windows says "cannot connect to this network"
     wifioff();
-    wifimode(WIFI_AP);
+    if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_AP); // @todo use bitwise toggling for these after testing
     DEBUG_WM("Disabling STA");
   }
   else {
-    wifimode(WIFI_AP_STA);
-   }
-
-  WiFi.printDiag(Serial);
+    if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_AP_STA);
+    else wifimode(WIFI_STA);
+  }
 
   DEBUG_WM("Enabling AP");
 
@@ -239,8 +266,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   DEBUG_WM(F("setupConfigPortal"));
   _configPortalStart = millis();
-  if(!startAP()) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
-  
+
+  // start access point
+  startAP();
+
   // init configportal
   setupConfigPortal();
 
@@ -360,7 +389,12 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-  wifimode(WIFI_AP_STA); // turn sta back on so begin does not call enablesta->mode
+  // make sure sta is on before `begin` so it does not call enablesta->mode during persistent
+  if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_STA);
+  else wifimode(WIFI_AP_STA);
+
+  WiFi.printDiag(Serial);
+
   wifioff(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
@@ -383,7 +417,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
   uint8_t connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
   DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( getConnResString(connRes) );
+  DEBUG_WM ( getWLStatusString(connRes) );
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
@@ -422,22 +456,6 @@ uint8_t WiFiManager::waitForConnectResult() {
     delay(100);
   }
   return status;
-}
-
-String WiFiManager::getConnResString(uint8_t status){
-    switch(status) {
-        case STATION_GOT_IP:
-            return "WL_CONNECTED";
-        case STATION_NO_AP_FOUND:
-            return "WL_NO_SSID_AVAIL";
-        case STATION_CONNECT_FAIL:
-        case STATION_WRONG_PASSWORD:
-            return "WL_CONNECT_FAILED";
-        case STATION_IDLE:
-            return "WL_IDLE_STATUS";
-        default:
-            return "WL_DISCONNECTED";
-    }
 }
 
 void WiFiManager::startWPS() {
@@ -1221,6 +1239,22 @@ boolean WiFiManager::validApPassword(){
     DEBUG_WM(_apPassword);
   }
   return true;
+}
+
+String WiFiManager::getWLStatusString(uint8_t status){
+  const char * const WIFI_STA_STATUS[]
+  {
+      "WL_IDLE_STATUS",
+      "WL_NO_SSID_AVAIL",
+      "WL_SCAN_COMPLETED",
+      "WL_CONNECTED",
+      "WL_CONNECT_FAILED",
+      "WL_CONNECTION_LOST",
+      "WL_DISCONNECTED"
+  };
+
+  if(status >=0 && status <=6) return WIFI_STA_STATUS[status];
+  return "UNKNOWN";
 }
 
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {

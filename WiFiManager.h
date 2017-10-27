@@ -207,7 +207,7 @@ class WiFiManager
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
-    String        getConnResString(uint8_t status);
+    String        getWLStatusString(uint8_t status);
 
     void          handleRoot();
     void          handleWifi(boolean scan);
