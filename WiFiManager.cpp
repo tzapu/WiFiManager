@@ -109,7 +109,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  if((WiFi.getMode() & WIFI_STA) == 0) wifimode(WIFI_STA); // if STA not on, turn it on
+  enableSTA(true);
 
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
@@ -127,10 +127,6 @@ bool WiFiManager::startAP(){
   DEBUG_WM(F("Configuring access point with with SSID of ... "));
   DEBUG_WM(_apName);
 
-  // bool dis = WiFi.softAPdisconnect(false);
-  // DEBUG_WM(F("Stopping SOFTAP"));
-  // DEBUG_WM(dis ? "success" : "failed");
-
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet"));
@@ -138,8 +134,6 @@ bool WiFiManager::startAP(){
   }
 
   bool ret = true;
-
-  // WiFi.mode(WIFI_AP); // is a known state nefore startap required ?
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
@@ -152,22 +146,6 @@ bool WiFiManager::startAP(){
 
   if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
 
-    struct softap_config conf;
-    wifi_softap_get_config(&conf);
-
-    const char* ssid = reinterpret_cast<const char*>(conf.ssid);
-    Serial.print("SSID (");
-    Serial.print(strlen(ssid));
-    Serial.print("): ");
-    Serial.println(ssid);
-
-    const char* passphrase = reinterpret_cast<const char*>(conf.password);
-    Serial.print("Passphrase (");
-    Serial.print(strlen(passphrase));
-    Serial.print("): ");
-    Serial.println(passphrase);
-
-
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address: "));
   DEBUG_WM(WiFi.softAPIP());
@@ -177,8 +155,6 @@ bool WiFiManager::startAP(){
     _apcallback(this);
   }
   
-  WiFi.printDiag(Serial);
-
   return ret;
 }
 
@@ -240,17 +216,17 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   
   bool disableSTA = false; // debug, always disable sta
 
+  // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
   // @todo sometimes still cannot connect to AP for no known reason, no events in log either
   if(!WiFi.isConnected() || disableSTA){
-    // this fixes most ap problems, simply doing mode(WIFI_AP) does not work if sta connection is hanging
-    // @todo even if sta is connected, it is possible that softap connections will fail, IOS says "invalid password", windows says "cannot connect to this network"
+    // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
     wifioff();
-    if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_AP); // @todo use bitwise toggling for these after testing
+    enableSTA(false);
     DEBUG_WM("Disabling STA");
   }
   else {
-    if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_AP_STA);
-    else wifimode(WIFI_STA);
+    // @todo even if sta is connected, it is possible that softap connections will fail, IOS says "invalid password", windows says "cannot connect to this network" researching
+    enableSTA(true);
   }
 
   DEBUG_WM("Enabling AP");
@@ -389,12 +365,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-  // make sure sta is on before `begin` so it does not call enablesta->mode during persistent
-  if((WiFi.getMode() & WIFI_AP) != 0) wifimode(WIFI_STA);
-  else wifimode(WIFI_AP_STA);
-
-  WiFi.printDiag(Serial);
-
+  // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save AP state to eeprom !)
+  enableSTA(true);
   wifioff(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
@@ -1289,7 +1261,27 @@ bool WiFiManager::wifimode(WiFiMode_t m) {
 // sta disconnect without persistent
 bool WiFiManager::wifioff() {
     if((WiFi.getMode() & WIFI_STA) != 0) {
+        bool ret;
         DEBUG_WM(F("wifi station disconnect"));
-        return wifi_station_disconnect();
+        ETS_UART_INTR_DISABLE(); 
+    	ret = wifi_station_disconnect();
+    	ETS_UART_INTR_ENABLE();        
+        return ret;
+    }
+}
+
+bool WiFiManager::enableSTA(bool enable) {
+
+    WiFiMode_t currentMode = WiFi.getMode();
+    bool isEnabled = ((currentMode & WIFI_STA) != 0);
+
+    if(isEnabled != enable) {
+        if(enable) {
+            return wifimode((WiFiMode_t)(currentMode | WIFI_STA));
+        } else {
+            return wifimode((WiFiMode_t)(currentMode & (~WIFI_STA)));
+        }
+    } else {
+        return true;
     }
 }

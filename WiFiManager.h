@@ -223,6 +223,7 @@ class WiFiManager
     uint8_t       handleConfigPortal();
     bool          wifimode(WiFiMode_t m);
     bool          wifioff();
+    bool          enableSTA(bool enable);
 
     String        getParamOut();
     String        getScanItemOut();
