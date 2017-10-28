@@ -109,7 +109,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  enableSTA(true);
+  WiFi_enableSTA(true);
 
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
@@ -220,13 +220,13 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // @todo sometimes still cannot connect to AP for no known reason, no events in log either
   if(!WiFi.isConnected() || disableSTA){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
-    wifioff();
-    enableSTA(false);
+    WiFi_Disconnect();
+    WiFi_enableSTA(false);
     DEBUG_WM("Disabling STA");
   }
   else {
     // @todo even if sta is connected, it is possible that softap connections will fail, IOS says "invalid password", windows says "cannot connect to this network" researching
-    enableSTA(true);
+    WiFi_enableSTA(true);
   }
 
   DEBUG_WM("Enabling AP");
@@ -345,7 +345,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
-  wifimode(_usermode); // restore users wifi mode
+  WiFi_Mode(_usermode); // restore users wifi mode
   configPortalActive = false;
   return ret;
 }
@@ -366,8 +366,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save AP state to eeprom !)
-  enableSTA(true);
-  wifioff(); // disconnect before begin, in case anything is hung
+  WiFi_enableSTA(true);
+  WiFi_Disconnect(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
   if (ssid != "") {
@@ -1247,7 +1247,7 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
 }
 
 // set mode without persistent
-bool WiFiManager::wifimode(WiFiMode_t m) {
+bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
     if(wifi_get_opmode() == (uint8) m) {
         return true;
     }
@@ -1259,7 +1259,7 @@ bool WiFiManager::wifimode(WiFiMode_t m) {
 }
 
 // sta disconnect without persistent
-bool WiFiManager::wifioff() {
+bool WiFiManager::WiFi_Disconnect() {
     if((WiFi.getMode() & WIFI_STA) != 0) {
         bool ret;
         DEBUG_WM(F("wifi station disconnect"));
@@ -1270,16 +1270,17 @@ bool WiFiManager::wifioff() {
     }
 }
 
-bool WiFiManager::enableSTA(bool enable) {
+// toggle STA without persistent
+bool WiFiManager::WiFi_enableSTA(bool enable) {
 
     WiFiMode_t currentMode = WiFi.getMode();
     bool isEnabled = ((currentMode & WIFI_STA) != 0);
 
     if(isEnabled != enable) {
         if(enable) {
-            return wifimode((WiFiMode_t)(currentMode | WIFI_STA));
+            return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA));
         } else {
-            return wifimode((WiFiMode_t)(currentMode & (~WIFI_STA)));
+            return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)));
         }
     } else {
         return true;

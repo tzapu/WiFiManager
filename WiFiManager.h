@@ -221,9 +221,9 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
     uint8_t       handleConfigPortal();
-    bool          wifimode(WiFiMode_t m);
-    bool          wifioff();
-    bool          enableSTA(bool enable);
+    bool          WiFi_Mode(WiFiMode_t m);
+    bool          WiFi_Disconnect();
+    bool          WiFi_enableSTA(bool enable);
 
     String        getParamOut();
     String        getScanItemOut();
