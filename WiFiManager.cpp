@@ -199,6 +199,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/i", std::bind(&WiFiManager::handleInfo, this));
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/exit", std::bind(&WiFiManager::handleExit, this));
+  server->on("/erase", std::bind(&WiFiManager::handleErase, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
@@ -254,7 +255,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     return result;
   }
 
-  DEBUG_WM(F("Config Portal Running, blocking"));
+  DEBUG_WM(F("Config Portal Running, blocking, waiting for clients..."));
   // blocking loop waiting for config
   while(1){
 
@@ -299,7 +300,7 @@ uint8_t WiFiManager::handleConfigPortal(){
     if (connect) {
       connect = false;
       delay(2000);
-      DEBUG_WM(F("Connecting to new AP"));
+      DEBUG_WM(F("Connecting save WiFi"));
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
@@ -365,8 +366,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
 
-  // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save AP state to eeprom !)
-  WiFi_enableSTA(true);
+  // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
+  WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi_Disconnect(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
@@ -512,7 +513,7 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
  * HTTPD CALLBACK root or redirect to captive portal
  */
 void WiFiManager::handleRoot() {
-  DEBUG_WM(F("HTTP Root"));
+  DEBUG_WM(F("<- HTTP Root"));
 
   if (captivePortal()) { // If captive portal redirect instead of displaying the page.
     return;
@@ -533,6 +534,7 @@ void WiFiManager::handleRoot() {
 
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
+  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
 }
 
@@ -541,7 +543,7 @@ void WiFiManager::handleRoot() {
  */
 void WiFiManager::handleWifi(boolean scan) {
 
-  DEBUG_WM("HTTP Wifi");
+  DEBUG_WM("<- HTTP Wifi");
 
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Config ESP");
@@ -859,7 +861,7 @@ void WiFiManager::handleInfo() {
   reportStatus(page);
   page +="</div>";
   // @todo add versioning here
-  
+ 
   page += F("<h3>esp8266</h3><hr><dl>");
 
   // subject to rollover!
@@ -975,10 +977,9 @@ void WiFiManager::handleInfo() {
   page += F("<dt>Autoconnect</dt><dd>");
   page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
   page += F("</dd>");
-
-
-
   page += F("</dl>");
+
+  page += "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
   page += F("<br/><h3>Available Pages</h3><hr>");
   page += F("<table class='table'>");
@@ -1011,7 +1012,7 @@ void WiFiManager::handleInfo() {
  * HTTPD CALLBACK root or redirect to captive portal
  */
 void WiFiManager::handleExit() {
-  DEBUG_WM(F("HTTP Exit"));
+  DEBUG_WM(F("<- HTTP Exit"));
 
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Exit");
@@ -1042,7 +1043,7 @@ void WiFiManager::reportStatus(String &page){
 	  }
     }
     else {
-		page += F("No network currently configured.");
+		page += F("No AP currently configured.");
 	}
 }
 
@@ -1050,10 +1051,10 @@ void WiFiManager::reportStatus(String &page){
  * HTTPD CALLBACK reset page
  */
 void WiFiManager::handleReset() {
-  DEBUG_WM(F("Reset"));
+  DEBUG_WM(F("<- HTTP Reset"));
 
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
+  page.replace("{v}", "Reset");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
@@ -1064,10 +1065,40 @@ void WiFiManager::handleReset() {
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
 
-  DEBUG_WM(F("Sent reset page"));
-  delay(5000);
+  DEBUG_WM(F("RESETTING ESP"));
+  delay(1000);
   ESP.reset();
-  delay(2000);
+}
+
+/** 
+ * HTTPD CALLBACK erase page
+ */
+void WiFiManager::handleErase() {
+  DEBUG_WM(F("<- HTTP Erase"));
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Erase");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+
+  // WiFi.persistent(true); // persistent IS persistent ?
+  bool ret = ESP.eraseConfig();
+  delay(1000);
+  
+  if(ret) page += F("Module will reset in a few seconds.");
+  else {
+  	page += F("An Error Occured");
+  	DEBUG_WM(F("WiFi.eraseConfig reported an error"));
+  }
+
+  page += FPSTR(HTTP_END);
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "text/html", page);
+
+  DEBUG_WM(F("RESETTING ESP"));
+  if(ret) ESP.reset();
 }
 
 void WiFiManager::handleNotFound() {
@@ -1099,12 +1130,12 @@ void WiFiManager::handleNotFound() {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal() {
-  DEBUG_WM(server->hostHeader());
+  DEBUG_WM("-> " + server->hostHeader());
   
   if(!_enableCaptivePortal) return true; // skip redirections
 
   if (!isIp(server->hostHeader())) {
-    DEBUG_WM(F("Request redirected to captive portal"));
+    DEBUG_WM(F("<- Request redirected to captive portal"));
     server->sendHeader("Location", String("http://") + toStringIp(server->client().localIP()), true);
     server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server->client().stop(); // Stop is needed because we sent no content length
@@ -1246,16 +1277,35 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
     }
 }
 
-// set mode without persistent
-bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
-    if(wifi_get_opmode() == (uint8) m) {
+// set mode ignores WiFi.persistent 
+bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
+    if((wifi_get_opmode() == (uint8) m ) && !persistent) {
         return true;
     }
     bool ret;
     ETS_UART_INTR_DISABLE();
-    ret = wifi_set_opmode_current(m);
+    if(persistent){
+    	ret = wifi_set_opmode(m);
+    	DEBUG_WM("wifi_set_opmode");
+    }	
+    else{
+    	ret = wifi_set_opmode_current(m);
+    	DEBUG_WM("wifi_set_opmode_current");
+    }
     ETS_UART_INTR_ENABLE();
-    return ret;
+
+  // delay(1000);
+  // Serial.println(ret?"success":"failed");
+  // Serial.print(" C:");
+  // Serial.print(wifi_get_opmode()); //current
+  // Serial.print(" D:");
+  // Serial.print(wifi_get_opmode_default()); // default (persistent)
+  // Serial.println(" ********"); // add one * for serial newline bug
+
+  return ret;
+}
+bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
+	WiFi_Mode(m,false);
 }
 
 // sta disconnect without persistent
@@ -1271,18 +1321,21 @@ bool WiFiManager::WiFi_Disconnect() {
 }
 
 // toggle STA without persistent
-bool WiFiManager::WiFi_enableSTA(bool enable) {
+bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
 
     WiFiMode_t currentMode = WiFi.getMode();
     bool isEnabled = ((currentMode & WIFI_STA) != 0);
 
-    if(isEnabled != enable) {
+    if((isEnabled != enable) || persistent) {
         if(enable) {
-            return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA));
+            return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
         } else {
-            return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)));
+            return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
         }
     } else {
         return true;
     }
+}
+bool WiFiManager::WiFi_enableSTA(bool enable) {
+	WiFi_enableSTA(enable,false);
 }

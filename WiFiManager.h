@@ -188,7 +188,7 @@ class WiFiManager
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
-    boolean       _sta_show_static_fields = true;
+    boolean       _sta_show_static_fields = false;
 
     // option parameters
     int           _paramsCount            = 0;
@@ -216,14 +216,17 @@ class WiFiManager
     void          handleReset();
     void          handleNotFound();
     void          handleExit();
+    void          handleErase();
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
     uint8_t       handleConfigPortal();
     bool          WiFi_Mode(WiFiMode_t m);
+    bool          WiFi_Mode(WiFiMode_t m,bool persistent);
     bool          WiFi_Disconnect();
     bool          WiFi_enableSTA(bool enable);
+    bool          WiFi_enableSTA(bool enable,bool persistent);
 
     String        getParamOut();
     String        getScanItemOut();
@@ -247,6 +250,7 @@ class WiFiManager
     boolean       _debug              = true;
     boolean       portalTimeoutResult = false;
     boolean       portalAbortResult   = false;
+    boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
