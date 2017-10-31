@@ -18,12 +18,14 @@
 #include <DNSServer.h>
 #include <memory>
 
+#include <webgets.h>
+
 extern "C" {
   #include "user_interface.h"
 }
 
 const char HTTP_HEAD[] PROGMEM            = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
-const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==\") no-repeat left center;background-size: 1em;}</style>";
+const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==\") no-repeat left center;background-size: 1em;} input[type=checkbox]{float:right;width:5%;cursor:pointer;} label{width:90%;float:left;cursor:pointer;} input[type=radio]{float:right;width:5%;cursor: pointer;} fieldset{width:95%}</style>";
 const char HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[] PROGMEM        = "</head><body><div style='text-align:left;display:inline-block;min-width:260px;'>";
 const char HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/><form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form><br/><form action=\"/i\" method=\"get\"><button>Info</button></form><br/><form action=\"/r\" method=\"post\"><button>Reset</button></form>";
@@ -36,30 +38,6 @@ const char HTTP_SAVED[] PROGMEM           = "<div>Credentials Saved<br />Trying 
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 #define WIFI_MANAGER_MAX_PARAMS 10
-
-class WiFiManagerParameter {
-  public:
-    WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-
-    const char *getID();
-    const char *getValue();
-    const char *getPlaceholder();
-    int         getValueLength();
-    const char *getCustomHTML();
-  private:
-    const char *_id;
-    const char *_placeholder;
-    char       *_value;
-    int         _length;
-    const char *_customHTML;
-
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-
-    friend class WiFiManager;
-};
-
 
 class WiFiManager
 {
@@ -100,7 +78,7 @@ class WiFiManager
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
     //adds a custom parameter
-    void          addParameter(WiFiManagerParameter *p);
+    void          addParameter(web_parameter& p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
     //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
@@ -137,7 +115,6 @@ class WiFiManager
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
 
-    int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
@@ -176,7 +153,7 @@ class WiFiManager
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
-    WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
+    std::list<std::reference_wrapper<web_parameter>> _params;
 
     template <typename Generic>
     void          DEBUG_WM(Generic text);

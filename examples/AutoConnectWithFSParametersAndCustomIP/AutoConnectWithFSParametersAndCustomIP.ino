@@ -95,9 +95,9 @@ void setup() {
   // The extra parameters to be configured (can be either global or just in the setup)
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
-  WiFiManagerParameter custom_blynk_token("blynk", "blynk token", blynk_token, 34);
+  text_box_parameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
+  text_box_parameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
+  text_box_parameter custom_blynk_token("blynk", "blynk token", blynk_token, 34);
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -115,9 +115,9 @@ void setup() {
   wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
   
   //add all your parameters here
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_blynk_token);
+  wifiManager.addParameter(custom_mqtt_server);
+  wifiManager.addParameter(custom_mqtt_port);
+  wifiManager.addParameter(custom_blynk_token);
 
   //reset settings - for testing
   //wifiManager.resetSettings();
@@ -147,9 +147,9 @@ void setup() {
   Serial.println("connected...yeey :)");
 
   //read updated parameters
-  strcpy(mqtt_server, custom_mqtt_server.getValue());
-  strcpy(mqtt_port, custom_mqtt_port.getValue());
-  strcpy(blynk_token, custom_blynk_token.getValue());
+  strcpy(mqtt_server, custom_mqtt_server.get_value().c_str());
+  strcpy(mqtt_port, custom_mqtt_port.get_value().c_str());
+  strcpy(blynk_token, custom_blynk_token.get_value().c_str());
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {

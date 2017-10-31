@@ -12,70 +12,21 @@
 
 #include "WiFiManager.h"
 
-WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
-  _id = NULL;
-  _placeholder = NULL;
-  _length = 0;
-  _value = NULL;
-
-  _customHTML = custom;
-}
-
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "");
-}
-
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom);
-}
-
-void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  _id = id;
-  _placeholder = placeholder;
-  _length = length;
-  _value = new char[length + 1];
-  for (int i = 0; i < length; i++) {
-    _value[i] = 0;
-  }
-  if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
-  }
-
-  _customHTML = custom;
-}
-
-const char* WiFiManagerParameter::getValue() {
-  return _value;
-}
-const char* WiFiManagerParameter::getID() {
-  return _id;
-}
-const char* WiFiManagerParameter::getPlaceholder() {
-  return _placeholder;
-}
-int WiFiManagerParameter::getValueLength() {
-  return _length;
-}
-const char* WiFiManagerParameter::getCustomHTML() {
-  return _customHTML;
-}
-
 WiFiManager::WiFiManager() {
 }
 
-void WiFiManager::addParameter(WiFiManagerParameter *p) {
-  if(_paramsCount + 1 > WIFI_MANAGER_MAX_PARAMS)
+void WiFiManager::addParameter(web_parameter& p) {
+  if(_params.size() + 1 > WIFI_MANAGER_MAX_PARAMS)
   {
     //Max parameters exceeded!
 	DEBUG_WM("WIFI_MANAGER_MAX_PARAMS exceeded, increase number (in WiFiManager.h) before adding more parameters!");
 	DEBUG_WM("Skipping parameter with ID:");
-	DEBUG_WM(p->getID());
+	DEBUG_WM(p.get_ID());
 	return;
   }
-  _params[_paramsCount] = p;
-  _paramsCount++;
+  _params.push_back(p);
   DEBUG_WM("Adding parameter");
-  DEBUG_WM(p->getID());
+  DEBUG_WM(p.get_ID());
 }
 
 void WiFiManager::setupConfigPortal() {
@@ -487,28 +438,9 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_FORM_START);
   char parLength[5];
   // add the extra parameters to the form
-  for (int i = 0; i < _paramsCount; i++) {
-    if (_params[i] == NULL) {
-      break;
-    }
-
-    String pitem = FPSTR(HTTP_FORM_PARAM);
-    if (_params[i]->getID() != NULL) {
-      pitem.replace("{i}", _params[i]->getID());
-      pitem.replace("{n}", _params[i]->getID());
-      pitem.replace("{p}", _params[i]->getPlaceholder());
-      snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-      pitem.replace("{l}", parLength);
-      pitem.replace("{v}", _params[i]->getValue());
-      pitem.replace("{c}", _params[i]->getCustomHTML());
-    } else {
-      pitem = _params[i]->getCustomHTML();
-    }
-
-    page += pitem;
-  }
-  if (_params[0] != NULL) {
-    page += "<br/>";
+  for (web_parameter& entry : _params)
+  {
+    page += entry.get_render();
   }
 
   if (_sta_static_ip) {
@@ -564,17 +496,13 @@ void WiFiManager::handleWifiSave() {
   _pass = server->arg("p").c_str();
 
   //parameters
-  for (int i = 0; i < _paramsCount; i++) {
-    if (_params[i] == NULL) {
-      break;
-    }
-    //read parameter
-    String value = server->arg(_params[i]->getID()).c_str();
-    //store it in array
-    value.toCharArray(_params[i]->_value, _params[i]->_length);
+  for (web_parameter& entry : _params)
+  {
+
+    //read parameter and store to object
+    entry.set_from_server(server);
     DEBUG_WM(F("Parameter"));
-    DEBUG_WM(_params[i]->getID());
-    DEBUG_WM(value);
+    DEBUG_WM(entry.get_ID());
   }
 
   if (server->arg("ip") != "") {
