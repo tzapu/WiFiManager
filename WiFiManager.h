@@ -227,6 +227,7 @@ class WiFiManager
     bool          WiFi_Disconnect();
     bool          WiFi_enableSTA(bool enable);
     bool          WiFi_enableSTA(bool enable,bool persistent);
+    bool          ESP_eraseConfig();
 
     String        getParamOut();
     String        getScanItemOut();
@@ -245,6 +246,7 @@ class WiFiManager
 
     boolean       connect;
     boolean       abort;
+    boolean reset = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
     boolean       _debug              = true;

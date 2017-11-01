@@ -259,6 +259,13 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // blocking loop waiting for config
   while(1){
 
+  	if(reset){
+        stopConfigPortal(); 		
+  		if(!ESP_eraseConfig()) DEBUG_WM(F("ERASE FAILED"));
+  		delay(2000);
+  		break;
+  	}
+
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
       stopConfigPortal();
@@ -275,6 +282,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
 
     yield(); // watchdog
+  }
+
+  if(reset){
+  	reset = false;
+  	ESP.reset();
+  	delay(1000);
   }
 
   DEBUG_WM("config portal exiting");
@@ -367,12 +380,12 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi_Disconnect(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
   if (ssid != "") {
     DEBUG_WM("Connecting to new AP");
+  	WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
     WiFi.persistent(true);
     WiFi.begin(ssid.c_str(), pass.c_str());
     WiFi.persistent(false);
@@ -381,9 +394,10 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     // connect using saved ssid if there is one
     if (WiFi.SSID() != "") {
       DEBUG_WM("Connecting to saved AP");
+  	  WiFi_enableSTA(true,storeSTAmode);
       WiFi.begin();
     } else {
-      DEBUG_WM("No saved credentials");
+      DEBUG_WM("No saved credentials, skipping wifi");
       waitforconx = false;
     }
   }
@@ -1084,7 +1098,8 @@ void WiFiManager::handleErase() {
   page += FPSTR(HTTP_HEAD_END);
 
   // WiFi.persistent(true); // persistent IS persistent ?
-  bool ret = ESP.eraseConfig();
+  // bool ret = ESP_eraseConfig();
+  bool ret = reset = true;
   delay(1000);
   
   if(ret) page += F("Module will reset in a few seconds.");
@@ -1097,8 +1112,10 @@ void WiFiManager::handleErase() {
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
 
-  DEBUG_WM(F("RESETTING ESP"));
-  if(ret) ESP.reset();
+  if(ret){
+  	DEBUG_WM(F("RESETTING ESP"));
+  	// ESP.reset();
+  }	
 }
 
 void WiFiManager::handleNotFound() {
@@ -1284,23 +1301,9 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
     }
     bool ret;
     ETS_UART_INTR_DISABLE();
-    if(persistent){
-    	ret = wifi_set_opmode(m);
-    	DEBUG_WM("wifi_set_opmode");
-    }	
-    else{
-    	ret = wifi_set_opmode_current(m);
-    	DEBUG_WM("wifi_set_opmode_current");
-    }
+    if(persistent) ret = wifi_set_opmode(m);
+    else ret = wifi_set_opmode_current(m);
     ETS_UART_INTR_ENABLE();
-
-  // delay(1000);
-  // Serial.println(ret?"success":"failed");
-  // Serial.print(" C:");
-  // Serial.print(wifi_get_opmode()); //current
-  // Serial.print(" D:");
-  // Serial.print(wifi_get_opmode_default()); // default (persistent)
-  // Serial.println(" ********"); // add one * for serial newline bug
 
   return ret;
 }
@@ -1328,6 +1331,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
 
     if((isEnabled != enable) || persistent) {
         if(enable) {
+        	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
             return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
         } else {
             return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
@@ -1338,4 +1342,20 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
 	WiFi_enableSTA(enable,false);
+}
+
+// erase config BUG polyfill
+// https://github.com/esp8266/Arduino/pull/3635
+bool WiFiManager::ESP_eraseConfig(void) {
+	// return ESP.eraseConfig();
+
+    const size_t cfgSize = 0x4000;
+    size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
+
+    for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
+        if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
+            return false;
+        }
+    }
+    return true;
 }
