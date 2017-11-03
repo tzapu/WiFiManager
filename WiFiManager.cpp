@@ -144,6 +144,41 @@ bool WiFiManager::startAP(){
     ret = WiFi.softAP(_apName.c_str());
   }
 
+    softap_config config;
+    wifi_softap_get_config(&config);
+
+    Serial.println();
+    Serial.println(F("SoftAP Configuration"));
+    Serial.println(F("--------------------"));
+
+    Serial.print(F("ssid:            "));
+    Serial.println((char *) config.ssid);
+
+    Serial.print(F("password:        "));
+    Serial.println((char *) config.password);
+
+    Serial.print(F("ssid_len:        "));
+    Serial.println(config.ssid_len);
+
+    Serial.print(F("channel:         "));
+    Serial.println(config.channel);
+
+    Serial.print(F("authmode:        "));
+    Serial.println(config.authmode);
+
+    Serial.print(F("ssid_hidden:     "));
+    Serial.println(config.ssid_hidden);
+
+    Serial.print(F("max_connection:  "));
+    Serial.println(config.max_connection);
+
+    Serial.print(F("beacon_interval: "));
+    Serial.print(config.beacon_interval);
+    Serial.println("ms");
+
+    Serial.println(F("--------------------"));
+    Serial.println();
+
   if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
 
   delay(500); // slight delay to make sure we get an AP IP
@@ -356,6 +391,9 @@ boolean WiFiManager::stopConfigPortal(){
   if(!configPortalActive) return false;
 
   // turn off AP
+  // @todo bug *WM: disconnect configportal
+  // [APdisconnect] set_config failed!
+  // *WM: disconnect configportal - softAPdisconnect failed
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
@@ -1308,7 +1346,7 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
   return ret;
 }
 bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
-	WiFi_Mode(m,false);
+	return WiFi_Mode(m,false);
 }
 
 // sta disconnect without persistent
@@ -1317,8 +1355,8 @@ bool WiFiManager::WiFi_Disconnect() {
         bool ret;
         DEBUG_WM(F("wifi station disconnect"));
         ETS_UART_INTR_DISABLE(); 
-    	ret = wifi_station_disconnect();
-    	ETS_UART_INTR_ENABLE();        
+        ret = wifi_station_disconnect();
+        ETS_UART_INTR_ENABLE();        
         return ret;
     }
 }
@@ -1341,13 +1379,13 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
     }
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
-	WiFi_enableSTA(enable,false);
+	return WiFi_enableSTA(enable,false);
 }
 
 // erase config BUG polyfill
 // https://github.com/esp8266/Arduino/pull/3635
 bool WiFiManager::ESP_eraseConfig(void) {
-	// return ESP.eraseConfig();
+    return ESP.eraseConfig();
 
     const size_t cfgSize = 0x4000;
     size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
