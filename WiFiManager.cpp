@@ -201,17 +201,32 @@ void WiFiManager::startWebPortal() {
 
 void WiFiManager::stopWebPortal() {
   if(!configPortalActive && !webPortalActive) return;
-  DEBUG_WM("Stopping Web Portal");  
+  DEBUG_WM(F("Stopping Web Portal"));  
   webPortalActive = false;
   stopConfigPortal();
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
+      if(millis() - timer > 10000){
+        timer = millis();
+        DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
+      }
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
-    return (millis() > _configPortalStart + _configPortalTimeout);
+
+    if(millis() > _configPortalStart + _configPortalTimeout){
+      DEBUG_WM(F("config portal has timed out"));
+      return true;
+    } else {
+      if((millis() - timer) > 10000){
+        timer = millis();
+        DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
+      }
+    }
+    
+    return false;
 }
 
 void WiFiManager::setupConfigPortal() {
@@ -295,14 +310,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   while(1){
 
   	if(reset){
-        stopConfigPortal(); 		
-  		if(!ESP_eraseConfig()) DEBUG_WM(F("ERASE FAILED"));
-  		delay(2000);
-  		break;
+      DEBUG_WM(F("configportal reset"));
+       stopConfigPortal();
+      if(!ESP_eraseConfig()) DEBUG_WM(F("ERASE FAILED"));
+      delay(2000);
+      break;
   	}
 
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
+      DEBUG_WM(F("configportal abort"));
       stopConfigPortal();
       result = abort ? portalAbortResult : portalTimeoutResult; // false, false
       break;

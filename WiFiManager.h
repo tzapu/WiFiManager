@@ -253,6 +253,7 @@ class WiFiManager
     boolean       portalTimeoutResult = false;
     boolean       portalAbortResult   = false;
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
+    int           timer               = 0;
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
