@@ -228,6 +228,7 @@ class WiFiManager
     bool          WiFi_enableSTA(bool enable);
     bool          WiFi_enableSTA(bool enable,bool persistent);
     bool          ESP_eraseConfig();
+    void          debugSoftAPConfig();
 
     String        getParamOut();
     String        getScanItemOut();
@@ -262,6 +263,8 @@ class WiFiManager
 
     template <typename Generic>
     void          DEBUG_WM(Generic text);
+    template <typename Generic, typename Genericb>
+    void          DEBUG_WM(Generic text,Genericb textb);
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {

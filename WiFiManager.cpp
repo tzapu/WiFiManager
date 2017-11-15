@@ -144,40 +144,7 @@ bool WiFiManager::startAP(){
     ret = WiFi.softAP(_apName.c_str());
   }
 
-    softap_config config;
-    wifi_softap_get_config(&config);
-
-    Serial.println();
-    Serial.println(F("SoftAP Configuration"));
-    Serial.println(F("--------------------"));
-
-    Serial.print(F("ssid:            "));
-    Serial.println((char *) config.ssid);
-
-    Serial.print(F("password:        "));
-    Serial.println((char *) config.password);
-
-    Serial.print(F("ssid_len:        "));
-    Serial.println(config.ssid_len);
-
-    Serial.print(F("channel:         "));
-    Serial.println(config.channel);
-
-    Serial.print(F("authmode:        "));
-    Serial.println(config.authmode);
-
-    Serial.print(F("ssid_hidden:     "));
-    Serial.println(config.ssid_hidden);
-
-    Serial.print(F("max_connection:  "));
-    Serial.println(config.max_connection);
-
-    Serial.print(F("beacon_interval: "));
-    Serial.print(config.beacon_interval);
-    Serial.println("ms");
-
-    Serial.println(F("--------------------"));
-    Serial.println();
+  debugSoftAPConfig();
 
   if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
 
@@ -225,7 +192,7 @@ boolean WiFiManager::configPortalHasTimeout(){
         DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
       }
     }
-    
+
     return false;
 }
 
@@ -1263,9 +1230,39 @@ template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
     Serial.print("*WM: ");
-    Serial.println(text);
+    Serial.print(text);
+    Serial.print("\n");
   }
 }
+
+template <typename Generic, typename Genericb>
+void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
+  if (_debug) {
+    Serial.print("*WM: ");
+    Serial.print(text);
+    Serial.print(" ");
+    Serial.print(textb);
+    Serial.print("\n");
+  }
+}
+
+void WiFiManager::debugSoftAPConfig(){
+    softap_config config;
+    wifi_softap_get_config(&config);
+
+    DEBUG_WM(F("SoftAP Configuration"));
+    DEBUG_WM(F("--------------------"));
+    DEBUG_WM(F("ssid:            "),(char *) config.ssid);
+    DEBUG_WM(F("password:        "),(char *) config.password);
+    DEBUG_WM(F("ssid_len:        "),config.ssid_len);
+    DEBUG_WM(F("channel:         "),config.channel);
+    DEBUG_WM(F("authmode:        "),config.authmode);
+    DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
+    DEBUG_WM(F("max_connection:  "),config.max_connection);
+    DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
+    DEBUG_WM(F("--------------------"));
+}
+
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;
