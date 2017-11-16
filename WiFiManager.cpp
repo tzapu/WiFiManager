@@ -541,7 +541,9 @@ void WiFiManager::handleRoot() {
   page += "</h1>";
   page += F("<h3>WiFiManager</h3>");
   page += FPSTR(HTTP_PORTAL_OPTIONS);
+  reportStatus(page);
   page += FPSTR(HTTP_END);
+
 
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
@@ -576,6 +578,7 @@ void WiFiManager::handleWifi(boolean scan) {
 
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
+  reportStatus(page);
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
@@ -868,9 +871,8 @@ void WiFiManager::handleInfo() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
 
-  page += "<div class='msg P'>";
   reportStatus(page);
-  page +="</div>";
+  
   // @todo add versioning here
  
   page += F("<h3>esp8266</h3><hr><dl>");
@@ -1039,23 +1041,27 @@ void WiFiManager::handleExit() {
 }
 
 void WiFiManager::reportStatus(String &page){
+
   if (WiFi.SSID() != ""){
-	  page += F("Configured to connect to access point ");
-	  page += WiFi.SSID();
-	  if (WiFi.status()==WL_CONNECTED){
-		  page += F(" and <strong>currently connected</strong> on IP <a href=\"http://");
-		  page += WiFi.localIP().toString();
-		  page += F("/\">");
-		  page += WiFi.localIP().toString();
-		  page += F("</a>");
-	   }
-	  else {
-		  page += F(" but <strong>not currently connected</strong> to network.");
-	  }
-    }
-    else {
-		page += F("No AP currently configured.");
-	}
+    if (WiFi.status()==WL_CONNECTED){
+      page += "<div class='msg P'>";
+      page += F("<strong>Connected</strong> to ");
+      page += WiFi.SSID();
+      page += F("sdfsdfsfsadfasdfsdfsafsdf <br/><em><small>with IP <a href=\"http://");
+      page += WiFi.localIP().toString();
+      page += F("/\">");
+      page += WiFi.localIP().toString();
+      page += F("</a></small></em>");
+     } else {
+        page += "<div class='msg'>";
+        page += "<strong>Not Connected<strong> to ";
+        page += WiFi.SSID();
+     }
+  } else {
+    page += "<div class='msg'>";
+    page += "No AP set";
+  }
+  page += "</div>";
 }
 
 /** 
