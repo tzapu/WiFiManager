@@ -179,7 +179,7 @@ void WiFiManager::stopWebPortal() {
 
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
-      if(millis() - timer > 1000){
+      if(millis() - timer > 30000){
         timer = millis();
         DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
       }
@@ -280,14 +280,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // blocking loop waiting for config
   while(1){
 
-  	if(reset){
-      DEBUG_WM(F("configportal reset"));
-       stopConfigPortal();
-      if(!ESP_eraseConfig()) DEBUG_WM(F("ERASE FAILED"));
-      delay(2000);
-      break;
-  	}
-
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
       DEBUG_WM(F("configportal abort"));
@@ -305,12 +297,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
 
     yield(); // watchdog
-  }
-
-  if(reset){
-  	reset = false;
-  	ESP.reset();
-  	delay(1000);
   }
 
   DEBUG_WM("config portal exiting");
@@ -349,8 +335,14 @@ uint8_t WiFiManager::handleConfigPortal(){
 
       if (_shouldBreakAfterConfig) {
         // this is more of an exiting callback than a save
-        stopConfigPortal(); // fail
-        return WL_CONNECT_FAILED;
+        stopConfigPortal();
+        return WL_CONNECT_FAILED; // fail
+      }
+      else{
+        // sta off to stabilize AP on connect failure
+        WiFi_Disconnect();
+        WiFi_enableSTA(false);
+        DEBUG_WM("Disabling STA");
       }
     }
 
@@ -476,27 +468,6 @@ void WiFiManager::startWPS() {
   WiFi.beginWPSConfig();
   DEBUG_WM("END WPS");
 }
-/*
-  String WiFiManager::getSSID() {
-  if (_ssid == "") {
-    DEBUG_WM(F("Reading SSID"));
-    _ssid = WiFi.SSID();
-    DEBUG_WM(F("SSID: "));
-    DEBUG_WM(_ssid);
-  }
-  return _ssid;
-  }
-
-  String WiFiManager::getPassword() {
-  if (_pass == "") {
-    DEBUG_WM(F("Reading Password"));
-    _pass = WiFi.psk();
-    DEBUG_WM("Password: " + _pass);
-    //DEBUG_WM(_pass);
-  }
-  return _pass;
-  }
-*/
 
 // GETTERS
 String WiFiManager::getConfigPortalSSID() {
@@ -1123,24 +1094,25 @@ void WiFiManager::handleErase() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
 
-  // WiFi.persistent(true); // persistent IS persistent ?
-  // bool ret = ESP_eraseConfig();
-  bool ret = reset = true;
-  delay(1000);
+  bool ret = ESP_eraseConfig();
+  if(!ret) DEBUG_WM(F("ERASE FAILED"));
+  
+  // bool ret = reset = true;
   
   if(ret) page += F("Module will reset in a few seconds.");
   else {
-  	page += F("An Error Occured");
-  	DEBUG_WM(F("WiFi.eraseConfig reported an error"));
+    page += F("An Error Occured");
+    DEBUG_WM(F("WiFi.eraseConfig reported an error"));
   }
 
   page += FPSTR(HTTP_END);
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
+  delay(2000);
 
   if(ret){
   	DEBUG_WM(F("RESETTING ESP"));
-  	// ESP.reset();
+  	ESP.reset();
   }	
 }
 
@@ -1249,6 +1221,28 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
     _debugPort.print("\n");
   }
 }
+
+/*
+  String WiFiManager::getSSID() {
+  if (_ssid == "") {
+    DEBUG_WM(F("Reading SSID"));
+    _ssid = WiFi.SSID();
+    DEBUG_WM(F("SSID: "));
+    DEBUG_WM(_ssid);
+  }
+  return _ssid;
+  }
+
+  String WiFiManager::getPassword() {
+  if (_pass == "") {
+    DEBUG_WM(F("Reading Password"));
+    _pass = WiFi.psk();
+    DEBUG_WM("Password: " + _pass);
+    //DEBUG_WM(_pass);
+  }
+  return _pass;
+  }
+*/
 
 void WiFiManager::debugSoftAPConfig(){
     softap_config config;
@@ -1403,7 +1397,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable) {
 // erase config BUG polyfill
 // https://github.com/esp8266/Arduino/pull/3635
 bool WiFiManager::ESP_eraseConfig(void) {
-    return ESP.eraseConfig();
+    // return ESP.eraseConfig();
 
     const size_t cfgSize = 0x4000;
     size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
