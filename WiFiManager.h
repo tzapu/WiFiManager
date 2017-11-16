@@ -95,6 +95,7 @@ class WiFiManagerParameter {
 class WiFiManager
 {
   public:
+    WiFiManager(Stream& consolePort);
     WiFiManager();
     ~WiFiManager();
 
@@ -247,7 +248,7 @@ class WiFiManager
 
     boolean       connect;
     boolean       abort;
-    boolean reset = false;
+    boolean       reset = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
     boolean       _debug              = true;
@@ -259,6 +260,7 @@ class WiFiManager
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
+    Stream& _debugPort; // debug output stream ref
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
 
     template <typename Generic>

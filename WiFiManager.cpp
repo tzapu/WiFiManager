@@ -85,15 +85,19 @@ void WiFiManager::addParameter(WiFiManagerParameter *p) {
   DEBUG_WM(p->getID());
 }
 
-// constructor
-WiFiManager::WiFiManager() {
+// constructors
+WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
+  WiFiManager();
+}
+
+WiFiManager::WiFiManager():_debugPort(Serial) {
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
 }
 
 // destructor
 WiFiManager::~WiFiManager() {
-  if(_userpersistent) WiFi.persistent(true); // reenable persistent
+  if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
   WiFi.mode(_usermode);
   DEBUG_WM(F("unloading"));
 }
@@ -175,7 +179,7 @@ void WiFiManager::stopWebPortal() {
 
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
-      if(millis() - timer > 10000){
+      if(millis() - timer > 1000){
         timer = millis();
         DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
       }
@@ -187,7 +191,7 @@ boolean WiFiManager::configPortalHasTimeout(){
       DEBUG_WM(F("config portal has timed out"));
       return true;
     } else {
-      if((millis() - timer) > 10000){
+      if((millis() - timer) > 1000){
         timer = millis();
         DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
       }
@@ -1229,20 +1233,20 @@ void WiFiManager::setCaptivePortalEnable(boolean enabled){
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    Serial.print("*WM: ");
-    Serial.print(text);
-    Serial.print("\n");
+    _debugPort.print("*WM: ");
+    _debugPort.print(text);
+    _debugPort.print("\n");
   }
 }
 
 template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
   if (_debug) {
-    Serial.print("*WM: ");
-    Serial.print(text);
-    Serial.print(" ");
-    Serial.print(textb);
-    Serial.print("\n");
+    _debugPort.print("*WM: ");
+    _debugPort.print(text);
+    _debugPort.print(" ");
+    _debugPort.print(textb);
+    _debugPort.print("\n");
   }
 }
 
