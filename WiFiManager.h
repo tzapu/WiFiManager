@@ -110,9 +110,10 @@ class WiFiManager
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
 
+    std::unique_ptr<ESP8266WebServer> server;
+   
   private:
     std::unique_ptr<DNSServer>        dnsServer;
-    std::unique_ptr<ESP8266WebServer> server;
 
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;
