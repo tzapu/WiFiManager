@@ -695,6 +695,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{t}", "Static IP");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_ip ? _sta_static_ip.toString() : ""));
+    item.replace("{c}", "");
 
     // IPAddress sta_ip = WiFi.localIP();
     // item.replace("{p}", sta_ip.toString());
@@ -709,6 +710,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{t}", "Static Gateway");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_gw ? _sta_static_gw.toString() : ""));
+    item.replace("{c}", "");
 
     // IPAddress sta_gateway = WiFi.gatewayIP();
     // item.replace("{p}", sta_gateway.toString());
@@ -723,6 +725,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{t}", "Subnet");
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_sn ? _sta_static_sn.toString() : ""));
+    item.replace("{c}", "");
 
     // IPAddress sta_subnet = WiFi.subnetMask();
     // item.replace("{p}", sta_subnet.toString());
