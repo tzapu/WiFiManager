@@ -585,6 +585,8 @@ void WiFiManager::handleWifi(boolean scan) {
   server->send(200, "text/html", page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
+  Serial.println(page);
+
   DEBUG_WM(F("Sent config page"));
 }
 
@@ -1050,7 +1052,7 @@ void WiFiManager::reportStatus(String &page){
       page += "<div class='msg P'>";
       page += F("<strong>Connected</strong> to ");
       page += WiFi.SSID();
-      page += F("sdfsdfsfsadfasdfsdfsafsdf <br/><em><small>with IP <a href=\"http://");
+      page += F("<br/><em><small>with IP <a href=\"http://");
       page += WiFi.localIP().toString();
       page += F("/\">");
       page += WiFi.localIP().toString();
