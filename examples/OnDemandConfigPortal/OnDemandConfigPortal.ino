@@ -33,7 +33,7 @@ void loop() {
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    //wifiManager.setTimeout(120);
+    //wifiManager.setConfigPortalTimeout(120);
 
     //it starts an access point with the specified name
     //here  "AutoConnectAP"

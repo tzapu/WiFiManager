@@ -114,15 +114,14 @@ class WiFiManager
 
     void          resetSettings();
 
-    //sets timeout before webserver loop ends and exits even if there has been no setup.
+    //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds setConfigPortalTimeout is a new name for setTimeout
     void          setConfigPortalTimeout(unsigned long seconds);
-    void          setTimeout(unsigned long seconds);
+    void          setTimeout(unsigned long seconds); // @deprecated, alias
 
     //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
-
 
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
