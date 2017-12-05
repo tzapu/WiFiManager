@@ -39,6 +39,10 @@ const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 class WiFiManagerParameter {
   public:
+    /** 
+        Create custom parameters that can be added to the WiFiManager setup web page
+        @id is used for HTTP queries and must not contain spaces nor other special characters
+    */
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
