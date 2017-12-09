@@ -44,6 +44,12 @@ void WiFiManagerParameter::init(const char *id, const char *placeholder, const c
   _customHTML = custom;
 }
 
+WiFiManagerParameter::~WiFiManagerParameter() {
+  if (_value != NULL) {
+    delete _value;
+  }
+}
+
 const char* WiFiManagerParameter::getValue() {
   return _value;
 }
