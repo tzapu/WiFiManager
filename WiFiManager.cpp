@@ -75,24 +75,27 @@ WiFiManager::~WiFiManager()
     }
 }
 
-void WiFiManager::addParameter(WiFiManagerParameter *p) {
+bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > _max_params)
   {
     // rezise the params array
     _max_params += WIFI_MANAGER_MAX_PARAMS;
     DEBUG_WM(F("Increasing _max_params to:"));
     DEBUG_WM(_max_params);
-    WiFiManagerParameter** new_params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
-    // copy old data
-    memcpy(new_params, _params, _paramsCount * sizeof(WiFiManagerParameter*));
-    free(_params);
-    _params = new_params;
+    WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
+    if (new_params != NULL) {
+      _params = new_params;
+    } else {
+      DEBUG_WM("ERROR: failed to realloc params, size not increased!");
+      return false;
+    }
   }
 
   _params[_paramsCount] = p;
   _paramsCount++;
   DEBUG_WM("Adding parameter");
   DEBUG_WM(p->getID());
+  return true;
 }
 
 void WiFiManager::setupConfigPortal() {
