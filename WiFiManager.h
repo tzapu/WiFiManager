@@ -107,6 +107,8 @@ class WiFiManager
     //TODO
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
+    //if set to something other than an empty string, shows a custom "wifi saved" message
+    void          setWifiSaveMessage(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
 
@@ -144,6 +146,7 @@ class WiFiManager
     boolean       _tryWPS                 = false;
 
     const char*   _customHeadElement      = "";
+    const char*   _customWifiSaveMessage  = "";
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);
