@@ -179,8 +179,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apPassword = apPassword;
 
   //notify we entered AP mode
-  if ( _apcallback != NULL) {
-    _apcallback(this);
+  if ( _apCallbackDelegate != NULL) {
+    _apCallbackDelegate->apModeConfigPortalStarted(this);
   }
 
   connect = false;
@@ -209,9 +209,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         //connected
         WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
+        if ( _saveCallbackDelegate != NULL) {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
+          _saveCallbackDelegate->settingsChangedConnectionSuccessful();
         }
         break;
       }
@@ -219,9 +219,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       if (_shouldBreakAfterConfig) {
         //flag set to exit after config after trying to connect
         //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
+        if ( _saveCallbackDelegate != NULL) {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
+          _saveCallbackDelegate->settingsChangedConnectionSuccessful();
         }
         break;
       }
@@ -715,12 +715,42 @@ boolean WiFiManager::captivePortal() {
 
 //start up config portal callback
 void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
-  _apcallback = func;
+
+  struct WiFiManagerAPCallbackCompat : WiFiManager::WiFiManagerAPCallback {
+    WiFiManagerAPCallbackCompat(void (*func)(WiFiManager* myWiFiManager)) {
+      _apcallback = func;
+    }
+    void apModeConfigPortalStarted(WiFiManager* myWiFiManager) {
+      _apcallback(myWiFiManager);
+    }
+    void (*_apcallback)(WiFiManager*) = NULL;
+  };
+
+  setAPCallback( new WiFiManagerAPCallbackCompat{func} );
+}
+
+void WiFiManager::setAPCallback(WiFiManagerAPCallback* cb) {
+  _apCallbackDelegate = cb;
 }
 
 //start up save config callback
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
-  _savecallback = func;
+
+  struct WiFiManagerSaveConfigCallbackCompat : WiFiManagerSaveConfigCallback {
+    WiFiManagerSaveConfigCallbackCompat(void (*func)(void)) {
+      _savecallback = func;
+    }
+    void settingsChangedConnectionSuccessful() {
+      _savecallback();
+    }
+    void (*_savecallback)(void) = NULL;
+  };
+
+  setSaveConfigCallback( new WiFiManagerSaveConfigCallbackCompat(func) );
+}
+
+void WiFiManager::setSaveConfigCallback(WiFiManagerSaveConfigCallback* cb) {
+  _saveCallbackDelegate = cb;
 }
 
 //sets a custom element to add to head, like a new style tag

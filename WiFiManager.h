@@ -61,9 +61,19 @@ class WiFiManagerParameter {
 };
 
 
+struct WiFiManagerSaveConfigCallback
+{
+  virtual void settingsChangedConnectionSuccessful() = 0;
+};
+
 class WiFiManager
 {
   public:
+    struct WiFiManagerAPCallback
+    {
+      virtual void apModeConfigPortalStarted(WiFiManager*) = 0;
+    };
+
     WiFiManager();
 
     boolean       autoConnect();
@@ -97,8 +107,10 @@ class WiFiManager
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     //called when AP mode and config portal is started
     void          setAPCallback( void (*func)(WiFiManager*) );
+    void          setAPCallback(WiFiManagerAPCallback*);
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
+    void          setSaveConfigCallback(WiFiManagerSaveConfigCallback*);
     //adds a custom parameter
     void          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
@@ -173,8 +185,8 @@ class WiFiManager
     boolean       connect;
     boolean       _debug = true;
 
-    void (*_apcallback)(WiFiManager*) = NULL;
-    void (*_savecallback)(void) = NULL;
+    WiFiManagerAPCallback* _apCallbackDelegate = NULL;
+    WiFiManagerSaveConfigCallback* _saveCallbackDelegate = NULL;
 
     WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
 
