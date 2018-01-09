@@ -1,5 +1,22 @@
 # WiFiManager
-ESP8266 WiFi Connection manager with fallback web configuration portal
+ESP8266 WiFi Connection manager with fallback web configuration portal, for use with https://github.com/WhareHauora/wharehauora-wifi-gateway
+
+This is a fork of the excellent https://github.com/tzapu/WiFiManager and I intend on keeping this repository up to date with that one until such time as I don't need to any more.
+
+The reason for this fork is to get some work WhareHauora needs done in the short term, in a way that other volunteers can still contribute.
+
+
+## Releases
+
+#### 0.14
+Updated this readme file to include more information
+
+#### 0.13
+Added the ability to change the text shown on the "save" screen at compile time
+
+
+## Old readme:
+
 
 [![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=master)](https://travis-ci.org/tzapu/WiFiManager)
 
