@@ -150,7 +150,7 @@ class WiFiManager
     void          setRestorePersistent(boolean persistent);
     //if true, always show static net inputs, IP, subnet, gateway, if false, only show when already set.
     void          setShowStaticFields(boolean alwaysShow);
-
+    //if true disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
 
   private:

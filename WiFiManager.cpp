@@ -585,7 +585,7 @@ void WiFiManager::handleWifi(boolean scan) {
   server->send(200, "text/html", page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
-  Serial.println(page);
+  // Serial.println(page);
 
   DEBUG_WM(F("Sent config page"));
 }
@@ -1158,7 +1158,7 @@ void WiFiManager::handleNotFound() {
 boolean WiFiManager::captivePortal() {
   DEBUG_WM("-> " + server->hostHeader());
   
-  if(!_enableCaptivePortal) return true; // skip redirections
+  if(!_enableCaptivePortal) return false; // skip redirections
 
   if (!isIp(server->hostHeader())) {
     DEBUG_WM(F("<- Request redirected to captive portal"));
