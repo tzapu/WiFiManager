@@ -1059,7 +1059,7 @@ void WiFiManager::reportStatus(String &page){
       page += F("</a></small></em>");
      } else {
         page += "<div class='msg'>";
-        page += "<strong>Not Connected<strong> to ";
+        page += "<strong>Not Connected</strong> to ";
         page += WiFi.SSID();
      }
   } else {
