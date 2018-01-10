@@ -42,7 +42,8 @@ void loop() {
     //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
     //WiFi.mode(WIFI_STA);
     
-    wifiManager.setCaptivePortalEnable(false);
+    // disable captibe portal redirection
+    // wifiManager.setCaptivePortalEnable(false);
     
     if (!wifiManager.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
