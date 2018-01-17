@@ -102,7 +102,7 @@ void setup() {
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
-  //wifiManager.setTimeout(120);
+  //wifiManager.setConfigPortalTimeout(120);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name

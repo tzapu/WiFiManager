@@ -5,7 +5,7 @@
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
-// select wich pin will trigger the configuraton portal when set to LOW
+// select which pin will trigger the configuration portal when set to LOW
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
 // with the bootloader, so always set them HIGH at power-up
 #define TRIGGER_PIN 0
@@ -33,7 +33,7 @@ void loop() {
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    //wifiManager.setTimeout(120);
+    //wifiManager.setConfigPortalTimeout(120);
 
     //it starts an access point with the specified name
     //here  "AutoConnectAP"
@@ -41,6 +41,9 @@ void loop() {
 
     //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
     //WiFi.mode(WIFI_STA);
+    
+    // disable captive portal redirection
+    // wifiManager.setCaptivePortalEnable(false);
     
     if (!wifiManager.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
