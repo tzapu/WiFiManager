@@ -465,7 +465,11 @@ uint8_t WiFiManager::waitForConnectResult() {
 
 void WiFiManager::startWPS() {
   DEBUG_WM("START WPS");
-  WiFi.beginWPSConfig();
+  #ifdef ESP8266  
+    WiFi.beginWPSConfig();
+  #else
+    // @todo
+  #endif
   DEBUG_WM("END WPS");
 }
 
@@ -1339,34 +1343,57 @@ String WiFiManager::getWLStatusString(uint8_t status){
 }
 
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {
-    switch(authmode) {
-        case ENC_TYPE_NONE:
-            return "None";
-        case ENC_TYPE_WEP:
-            return "WEP";
-        case ENC_TYPE_TKIP:
-            return "WPA_PSK";
-        case ENC_TYPE_CCMP:
-            return "WPA2_PSK";
-        case ENC_TYPE_AUTO:
-            return "WPA_WPA2_PSK";
-        default:
-            return "Unknown";
-    }
+    #ifdef ESP8266
+      switch(authmode) {
+          case ENC_TYPE_NONE:
+              return "None";
+          case ENC_TYPE_WEP:
+              return "WEP";
+          case ENC_TYPE_TKIP:
+              return "WPA_PSK";
+          case ENC_TYPE_CCMP:
+              return "WPA2_PSK";
+          case ENC_TYPE_AUTO:
+              return "WPA_WPA2_PSK";
+          default:
+              return "Unknown";
+      }
+    #elif defined(ESP31B) || defined(ESP32)
+      switch(authmode) {
+          case WIFI_AUTH_OPEN:
+              return "None";
+          case WIFI_AUTH_WEP:
+              return "WEP";
+          case WIFI_AUTH_WPA_PSK:
+              return "WPA_PSK";
+          case WIFI_AUTH_WPA_WPA2_PSK:
+              return "WPA2_PSK";
+          case WIFI_AUTH_WPA2_ENTERPRISE:
+              return "WPA_WPA2_ENTERPRISE";
+          case WIFI_AUTH_MAX:
+              return "MAX";
+          default:
+              return "Unknown";
+      }
+    #endif
 }
 
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
-    if((wifi_get_opmode() == (uint8) m ) && !persistent) {
-        return true;
-    }
-    bool ret;
-    ETS_UART_INTR_DISABLE();
-    if(persistent) ret = wifi_set_opmode(m);
-    else ret = wifi_set_opmode_current(m);
-    ETS_UART_INTR_ENABLE();
+    #ifdef ESP8266
+      if((wifi_get_opmode() == (uint8) m ) && !persistent) {
+          return true;
+      }
+      bool ret;
+      ETS_UART_INTR_DISABLE();
+      if(persistent) ret = wifi_set_opmode(m);
+      else ret = wifi_set_opmode_current(m);
+      ETS_UART_INTR_ENABLE();
 
-  return ret;
+    return ret;
+    #elif defined(ESP31B) || defined(ESP32)
+      return WiFi.mode(m); // @todo persistent not implemented?
+    #endif
 }
 bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 	return WiFi_Mode(m,false);
@@ -1374,51 +1401,65 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 
 // sta disconnect without persistent
 bool WiFiManager::WiFi_Disconnect() {
-    if((WiFi.getMode() & WIFI_STA) != 0) {
-        bool ret;
-        DEBUG_WM(F("wifi station disconnect"));
-        ETS_UART_INTR_DISABLE(); 
-        ret = wifi_station_disconnect();
-        ETS_UART_INTR_ENABLE();        
-        return ret;
-    }
+    #ifdef ESP8266
+      if((WiFi.getMode() & WIFI_STA) != 0) {
+          bool ret;
+          DEBUG_WM(F("wifi station disconnect"));
+          ETS_UART_INTR_DISABLE(); 
+          ret = wifi_station_disconnect();
+          ETS_UART_INTR_ENABLE();        
+          return ret;
+      }
+    #elif defined(ESP31B) || defined(ESP32)
+      DEBUG_WM(F("wifi station disconnect"));
+      // @todo why does disconnect call these, might be needed
+      // WiFi.getMode(); // wifiLowLevelInit()
+      // esp_wifi_start();
+      return esp_wifi_disconnect() == ESP_OK;
+    #endif
 }
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
+    #ifdef ESP8266
+      WiFiMode_t currentMode = WiFi.getMode();
+      bool isEnabled = ((currentMode & WIFI_STA) != 0);
 
-    WiFiMode_t currentMode = WiFi.getMode();
-    bool isEnabled = ((currentMode & WIFI_STA) != 0);
-
-    if((isEnabled != enable) || persistent) {
-        if(enable) {
-        	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
-            return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
-        } else {
-            return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
-        }
-    } else {
-        return true;
-    }
+      if((isEnabled != enable) || persistent) {
+          if(enable) {
+          	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
+              return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
+          } else {
+              return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
+          }
+      } else {
+          return true;
+      }
+    #elif defined(ESP31B) || defined(ESP32)
+      return WiFi.mode(m); // @todo persistent not implemented?            
+    #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
 	return WiFi_enableSTA(enable,false);
 }
 
-// erase config BUG polyfill
-// https://github.com/esp8266/Arduino/pull/3635
 bool WiFiManager::WiFi_eraseConfig(void) {
-    // return ESP.eraseConfig();
+    #ifdef ESP8266
+      return ESP.eraseConfig();
+      // https://github.com/esp8266/Arduino/pull/3635
+      // erase config BUG polyfill
+      // const size_t cfgSize = 0x4000;
+      // size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
 
-    const size_t cfgSize = 0x4000;
-    size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
-
-    for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
-        if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
-            return false;
-        }
-    }
-    return true;
+      // for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
+      //     if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
+      //         return false;
+      //     }
+      // }
+      // return true;
+    #else
+      // @todo
+    #endif
 }
 
 void WiFiManager::reboot(){

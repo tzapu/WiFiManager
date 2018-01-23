@@ -13,22 +13,31 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
-#if defined(ESP8266)
+#ifdef ESP8266
   #include <ESP8266WiFi.h>
   #include <ESP8266WebServer.h>
+#elif defined(ESP31B) || defined(ESP32)
+  #include <WiFi.h>
+#else
 #endif
 
 #include <DNSServer.h>
 #include <memory>
 
-#if defined(ESP8266)
+#ifdef ESP8266
   extern "C" {
     #include "user_interface.h"
   }
 #endif
 
-#define WIFI_getChipId() ESP.getChipId()
-#define WIFI_AUTH_OPEN   ENC_TYPE_NONE
+#ifdef ESP8266
+    #define WIFI_getChipId() ESP.getChipId()
+    #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
+#elif defined(ESP31B) || defined(ESP32)
+    #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
+    #define WIFI_AUTH_OPEN   WIFI_AUTH_OPEN
+#else
+#endif
 
 const char HTTP_HEAD[] PROGMEM            = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 // const char HTTP_STYLE[] PROGMEM           = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .l{background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==') no-repeat left center;background-size: 1em;}</style>";
