@@ -104,7 +104,7 @@ WiFiManager::~WiFiManager() {
 
 // AUTOCONNECT
 boolean WiFiManager::autoConnect() {
-  String ssid = "ESP" + String(ESP.getChipId());
+  String ssid = "ESP" + String(WIFI_getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
 
@@ -229,7 +229,7 @@ void WiFiManager::setupConfigPortal() {
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = "ESP" + String(ESP.getChipId());
+  String ssid = "ESP" + String(WIFI_getChipId());
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
@@ -662,7 +662,7 @@ String WiFiManager::getScanItemOut(){
           if(tok_R) item.replace("{R}", (String)WiFi.RSSI(indices[i])); // rssi db
           if(tok_q) item.replace("{q}", (String)round(map(rssiperc,0,100,1,4))); //quality icon 1-4
           if(tok_i){
-            if (enc_type != ENC_TYPE_NONE) {
+            if (enc_type != WIFI_AUTH_OPEN) {
               item.replace("{i}", "l");
             } else {
               item.replace("{i}", "");
@@ -888,7 +888,7 @@ void WiFiManager::handleInfo() {
   page += (String)((system_get_time() / 1000000)%60) + " secs";
 
   page += F("<dt>Chip ID</dt><dd>");
-  page += ESP.getChipId();
+  page += WIFI_getChipId();
   page += F("</dd>");
 
   page += F("<dt>Flash Chip ID</dt><dd>");
@@ -1089,7 +1089,7 @@ void WiFiManager::handleReset() {
 
   DEBUG_WM(F("RESETTING ESP"));
   delay(1000);
-  ESP.reset();
+  reboot();
 }
 
 /** 
@@ -1105,7 +1105,7 @@ void WiFiManager::handleErase() {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
 
-  bool ret = ESP_eraseConfig();
+  bool ret = WiFi_eraseConfig();
   if(!ret) DEBUG_WM(F("ERASE FAILED"));
   
   // bool ret = reset = true;
@@ -1113,7 +1113,7 @@ void WiFiManager::handleErase() {
   if(ret) page += F("Module will reset in a few seconds.");
   else {
     page += F("An Error Occured");
-    DEBUG_WM(F("WiFi.eraseConfig reported an error"));
+    DEBUG_WM(F("WiFi EraseConfig reported an error"));
   }
 
   page += FPSTR(HTTP_END);
@@ -1123,7 +1123,7 @@ void WiFiManager::handleErase() {
 
   if(ret){
   	DEBUG_WM(F("RESETTING ESP"));
-  	ESP.reset();
+  	reboot();
   }	
 }
 
@@ -1407,7 +1407,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable) {
 
 // erase config BUG polyfill
 // https://github.com/esp8266/Arduino/pull/3635
-bool WiFiManager::ESP_eraseConfig(void) {
+bool WiFiManager::WiFi_eraseConfig(void) {
     // return ESP.eraseConfig();
 
     const size_t cfgSize = 0x4000;
@@ -1419,4 +1419,8 @@ bool WiFiManager::ESP_eraseConfig(void) {
         }
     }
     return true;
+}
+
+void WiFiManager::reboot(){
+  ESP.restart();
 }
