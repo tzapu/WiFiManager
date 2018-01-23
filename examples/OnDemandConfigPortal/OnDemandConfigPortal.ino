@@ -1,7 +1,12 @@
+#ifdef ESP8266
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
 //needed for library
 #include <ESP8266WebServer.h>
+#else
+#include <WiFi.h>
+#include <WebServer.h>
+#endif
+
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
@@ -49,7 +54,7 @@ void loop() {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
       //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
+      ESP.restart();
       delay(5000);
     }
 

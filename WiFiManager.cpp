@@ -178,10 +178,10 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
-    if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
+    if(_configPortalTimeout == 0 ){ //|| wifi_softap_get_station_num() > 0){
       if(millis() - timer > 30000){
         timer = millis();
-        DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
+        // DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
       }
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
@@ -206,7 +206,11 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  server.reset(new ESP8266WebServer(80));
+  #ifdef ESP8266
+    server.reset(new ESP8266WebServer(80));
+  #elif defined(ESP31B) || defined(ESP32)
+    server.reset(new WebServer(80));
+  #endif
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -884,6 +888,7 @@ void WiFiManager::handleInfo() {
   
   // @todo add versioning here
  
+  #ifdef ESP8266
   page += F("<h3>esp8266</h3><hr><dl>");
 
   // subject to rollover!
@@ -1001,6 +1006,7 @@ void WiFiManager::handleInfo() {
   page += F("</dd>");
   page += F("</dl>");
 
+  #endif
   page += "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
   page += F("<br/><h3>Available Pages</h3><hr>");
@@ -1260,6 +1266,7 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
 */
 
 void WiFiManager::debugSoftAPConfig(){
+    #ifdef ESP8266
     softap_config config;
     wifi_softap_get_config(&config);
 
@@ -1274,6 +1281,7 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("max_connection:  "),config.max_connection);
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
     DEBUG_WM(F("--------------------"));
+    #endif
 }
 
 
@@ -1415,7 +1423,8 @@ bool WiFiManager::WiFi_Disconnect() {
       // @todo why does disconnect call these, might be needed
       // WiFi.getMode(); // wifiLowLevelInit()
       // esp_wifi_start();
-      return esp_wifi_disconnect() == ESP_OK;
+      // return esp_wifi_disconnect() == ESP_OK; // @todo BUG not declared in scope
+      return WiFi.disconnect();
     #endif
 }
 
@@ -1436,7 +1445,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
           return true;
       }
     #elif defined(ESP31B) || defined(ESP32)
-      return WiFi.mode(m); // @todo persistent not implemented?            
+      return WiFi.mode(WIFI_STA); // @todo persistent not implemented?
     #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {

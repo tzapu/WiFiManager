@@ -18,6 +18,7 @@
   #include <ESP8266WebServer.h>
 #elif defined(ESP31B) || defined(ESP32)
   #include <WiFi.h>
+  #include <WebServer.h>
 #else
 #endif
 
@@ -173,7 +174,11 @@ class WiFiManager
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
-    std::unique_ptr<ESP8266WebServer> server;
+    #ifdef ESP8266
+      std::unique_ptr<ESP8266WebServer> server;
+    #elif defined(ESP31B) || defined(ESP32)
+      std::unique_ptr<WebServer> server;
+    #endif
 
     //const int     WM_DONE                 = 0;
     //const int     WM_WAIT                 = 10;
