@@ -258,7 +258,7 @@ class WiFiManager
     uint8_t       WiFi_softap_num_stations();
     bool          WiFi_hasAutoConnect();
     void          WiFi_autoReconnect();
-    static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+    static void   WiFiEvent(WiFiEvent_t event);
 
     void          debugSoftAPConfig();
     

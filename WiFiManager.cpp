@@ -1504,7 +1504,7 @@ bool WiFiManager::WiFi_hasAutoConnect(){
   #endif
 }
 
-void WiFiManager::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+void WiFiManager::WiFiEvent(WiFiEvent_t event){
   WiFiManager _WiFiManager;
   if(event == SYSTEM_EVENT_STA_DISCONNECTED){
     // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
