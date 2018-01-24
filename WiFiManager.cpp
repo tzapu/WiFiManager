@@ -1516,7 +1516,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event){
 void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266
     WiFi.setAutoReconnect(_wifiAutoReconnect);
-  #elif defined(ESP31B)
+  #elif defined(ESP32)
     if(_wifiAutoReconnect){
       DEBUG_WM("ESP32 autoreconnect handler enabled");
       WiFi.onEvent(WiFiEvent);
