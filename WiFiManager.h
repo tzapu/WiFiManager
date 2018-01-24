@@ -172,6 +172,8 @@ class WiFiManager
     void          setShowStaticFields(boolean alwaysShow);
     //if true disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
+    // if true enable autoreconnecting
+    void          setWiFiAutoReconnect(boolean enabled);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -221,7 +223,8 @@ class WiFiManager
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
     boolean       _configPortalIsBlocking = true;
-
+    boolean       _wifiAutoReconnect      = false;
+    
     const char*   _customHeadElement      = "";
 
     //String        getEEPROMString(int start, int len);
@@ -254,7 +257,9 @@ class WiFiManager
     bool          WiFi_eraseConfig();
     uint8_t       WiFi_softap_num_stations();
     bool          WiFi_hasAutoConnect();
-    
+    void          WiFi_autoReconnect();
+    static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+
     void          debugSoftAPConfig();
     
     String        getParamOut();

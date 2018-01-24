@@ -116,6 +116,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   WiFi_enableSTA(true);
   _usermode = WIFI_STA;
 
+  WiFi_autoReconnect();
+
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
@@ -1224,6 +1226,10 @@ void WiFiManager::setCaptivePortalEnable(boolean enabled){
   _enableCaptivePortal = enabled;
 }
 
+void WiFiManager::setWiFiAutoReconnect(boolean enabled){
+  _wifiAutoReconnect = enabled;
+}
+
 // HELPERS
 
 template <typename Generic>
@@ -1495,5 +1501,25 @@ bool WiFiManager::WiFi_hasAutoConnect(){
     const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
     DEBUG_WM(ssid);
     return ssid != "";
+  #endif
+}
+
+void WiFiManager::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+  WiFiManager _WiFiManager;
+  if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+    // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
+    _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
+    WiFi.reconnect();
+  }
+}
+
+void WiFiManager::WiFi_autoReconnect(){
+  #ifdef ESP8266
+    WiFi.setAutoReconnect(_wifiAutoReconnect);
+  #elif defined(ESP31B) || defined(ESP32)
+    if(_wifiAutoReconnect){
+      DEBUG_WM("ESP32 autoreconnect handler enabled");
+      WiFi.onEvent(WiFiEvent);
+    }  
   #endif
 }
