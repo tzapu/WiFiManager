@@ -1010,8 +1010,95 @@ void WiFiManager::handleInfo() {
   page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
   page += F("</dd>");
   page += F("</dl>");
-
   #endif
+
+  #ifdef ESP32
+  page += F("<h3>esp32</h3><hr><dl>");
+
+  // subject to rollover!
+  page += F("<dt>Uptime</dt><dd>");
+  page += F("<dt>Uptime</dt><dd>");
+  page += (String)(system_get_time() / 1000000 / 60) + " mins "; // @todo esp32 deprecated
+  page += (String)((system_get_time() / 1000000)%60) + " secs";
+
+  page += F("<dt>Chip ID</dt><dd>");
+  page += WIFI_getChipId();
+  page += F("</dd>");
+
+  page += F("<dt>Chip Rev</dt><dd>");
+  page += ESP.getChipRevision();
+  page += F("</dd>");
+
+  page += F("<dt>Flash Size</dt><dd>");
+  page += ESP.getFlashChipSize();
+  page += F(" bytes</dd>");
+
+  page += F("<dt>SDK Version</dt><dd>");
+  page += esp_get_idf_version();
+  page += F("</dd>");
+
+  // page += F("<dt>Core Version</dt><dd>");
+  // page += ESP.getCoreVersion();
+  // page += F("</dd>");
+
+  page += F("<dt>CPU Frequency</dt><dd>");
+  page += ESP.getCpuFreqMHz();
+  page += F("MHz</dd>");
+
+  page += F("<dt>Memory - Free Heap</dt><dd>");
+  page += ESP.getFreeHeap();
+  page += F(" bytes available</dd>");
+
+  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>");
+  page += WiFi.softAPIP().toString();
+  page += F("</dd>");
+
+  page += F("<dt>Access Point MAC</dt><dd>");
+  page += WiFi.softAPmacAddress();
+  page += F("</dd>");
+
+  page += F("<dt>SSID</dt><dd>");
+  page += WiFi.SSID();
+  page += F("</dd>");
+
+  page += F("<dt>BSSID</dt><dd>");
+  page += WiFi.BSSIDstr();
+  page += F("</dd>");
+
+  page += F("<dt>Station IP</dt><dd>");
+  page += WiFi.localIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Station Gateway</dt><dd>");
+  page += WiFi.gatewayIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Station Subnet</dt><dd>");
+  page += WiFi.subnetMask().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>DNS Server</dt><dd>");
+  page += WiFi.dnsIP().toString(); 
+  page += F("</dd>");
+
+  page += F("<dt>Hostname</dt><dd>");
+  page += WiFi.getHostname();
+  page += F("</dd>");
+
+  page += F("<dt>Station MAC</dt><dd>");
+  page += WiFi.macAddress();
+  page += F("</dd>");
+
+  page += F("<dt>Connected</dt><dd>");
+  page += WiFi.isConnected() ? "Yes" : "No";
+  page += F("</dd>");
+
+  page += F("<dt>Autoconnect</dt><dd>");
+  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
+  page += F("</dd>");
+  page += F("</dl>");
+  #endif
+
   page += "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
   page += F("<br/><h3>Available Pages</h3><hr>");

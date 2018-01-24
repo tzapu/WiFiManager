@@ -208,6 +208,14 @@ class WiFiManager
     boolean       _userpersistent         = true;
     WiFiMode_t    _usermode               = WIFI_OFF;
     boolean       _enableCaptivePortal    = true;
+    
+    #ifdef ESP8266
+        String        _wifissidprefix         = "ESP";
+    #elif defined(ESP32)
+        String        _wifissidprefix         = "ESP32";
+    #else
+        String        _wifissidprefix         = "WM";
+    #endif
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -224,7 +232,7 @@ class WiFiManager
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
     boolean       _configPortalIsBlocking = true;
-    boolean       _wifiAutoReconnect      = true;
+    boolean       _wifiAutoReconnect      = false;
 
     const char*   _customHeadElement      = "";
 
