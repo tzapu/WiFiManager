@@ -1017,7 +1017,6 @@ void WiFiManager::handleInfo() {
 
   // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
-  page += F("<dt>Uptime</dt><dd>");
   page += (String)(system_get_time() / 1000000 / 60) + " mins "; // @todo esp32 deprecated
   page += (String)((system_get_time() / 1000000)%60) + " secs";
 
