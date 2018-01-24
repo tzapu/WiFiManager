@@ -104,7 +104,7 @@ WiFiManager::~WiFiManager() {
 
 // AUTOCONNECT
 boolean WiFiManager::autoConnect() {
-  String ssid = "ESP" + String(WIFI_getChipId());
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
 
@@ -236,7 +236,7 @@ void WiFiManager::setupConfigPortal() {
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = "ESP" + String(WIFI_getChipId());
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());  
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
