@@ -98,7 +98,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
 // destructor
 WiFiManager::~WiFiManager() {
   if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
-  WiFi.mode(_usermode);
+  if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
   DEBUG_WM(F("unloading"));
 }
 
@@ -114,6 +114,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
   WiFi_enableSTA(true);
+  _usermode = WIFI_STA;
 
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
@@ -325,17 +326,19 @@ uint8_t WiFiManager::handleConfigPortal(){
     // Waiting for save...
     if (connect) {
       connect = false;
-      delay(2000);
-      DEBUG_WM(F("Connecting save WiFi"));
+      DEBUG_WM(F("Connecting to a new AP"));
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
-        DEBUG_WM(F("Connect to new AP SUCCESS"));        
+        DEBUG_WM(F("Connect to new AP [SUCCESS]"));
+        delay(500);
+        DEBUG_WM(F("Got IP Address:"));
+        DEBUG_WM(WiFi.localIP());
         stopConfigPortal();
         return WL_CONNECTED; // success
       }
 
-      DEBUG_WM(F("Failed to connect."));
+      DEBUG_WM(F("Connect to new AP [FAILED]"));
 
       if (_shouldBreakAfterConfig) {
         // this is more of an exiting callback than a save
@@ -414,7 +417,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     //@todo catch failures in set_config
   } else {
     // connect using saved ssid if there is one
-    if (WiFi.SSID() != "") {
+    if (WiFi_hasAutoConnect()) {
       DEBUG_WM("Connecting to saved AP");
   	  WiFi_enableSTA(true,storeSTAmode);
       WiFi.begin();
@@ -1430,10 +1433,10 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
+
     #ifdef ESP8266
       WiFiMode_t currentMode = WiFi.getMode();
       bool isEnabled = ((currentMode & WIFI_STA) != 0);
-
       if((isEnabled != enable) || persistent) {
           if(enable) {
           	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
@@ -1480,5 +1483,17 @@ uint8_t WiFiManager::WiFi_softap_num_stations(){
     return wifi_softap_get_station_num();
   #elif defined(ESP31B) || defined(ESP32)
     return WiFi.softAPgetStationNum();
+  #endif
+}
+
+bool WiFiManager::WiFi_hasAutoConnect(){
+  #ifdef ESP8266
+    return WiFi.SSID() != "";
+  #elif defined(ESP31B) || defined(ESP32)
+    wifi_config_t conf;
+    esp_wifi_get_config(WIFI_IF_STA, &conf);
+    const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
+    DEBUG_WM(ssid);
+    return ssid != "";
   #endif
 }
