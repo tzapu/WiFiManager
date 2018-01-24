@@ -223,8 +223,8 @@ class WiFiManager
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
     boolean       _configPortalIsBlocking = true;
-    boolean       _wifiAutoReconnect      = false;
-    
+    boolean       _wifiAutoReconnect      = true;
+
     const char*   _customHeadElement      = "";
 
     //String        getEEPROMString(int start, int len);
