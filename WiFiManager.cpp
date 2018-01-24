@@ -211,7 +211,7 @@ void WiFiManager::setupConfigPortal() {
   dnsServer.reset(new DNSServer());
   #ifdef ESP8266
     server.reset(new ESP8266WebServer(80));
-  #elif defined(ESP31B) || defined(ESP32)
+  #elif defined(ESP32)
     server.reset(new WebServer(80));
   #endif
 
@@ -1375,7 +1375,7 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
           default:
               return "Unknown";
       }
-    #elif defined(ESP31B) || defined(ESP32)
+    #elif defined(ESP32)
       switch(authmode) {
           case WIFI_AUTH_OPEN:
               return "None";
@@ -1408,7 +1408,7 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
       ETS_UART_INTR_ENABLE();
 
     return ret;
-    #elif defined(ESP31B) || defined(ESP32)
+    #elif defined(ESP32)
       return WiFi.mode(m); // @todo persistent not implemented?
     #endif
 }
@@ -1427,7 +1427,7 @@ bool WiFiManager::WiFi_Disconnect() {
           ETS_UART_INTR_ENABLE();        
           return ret;
       }
-    #elif defined(ESP31B) || defined(ESP32)
+    #elif defined(ESP32)
       DEBUG_WM(F("wifi station disconnect"));
       // @todo why does disconnect call these, might be needed
       // WiFi.getMode(); // @todo wifiLowLevelInit(), probably not needed, for save config only
@@ -1453,7 +1453,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
       } else {
           return true;
       }
-    #elif defined(ESP31B) || defined(ESP32)
+    #elif defined(ESP32)
       return WiFi.mode(WIFI_STA); // @todo persistent not implemented?
     #endif
 }
@@ -1487,7 +1487,7 @@ void WiFiManager::reboot(){
 uint8_t WiFiManager::WiFi_softap_num_stations(){
   #ifdef ESP8266
     return wifi_softap_get_station_num();
-  #elif defined(ESP31B) || defined(ESP32)
+  #elif defined(ESP32)
     return WiFi.softAPgetStationNum();
   #endif
 }
@@ -1495,7 +1495,7 @@ uint8_t WiFiManager::WiFi_softap_num_stations(){
 bool WiFiManager::WiFi_hasAutoConnect(){
   #ifdef ESP8266
     return WiFi.SSID() != "";
-  #elif defined(ESP31B) || defined(ESP32)
+  #elif defined(ESP32)
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
     const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
@@ -1516,7 +1516,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event){
 void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266
     WiFi.setAutoReconnect(_wifiAutoReconnect);
-  #elif defined(ESP31B) || defined(ESP32)
+  #elif defined(ESP31B)
     if(_wifiAutoReconnect){
       DEBUG_WM("ESP32 autoreconnect handler enabled");
       WiFi.onEvent(WiFiEvent);
