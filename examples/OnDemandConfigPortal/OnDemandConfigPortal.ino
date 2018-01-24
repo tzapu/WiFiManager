@@ -14,12 +14,17 @@
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
 // with the bootloader, so always set them HIGH at power-up
 #define TRIGGER_PIN 0
+const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\n Starting");
+
+  Serial.setDebugOutput(true);  
+  Serial.println(modes[WiFi.getMode()]);
+  WiFi.printDiag(Serial);
 
   pinMode(TRIGGER_PIN, INPUT);
 }

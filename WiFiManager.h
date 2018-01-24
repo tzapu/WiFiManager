@@ -19,6 +19,7 @@
 #elif defined(ESP31B) || defined(ESP32)
   #include <WiFi.h>
   #include <WebServer.h>
+  #include <esp_wifi.h>  
 #else
 #endif
 

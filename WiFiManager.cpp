@@ -1421,10 +1421,10 @@ bool WiFiManager::WiFi_Disconnect() {
     #elif defined(ESP31B) || defined(ESP32)
       DEBUG_WM(F("wifi station disconnect"));
       // @todo why does disconnect call these, might be needed
-      // WiFi.getMode(); // wifiLowLevelInit()
-      // esp_wifi_start();
-      // return esp_wifi_disconnect() == ESP_OK; // @todo BUG not declared in scope
-      return WiFi.disconnect();
+      // WiFi.getMode(); // @todo wifiLowLevelInit(), probably not needed, for save config only
+      // esp_wifi_start(); // @todo can only disconnect if enabled perhaps, prevent failure, or correct for previous call ?
+      return esp_wifi_disconnect() == ESP_OK;
+      // return WiFi.disconnect();
     #endif
 }
 
