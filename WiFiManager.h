@@ -253,7 +253,8 @@ class WiFiManager
     bool          WiFi_enableSTA(bool enable,bool persistent);
     bool          WiFi_eraseConfig();
     void          debugSoftAPConfig();
-
+    uint8_t       WiFi_softap_num_stations();
+    
     String        getParamOut();
     String        getScanItemOut();
     String        getStaticOut();

@@ -178,10 +178,10 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
-    if(_configPortalTimeout == 0 ){ //|| wifi_softap_get_station_num() > 0){
+    if(_configPortalTimeout == 0 || WiFi_softap_num_stations() > 0){
       if(millis() - timer > 30000){
         timer = millis();
-        // DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
+        DEBUG_WM("NUM CLIENTS: " + (String)WiFi_softap_num_stations());
       }
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
@@ -1473,4 +1473,12 @@ bool WiFiManager::WiFi_eraseConfig(void) {
 
 void WiFiManager::reboot(){
   ESP.restart();
+}
+
+uint8_t WiFiManager::WiFi_softap_num_stations(){
+  #ifdef ESP8266
+    return wifi_softap_get_station_num();
+  #elif defined(ESP31B) || defined(ESP32)
+    return WiFi.softAPgetStationNum();
+  #endif
 }
