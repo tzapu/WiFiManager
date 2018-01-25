@@ -583,7 +583,7 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   String pitem = FPSTR(HTTP_FORM_START);
-  pitem.replace("{v}", WiFi.SSID());
+  pitem.replace("{v}", WiFi_SSID());
   page += pitem;
 
   page += getStaticOut();
@@ -971,7 +971,7 @@ void WiFiManager::handleInfo() {
   page += F("</dd>");
 
   page += F("<dt>SSID</dt><dd>");
-  page += WiFi.SSID();
+  page += WiFi_SSID();
   page += F("</dd>");
 
   page += F("<dt>BSSID</dt><dd>");
@@ -1148,7 +1148,7 @@ void WiFiManager::handleExit() {
 
 void WiFiManager::reportStatus(String &page){
 
-  if (WiFi.SSID() != ""){
+  if (WiFi_SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){
       page += "<div class='msg P'>";
       page += F("<strong>Connected</strong> to ");
@@ -1161,7 +1161,7 @@ void WiFiManager::reportStatus(String &page){
      } else {
         page += "<div class='msg'>";
         page += "<strong>Not Connected</strong> to ";
-        page += WiFi.SSID();
+        page += WiFi_SSID();
      }
   } else {
     page += "<div class='msg'>";
@@ -1585,8 +1585,18 @@ bool WiFiManager::WiFi_hasAutoConnect(){
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
     const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
-    DEBUG_WM(ssid);
     return ssid != "";
+  #endif
+}
+
+const char* WiFiManager::WiFi_SSID(){
+  #ifdef ESP8266
+    return WiFi.SSID();
+  #elif defined(ESP32)
+    wifi_config_t conf;
+    esp_wifi_get_config(WIFI_IF_STA, &conf);
+    const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
+    return ssid;
   #endif
 }
 
