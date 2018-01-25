@@ -1561,8 +1561,8 @@ bool WiFiManager::WiFi_eraseConfig(void) {
       //     }
       // }
       // return true;
-    #else
-      // @todo
+    #elif defined(ESP32)
+      return WiFi.disconnect(true);
     #endif
 }
 
