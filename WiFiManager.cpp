@@ -1061,7 +1061,7 @@ void WiFiManager::handleInfo() {
   page += F("</dd>");
 
   page += F("<dt>SSID</dt><dd>");
-  page += WiFi.SSID();
+  page += WiFi_SSID();
   page += F("</dd>");
 
   page += F("<dt>BSSID</dt><dd>");
@@ -1529,11 +1529,11 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
-    WiFiMode_t currentMode = WiFi.getMode();
     WiFiMode_t newMode;
-    bool isEnabled     = (currentMode & WIFI_STA) != 0;
-    if(enable) newMode = (WiFiMode_t)(currentMode | WIFI_STA);
-    else newMode       = (WiFiMode_t)(currentMode & (~WIFI_STA));
+    WiFiMode_t currentMode = WiFi.getMode();
+    bool isEnabled         = (currentMode & WIFI_STA) != 0;
+    if(enable) newMode     = (WiFiMode_t)(currentMode | WIFI_STA);
+    else newMode           = (WiFiMode_t)(currentMode & (~WIFI_STA));
 
     #ifdef ESP8266
       if((isEnabled != enable) || persistent) {
@@ -1586,24 +1586,16 @@ uint8_t WiFiManager::WiFi_softap_num_stations(){
 }
 
 bool WiFiManager::WiFi_hasAutoConnect(){
-  #ifdef ESP8266
-    return WiFi.SSID() != "";
-  #elif defined(ESP32)
-    wifi_config_t conf;
-    esp_wifi_get_config(WIFI_IF_STA, &conf);
-    const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
-    return ssid != "";
-  #endif
+  return WiFi_SSID() != "";
 }
 
-const char* WiFiManager::WiFi_SSID(){
+String WiFiManager::WiFi_SSID(){
   #ifdef ESP8266
     return WiFi.SSID();
   #elif defined(ESP32)
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
-    const char* ssid = reinterpret_cast<const char*>(conf.sta.ssid);
-    return ssid;
+    return String(reinterpret_cast<const char*>(conf.sta.ssid));
   #endif
 }
 
