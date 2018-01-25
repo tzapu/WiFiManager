@@ -189,14 +189,18 @@ boolean WiFiManager::configPortalHasTimeout(){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
-
+    // handle timeout
     if(millis() > _configPortalStart + _configPortalTimeout){
       DEBUG_WM(F("config portal has timed out"));
       return true;
     } else {
-      if((millis() - timer) > 1000){
-        timer = millis();
-        DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
+      // log timeout
+      if(_debug){
+        uint16_t logintvl = 10000; //
+        if((millis() - timer) > logintvl){
+          timer = millis();
+          DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
+        }
       }
     }
 
