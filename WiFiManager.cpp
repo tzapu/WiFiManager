@@ -196,7 +196,7 @@ boolean WiFiManager::configPortalHasTimeout(){
     } else {
       // log timeout
       if(_debug){
-        uint16_t logintvl = 10000; //
+        uint16_t logintvl = 10000; // how often to emit timeing out counter logging
         if((millis() - timer) > logintvl){
           timer = millis();
           DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
@@ -330,14 +330,14 @@ uint8_t WiFiManager::handleConfigPortal(){
     server->handleClient();
 
     // Waiting for save...
-    if (connect) {
+    if(connect) {
       connect = false;
       DEBUG_WM(F("Connecting to a new AP"));
+      if(_enableCaptivePortal) delay(2000); // configportal close delay
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
         DEBUG_WM(F("Connect to new AP [SUCCESS]"));
-        delay(500);
         DEBUG_WM(F("Got IP Address:"));
         DEBUG_WM(WiFi.localIP());
         stopConfigPortal();
@@ -1529,22 +1529,25 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
+    WiFiMode_t currentMode = WiFi.getMode();
+    WiFiMode_t newMode;
+    bool isEnabled     = (currentMode & WIFI_STA) != 0;
+    if(enable) newMode = (WiFiMode_t)(currentMode | WIFI_STA);
+    else newMode       = (WiFiMode_t)(currentMode & (~WIFI_STA));
 
     #ifdef ESP8266
-      WiFiMode_t currentMode = WiFi.getMode();
-      bool isEnabled = ((currentMode & WIFI_STA) != 0);
       if((isEnabled != enable) || persistent) {
           if(enable) {
           	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
-              return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
+              return WiFi_Mode(newMode,persistent);
           } else {
-              return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
+              return WiFi_Mode(newMode,persistent);
           }
       } else {
           return true;
       }
     #elif defined(ESP32)
-      return WiFi.mode(WIFI_STA); // @todo persistent not implemented?
+      return WiFi.mode(newMode); // @todo persistent not implemented?
     #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
