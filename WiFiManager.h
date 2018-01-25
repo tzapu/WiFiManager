@@ -22,18 +22,25 @@
     }
     #include <ESP8266WiFi.h>
     #include <ESP8266WebServer.h>
-    
+
     #define WIFI_getChipId() ESP.getChipId()
     #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
-    
+
     #include <WiFi.h>
-    #include <WebServer.h>
     #include <esp_wifi.h>  
     
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WIFI_AUTH_OPEN   WIFI_AUTH_OPEN
+    
+    #ifdef WEBSERVERSHIM
+        #include <WebServer.h>
+    #else
+        #include <ESP8266WebServer.h>
+        // Forthcoming official
+        // https://github.com/esp8266/ESPWebServer
+    #endif
 
 #else
 #endif
@@ -178,7 +185,7 @@ class WiFiManager
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 
-    #if defined(ESP32) && defined(WEBSERVERSHIM)
+    #ifdef WEBSERVERSHIM
         std::unique_ptr<WebServer> server;
     #else
         std::unique_ptr<ESP8266WebServer> server;

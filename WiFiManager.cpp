@@ -213,10 +213,10 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  #ifdef ESP8266
-    server.reset(new ESP8266WebServer(80));
-  #elif defined(ESP32)
+  #ifdef WEBSERVERSHIM
     server.reset(new WebServer(80));
+  #else
+    server.reset(new ESP8266WebServer(80));
   #endif
 
   /* Setup the DNS server redirecting all the domains to the apIP */
