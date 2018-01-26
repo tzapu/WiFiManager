@@ -902,8 +902,8 @@ void WiFiManager::handleInfo() {
 
   // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
-  page += (String)(system_get_time() / 1000000 / 60) + " mins ";
-  page += (String)((system_get_time() / 1000000)%60) + " secs";
+  page += (String)(milis() / 1000 / 60) + " mins ";
+  page += (String)((milis() / 1000) % 60) + " secs";
 
   page += F("<dt>Chip ID</dt><dd>");
   page += WIFI_getChipId();
@@ -1021,8 +1021,8 @@ void WiFiManager::handleInfo() {
 
   // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
-  page += (String)(system_get_time() / 1000000 / 60) + " mins "; // @todo esp32 deprecated
-  page += (String)((system_get_time() / 1000000)%60) + " secs";
+  page += (String)(milis() / 1000 / 60) + " mins ";
+  page += (String)((milis() / 1000) % 60) + " secs";
 
   page += F("<dt>Chip ID</dt><dd>");
   page += WIFI_getChipId();
