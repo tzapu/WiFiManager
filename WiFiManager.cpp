@@ -1024,7 +1024,7 @@ void WiFiManager::handleInfo() {
   page += F("<tr><td><a href='/r'>/r</a></td>");
   page += F("<td>Reboot the device</td></tr>");
 
-  page += F("<tr><td><a href='/erase'>/r</a></td>");
+  page += F("<tr><td><a href='/erase'>/erase</a></td>");
   page += F("<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>");
   // @todo add callback here
   page += F("</table>");
