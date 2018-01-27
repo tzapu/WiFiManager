@@ -801,7 +801,7 @@ String WiFiManager::getParamOut(){
         if(tok_n)pitem.replace("{n}", _params[i]->getID());
         if(tok_p)pitem.replace("{p}", "{t}");
         if(tok_t)pitem.replace("{t}", _params[i]->getPlaceholder());
-        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
+        // snprintf(parLength, 5, "%d", _params[i]->getValueLength());
         if(tok_l)pitem.replace("{l}", parLength);
         if(tok_v)pitem.replace("{v}", _params[i]->getValue());
         if(tok_c)pitem.replace("{c}", _params[i]->getCustomHTML()); // meant for additional attributes, not html
@@ -902,8 +902,8 @@ void WiFiManager::handleInfo() {
 
   // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
-  page += (String)(milis() / 1000 / 60) + " mins ";
-  page += (String)((milis() / 1000) % 60) + " secs";
+  page += (String)(millis() / 1000 / 60) + " mins ";
+  page += (String)((millis() / 1000) % 60) + " secs";
 
   page += F("<dt>Chip ID</dt><dd>");
   page += WIFI_getChipId();
@@ -1021,8 +1021,8 @@ void WiFiManager::handleInfo() {
 
   // subject to rollover!
   page += F("<dt>Uptime</dt><dd>");
-  page += (String)(milis() / 1000 / 60) + " mins ";
-  page += (String)((milis() / 1000) % 60) + " secs";
+  page += (String)(millis() / 1000 / 60) + " mins ";
+  page += (String)((millis() / 1000) % 60) + " secs";
 
   page += F("<dt>Chip ID</dt><dd>");
   page += WIFI_getChipId();
