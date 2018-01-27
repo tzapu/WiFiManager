@@ -112,7 +112,7 @@ void setup() {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
-    ESP.reset();
+    ESP.restart();
     delay(5000);
   }
 

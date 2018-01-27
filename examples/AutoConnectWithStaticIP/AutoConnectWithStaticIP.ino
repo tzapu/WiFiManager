@@ -61,7 +61,7 @@ void setup() {
   if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
-    ESP.reset();
+    ESP.restart();
     delay(5000);
   }
 
