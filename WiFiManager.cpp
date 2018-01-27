@@ -213,7 +213,7 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  #ifdef WEBSERVERSHIM
+  #if defined(ESP32) && defined(WEBSERVERSHIM)
     server.reset(new WebServer(80));
   #else
     server.reset(new ESP8266WebServer(80));
@@ -1613,12 +1613,14 @@ String WiFiManager::WiFi_SSID(){
 }
 
 void WiFiManager::WiFiEvent(WiFiEvent_t event){
-  WiFiManager _WiFiManager;
-  if(event == SYSTEM_EVENT_STA_DISCONNECTED){
-    // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
-    _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
-    WiFi.reconnect();
-  }
+  #ifdef ESP32
+    WiFiManager _WiFiManager;
+    if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+      // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
+      _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
+      WiFi.reconnect();
+    }
+  #endif  
 }
 
 void WiFiManager::WiFi_autoReconnect(){

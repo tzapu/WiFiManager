@@ -185,7 +185,7 @@ class WiFiManager
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 
-    #if defined(WEBSERVERSHIM) && defined(ESP32)
+    #if defined(ESP32) && defined(WEBSERVERSHIM)
         std::unique_ptr<WebServer> server;
     #else
         std::unique_ptr<ESP8266WebServer> server;
