@@ -1397,10 +1397,16 @@ void WiFiManager::debugSoftAPConfig(){
 }
 
 void WiFiManager::debugPlatformInfo(){
+  #ifdef ESP8266
     system_print_meminfo();
     DEBUG_WM("getCoreVersion(): ",ESP.getCoreVersion());
     DEBUG_WM("system_get_sdk_version(): ",system_get_sdk_version());
     DEBUG_WM("system_get_boot_version(): ",system_get_boot_version());
+  #elif defined(ESP32)
+    size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+    DEBUG_WM("Free heap: ", freeHeap);
+    DEBUG_WM("ESP-IDF version: ", esp_get_idf_version());
+  #endif
 }
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
