@@ -91,6 +91,7 @@ WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
 }
 
 WiFiManager::WiFiManager():_debugPort(Serial) {
+  if(_debug) debugPlatformInfo();
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
 }
@@ -1284,6 +1285,12 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("--------------------"));
 }
 
+void WiFiManager::debugPlatformInfo(){
+    system_print_meminfo();
+    DEBUG_WM("getCoreVersion(): ",ESP.getCoreVersion());
+    DEBUG_WM("system_get_sdk_version(): ",system_get_sdk_version());
+    DEBUG_WM("system_get_boot_version(): ",system_get_boot_version());
+}
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;
