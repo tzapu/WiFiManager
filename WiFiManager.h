@@ -294,6 +294,7 @@ class WiFiManager
     boolean       validApPassword();
     String        encryptionTypeStr(uint8_t authmode);
     void          reportStatus(String &page);
+    void          debugPlatformInfo();
 
     boolean       connect;
     boolean       abort;
