@@ -1,9 +1,4 @@
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-//needed for library
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 //for LED status
 #include <Ticker.h>

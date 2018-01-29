@@ -1,15 +1,4 @@
-#ifdef ESP8266
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-//needed for library
-#include <ESP8266WebServer.h>
-#else
-#include <WiFi.h>
-#include <WebServer.h>
-// #include <ESP8266WebServer.h>
-#endif
-
-#include <DNSServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
