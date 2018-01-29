@@ -495,11 +495,8 @@ String WiFiManager::getConfigPortalSSID() {
 // SETTERS
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
-  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA.")); // @todo WHUT?
-  WiFi.persistent(true);
+  WiFi_enableSTA(true,true);
   WiFi.disconnect(true);
-  WiFi.persistent(false);
-  //delay(200);
 }
 
 void WiFiManager::setTimeout(unsigned long seconds) {
