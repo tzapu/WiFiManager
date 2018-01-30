@@ -260,13 +260,13 @@ class WiFiManager
     int           timer               = 0;
     
     // WiFiManagerParameter
-    int 		_paramsCount		  = 0;
-    int 		_max_params;
+    int         _paramsCount          = 0;
+    int         _max_params;
     WiFiManagerParameter** _params;
 
     // debugging
     boolean       _debug              = true;
-    Stream& 	_debugPort; // debug output stream ref
+    Stream&     _debugPort; // debug output stream ref
     template <typename Generic>
     void        DEBUG_WM(Generic text);
     template <typename Generic, typename Genericb>
