@@ -78,6 +78,7 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    ~WiFiManagerParameter();
 
     const char *getID();
     const char *getValue();
