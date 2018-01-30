@@ -144,8 +144,8 @@ class WiFiManager
     void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
-    //adds a custom parameter
-    void          addParameter(WiFiManagerParameter *p);
+    //adds a custom parameter, returns false on failure
+    bool          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
     //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
@@ -271,7 +271,8 @@ class WiFiManager
     void (*_savecallback)(void) = NULL;
 
     Stream& _debugPort; // debug output stream ref
-    WiFiManagerParameter* _params[WIFI_MANAGER_MAX_PARAMS];
+    int                    _max_params;
+    WiFiManagerParameter** _params;
 
     template <typename Generic>
     void          DEBUG_WM(Generic text);
