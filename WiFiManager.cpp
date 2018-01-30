@@ -36,6 +36,10 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
 }
 
 void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+
+  _max_params = WIFI_MANAGER_MAX_PARAMS;
+  _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
+
   _id             = id;
   _placeholder    = placeholder;
   _length         = length;
@@ -54,6 +58,10 @@ void WiFiManagerParameter::init(const char *id, const char *placeholder, const c
 WiFiManagerParameter::~WiFiManagerParameter() {
   if (_value != NULL) {
     delete[] _value;
+  }
+  if (_params != NULL){
+    DEBUG_WM(F("freeing allocated params!"));
+    free(_params);
   }
 }
 
@@ -75,7 +83,6 @@ int WiFiManagerParameter::getLabelPlacement() {
 const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
-
 
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   if(_paramsCount + 1 > _max_params){
@@ -107,24 +114,12 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
   if(_debug) debugPlatformInfo();
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
-
-  // parameters
-  _max_params = WIFI_MANAGER_MAX_PARAMS;
-  _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
-
 }
 
 // destructor
 WiFiManager::~WiFiManager() {
   if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
   WiFi.mode(_usermode);
-
-  // parameters
-  if (_params != NULL){
-    DEBUG_WM(F("freeing allocated params!"));
-    free(_params);
-  }
-
   DEBUG_WM(F("unloading"));
 }
 

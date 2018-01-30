@@ -201,7 +201,6 @@ class WiFiManager
     boolean       _sta_show_static_fields = false;
 
     // option parameters
-    int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
     boolean       _removeDuplicateAPs     = true;
     boolean       _shouldBreakAfterConfig = false;
@@ -271,7 +270,10 @@ class WiFiManager
     void (*_savecallback)(void) = NULL;
 
     Stream& _debugPort; // debug output stream ref
-    int                    _max_params;
+    
+    //WiFiManagerParameter
+    int _paramsCount = 0;
+    int _max_params;
     WiFiManagerParameter** _params;
 
     template <typename Generic>
