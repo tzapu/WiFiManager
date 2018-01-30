@@ -167,38 +167,26 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
 
-    //const int     WM_DONE                 = 0;
-    //const int     WM_WAIT                 = 10;
-
-    //const String  HTTP_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>{v}</title>";
-
-    void          setupConfigPortal();
-    void          startWPS();
-    bool          startAP();
-
-    // typedef enum WiFiMode 
-    // {
-    //     WIFI_OFF = 0, WIFI_STA = 1, WIFI_AP = 2, WIFI_AP_STA = 3
-    // } WiFiMode_t;
-
-    String        _apName                 = "no-net";
-    String        _apPassword             = "";
-    String        _ssid                   = "";
-    String        _pass                   = "";
-    unsigned long _configPortalTimeout    = 0;
-    unsigned long _connectTimeout         = 0;
-    unsigned long _configPortalStart      = 0;
-    boolean       _userpersistent         = true;
-    WiFiMode_t    _usermode               = WIFI_OFF;
-    boolean       _enableCaptivePortal    = true;
-
+    // ip configs
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
     IPAddress     _ap_static_sn;
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
-    boolean       _sta_show_static_fields = false;
+
+    // defaults
+    const byte    DNS_PORT                = 53;
+    String        _apName                 = "no-net";
+    String        _apPassword             = "";
+    String        _ssid                   = "";
+    String        _pass                   = "";
+    
+    // options flags
+    unsigned long _configPortalTimeout    = 0;
+    unsigned long _connectTimeout         = 0;
+    unsigned long _configPortalStart      = 0;
+    WiFiMode_t    _usermode               = WIFI_OFF;
 
     // option parameters
     int           _minimumQuality         = -1;
@@ -206,18 +194,22 @@ class WiFiManager
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
     boolean       _configPortalIsBlocking = true;
+    boolean       _sta_show_static_fields = false;
+    boolean       _enableCaptivePortal    = true;
+    boolean       _userpersistent         = true;
 
     const char*   _customHeadElement      = "";
 
-    //String        getEEPROMString(int start, int len);
-    //void          setEEPROMString(int start, int len, String string);
+    void          setupConfigPortal();
+    void          startWPS();
+    bool          startAP();
 
     int           status = WL_IDLE_STATUS;
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
-    String        getWLStatusString(uint8_t status);
 
+    // webserver handlers
     void          handleRoot();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
@@ -231,6 +223,8 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
     uint8_t       handleConfigPortal();
+
+    // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
     bool          WiFi_Mode(WiFiMode_t m,bool persistent);
     bool          WiFi_Disconnect();
@@ -239,14 +233,13 @@ class WiFiManager
     bool          WiFi_eraseConfig();
     void          debugSoftAPConfig();
 
+    // output helpers
     String        getParamOut();
     String        getScanItemOut();
     String        getStaticOut();
 
-    // DNS server
-    const byte    DNS_PORT = 53;
-
     //helpers
+    String        getWLStatusString(uint8_t status);    
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
@@ -255,31 +248,33 @@ class WiFiManager
     void          reportStatus(String &page);
     void          debugPlatformInfo();
 
+    // flags
     boolean       connect;
     boolean       abort;
-    boolean       reset = false;
+    boolean       reset               = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
-    boolean       _debug              = true;
     boolean       portalTimeoutResult = false;
     boolean       portalAbortResult   = false;
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
     int           timer               = 0;
-
-    void (*_apcallback)(WiFiManager*) = NULL;
-    void (*_savecallback)(void) = NULL;
-
-    Stream& _debugPort; // debug output stream ref
     
-    //WiFiManagerParameter
-    int _paramsCount = 0;
-    int _max_params;
+    // WiFiManagerParameter
+    int 		_paramsCount		  = 0;
+    int 		_max_params;
     WiFiManagerParameter** _params;
 
+    // debugging
+    boolean       _debug              = true;
+    Stream& 	_debugPort; // debug output stream ref
     template <typename Generic>
-    void          DEBUG_WM(Generic text);
+    void        DEBUG_WM(Generic text);
     template <typename Generic, typename Genericb>
-    void          DEBUG_WM(Generic text,Genericb textb);
+    void        DEBUG_WM(Generic text,Genericb textb);
+
+    // callbacks
+    void (*_apcallback)(WiFiManager*) = NULL;
+    void (*_savecallback)(void)       = NULL;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {
