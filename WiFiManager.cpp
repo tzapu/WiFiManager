@@ -713,7 +713,7 @@ String WiFiManager::getStaticOut(){
   String page;
   if (_sta_show_static_fields || _sta_static_ip) {
 
-    // @todo how do we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
+    // @todo how can we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     // @todo move titles to params for i18n
     
     String item = FPSTR(HTTP_FORM_LABEL);
@@ -725,7 +725,8 @@ String WiFiManager::getStaticOut(){
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_ip ? _sta_static_ip.toString() : ""));
     item.replace("{c}", "");
-
+    
+    // actuals as placeholder
     // IPAddress sta_ip = WiFi.localIP();
     // item.replace("{p}", sta_ip.toString());
 
@@ -741,6 +742,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{v}", (_sta_static_gw ? _sta_static_gw.toString() : ""));
     item.replace("{c}", "");
 
+    // actuals as placeholder
     // IPAddress sta_gateway = WiFi.gatewayIP();
     // item.replace("{p}", sta_gateway.toString());
 
@@ -756,6 +758,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{v}", (_sta_static_sn ? _sta_static_sn.toString() : ""));
     item.replace("{c}", "");
 
+    // actuals as placeholder
     // IPAddress sta_subnet = WiFi.subnetMask();
     // item.replace("{p}", sta_subnet.toString());
     page += item;
@@ -1249,28 +1252,6 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
     _debugPort.print("\n");
   }
 }
-
-/*
-  String WiFiManager::getSSID() {
-  if (_ssid == "") {
-    DEBUG_WM(F("Reading SSID"));
-    _ssid = WiFi.SSID();
-    DEBUG_WM(F("SSID: "));
-    DEBUG_WM(_ssid);
-  }
-  return _ssid;
-  }
-
-  String WiFiManager::getPassword() {
-  if (_pass == "") {
-    DEBUG_WM(F("Reading Password"));
-    _pass = WiFi.psk();
-    DEBUG_WM("Password: " + _pass);
-    //DEBUG_WM(_pass);
-  }
-  return _pass;
-  }
-*/
 
 void WiFiManager::debugSoftAPConfig(){
     softap_config config;
