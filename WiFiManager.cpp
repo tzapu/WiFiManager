@@ -92,10 +92,10 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
       return false;
     }
   }
+
   _params[_paramsCount] = p;
   _paramsCount++;
-  DEBUG_WM("Adding parameter");
-  DEBUG_WM(p->getID());
+  DEBUG_WM("Added Parameter:",p->getID());
   return true;
 }
 
@@ -134,7 +134,6 @@ boolean WiFiManager::autoConnect() {
 }
 
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
-  DEBUG_WM(F(""));
   DEBUG_WM(F("AutoConnect"));
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
@@ -143,8 +142,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
-    DEBUG_WM(F("IP Address:"));
-    DEBUG_WM(WiFi.localIP());
+    DEBUG_WM(F("IP Address:"),WiFi.localIP());
     return true;
   }
   // not connected start configportal
@@ -153,12 +151,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 // CONFIG PORTAL
 bool WiFiManager::startAP(){
-  DEBUG_WM(F("Configuring access point with with SSID of ... "));
-  DEBUG_WM(_apName);
+  DEBUG_WM(F("StartAP with SSID of"),_apName);
 
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
-    DEBUG_WM(F("Custom AP IP/GW/Subnet"));
+    DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
@@ -166,7 +163,6 @@ bool WiFiManager::startAP(){
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
-    Serial.println((String)_apPassword.c_str());
     ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
     DEBUG_WM(F("AP has anonymous access"));    
@@ -178,8 +174,7 @@ bool WiFiManager::startAP(){
   if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
 
   delay(500); // slight delay to make sure we get an AP IP
-  DEBUG_WM(F("AP IP address: "));
-  DEBUG_WM(WiFi.softAPIP());
+  DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
 
   // do AP callback if set
   if ( _apcallback != NULL) {
@@ -417,9 +412,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
   // Setup static IP config if provided
   if (_sta_static_ip) {
-    DEBUG_WM(F("Custom STA IP/GW/Subnet"));
     WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
-    DEBUG_WM(WiFi.localIP());
+    DEBUG_WM(F("Custom STA IP/GW/Subnet:"),WiFi.localIP());
   }
 
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
@@ -446,8 +440,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   uint8_t connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
-  DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( getWLStatusString(connRes) );
+  DEBUG_WM ("Connection result:",getWLStatusString(connRes));
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
@@ -655,7 +648,7 @@ String WiFiManager::getScanItemOut(){
           cssid = WiFi.SSID(indices[i]);
           for (int j = i + 1; j < n; j++) {
             if (cssid == WiFi.SSID(indices[j])) {
-              DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
+              DEBUG_WM("DUP AP:",WiFi.SSID(indices[j]));
               indices[j] = -1; // set dup aps to index -1
             }
           }
@@ -838,37 +831,37 @@ void WiFiManager::handleWifiSave() {
   _pass = server->arg("p").c_str();
 
   //parameters
-  for (int i = 0; i < _paramsCount; i++) {
-    if (_params[i] == NULL) {
-      break;
+  if(_paramsCount > 0){
+    DEBUG_WM("Parameters");
+    DEBUG_WM("-----------");
+    for (int i = 0; i < _paramsCount; i++) {
+      if (_params[i] == NULL) {
+        break;
+      }
+      //read parameter from server
+      String value = server->arg(_params[i]->getID()).c_str();
+      //store it in array
+      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      DEBUG_WM((String)_params[i]->getID() + ":",value);
     }
-    //read parameter
-    String value = server->arg(_params[i]->getID()).c_str();
-    //store it in array
-    value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
-    DEBUG_WM(F("Parameter"));
-    DEBUG_WM(_params[i]->getID());
-    DEBUG_WM(value);
+    DEBUG_WM("-----------");
   }
 
   if (server->arg("ip") != "") {
-    DEBUG_WM(F("static ip"));
-    DEBUG_WM(server->arg("ip"));
     //_sta_static_ip.fromString(server->arg("ip"));
     String ip = server->arg("ip");
     optionalIPFromString(&_sta_static_ip, ip.c_str());
+    DEBUG_WM(F("static ip:"),ip);
   }
   if (server->arg("gw") != "") {
-    DEBUG_WM(F("static gateway"));
-    DEBUG_WM(server->arg("gw"));
     String gw = server->arg("gw");
     optionalIPFromString(&_sta_static_gw, gw.c_str());
+    DEBUG_WM(F("static gateway:"),gw);
   }
   if (server->arg("sn") != "") {
-    DEBUG_WM(F("static netmask"));
-    DEBUG_WM(server->arg("sn"));
     String sn = server->arg("sn");
     optionalIPFromString(&_sta_static_sn, sn.c_str());
+    DEBUG_WM(F("static netmask:"),sn);
   }
 
   String page = FPSTR(HTTP_HEAD);
@@ -1311,9 +1304,9 @@ void WiFiManager::debugSoftAPConfig(){
 
 void WiFiManager::debugPlatformInfo(){
     system_print_meminfo();
-    DEBUG_WM("getCoreVersion(): ",ESP.getCoreVersion());
-    DEBUG_WM("system_get_sdk_version(): ",system_get_sdk_version());
-    DEBUG_WM("system_get_boot_version(): ",system_get_boot_version());
+    DEBUG_WM("getCoreVersion():",ESP.getCoreVersion());
+    DEBUG_WM("system_get_sdk_version():",system_get_sdk_version());
+    DEBUG_WM("system_get_boot_version():",system_get_boot_version());
 }
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
