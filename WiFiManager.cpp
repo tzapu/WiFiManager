@@ -77,6 +77,15 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
+
+  // check param id is valid
+  for (int i = 0; i < strlen(p->getID()); i++){
+     if(!isAlphaNumeric(p->getID()[i])){
+      DEBUG_WM("[ERROR] parameter IDs can only contain aplha numberic chars");
+      return false;
+     }
+  }
+
   if(_paramsCount + 1 == _max_params){
     // resize the params array by increment of WIFI_MANAGER_MAX_PARAMS
     _max_params += WIFI_MANAGER_MAX_PARAMS;
@@ -92,7 +101,6 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
       return false;
     }
   }
-
   _params[_paramsCount] = p;
   _paramsCount++;
   DEBUG_WM("Added Parameter:",p->getID());
@@ -762,6 +770,7 @@ String WiFiManager::getParamOut(){
 
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
     HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
+    bool tok_I = HTTP_PARAM_temp.indexOf("{I}") > 0;
     bool tok_i = HTTP_PARAM_temp.indexOf("{i}") > 0;
     bool tok_n = HTTP_PARAM_temp.indexOf("{n}") > 0;
     bool tok_p = HTTP_PARAM_temp.indexOf("{p}") > 0;
@@ -798,6 +807,7 @@ String WiFiManager::getParamOut(){
 
       // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
+        if(tok_I)pitem.replace("{I}", "param_"+(String)i);
         if(tok_i)pitem.replace("{i}", _params[i]->getID());
         if(tok_n)pitem.replace("{n}", _params[i]->getID());
         if(tok_p)pitem.replace("{p}", "{t}");
@@ -839,7 +849,10 @@ void WiFiManager::handleWifiSave() {
         break;
       }
       //read parameter from server
-      String value = server->arg(_params[i]->getID()).c_str();
+      String value;
+      if(server->arg("param_"+(String)i) != NULL) value = server->arg("param_"+(String)i).c_str();
+      else value = server->arg(_params[i]->getID()).c_str();
+
       //store it in array
       value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
       DEBUG_WM((String)_params[i]->getID() + ":",value);
