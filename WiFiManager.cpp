@@ -564,9 +564,8 @@ String WiFiManager::getHTTPHead(String title){
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("<- HTTP Root"));
 
-  if (captivePortal()) { // If captive portal redirect instead of displaying the page.
-    return;
-  }
+  if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+
   String page = getHTTPHead("options"); // @token options
   String str  = FPSTR(HTTP_ROOT_MAIN);
   str.replace("{v}",configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
@@ -1031,7 +1030,7 @@ void WiFiManager::handleInfo() {
  */
 void WiFiManager::handleExit() {
   DEBUG_WM(F("<- HTTP Exit"));
-  String page = getHTTPHead("Exit"); // @token exit
+  String page = getHTTPHead("Exit"); // @token titleexit
   page += "Exiting"; // @token exiting
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
@@ -1063,7 +1062,7 @@ void WiFiManager::reportStatus(String &page){
 void WiFiManager::handleReset() {
   DEBUG_WM(F("<- HTTP Reset"));
 
-  String page = getHTTPHead("Reset");
+  String page = getHTTPHead("Reset"); //@token titlereset
   page += F("Module will reset in a few seconds.");
   page += FPSTR(HTTP_END);
 
@@ -1081,13 +1080,13 @@ void WiFiManager::handleReset() {
 void WiFiManager::handleErase() {
   DEBUG_WM(F("<- HTTP Erase"));
 
-  String page = getHTTPHead("Erase");
+  String page = getHTTPHead("Erase"); // @token titleerase
   page += FPSTR(HTTP_HEAD_END);
   bool ret = WiFi_eraseConfig();
 
-  if(ret) page += F("Module will reset in a few seconds.");
+  if(ret) page += F("Module will reset in a few seconds."); // @token resetting
   else {
-    page += F("An Error Occured");
+    page += F("An Error Occured"); // @token erroroccur
     DEBUG_WM(F("[ERROR] WiFi EraseConfig failed"));
   }
 
@@ -1103,15 +1102,14 @@ void WiFiManager::handleErase() {
 }
 
 void WiFiManager::handleNotFound() {
-  if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
-    return;
-  }
-  String message = "File Not Found\n\n";
-  message += "URI: ";
+  if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+  
+  String message = "File Not Found\n\n"; // @token notfound
+  message += "URI: "; // @token uri
   message += server->uri();
-  message += "\nMethod: ";
+  message += "\nMethod: "; // @token method
   message += ( server->method() == HTTP_GET ) ? "GET" : "POST";
-  message += "\nArguments: ";
+  message += "\nArguments: "; // @token args
   message += server->args();
   message += "\n";
 
