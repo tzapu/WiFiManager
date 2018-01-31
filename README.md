@@ -182,6 +182,13 @@ void loop() {
 ```
 See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemandConfigPortal)
 
+#### Exiting from the Configuration Portal
+Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered.
+If you'd prefer to exit without joining a WiFi network, say becuase you're going to put the ESP into AP mode, then press the "Exit" button
+on the main webpage.
+If you're using ```autoConnect``` then it will return ```false```.
+Alternatively, if you are using ```startConfigPortal``` it will return the ```WiFi.status()``` value.
+
 #### Custom Parameters
 You can use WiFiManager to collect more parameters than just SSID and password.
 This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
