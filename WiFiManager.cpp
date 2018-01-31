@@ -97,7 +97,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
     if (new_params != NULL) {
       _params = new_params;
     } else {
-      DEBUG_WM("ERROR: failed to realloc params, size not increased!");
+      DEBUG_WM("[ERROR] failed to realloc params, size not increased!");
       return false;
     }
   }
@@ -179,7 +179,7 @@ bool WiFiManager::startAP(){
 
   debugSoftAPConfig();
 
-  if(!ret) DEBUG_WM("There was an error starting the AP"); // @bug startAP returns unreliable success status
+  if(!ret) DEBUG_WM("[ERROR] There was a problem starting the AP"); // @bug startAP returns unreliable success status
 
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
@@ -834,7 +834,10 @@ String WiFiManager::getParamOut(){
  * HTTPD CALLBACK save form and redirect to WLAN config page again
  */
 void WiFiManager::handleWifiSave() {
-  DEBUG_WM(F("HTTP WiFi save"));
+  DEBUG_WM(F("<- HTTP WiFi save "));
+
+  DEBUG_WM(server->method());
+  DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? "GET" : "POST");
 
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
@@ -898,7 +901,7 @@ void WiFiManager::handleWifiSave() {
  * HTTPD CALLBACK info page
  */
 void WiFiManager::handleInfo() {
-  DEBUG_WM(F("HTTP Info"));
+  DEBUG_WM(F("<- HTTP Info"));
 
   String page = FPSTR(HTTP_HEAD);
   page.replace("{v}", "Info");
@@ -1149,22 +1152,19 @@ void WiFiManager::handleErase() {
   page += FPSTR(HTTP_HEAD_END);
 
   bool ret = WiFi_eraseConfig();
-  if(!ret) DEBUG_WM(F("ERASE FAILED"));
-  
-  // bool ret = reset = true;
-  
+    
   if(ret) page += F("Module will reset in a few seconds.");
   else {
     page += F("An Error Occured");
-    DEBUG_WM(F("WiFi EraseConfig reported an error"));
+    DEBUG_WM(F("[ERROR] WiFi EraseConfig failed"));
   }
 
   page += FPSTR(HTTP_END);
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
-  delay(2000);
 
   if(ret){
+    delay(2000);
   	DEBUG_WM(F("RESETTING ESP"));
   	reboot();
   }	
