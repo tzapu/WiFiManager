@@ -82,7 +82,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   // check param id is valid
   for (int i = 0; i < strlen(p->getID()); i++){
      if(!isAlphaNumeric(p->getID()[i])){
-      DEBUG_WM("[ERROR] parameter IDs can only contain aplha numberic chars");
+      DEBUG_WM("[ERROR] parameter IDs can only contain alpha numeric chars");
       return false;
      }
   }
