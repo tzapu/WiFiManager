@@ -205,6 +205,7 @@ class WiFiManager
     String        getParamOut();
     String        getScanItemOut();
     String        getStaticOut();
+    String        getHTTPHead(String title);
 
     //helpers
     String        getWLStatusString(uint8_t status);    

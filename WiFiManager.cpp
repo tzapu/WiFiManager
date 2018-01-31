@@ -547,6 +547,17 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
 
+String WiFiManager::getHTTPHead(String title){
+  String page;
+  page += FPSTR(HTTP_HEAD);
+  page.replace("{v}", title);
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  return page;
+}
+
 /** 
  * HTTPD CALLBACK root or redirect to captive portal
  */
@@ -556,26 +567,17 @@ void WiFiManager::handleRoot() {
   if (captivePortal()) { // If captive portal redirect instead of displaying the page.
     return;
   }
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Options");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-  page += "<h1>";
-  page += configPortalActive ? _apName : WiFi.localIP().toString();
-  page += "</h1>";
-  page += F("<h3>WiFiManager</h3>");
+  String page = getHTTPHead("options"); // @token options
+  String str  = FPSTR(HTTP_ROOT_MAIN);
+  str.replace("{v}",configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+  page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
-
 }
 
 /** 
@@ -584,18 +586,10 @@ void WiFiManager::handleRoot() {
 void WiFiManager::handleWifi(boolean scan) {
 
   DEBUG_WM("<- HTTP Wifi");
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Config ESP"); // @token titlewifi
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-
+  String page = getHTTPHead("Config ESP"); // @token titlewifi
   if (scan) {
     page += getScanItemOut();
   }
-
   String pitem = FPSTR(HTTP_FORM_START);
   pitem.replace("{v}", WiFi.SSID());
   page += pitem;
@@ -883,12 +877,7 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(F("static netmask:"),sn);
   }
 
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Credentials Saved"); // @token titlewifisaved
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  String page = getHTTPHead("Credentials Saved"); // @token titlewifisaved
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
@@ -905,14 +894,7 @@ void WiFiManager::handleWifiSave() {
  */
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("<- HTTP Info"));
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info"); // @token titleinfo
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-
+  String page = getHTTPHead("Info"); // @token titleinfo
   reportStatus(page);
   
   // @todo add versioning here
@@ -1033,13 +1015,8 @@ void WiFiManager::handleInfo() {
   page += WiFi.getAutoConnect() ? "Enabled" : "Disabled"; // @token enabled,disabled
   page += F("</dd>");
   page += F("</dl>");
-
-  page += "<br/><form action='/erase' method='get'><button>";
-  page += "Erase WiFi Config"; // @token erasewifi
-  page += "</button></form>";
-  
+  page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
-
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
@@ -1054,42 +1031,30 @@ void WiFiManager::handleInfo() {
  */
 void WiFiManager::handleExit() {
   DEBUG_WM(F("<- HTTP Exit"));
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Exit");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-
-  page += "Exiting";
+  String page = getHTTPHead("Exit"); // @token exit
+  page += "Exiting"; // @token exiting
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
   abort = true;
 }
 
 void WiFiManager::reportStatus(String &page){
-
+  String str;
   if (WiFi.SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){
-      page += "<div class='msg P'>";
-      page += F("<strong>Connected</strong> to ");
-      page += WiFi.SSID();
-      page += F("<br/><em><small>with IP <a href=\"http://");
-      page += WiFi.localIP().toString();
-      page += F("/\">");
-      page += WiFi.localIP().toString();
-      page += F("</a></small></em>");
-     } else {
-        page += "<div class='msg'>";
-        page += "<strong>Not Connected</strong> to ";
-        page += WiFi.SSID();
-     }
-  } else {
-    page += "<div class='msg'>";
-    page += "No AP set";
+      str = FPSTR(HTTP_STATUS_ON);
+      str.replace("{u}",WiFi.localIP().toString());
+      str.replace("{s}",WiFi.SSID());
+    }
+    else {
+      str = FPSTR(HTTP_STATUS_OFF);
+      str.replace("{s}",WiFi.SSID());
+    }
   }
-  page += "</div>";
+  else {
+    str = FPSTR(HTTP_STATUS_NONE);
+  }
+  page += str;
 }
 
 /** 
@@ -1098,12 +1063,7 @@ void WiFiManager::reportStatus(String &page){
 void WiFiManager::handleReset() {
   DEBUG_WM(F("<- HTTP Reset"));
 
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Reset");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  String page = getHTTPHead("Reset");
   page += F("Module will reset in a few seconds.");
   page += FPSTR(HTTP_END);
 
@@ -1121,15 +1081,10 @@ void WiFiManager::handleReset() {
 void WiFiManager::handleErase() {
   DEBUG_WM(F("<- HTTP Erase"));
 
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Erase");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
+  String page = getHTTPHead("Erase");
   page += FPSTR(HTTP_HEAD_END);
-
   bool ret = WiFi_eraseConfig();
-    
+
   if(ret) page += F("Module will reset in a few seconds.");
   else {
     page += F("An Error Occured");
