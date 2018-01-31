@@ -198,8 +198,8 @@ boolean WiFiManager::startConfigPortal() {
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
-  WiFi.mode(WIFI_AP_STA);
-  DEBUG_WM("SET AP STA");
+  WiFi.mode(WIFI_AP);
+  DEBUG_WM("SET AP");
 
   _apName = apName;
   _apPassword = apPassword;
@@ -228,12 +228,15 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       delay(2000);
       DEBUG_WM(F("Connecting to new AP"));
 
+      // switch to station mode 
+      WiFi.mode(WIFI_STA);
+      DEBUG_WM("SET STA");
+
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
       } else {
         //connected
-        WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
@@ -276,16 +279,18 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM("Already connected. Bailing out.");
     return WL_CONNECTED;
   }
+
+  //trying to fix connection in progress hanging
+  ETS_UART_INTR_DISABLE();
+  wifi_station_disconnect();
+  ETS_UART_INTR_ENABLE();
+
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID()) {
       DEBUG_WM("Using last saved values, should be faster");
-      //trying to fix connection in progress hanging
-      ETS_UART_INTR_DISABLE();
-      wifi_station_disconnect();
-      ETS_UART_INTR_ENABLE();
 
       WiFi.begin();
     } else {
@@ -295,7 +300,34 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
   int connRes = waitForConnectResult();
   DEBUG_WM ("Connection result: ");
-  DEBUG_WM ( connRes );
+  // interpret connRes code
+  switch(connRes) {
+        case WL_NO_SHIELD:
+                DEBUG_WM ("NO SHIELD");
+                break;
+        case WL_IDLE_STATUS:
+                DEBUG_WM ("IDLE STATUS");
+                break;
+        case WL_NO_SSID_AVAIL:
+                DEBUG_WM ("NO SSID AVAILABLE");
+                break;
+        case WL_SCAN_COMPLETED:
+                DEBUG_WM ("SCAN COMPLETED");
+                break;
+        case WL_CONNECTED:
+                DEBUG_WM ("CONNECTED");
+                break;
+        case WL_CONNECT_FAILED:
+                DEBUG_WM ("CONNECT FAILED");
+                break;
+        case WL_CONNECTION_LOST:
+                DEBUG_WM ("CONNECTION LOST");
+                break;
+        case WL_DISCONNECTED:
+                DEBUG_WM ("DISCONNECTED");
+                break;
+  }
+
   //not connected, WPS enabled, no pass - first attempt
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
     startWPS();
