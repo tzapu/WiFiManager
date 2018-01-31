@@ -836,7 +836,6 @@ String WiFiManager::getParamOut(){
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("<- HTTP WiFi save "));
 
-  DEBUG_WM(server->method());
   DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? "GET" : "POST");
 
   //SAVE/connect here
