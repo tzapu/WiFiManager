@@ -11,6 +11,7 @@
  **************************************************************/
 
 #include "WiFiManager.h"
+#include "strings_en.h"
 
 // PARAMETERS
 
@@ -585,7 +586,7 @@ void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM("<- HTTP Wifi");
 
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Config ESP");
+  page.replace("{v}", "Config ESP"); // @token titlewifi
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
@@ -623,7 +624,7 @@ String WiFiManager::getScanItemOut(){
     DEBUG_WM(F("Scan done"));
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
-      page += F("No networks found. Refresh to scan again.");
+      page += F("No networks found. Refresh to scan again."); // @token scannotfound
     } else {
 
       //sort networks
@@ -720,7 +721,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
     item.replace("{p}", "{t}");
-    item.replace("{t}", "Static IP");
+    item.replace("{t}", "Static IP"); // @token staticip
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_ip ? _sta_static_ip.toString() : ""));
     item.replace("{c}", "");
@@ -735,7 +736,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "gw");
     item.replace("{n}", "gw");
     item.replace("{p}", "{t}");    
-    item.replace("{t}", "Static Gateway");
+    item.replace("{t}", "Static Gateway"); // @token staticgateway
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_gw ? _sta_static_gw.toString() : ""));
     item.replace("{c}", "");
@@ -750,7 +751,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "sn");
     item.replace("{n}", "sn");
     item.replace("{p}", "{t}");    
-    item.replace("{t}", "Subnet");
+    item.replace("{t}", "Subnet"); // @token subnet
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_sn ? _sta_static_sn.toString() : ""));
     item.replace("{c}", "");
@@ -880,7 +881,7 @@ void WiFiManager::handleWifiSave() {
   }
 
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Credentials Saved");
+  page.replace("{v}", "Credentials Saved"); // @token titlewifisaved
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
@@ -903,7 +904,7 @@ void WiFiManager::handleInfo() {
   DEBUG_WM(F("<- HTTP Info"));
 
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
+  page.replace("{v}", "Info"); // @token titleinfo
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
@@ -916,39 +917,39 @@ void WiFiManager::handleInfo() {
   page += F("<h3>esp8266</h3><hr><dl>");
 
   // subject to rollover!
-  page += F("<dt>Uptime</dt><dd>");
-  page += (String)(system_get_time() / 1000000 / 60) + " mins ";
-  page += (String)((system_get_time() / 1000000)%60) + " secs";
+  page += F("<dt>Uptime</dt><dd>"); // @token uptime
+  page += (String)(system_get_time() / 1000000 / 60) + " mins "; // @token mins
+  page += (String)((system_get_time() / 1000000)%60) + " secs";  // @token secs
 
-  page += F("<dt>Chip ID</dt><dd>");
+  page += F("<dt>Chip ID</dt><dd>"); // @token chipid
   page += WIFI_getChipId();
   page += F("</dd>");
 
-  page += F("<dt>Flash Chip ID</dt><dd>");
+  page += F("<dt>Flash Chip ID</dt><dd>"); // @token flashid
   page += ESP.getFlashChipId();
   page += F("</dd>");
 
-  page += F("<dt>IDE Flash Size</dt><dd>");
+  page += F("<dt>IDE Flash Size</dt><dd>"); // @token flashsize
   page += ESP.getFlashChipSize();
   page += F(" bytes</dd>");
 
-  page += F("<dt>Actual Flash Size</dt><dd>");
+  page += F("<dt>Actual Flash Size</dt><dd>"); // @token actualflashsize
   page += ESP.getFlashChipRealSize();
   page += F(" bytes</dd>");
 
-  page += F("<dt>SDK Version</dt><dd>");
+  page += F("<dt>SDK Version</dt><dd>"); // @token sdkver
   page += system_get_sdk_version();
   page += F("</dd>");
 
-  page += F("<dt>Core Version</dt><dd>");
+  page += F("<dt>Core Version</dt><dd>"); // @token corever
   page += ESP.getCoreVersion();
   page += F("</dd>");
 
-  page += F("<dt>Boot Version</dt><dd>");
+  page += F("<dt>Boot Version</dt><dd>"); // @token boot ver
   page += system_get_boot_version();
   page += F("</dd>");
 
-  page += F("<dt>CPU Frequency</dt><dd>");
+  page += F("<dt>CPU Frequency</dt><dd>"); // @token cpufreq
   page += ESP.getCpuFreqMHz();
   page += F("MHz</dd>");
 
@@ -962,12 +963,12 @@ void WiFiManager::handleInfo() {
   // page += "<br/><progress value='" + (String)((heapstart)-ESP.getFreeHeap()) + "' max='" + (String)(heapstart) + "'></progress>";
   // page += F("</dd>");
 
-  page += F("<dt>Memory - Free Heap</dt><dd>");
+  page += F("<dt>Memory - Free Heap</dt><dd>"); // @token freeheap
   page += ESP.getFreeHeap();
-  page += F(" bytes available</dd>");
+  page += F(" bytes available</dd>"); // @token bytesavail
 
-  page += F("<dt>Memory - Sketch Size</dt><dd>");
-  page += F("Used/Total bytes<br/>");
+  page += F("<dt>Memory - Sketch Size</dt><dd>"); // @token sketchsize
+  page += F("Used/Total bytes<br/>"); // @token usedtotal
   page += (ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace();
   page += "/";
   page += (ESP.getSketchSize()+ESP.getFreeSketchSpace());
@@ -977,15 +978,15 @@ void WiFiManager::handleInfo() {
   page += (String)(ESP.getSketchSize()+ESP.getFreeSketchSpace());
   page += F("'></progress></dd>");
 
-  page += F("<dt>Last reset reason</dt><dd>");
+  page += F("<dt>Last reset reason</dt><dd>"); // @token resetreason
   page += ESP.getResetReason();
   page += F("</dd>");
 
-  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>");
+  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>"); // @token apip
   page += WiFi.softAPIP().toString();
   page += F("</dd>");
 
-  page += F("<dt>Access Point MAC</dt><dd>");
+  page += F("<dt>Access Point MAC</dt><dd>"); // @token apmac
   page += WiFi.softAPmacAddress();
   page += F("</dd>");
 
@@ -997,71 +998,45 @@ void WiFiManager::handleInfo() {
   page += WiFi.BSSIDstr();
   page += F("</dd>");
 
-  page += F("<dt>Station IP</dt><dd>");
+  page += F("<dt>Station IP</dt><dd>"); // @token staip
   page += WiFi.localIP().toString(); 
   page += F("</dd>");
 
-  page += F("<dt>Station Gateway</dt><dd>");
+  page += F("<dt>Station Gateway</dt><dd>"); // @token stagw
   page += WiFi.gatewayIP().toString(); 
   page += F("</dd>");
 
-  page += F("<dt>Station Subnet</dt><dd>");
+  page += F("<dt>Station Subnet</dt><dd>"); // @token stasub
   page += WiFi.subnetMask().toString(); 
   page += F("</dd>");
 
-  page += F("<dt>DNS Server</dt><dd>");
+  page += F("<dt>DNS Server</dt><dd>"); // @token dnss
   page += WiFi.dnsIP().toString(); 
   page += F("</dd>");
 
-  page += F("<dt>Hostname</dt><dd>");
+  page += F("<dt>Hostname</dt><dd>"); // @token hostname
   page += WiFi.hostname();
   page += F("</dd>");
 
-  page += F("<dt>Station MAC</dt><dd>");
+  page += F("<dt>Station MAC</dt><dd>"); // @stamac
   page += WiFi.macAddress();
   page += F("</dd>");
 
-  page += F("<dt>Connected</dt><dd>");
-  page += WiFi.isConnected() ? "Yes" : "No";
+  page += F("<dt>Connected</dt><dd>"); // @token connected
+  page += WiFi.isConnected() ? "Yes" : "No"; //@token Y,N
   page += F("</dd>");
 
   page += F("<dt>Autoconnect</dt><dd>");
-  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
+  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled"; // @token enabled,disabled
   page += F("</dd>");
   page += F("</dl>");
 
-  page += "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
+  page += "<br/><form action='/erase' method='get'><button>";
+  page += "Erase WiFi Config"; // @token erasewifi
+  page += "</button></form>";
+  
+  page += FPSTR(HTTP_HELP);
 
-  page += F("<br/><h3>Available Pages</h3><hr>");
-  page += F("<table class='table'>");
-  page += F("<thead><tr><th>Page</th><th>Function</th></tr></thead><tbody>");
-  
-  page += F("<tr><td><a href='/'>/</a></td>");
-  page += F("<td>Menu page.</td></tr>");
-  
-  page += F("<tr><td><a href='/wifi'>/wifi</a></td>");
-  page += F("<td>Show WiFi scan results and enter WiFi configuration.</td></tr>");
- 
-  page += F("<tr><td><a href='/wifisave'>/wifisave</a></td>");
-  page += F("<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>");
-  
-  page += F("<tr><td><a href='/close'>/close</a></td>");
-  page += F("<td>Close the configuration server and configuration WiFi network.</td></tr>");
-  
-  page += F("<tr><td><a href='/i'>/i</a></td>");
-  page += F("<td>Information page</td></tr>");
-
-  page += F("<tr><td><a href='/exit'>/exit</a></td>");
-  page += F("<td>Exit Config Portal, configportal will close</td></tr>");
-  
-  page += F("<tr><td><a href='/r'>/r</a></td>");
-  page += F("<td>Reboot the device</td></tr>");
-
-  page += F("<tr><td><a href='/erase'>/erase</a></td>");
-  page += F("<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>");
-  // @todo add callback here
-  page += F("</table>");
-  page += F("<p/>More information about WiFiManager at <a href=\"https://github.com/tzapu/WiFiManager\">https://github.com/tzapu/WiFiManager</a>.");
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
