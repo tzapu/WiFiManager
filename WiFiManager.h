@@ -66,7 +66,7 @@ const char HTTP_SCAN_LINK[] PROGMEM       = "<br/><form action='/wifi' method='g
 const char HTTP_SAVED[] PROGMEM           = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
-#define WIFI_MANAGER_MAX_PARAMS 10
+#define WIFI_MANAGER_MAX_PARAMS 5
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2

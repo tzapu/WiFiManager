@@ -77,12 +77,14 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
-  if(_paramsCount + 1 > _max_params){
-    // rezise the params array
+  if(_paramsCount + 1 == _max_params){
+    // resize the params array by increment of WIFI_MANAGER_MAX_PARAMS
     _max_params += WIFI_MANAGER_MAX_PARAMS;
-    DEBUG_WM(F("Increasing _max_params to:"));
-    DEBUG_WM(_max_params);
+    DEBUG_WM(F("Updated _max_params:"),_max_params);
     WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
+    // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
+    // DEBUG_WM(_paramsCount);
+    // DEBUG_WM(_max_params);
     if (new_params != NULL) {
       _params = new_params;
     } else {
