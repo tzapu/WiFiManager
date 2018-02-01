@@ -30,7 +30,9 @@
 #define WIFI_getChipId() ESP.getChipId()
 #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
-#define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
+#ifndef WIFI_MANAGER_MAX_PARAMS
+    #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
+#endif
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
