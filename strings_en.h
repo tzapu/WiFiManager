@@ -1,3 +1,10 @@
+#ifndef WIFI_MANAGER_OVERRIDE_STRINGS
+
+// To override the strings below in your project, make the following changes above the line that includes "WiFIManager.h"
+// Add the following line:
+//   #define WIFI_MANAGER_OVERRIDE_STRINGS
+// Copy and paste ALL of the const char lines below and modify to suit.
+
 const char HTTP_HEAD[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
@@ -60,3 +67,5 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+
+#endif 
