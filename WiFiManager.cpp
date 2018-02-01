@@ -1029,8 +1029,6 @@ void WiFiManager::handleInfo() {
   page += WiFi.getAutoConnect() ? "Enabled" : "Disabled"; // @token enabled,disabled
   page += F("</dd>");
   page += F("</dl>");
-  page += FPSTR(HTTP_ERASEBTN);
-  page += FPSTR(HTTP_HELP);
   #endif
 
   #ifdef ESP32
@@ -1119,38 +1117,8 @@ void WiFiManager::handleInfo() {
   page += F("</dl>");
   #endif
 
-  page += "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
-
-  page += F("<br/><h3>Available Pages</h3><hr>");
-  page += F("<table class='table'>");
-  page += F("<thead><tr><th>Page</th><th>Function</th></tr></thead><tbody>");
-  
-  page += F("<tr><td><a href='/'>/</a></td>");
-  page += F("<td>Menu page.</td></tr>");
-  
-  page += F("<tr><td><a href='/wifi'>/wifi</a></td>");
-  page += F("<td>Show WiFi scan results and enter WiFi configuration.</td></tr>");
- 
-  page += F("<tr><td><a href='/wifisave'>/wifisave</a></td>");
-  page += F("<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>");
-  
-  page += F("<tr><td><a href='/close'>/close</a></td>");
-  page += F("<td>Close the configuration server and configuration WiFi network.</td></tr>");
-  
-  page += F("<tr><td><a href='/i'>/i</a></td>");
-  page += F("<td>Information page</td></tr>");
-
-  page += F("<tr><td><a href='/exit'>/exit</a></td>");
-  page += F("<td>Exit Config Portal, configportal will close</td></tr>");
-  
-  page += F("<tr><td><a href='/r'>/r</a></td>");
-  page += F("<td>Reboot the device</td></tr>");
-
-  page += F("<tr><td><a href='/erase'>/erase</a></td>");
-  page += F("<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>");
-  // @todo add callback here
-  page += F("</table>");
-  page += F("<p/>More information about WiFiManager at <a href=\"https://github.com/tzapu/WiFiManager\">https://github.com/tzapu/WiFiManager</a>.");
+  page += FPSTR(HTTP_ERASEBTN);
+  page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
