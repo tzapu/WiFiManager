@@ -229,7 +229,7 @@ class WiFiManager
     int           timer               = 0;
     
     // WiFiManagerParameter
-    int         _paramsCount          = 0;
+    int         _paramsIdx            = 0;
     int         _max_params;
     WiFiManagerParameter** _params;
 
