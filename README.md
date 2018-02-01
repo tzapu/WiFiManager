@@ -182,6 +182,12 @@ void loop() {
 ```
 See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemandConfigPortal)
 
+#### Exiting from the Configuration Portal
+Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered or a timeout is reached.
+If you'd prefer to exit without joining a WiFi network, say becuase you're going to put the ESP into AP mode, then press the "Exit" button
+on the main webpage.
+If started via `autoConnect` or `startConfigPortal` then it will return `false (portalAbortResult)`
+
 #### Custom Parameters
 You can use WiFiManager to collect more parameters than just SSID and password.
 This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
@@ -189,18 +195,18 @@ This could be helpful for configuring stuff like MQTT host and port, [blynk](htt
 Usage scenario would be:
 - load values from somewhere (EEPROM/FS) or generate some defaults
 - add the custom parameters to WiFiManager using
- ```cpp
+```cpp
  // id/name, placeholder/prompt, default, length
  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
  wifiManager.addParameter(&custom_mqtt_server);
 
- ```
+```
 - if connection to AP fails, configuration portal starts and you can set /change the values (or use on demand configuration portal)
 - once configuration is done and connection is established [save config callback]() is called
 - once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
- ```cpp
+```cpp
  mqtt_server = custom_mqtt_server.getValue();
- ```  
+```  
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
 You should also take a look at adding custom HTML to your form.
 
