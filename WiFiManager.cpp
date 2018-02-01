@@ -87,14 +87,14 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
      }
   }
 
-  if(_paramsIdx == _max_params){
+  if(_paramsCount == _max_params){
     // resize the params array by increment of WIFI_MANAGER_MAX_PARAMS
     _max_params += WIFI_MANAGER_MAX_PARAMS;
     DEBUG_WM(F("Updated _max_params:"),_max_params);
     WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
-    // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
-    // DEBUG_WM(_paramsIdx);
-    // DEBUG_WM(_max_params);
+    DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
+    DEBUG_WM(_paramsCount);
+    DEBUG_WM(_max_params);
     if (new_params != NULL) {
       _params = new_params;
     } else {
@@ -102,8 +102,8 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
       return false;
     }
   }
-  _params[_paramsIdx] = p;
-  _paramsIdx++;
+  _params[_paramsCount] = p;
+  _paramsCount++;
   DEBUG_WM("Added Parameter:",p->getID());
   return true;
 }
@@ -763,7 +763,7 @@ String WiFiManager::getStaticOut(){
 String WiFiManager::getParamOut(){
   String page;
 
-  if(_paramsIdx > 0){
+  if(_paramsCount > 0){
 
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
     HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
@@ -780,7 +780,7 @@ String WiFiManager::getParamOut(){
 
     char parLength[5];
     // add the extra parameters to the form
-    for (int i = 0; i < _paramsIdx; i++) {
+    for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL) {
         break;
       }
@@ -840,10 +840,10 @@ void WiFiManager::handleWifiSave() {
   _pass = server->arg("p").c_str();
 
   //parameters
-  if(_paramsIdx > 0){
+  if(_paramsCount > 0){
     DEBUG_WM("Parameters");
     DEBUG_WM("-----------");
-    for (int i = 0; i < _paramsIdx; i++) {
+    for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL) {
         break;
       }
