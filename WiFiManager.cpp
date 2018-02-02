@@ -250,6 +250,7 @@ void WiFiManager::setupConfigPortal() {
   server->on("/r", std::bind(&WiFiManager::handleReset, this));
   server->on("/exit", std::bind(&WiFiManager::handleExit, this));
   server->on("/erase", std::bind(&WiFiManager::handleErase, this));
+  server->on("/status", std::bind(&WiFiManager::handleWiFiStatus, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
@@ -825,6 +826,15 @@ String WiFiManager::getParamOut(){
   }
 
   return page;
+}
+
+void WiFiManager::handleWiFiStatus(){
+  DEBUG_WM(F("<- HTTP WiFi status "));
+  String page;
+  // String page = "{\"result\":true,\"count\":1}";
+  page = FPSTR(HTTP_JS);
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "text/html", page);
 }
 
 /** 
