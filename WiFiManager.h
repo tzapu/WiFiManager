@@ -152,7 +152,9 @@ class WiFiManager
     void          setCaptivePortalEnable(boolean enabled);
     // if true enable autoreconnecting
     void          setWiFiAutoReconnect(boolean enabled);
-
+    void          debugPlatformInfo();
+    void          debugSoftAPConfig();
+    
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -244,7 +246,6 @@ class WiFiManager
 
     static void   WiFiEvent(WiFiEvent_t event);
 
-    void          debugSoftAPConfig();
     
     // output helpers
     String        getParamOut();
@@ -260,7 +261,6 @@ class WiFiManager
     boolean       validApPassword();
     String        encryptionTypeStr(uint8_t authmode);
     void          reportStatus(String &page);
-    void          debugPlatformInfo();
 
     // flags
     boolean       connect;
