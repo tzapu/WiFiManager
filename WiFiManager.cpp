@@ -1315,8 +1315,13 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
 
 void WiFiManager::debugSoftAPConfig(){
     #ifdef ESP8266
-    softap_config config;
-    wifi_softap_get_config(&config);
+      softap_config config;
+      wifi_softap_get_config(&config);
+    #elif defined(ESP32)
+      wifi_config_t conf_config;
+      esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
+      wifi_ap_config_t config = conf_config.ap;
+    #endif
 
     DEBUG_WM(F("SoftAP Configuration"));
     DEBUG_WM(F("--------------------"));
@@ -1329,7 +1334,6 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("max_connection:  "),config.max_connection);
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
     DEBUG_WM(F("--------------------"));
-    #endif
 }
 
 void WiFiManager::debugPlatformInfo(){
