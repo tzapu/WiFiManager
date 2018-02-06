@@ -1146,11 +1146,11 @@ void WiFiManager::reportStatus(String &page){
     if (WiFi.status()==WL_CONNECTED){
       str = FPSTR(HTTP_STATUS_ON);
       str.replace("{u}",WiFi.localIP().toString());
-      str.replace("{s}",WiFi.SSID());
+      str.replace("{s}",WiFi_SSID());
     }
     else {
       str = FPSTR(HTTP_STATUS_OFF);
-      str.replace("{s}",WiFi.SSID());
+      str.replace("{s}",WiFi_SSID());
     }
   }
   else {
