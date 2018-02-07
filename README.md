@@ -7,6 +7,8 @@ The configuration portal is of the captive variety, so on various devices it wil
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
+### ESP32 must be patched with webserver library!!!!!! see https://github.com/tzapu/WiFiManager/issues/241
+
 #### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
 
 ## Contents
