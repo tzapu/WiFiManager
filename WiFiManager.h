@@ -132,6 +132,10 @@ class WiFiManager
     void          setShowStaticFields(boolean alwaysShow);
     //if true disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
+    //if true, timeout captive portal even if a STA client connected (true), suggest disabling if captiveportal is open
+    void          setCaptivePortalClientCheck(boolean enabled);
+    //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
+    void          setWebPortalClientCheck(boolean enabled);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -156,6 +160,7 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
+    unsigned long _webPortalAccessed      = 0;
     WiFiMode_t    _usermode               = WIFI_OFF;
 
     // option parameters
@@ -167,6 +172,8 @@ class WiFiManager
     boolean       _staShowStaticFields    = false;
     boolean       _enableCaptivePortal    = true;
     boolean       _userpersistent         = true;
+    boolean       _cpClientCheck          = false; // keep cp alive if cp have station
+    boolean       _webClientCheck         = true; // keep cp alive if web have client
 
     const char*   _customHeadElement      = "";
 
@@ -189,6 +196,7 @@ class WiFiManager
     void          handleExit();
     void          handleErase();
     void          handleWiFiStatus();
+    void          handleRequest();
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();

@@ -160,7 +160,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 // CONFIG PORTAL
 bool WiFiManager::startAP(){
-  DEBUG_WM(F("StartAP with SSID of"),_apName);
+  DEBUG_WM(F("StartAP with SSID: "),_apName);
 
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
@@ -174,7 +174,7 @@ bool WiFiManager::startAP(){
   if (_apPassword != "") {
     ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
-    DEBUG_WM(F("AP has anonymous access"));    
+    DEBUG_WM(F("AP has anonymous access!"));    
     ret = WiFi.softAP(_apName.c_str());
   }
 
@@ -207,7 +207,8 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
-    if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
+
+    if(_configPortalTimeout == 0 || (_cpClientCheck && (wifi_softap_get_station_num() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
         DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
@@ -215,6 +216,8 @@ boolean WiFiManager::configPortalHasTimeout(){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
+
+    if(_webClientCheck && _webPortalAccessed>_configPortalStart>0) _configPortalStart = _webPortalAccessed;
 
     if(millis() > _configPortalStart + _configPortalTimeout){
       DEBUG_WM(F("config portal has timed out"));
@@ -560,13 +563,19 @@ String WiFiManager::getHTTPHead(String title){
 }
 
 /** 
+ * HTTPD handler for page requests
+ */
+void WiFiManager::handleRequest() {
+  _webPortalAccessed = millis();
+}
+
+/** 
  * HTTPD CALLBACK root or redirect to captive portal
  */
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("<- HTTP Root"));
-
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-
+  handleRequest();
   String page = getHTTPHead("options"); // @token options
   String str  = FPSTR(HTTP_ROOT_MAIN);
   str.replace("{v}",configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
@@ -584,8 +593,8 @@ void WiFiManager::handleRoot() {
  * HTTPD CALLBACK Wifi config page handler
  */
 void WiFiManager::handleWifi(boolean scan) {
-
   DEBUG_WM("<- HTTP Wifi");
+  handleRequest();
   String page = getHTTPHead("Config ESP"); // @token titlewifi
   if (scan) {
     page += getScanItemOut();
@@ -830,6 +839,7 @@ String WiFiManager::getParamOut(){
 
 void WiFiManager::handleWiFiStatus(){
   DEBUG_WM(F("<- HTTP WiFi status "));
+  handleRequest();
   String page;
   // String page = "{\"result\":true,\"count\":1}";
   page = FPSTR(HTTP_JS);
@@ -842,8 +852,8 @@ void WiFiManager::handleWiFiStatus(){
  */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("<- HTTP WiFi save "));
-
   DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? "GET" : "POST");
+  handleRequest();
 
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
@@ -903,6 +913,7 @@ void WiFiManager::handleWifiSave() {
  */
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("<- HTTP Info"));
+  handleRequest();
   String page = getHTTPHead("Info"); // @token titleinfo
   reportStatus(page);
   
@@ -1040,6 +1051,7 @@ void WiFiManager::handleInfo() {
  */
 void WiFiManager::handleExit() {
   DEBUG_WM(F("<- HTTP Exit"));
+  handleRequest();
   String page = getHTTPHead("Exit"); // @token titleexit
   page += "Exiting"; // @token exiting
   server->sendHeader("Content-Length", String(page.length()));
@@ -1047,31 +1059,12 @@ void WiFiManager::handleExit() {
   abort = true;
 }
 
-void WiFiManager::reportStatus(String &page){
-  String str;
-  if (WiFi.SSID() != ""){
-    if (WiFi.status()==WL_CONNECTED){
-      str = FPSTR(HTTP_STATUS_ON);
-      str.replace("{u}",WiFi.localIP().toString());
-      str.replace("{s}",WiFi.SSID());
-    }
-    else {
-      str = FPSTR(HTTP_STATUS_OFF);
-      str.replace("{s}",WiFi.SSID());
-    }
-  }
-  else {
-    str = FPSTR(HTTP_STATUS_NONE);
-  }
-  page += str;
-}
-
 /** 
  * HTTPD CALLBACK reset page
  */
 void WiFiManager::handleReset() {
   DEBUG_WM(F("<- HTTP Reset"));
-
+  handleRequest();
   String page = getHTTPHead("Reset"); //@token titlereset
   page += F("Module will reset in a few seconds.");
   page += FPSTR(HTTP_END);
@@ -1089,9 +1082,10 @@ void WiFiManager::handleReset() {
  */
 void WiFiManager::handleErase() {
   DEBUG_WM(F("<- HTTP Erase"));
-
+  handleRequest();
   String page = getHTTPHead("Erase"); // @token titleerase
   page += FPSTR(HTTP_HEAD_END);
+
   bool ret = WiFi_eraseConfig();
 
   if(ret) page += F("Module will reset in a few seconds."); // @token resetting
@@ -1111,9 +1105,12 @@ void WiFiManager::handleErase() {
   }	
 }
 
+/** 
+ * HTTPD CALLBACK 404
+ */
 void WiFiManager::handleNotFound() {
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-  
+  handleRequest();
   String message = "File Not Found\n\n"; // @token notfound
   message += "URI: "; // @token uri
   message += server->uri();
@@ -1152,6 +1149,26 @@ boolean WiFiManager::captivePortal() {
   }
   return false;
 }
+
+void WiFiManager::reportStatus(String &page){
+  String str;
+  if (WiFi.SSID() != ""){
+    if (WiFi.status()==WL_CONNECTED){
+      str = FPSTR(HTTP_STATUS_ON);
+      str.replace("{u}",WiFi.localIP().toString());
+      str.replace("{s}",WiFi.SSID());
+    }
+    else {
+      str = FPSTR(HTTP_STATUS_OFF);
+      str.replace("{s}",WiFi.SSID());
+    }
+  }
+  else {
+    str = FPSTR(HTTP_STATUS_NONE);
+  }
+  page += str;
+}
+
 
 // MORE SETTERS
 
@@ -1192,6 +1209,14 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
 
 void WiFiManager::setCaptivePortalEnable(boolean enabled){
   _enableCaptivePortal = enabled;
+}
+
+void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
+  _cpClientCheck = enabled;
+}
+
+void WiFiManager::setWebPortalClientCheck(boolean enabled){
+  _webClientCheck = enabled;
 }
 
 // HELPERS
