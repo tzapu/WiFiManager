@@ -164,7 +164,7 @@ class WiFiManager
     boolean       _shouldBreakAfterConfig = false;
     boolean       _tryWPS                 = false;
     boolean       _configPortalIsBlocking = true;
-    boolean       _sta_show_static_fields = false;
+    boolean       _staShowStaticFields    = false;
     boolean       _enableCaptivePortal    = true;
     boolean       _userpersistent         = true;
 

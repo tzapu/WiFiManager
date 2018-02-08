@@ -705,7 +705,7 @@ String WiFiManager::getScanItemOut(){
 
 String WiFiManager::getStaticOut(){
   String page;
-  if (_sta_show_static_fields || _sta_static_ip) {
+  if (_staShowStaticFields || _sta_static_ip) {
 
     // @todo how can we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     // @todo move titles to params for i18n
@@ -1187,7 +1187,7 @@ void WiFiManager::setRestorePersistent(boolean persistent) {
 }
 
 void WiFiManager::setShowStaticFields(boolean alwaysShow){
-  _sta_show_static_fields = alwaysShow;
+  _staShowStaticFields = alwaysShow;
 }
 
 void WiFiManager::setCaptivePortalEnable(boolean enabled){
