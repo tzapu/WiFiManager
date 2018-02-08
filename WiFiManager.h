@@ -227,6 +227,7 @@ class WiFiManager
     String        encryptionTypeStr(uint8_t authmode);
     void          reportStatus(String &page);
     void          debugPlatformInfo();
+    String        getInfoData(String id);
 
     // flags
     boolean       connect;

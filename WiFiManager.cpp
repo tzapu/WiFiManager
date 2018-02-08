@@ -917,123 +917,8 @@ void WiFiManager::handleInfo() {
   String page = getHTTPHead("Info"); // @token titleinfo
   reportStatus(page);
   
-  // @todo add versioning here
- 
   page += F("<h3>esp8266</h3><hr><dl>");
-
-  // subject to rollover!
-  page += F("<dt>Uptime</dt><dd>"); // @token uptime
-  page += (String)(system_get_time() / 1000000 / 60) + " mins "; // @token mins
-  page += (String)((system_get_time() / 1000000)%60) + " secs";  // @token secs
-
-  page += F("<dt>Chip ID</dt><dd>"); // @token chipid
-  page += WIFI_getChipId();
-  page += F("</dd>");
-
-  page += F("<dt>Flash Chip ID</dt><dd>"); // @token flashid
-  page += ESP.getFlashChipId();
-  page += F("</dd>");
-
-  page += F("<dt>IDE Flash Size</dt><dd>"); // @token flashsize
-  page += ESP.getFlashChipSize();
-  page += F(" bytes</dd>");
-
-  page += F("<dt>Actual Flash Size</dt><dd>"); // @token actualflashsize
-  page += ESP.getFlashChipRealSize();
-  page += F(" bytes</dd>");
-
-  page += F("<dt>SDK Version</dt><dd>"); // @token sdkver
-  page += system_get_sdk_version();
-  page += F("</dd>");
-
-  page += F("<dt>Core Version</dt><dd>"); // @token corever
-  page += ESP.getCoreVersion();
-  page += F("</dd>");
-
-  page += F("<dt>Boot Version</dt><dd>"); // @token boot ver
-  page += system_get_boot_version();
-  page += F("</dd>");
-
-  page += F("<dt>CPU Frequency</dt><dd>"); // @token cpufreq
-  page += ESP.getCpuFreqMHz();
-  page += F("MHz</dd>");
-
-  // heap is dynamic, would have to have a known starting for graph
-  // uint32_t heapstart = 47000;
-  // page += F("<dt>Memory Heap</dt><dd>");
-  // page += F("Used/Total bytes<br/>");
-  // page += (heapstart)-ESP.getFreeHeap();
-  // page += "/";
-  // page += (heapstart);
-  // page += "<br/><progress value='" + (String)((heapstart)-ESP.getFreeHeap()) + "' max='" + (String)(heapstart) + "'></progress>";
-  // page += F("</dd>");
-
-  page += F("<dt>Memory - Free Heap</dt><dd>"); // @token freeheap
-  page += ESP.getFreeHeap();
-  page += F(" bytes available</dd>"); // @token bytesavail
-
-  page += F("<dt>Memory - Sketch Size</dt><dd>"); // @token sketchsize
-  page += F("Used/Total bytes<br/>"); // @token usedtotal
-  page += (ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace();
-  page += "/";
-  page += (ESP.getSketchSize()+ESP.getFreeSketchSpace());
-  page += F("<br/><progress value='");
-  page += (String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace());
-  page += F("' max='");
-  page += (String)(ESP.getSketchSize()+ESP.getFreeSketchSpace());
-  page += F("'></progress></dd>");
-
-  page += F("<dt>Last reset reason</dt><dd>"); // @token resetreason
-  page += ESP.getResetReason();
-  page += F("</dd>");
-
-  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>"); // @token apip
-  page += WiFi.softAPIP().toString();
-  page += F("</dd>");
-
-  page += F("<dt>Access Point MAC</dt><dd>"); // @token apmac
-  page += WiFi.softAPmacAddress();
-  page += F("</dd>");
-
-  page += F("<dt>SSID</dt><dd>");
-  page += WiFi.SSID();
-  page += F("</dd>");
-
-  page += F("<dt>BSSID</dt><dd>");
-  page += WiFi.BSSIDstr();
-  page += F("</dd>");
-
-  page += F("<dt>Station IP</dt><dd>"); // @token staip
-  page += WiFi.localIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Station Gateway</dt><dd>"); // @token stagw
-  page += WiFi.gatewayIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Station Subnet</dt><dd>"); // @token stasub
-  page += WiFi.subnetMask().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>DNS Server</dt><dd>"); // @token dnss
-  page += WiFi.dnsIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Hostname</dt><dd>"); // @token hostname
-  page += WiFi.hostname();
-  page += F("</dd>");
-
-  page += F("<dt>Station MAC</dt><dd>"); // @stamac
-  page += WiFi.macAddress();
-  page += F("</dd>");
-
-  page += F("<dt>Connected</dt><dd>"); // @token connected
-  page += WiFi.isConnected() ? "Yes" : "No"; //@token Y,N
-  page += F("</dd>");
-
-  page += F("<dt>Autoconnect</dt><dd>");
-  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled"; // @token enabled,disabled
-  page += F("</dd>");
+  page += getInfoData("HTTP_INFO_uptime");
   page += F("</dl>");
   page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
@@ -1045,6 +930,117 @@ void WiFiManager::handleInfo() {
   DEBUG_WM(F("Sent info page"));
 }
 
+String WiFiManager::getInfoData(String id){
+
+String p;
+// @todo add versioning
+if(id=="HTTP_INFO_uptime"){
+  // subject to rollover!
+  p = FPSTR(HTTP_INFO_uptime);  
+  p.replace("{1}",(String)(system_get_time() / 1000000 / 60) + " mins "); // @token mins
+  p.replace("{2}",(String)((system_get_time() / 1000000)%60) + " secs");  // @token secs
+}
+if(id=="HTTP_INFO_chipid"){
+  p = FPSTR(HTTP_INFO_chipid);  
+  p.replace("{1}",(String)WIFI_getChipId());
+}
+if(id=="HTTP_INFO_fchipid"){
+  p = FPSTR(HTTP_INFO_fchipid);  
+  p.replace("{1}",(String)ESP.getFlashChipId());
+}
+if(id=="HTTP_INFO_idesize"){
+  p = FPSTR(HTTP_INFO_idesize);  
+  p.replace("{1}",(String)ESP.getFlashChipSize());
+}
+if(id=="HTTP_INFO_flashsize"){
+  p = FPSTR(HTTP_INFO_flashsize);  
+  p.replace("{1}",(String)ESP.getFlashChipRealSize());
+}
+if(id=="HTTP_INFO_sdkver"){
+  p = FPSTR(HTTP_INFO_sdkver);  
+  p.replace("{1}",(String)system_get_sdk_version());
+}
+if(id=="HTTP_INFO_corever"){
+  p = FPSTR(HTTP_INFO_corever);  
+  p.replace("{1}",(String)ESP.getCoreVersion());
+}
+if(id=="HTTP_INFO_bootver"){
+  p = FPSTR(HTTP_INFO_bootver);  
+  p.replace("{1}",(String)system_get_boot_version());
+}
+if(id=="HTTP_INFO_cpufreq"){
+  p = FPSTR(HTTP_INFO_cpufreq);  
+  p.replace("{1}",(String)ESP.getCpuFreqMHz());
+}
+if(id=="HTTP_INFO_freeheap"){
+  p = FPSTR(HTTP_INFO_freeheap);  
+  p.replace("{1}",(String)ESP.getFreeHeap());
+}
+if(id=="HTTP_INFO_memsketch"){
+  p = FPSTR(HTTP_INFO_memsketch);  
+  p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+  p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+}
+if(id=="HTTP_INFO_memsmeter"){
+  p = FPSTR(HTTP_INFO_memsmeter);  
+  p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+  p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+}
+if(id=="HTTP_INFO_lastreset"){
+  p = FPSTR(HTTP_INFO_lastreset);  
+  p.replace("{1}",(String)ESP.getResetReason());
+}
+if(id=="HTTP_INFO_apip"){
+  p = FPSTR(HTTP_INFO_apip);  
+  p.replace("{1}",WiFi.softAPIP().toString());
+}
+if(id=="HTTP_INFO_apmac"){
+  p = FPSTR(HTTP_INFO_apmac);  
+  p.replace("{1}",(String)WiFi.softAPmacAddress());
+}
+if(id=="HTTP_INFO_apssid"){
+  p = FPSTR(HTTP_INFO_apssid);  
+  p.replace("{1}",(String)WiFi.SSID());
+}
+if(id=="HTTP_INFO_apbssid"){
+  p = FPSTR(HTTP_INFO_apbssid);  
+  p.replace("{1}",(String)WiFi.BSSIDstr());
+}
+if(id=="HTTP_INFO_staip"){
+  p = FPSTR(HTTP_INFO_staip);  
+  p.replace("{1}",WiFi.localIP().toString());
+}
+if(id=="HTTP_INFO_stagw"){
+  p = FPSTR(HTTP_INFO_stagw);  
+  p.replace("{1}",WiFi.gatewayIP().toString());
+}
+if(id=="HTTP_INFO_stasub"){
+  p = FPSTR(HTTP_INFO_stasub);  
+  p.replace("{1}",WiFi.subnetMask().toString());
+}
+if(id=="HTTP_INFO_dnss"){
+  p = FPSTR(HTTP_INFO_dnss);  
+  p.replace("{1}",WiFi.dnsIP().toString()); 
+}
+if(id=="HTTP_INFO_host"){
+  p = FPSTR(HTTP_INFO_host);  
+  p.replace("{1}",WiFi.hostname());
+}
+if(id=="HTTP_INFO_stamac)"){
+  p = FPSTR(HTTP_INFO_stamac);    
+  p.replace("{1}",WiFi.macAddress());
+}
+if(id=="HTTP_INFO_conx"){
+  p = FPSTR(HTTP_INFO_conx);  
+  p.replace("{1}",WiFi.isConnected() ? "Yes" : "No"); //@token Y,N
+}
+if(id=="HTTP_INFO_autoconx"){
+  p = FPSTR(HTTP_INFO_autoconx);  
+  p.replace("{1}",WiFi.getAutoConnect() ? "Enabled" : "Disabled"); // @token enabled,disabled
+}
+
+return p;
+}
 
 /** 
  * HTTPD CALLBACK root or redirect to captive portal
