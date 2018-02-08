@@ -348,6 +348,8 @@ __THANK YOU__
 
 [Shawn A](https://github.com/tablatronix)
 
+[kentaylor](https://github.com/kentaylor)
+
 [Maximiliano Duarte](https://github.com/domonetic)
 
 [alltheblinkythings](https://github.com/alltheblinkythings)
@@ -372,7 +374,7 @@ __THANK YOU__
 
 [walthercarsten](https://github.com/walthercarsten)
 
-Sorry if i have missed anyone.
+And countless others
 
 #### Inspiration
 - http://www.esp8266.com/viewtopic.php?f=29&t=2520
