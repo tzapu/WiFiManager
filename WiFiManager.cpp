@@ -576,7 +576,7 @@ void WiFiManager::handleRoot() {
   DEBUG_WM(F("<- HTTP Root"));
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
-  String page = getHTTPHead("options"); // @token options
+  String page = getHTTPHead(FPSTR(S_options)); // @token options
   String str  = FPSTR(HTTP_ROOT_MAIN);
   str.replace("{v}",configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
   page += str;
@@ -595,7 +595,7 @@ void WiFiManager::handleRoot() {
 void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM("<- HTTP Wifi");
   handleRequest();
-  String page = getHTTPHead("Config ESP"); // @token titlewifi
+  String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
     page += getScanItemOut();
   }
@@ -627,7 +627,7 @@ String WiFiManager::getScanItemOut(){
     DEBUG_WM(F("Scan done"));
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
-      page += F("No networks found. Refresh to scan again."); // @token scannotfound
+      page += FPSTR(S_nonetworks); // @token nonetworks
     } else {
 
       //sort networks
@@ -724,7 +724,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
     item.replace("{p}", "{t}");
-    item.replace("{t}", "Static IP"); // @token staticip
+    item.replace("{t}", FPSTR(S_staticip)); // @token staticip
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_ip ? _sta_static_ip.toString() : ""));
     item.replace("{c}", "");
@@ -740,7 +740,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "gw");
     item.replace("{n}", "gw");
     item.replace("{p}", "{t}");    
-    item.replace("{t}", "Static Gateway"); // @token staticgateway
+    item.replace("{t}", FPSTR(S_staticgw)); // @token staticgw
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_gw ? _sta_static_gw.toString() : ""));
     item.replace("{c}", "");
@@ -756,7 +756,7 @@ String WiFiManager::getStaticOut(){
     item.replace("{i}", "sn");
     item.replace("{n}", "sn");
     item.replace("{p}", "{t}");    
-    item.replace("{t}", "Subnet"); // @token subnet
+    item.replace("{t}", FPSTR(S_subnet)); // @token subnet
     item.replace("{l}", "15");
     item.replace("{v}", (_sta_static_sn ? _sta_static_sn.toString() : ""));
     item.replace("{c}", "");
@@ -896,7 +896,7 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(F("static netmask:"),sn);
   }
 
-  String page = getHTTPHead("Credentials Saved"); // @token titlewifisaved
+  String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
@@ -914,11 +914,43 @@ void WiFiManager::handleWifiSave() {
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("<- HTTP Info"));
   handleRequest();
-  String page = getHTTPHead("Info"); // @token titleinfo
+  String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
   
-  page += F("<h3>esp8266</h3><hr><dl>");
-  page += getInfoData("HTTP_INFO_uptime");
+  String infoids[] = {
+  "esphead",
+  "uptime",
+  "chipid",
+  "fchipid",
+  "idesize",
+  "flashsize",
+  "sdkver",
+  "corever",
+  "bootver",
+  "cpufreq",
+  "freeheap",
+  "memsketch",
+  "memsmeter",
+  "lastreset",
+  "wifihead",
+  "apip",
+  "apmac",
+  "apssid",
+  "apbssid",
+  "staip",
+  "stagw",
+  "stasub",
+  "dnss",
+  "host",
+  "stamac",
+  "conx",
+  "autoconx"
+  };
+
+  for(int i=0; i<25;i++){
+    page += getInfoData(infoids[i]);
+  }
+
   page += F("</dl>");
   page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
@@ -932,114 +964,116 @@ void WiFiManager::handleInfo() {
 
 String WiFiManager::getInfoData(String id){
 
-String p;
-// @todo add versioning
-if(id=="HTTP_INFO_uptime"){
-  // subject to rollover!
-  p = FPSTR(HTTP_INFO_uptime);  
-  p.replace("{1}",(String)(system_get_time() / 1000000 / 60) + " mins "); // @token mins
-  p.replace("{2}",(String)((system_get_time() / 1000000)%60) + " secs");  // @token secs
-}
-if(id=="HTTP_INFO_chipid"){
-  p = FPSTR(HTTP_INFO_chipid);  
-  p.replace("{1}",(String)WIFI_getChipId());
-}
-if(id=="HTTP_INFO_fchipid"){
-  p = FPSTR(HTTP_INFO_fchipid);  
-  p.replace("{1}",(String)ESP.getFlashChipId());
-}
-if(id=="HTTP_INFO_idesize"){
-  p = FPSTR(HTTP_INFO_idesize);  
-  p.replace("{1}",(String)ESP.getFlashChipSize());
-}
-if(id=="HTTP_INFO_flashsize"){
-  p = FPSTR(HTTP_INFO_flashsize);  
-  p.replace("{1}",(String)ESP.getFlashChipRealSize());
-}
-if(id=="HTTP_INFO_sdkver"){
-  p = FPSTR(HTTP_INFO_sdkver);  
-  p.replace("{1}",(String)system_get_sdk_version());
-}
-if(id=="HTTP_INFO_corever"){
-  p = FPSTR(HTTP_INFO_corever);  
-  p.replace("{1}",(String)ESP.getCoreVersion());
-}
-if(id=="HTTP_INFO_bootver"){
-  p = FPSTR(HTTP_INFO_bootver);  
-  p.replace("{1}",(String)system_get_boot_version());
-}
-if(id=="HTTP_INFO_cpufreq"){
-  p = FPSTR(HTTP_INFO_cpufreq);  
-  p.replace("{1}",(String)ESP.getCpuFreqMHz());
-}
-if(id=="HTTP_INFO_freeheap"){
-  p = FPSTR(HTTP_INFO_freeheap);  
-  p.replace("{1}",(String)ESP.getFreeHeap());
-}
-if(id=="HTTP_INFO_memsketch"){
-  p = FPSTR(HTTP_INFO_memsketch);  
-  p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
-  p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
-}
-if(id=="HTTP_INFO_memsmeter"){
-  p = FPSTR(HTTP_INFO_memsmeter);  
-  p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
-  p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
-}
-if(id=="HTTP_INFO_lastreset"){
-  p = FPSTR(HTTP_INFO_lastreset);  
-  p.replace("{1}",(String)ESP.getResetReason());
-}
-if(id=="HTTP_INFO_apip"){
-  p = FPSTR(HTTP_INFO_apip);  
-  p.replace("{1}",WiFi.softAPIP().toString());
-}
-if(id=="HTTP_INFO_apmac"){
-  p = FPSTR(HTTP_INFO_apmac);  
-  p.replace("{1}",(String)WiFi.softAPmacAddress());
-}
-if(id=="HTTP_INFO_apssid"){
-  p = FPSTR(HTTP_INFO_apssid);  
-  p.replace("{1}",(String)WiFi.SSID());
-}
-if(id=="HTTP_INFO_apbssid"){
-  p = FPSTR(HTTP_INFO_apbssid);  
-  p.replace("{1}",(String)WiFi.BSSIDstr());
-}
-if(id=="HTTP_INFO_staip"){
-  p = FPSTR(HTTP_INFO_staip);  
-  p.replace("{1}",WiFi.localIP().toString());
-}
-if(id=="HTTP_INFO_stagw"){
-  p = FPSTR(HTTP_INFO_stagw);  
-  p.replace("{1}",WiFi.gatewayIP().toString());
-}
-if(id=="HTTP_INFO_stasub"){
-  p = FPSTR(HTTP_INFO_stasub);  
-  p.replace("{1}",WiFi.subnetMask().toString());
-}
-if(id=="HTTP_INFO_dnss"){
-  p = FPSTR(HTTP_INFO_dnss);  
-  p.replace("{1}",WiFi.dnsIP().toString()); 
-}
-if(id=="HTTP_INFO_host"){
-  p = FPSTR(HTTP_INFO_host);  
-  p.replace("{1}",WiFi.hostname());
-}
-if(id=="HTTP_INFO_stamac)"){
-  p = FPSTR(HTTP_INFO_stamac);    
-  p.replace("{1}",WiFi.macAddress());
-}
-if(id=="HTTP_INFO_conx"){
-  p = FPSTR(HTTP_INFO_conx);  
-  p.replace("{1}",WiFi.isConnected() ? "Yes" : "No"); //@token Y,N
-}
-if(id=="HTTP_INFO_autoconx"){
-  p = FPSTR(HTTP_INFO_autoconx);  
-  p.replace("{1}",WiFi.getAutoConnect() ? "Enabled" : "Disabled"); // @token enabled,disabled
-}
+  String p;
+  // @todo add versioning
+  if(id=="esphead")p = FPSTR(HTTP_INFO_esphead);
+  else if(id=="wifihead")p = FPSTR(HTTP_INFO_wifihead);
+  else if(id=="uptime"){
+    // subject to rollover!
+    p = FPSTR(HTTP_INFO_uptime);
+    p.replace("{1}",(String)(system_get_time() / 1000000 / 60));
+    p.replace("{2}",(String)((system_get_time() / 1000000)%60));
+  }
+  else if(id=="chipid"){
+    p = FPSTR(HTTP_INFO_chipid);
+    p.replace("{1}",(String)WIFI_getChipId());
+  }
+  else if(id=="fchipid"){
+    p = FPSTR(HTTP_INFO_fchipid);
+    p.replace("{1}",(String)ESP.getFlashChipId());
+  }
+  else if(id=="idesize"){
+    p = FPSTR(HTTP_INFO_idesize);
+    p.replace("{1}",(String)ESP.getFlashChipSize());
+  }
+  else if(id=="flashsize"){
+    p = FPSTR(HTTP_INFO_flashsize);
+    p.replace("{1}",(String)ESP.getFlashChipRealSize());
+  }
+  else if(id=="sdkver"){
+    p = FPSTR(HTTP_INFO_sdkver);
+    p.replace("{1}",(String)system_get_sdk_version());
+  }
+  else if(id=="corever"){
+    p = FPSTR(HTTP_INFO_corever);
+    p.replace("{1}",(String)ESP.getCoreVersion());
+  }
+  else if(id=="bootver"){
+    p = FPSTR(HTTP_INFO_bootver);
+    p.replace("{1}",(String)system_get_boot_version());
+  }
+  else if(id=="cpufreq"){
+    p = FPSTR(HTTP_INFO_cpufreq);
+    p.replace("{1}",(String)ESP.getCpuFreqMHz());
+  }
+  else if(id=="freeheap"){
+    p = FPSTR(HTTP_INFO_freeheap);
+    p.replace("{1}",(String)ESP.getFreeHeap());
+  }
+  else if(id=="memsketch"){
+    p = FPSTR(HTTP_INFO_memsketch);
+    p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+    p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+  }
+  else if(id=="memsmeter"){
+    p = FPSTR(HTTP_INFO_memsmeter);
+    p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+    p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+  }
+  else if(id=="lastreset"){
+    p = FPSTR(HTTP_INFO_lastreset);
+    p.replace("{1}",(String)ESP.getResetReason());
+  }
+  else if(id=="apip"){
+    p = FPSTR(HTTP_INFO_apip);
+    p.replace("{1}",WiFi.softAPIP().toString());
+  }
+  else if(id=="apmac"){
+    p = FPSTR(HTTP_INFO_apmac);
+    p.replace("{1}",(String)WiFi.softAPmacAddress());
+  }
+  else if(id=="apssid"){
+    p = FPSTR(HTTP_INFO_apssid);
+    p.replace("{1}",(String)WiFi.SSID());
+  }
+  else if(id=="apbssid"){
+    p = FPSTR(HTTP_INFO_apbssid);
+    p.replace("{1}",(String)WiFi.BSSIDstr());
+  }
+  else if(id=="staip"){
+    p = FPSTR(HTTP_INFO_staip);
+    p.replace("{1}",WiFi.localIP().toString());
+  }
+  else if(id=="stagw"){
+    p = FPSTR(HTTP_INFO_stagw);
+    p.replace("{1}",WiFi.gatewayIP().toString());
+  }
+  else if(id=="stasub"){
+    p = FPSTR(HTTP_INFO_stasub);
+    p.replace("{1}",WiFi.subnetMask().toString());
+  }
+  else if(id=="dnss"){
+    p = FPSTR(HTTP_INFO_dnss);
+    p.replace("{1}",WiFi.dnsIP().toString());
+  }
+  else if(id=="host"){
+    p = FPSTR(HTTP_INFO_host);
+    p.replace("{1}",WiFi.hostname());
+  }
+  else if(id=="stamac)"){
+    p = FPSTR(HTTP_INFO_stamac);
+    p.replace("{1}",WiFi.macAddress());
+  }
+  else if(id=="conx"){
+    p = FPSTR(HTTP_INFO_conx);
+    p.replace("{1}",WiFi.isConnected() ? FPSTR(S_y) : FPSTR(S_n));
+  }
+  else if(id=="autoconx"){
+    p = FPSTR(HTTP_INFO_autoconx);
+    p.replace("{1}",WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
+  }
 
-return p;
+  return p;
 }
 
 /** 
@@ -1048,8 +1082,8 @@ return p;
 void WiFiManager::handleExit() {
   DEBUG_WM(F("<- HTTP Exit"));
   handleRequest();
-  String page = getHTTPHead("Exit"); // @token titleexit
-  page += "Exiting"; // @token exiting
+  String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
+  page += FPSTR(S_exiting); // @token exiting
   server->sendHeader("Content-Length", String(page.length()));
   server->send(200, "text/html", page);
   abort = true;
@@ -1061,8 +1095,8 @@ void WiFiManager::handleExit() {
 void WiFiManager::handleReset() {
   DEBUG_WM(F("<- HTTP Reset"));
   handleRequest();
-  String page = getHTTPHead("Reset"); //@token titlereset
-  page += F("Module will reset in a few seconds.");
+  String page = getHTTPHead(FPSTR(S_titlereset)); //@token titlereset
+  page += FPSTR(S_resetting); //@token resetting
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
@@ -1079,14 +1113,14 @@ void WiFiManager::handleReset() {
 void WiFiManager::handleErase() {
   DEBUG_WM(F("<- HTTP Erase"));
   handleRequest();
-  String page = getHTTPHead("Erase"); // @token titleerase
+  String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
   page += FPSTR(HTTP_HEAD_END);
 
   bool ret = WiFi_eraseConfig();
 
-  if(ret) page += F("Module will reset in a few seconds."); // @token resetting
+  if(ret) page += FPSTR(S_resetting); // @token resetting
   else {
-    page += F("An Error Occured"); // @token erroroccur
+    page += FPSTR(S_error); // @token erroroccur
     DEBUG_WM(F("[ERROR] WiFi EraseConfig failed"));
   }
 
@@ -1107,12 +1141,12 @@ void WiFiManager::handleErase() {
 void WiFiManager::handleNotFound() {
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
-  String message = "File Not Found\n\n"; // @token notfound
-  message += "URI: "; // @token uri
+  String message = FPSTR(S_notfound); // @token notfound
+  message += FPSTR(S_uri); // @token uri
   message += server->uri();
-  message += "\nMethod: "; // @token method
+  message += FPSTR(S_method); // @token method
   message += ( server->method() == HTTP_GET ) ? "GET" : "POST";
-  message += "\nArguments: "; // @token args
+  message += FPSTR(S_args); // @token args
   message += server->args();
   message += "\n";
 
