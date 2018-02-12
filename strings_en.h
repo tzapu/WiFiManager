@@ -68,4 +68,83 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
+const char HTTP_JS[] PROGMEM = 
+"<script>function postAjax(url, data, success) {"
+"    var params = typeof data == 'string' ? data : Object.keys(data).map("
+"            function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }"
+"        ).join('&');"
+""
+"    var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject(\"Microsoft.XMLHTTP\");"
+"    xhr.open('POST', url);"
+"    xhr.onreadystatechange = function() {"
+"        if (xhr.readyState>3 && xhr.status==200) { success(xhr.responseText); }"
+"    };"
+"    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');"
+"    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
+"    xhr.send(params);"
+"    return xhr;"
+"}"
+""
+"// example request\n"
+"postAjax('/status', 'p1=1&p2=Hello+World', function(data){ console.log(data); });"
+""
+"// example request with data object\n"
+"postAjax('/status', { p1: 1, p2: 'Hello World' }, function(data){ console.log(data); });"
+"</script>";
+
+const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
+const char HTTP_INFO_wifihead[]   PROGMEM = "<br/><h3>WiFi</h3><hr>";
+
+const char HTTP_INFO_uptime[]     PROGMEM = "<dt>Uptime</dt>{1} Mins {2} Secs<dd></dd>";
+const char HTTP_INFO_chipid[]     PROGMEM = "<dt>Chip ID</dt>{1}<dd></dd>";
+const char HTTP_INFO_fchipid[]    PROGMEM = "<dt>Flash Chip ID</dt><dd>{1}</dd>";
+const char HTTP_INFO_idesize[]    PROGMEM = "<dt>IDE Flash Size</dt><dd>{1} bytes</dd>";
+const char HTTP_INFO_flashsize[]  PROGMEM = "<dt>Actual Flash Size</dt><dd>{1} bytes</dd>";
+const char HTTP_INFO_sdkver[]     PROGMEM = "<dt>SDK Version</dt><dd>{1}</dd>";
+const char HTTP_INFO_corever[]    PROGMEM = "<dt>Core Version</dt><dd>{1}</dd>";
+const char HTTP_INFO_bootver[]    PROGMEM = "<dt>Boot Version</dt><dd>{1}</dd>";
+const char HTTP_INFO_cpufreq[]    PROGMEM = "<dt>CPU Frequency</dt><dd>{1}MHz</dd>";
+const char HTTP_INFO_freeheap[]   PROGMEM = "<dt>Memory - Free Heap</dt><dd>{1} bytes available</dd>"; 
+const char HTTP_INFO_memsketch[]  PROGMEM = "<dt>Memory - Sketch Size</dt><dd>{1}";
+const char HTTP_INFO_memstbytes[] PROGMEM = "Used/Total bytes<br/>{1}/{2}";
+const char HTTP_INFO_memsmeter[]  PROGMEM = "<br/><progress value='{1}' max='{2}'></progress></dd>";
+const char HTTP_INFO_lastreset[]  PROGMEM = "<dt>Last reset reason</dt><dd>{1}</dd>";
+const char HTTP_INFO_apip[]       PROGMEM = "<dt>Access Point IP</dt><dd>{1}</dd>";
+const char HTTP_INFO_apmac[]      PROGMEM = "<dt>Access Point MAC</dt><dd>{1}</dd>";
+const char HTTP_INFO_apssid[]     PROGMEM = "<dt>SSID</dt><dd>{1}</dd>";
+const char HTTP_INFO_apbssid[]    PROGMEM = "<dt>BSSID</dt><dd>{1}</dd>";
+const char HTTP_INFO_staip[]      PROGMEM = "<dt>Station IP</dt><dd>{1}</dd>";
+const char HTTP_INFO_stagw[]      PROGMEM = "<dt>Station Gateway</dt><dd>{1}</dd>";
+const char HTTP_INFO_stasub[]     PROGMEM = "<dt>Station Subnet</dt><dd>{1}</dd>";
+const char HTTP_INFO_dnss[]       PROGMEM = "<dt>DNS Server</dt><dd>{1}</dd>";
+const char HTTP_INFO_host[]       PROGMEM = "<dt>Hostname</dt><dd>{1}</dd>";
+const char HTTP_INFO_stamac[]     PROGMEM = "<dt>Station MAC</dt><dd>{1}</dd>";
+const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
+const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
+
+const char S_y[]                  PROGMEM = "Yes";
+const char S_n[]                  PROGMEM = "No";
+const char S_enable[]             PROGMEM = "Enabled";
+const char S_disable[]            PROGMEM = "Disabled";
+
+const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
+const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
+const char S_titleinfo[]          PROGMEM = "Info"; // @token titleinfo
+const char S_titleexit[]          PROGMEM = "Exit"; // @token titleexit
+const char S_titlereset[]         PROGMEM = "Reset"; //@token titlereset
+const char S_titleerase[]         PROGMEM = "Erase"; // @token titleerase
+const char S_options[]            PROGMEM = "options"; // @token options
+const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again."; // @token nonetworks
+const char S_staticip[]           PROGMEM = "Static IP"; // @token staticip
+const char S_staticgw[]           PROGMEM = "Static Gateway"; // @token staticgw
+const char S_subnet[]             PROGMEM = "Subnet"; // @token subnet
+const char S_exiting[]            PROGMEM = "Exiting"; // @token exiting
+const char S_resetting[]          PROGMEM = "Module will reset in a few seconds."; //@token resetting
+const char S_error[]              PROGMEM = "An Error Occured"; // @token erroroccur
+const char S_notfound[]           PROGMEM = "File Not Found\n\n"; // @token notfound
+const char S_uri[]                PROGMEM = "URI: "; // @token uri
+const char S_method[]             PROGMEM = "\nMethod: "; // @token method
+const char S_args[]               PROGMEM = "\nArguments: "; // @token args
+
 #endif 
+

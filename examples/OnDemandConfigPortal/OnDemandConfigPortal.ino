@@ -51,7 +51,7 @@ void loop() {
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    //wifiManager.setConfigPortalTimeout(120);
+    wifiManager.setConfigPortalTimeout(120);
 
     //it starts an access point with the specified name
     //here  "AutoConnectAP"
@@ -66,16 +66,11 @@ void loop() {
     if (!wifiManager.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.restart();
-      delay(5000);
-    }
-
-    //if you get here you have connected to the WiFi
-    Serial.println("connected...yeey :)");
+    } else {
+      //if you get here you have connected to the WiFi
+      Serial.println("connected...yeey :)");
+    }  
   }
 
-
   // put your main code here, to run repeatedly:
-
 }
