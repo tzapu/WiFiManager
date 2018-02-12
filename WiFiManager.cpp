@@ -228,7 +228,7 @@ boolean WiFiManager::configPortalHasTimeout(){
     } else {
       // log timeout
       if(_debug){
-        uint16_t logintvl = 10000; // how often to emit timeing out counter logging
+        uint16_t logintvl = 30000; // how often to emit timeing out counter logging
         if((millis() - timer) > logintvl){
           timer = millis();
           DEBUG_WM("Portal Timeout In " + (String)((_configPortalStart + _configPortalTimeout-millis())/1000) + " seconds");
@@ -932,127 +932,77 @@ void WiFiManager::handleInfo() {
   reportStatus(page);
 
   #ifdef ESP8266  
-  String infoids[] = {
-  "esphead",
-  "uptime",
-  "chipid",
-  "fchipid",
-  "idesize",
-  "flashsize",
-  "sdkver",
-  "corever",
-  "bootver",
-  "cpufreq",
-  "freeheap",
-  "memsketch",
-  "memsmeter",
-  "lastreset",
-  "wifihead",
-  "apip",
-  "apmac",
-  "apssid",
-  "apbssid",
-  "staip",
-  "stagw",
-  "stasub",
-  "dnss",
-  "host",
-  "stamac",
-  "conx",
-  "autoconx"
-  };
+    String infoids[] = {
+    "esphead",
+    "uptime",
+    "chipid",
+    "fchipid", //esp8266
+    "idesize", //esp8266
+    "flashsize",
+    "sdkver",
+    "corever", //esp8266
+    "bootver", //esp8266
+    "cpufreq",
+    "freeheap",
+    "memsketch", //esp8266
+    "memsmeter", //esp8266
+    "lastreset", //esp8266
+    "wifihead",
+    "apip",
+    "apmac",
+    "apssid",
+    "apbssid",
+    "staip",
+    "stagw",
+    "stasub",
+    "dnss",
+    "host",
+    "stamac",
+    "conx",
+    "autoconx"
+    };
 
-  for(int i=0; i<25;i++){
-    page += getInfoData(infoids[i]);
-  }
+    for(int i=0; i<25;i++){
+      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    }
+    page += F("</dl>");
 
-  page += F("</dl>");
-  #endif
+  #elif defined(ESP32)
+    String infoids[] = {
+    "esphead",
+    "uptime",
+    "chipid",
+    "chiprev",
+    // "fchipid", //esp8266
+    "idesize", //esp8266
+    // "flashsize",
+    "sdkver",
+    // "corever", //esp8266
+    // "bootver", //esp8266
+    "cpufreq",
+    "freeheap",
+    // "memsketch", //esp8266
+    // "memsmeter", //esp8266
+    "lastreset", //esp8266
+    "wifihead",
+    "apip",
+    "apmac",
+    "apssid",
+    "apbssid",
+    "staip",
+    "stagw",
+    "stasub",
+    "dnss",
+    "host",
+    "stamac",
+    "conx",
+    "autoconx"
+    };
 
-  #ifdef ESP32
-  page += F("<h3>esp32</h3><hr><dl>");
-
-  // subject to rollover!
-  page += F("<dt>Uptime</dt><dd>");
-  page += (String)(millis() / 1000 / 60) + " mins ";
-  page += (String)((millis() / 1000) % 60) + " secs";
-
-  page += F("<dt>Chip ID</dt><dd>");
-  page += WIFI_getChipId();
-  page += F("</dd>");
-
-  page += F("<dt>Chip Rev</dt><dd>");
-  page += ESP.getChipRevision();
-  page += F("</dd>");
-
-  page += F("<dt>Flash Size</dt><dd>");
-  page += ESP.getFlashChipSize();
-  page += F(" bytes</dd>");
-
-  page += F("<dt>SDK Version</dt><dd>");
-  page += esp_get_idf_version();
-  page += F("</dd>");
-
-  // page += F("<dt>Core Version</dt><dd>");
-  // page += ESP.getCoreVersion();
-  // page += F("</dd>");
-
-  page += F("<dt>CPU Frequency</dt><dd>");
-  page += ESP.getCpuFreqMHz();
-  page += F("MHz</dd>");
-
-  page += F("<dt>Memory - Free Heap</dt><dd>");
-  page += ESP.getFreeHeap();
-  page += F(" bytes available</dd>");
-
-  page += F("<br/><h3>WiFi</h3><hr><dt>Access Point IP</dt><dd>");
-  page += WiFi.softAPIP().toString();
-  page += F("</dd>");
-
-  page += F("<dt>Access Point MAC</dt><dd>");
-  page += WiFi.softAPmacAddress();
-  page += F("</dd>");
-
-  page += F("<dt>SSID</dt><dd>");
-  page += WiFi_SSID();
-  page += F("</dd>");
-
-  page += F("<dt>BSSID</dt><dd>");
-  page += WiFi.BSSIDstr();
-  page += F("</dd>");
-
-  page += F("<dt>Station IP</dt><dd>");
-  page += WiFi.localIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Station Gateway</dt><dd>");
-  page += WiFi.gatewayIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Station Subnet</dt><dd>");
-  page += WiFi.subnetMask().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>DNS Server</dt><dd>");
-  page += WiFi.dnsIP().toString(); 
-  page += F("</dd>");
-
-  page += F("<dt>Hostname</dt><dd>");
-  page += WiFi.getHostname();
-  page += F("</dd>");
-
-  page += F("<dt>Station MAC</dt><dd>");
-  page += WiFi.macAddress();
-  page += F("</dd>");
-
-  page += F("<dt>Connected</dt><dd>");
-  page += WiFi.isConnected() ? "Yes" : "No";
-  page += F("</dd>");
-
-  page += F("<dt>Autoconnect</dt><dd>");
-  page += WiFi.getAutoConnect() ? "Enabled" : "Disabled";
-  page += F("</dd>");
-  page += F("</dl>");
+    for(int i=0; i<19;i++){
+      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    }
+    page += F("</dl>");
   #endif
 
   page += FPSTR(HTTP_ERASEBTN);
@@ -1074,36 +1024,54 @@ String WiFiManager::getInfoData(String id){
   else if(id=="uptime"){
     // subject to rollover!
     p = FPSTR(HTTP_INFO_uptime);
-    p.replace("{1}",(String)(system_get_time() / 1000000 / 60));
-    p.replace("{2}",(String)((system_get_time() / 1000000)%60));
+    p.replace("{1}",(String)(millis() / 1000 / 60));
+    p.replace("{2}",(String)((millis() / 1000) % 60));
   }
   else if(id=="chipid"){
     p = FPSTR(HTTP_INFO_chipid);
     p.replace("{1}",(String)WIFI_getChipId());
   }
+  else if(id=="chiprev"){
+    #ifdef ESP32
+      p = FPSTR(HTTP_INFO_chiprev);
+      p.replace("{1}",(String)ESP.getChipRevision());
+    #endif
+  }
   else if(id=="fchipid"){
-    p = FPSTR(HTTP_INFO_fchipid);
-    p.replace("{1}",(String)ESP.getFlashChipId());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_fchipid);
+      p.replace("{1}",(String)ESP.getFlashChipId());
+    #endif
   }
   else if(id=="idesize"){
     p = FPSTR(HTTP_INFO_idesize);
     p.replace("{1}",(String)ESP.getFlashChipSize());
   }
   else if(id=="flashsize"){
-    p = FPSTR(HTTP_INFO_flashsize);
-    p.replace("{1}",(String)ESP.getFlashChipRealSize());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_flashsize);
+      p.replace("{1}",(String)ESP.getFlashChipRealSize());
+    #endif
   }
   else if(id=="sdkver"){
     p = FPSTR(HTTP_INFO_sdkver);
-    p.replace("{1}",(String)system_get_sdk_version());
+    #ifdef ESP32
+      p.replace("{1}",(String)esp_get_idf_version());
+    #else
+      p.replace("{1}",(String)system_get_sdk_version());
+    #endif
   }
   else if(id=="corever"){
-    p = FPSTR(HTTP_INFO_corever);
-    p.replace("{1}",(String)ESP.getCoreVersion());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_corever);
+      p.replace("{1}",(String)ESP.getCoreVersion());
+    #endif      
   }
   else if(id=="bootver"){
-    p = FPSTR(HTTP_INFO_bootver);
-    p.replace("{1}",(String)system_get_boot_version());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_bootver);
+      p.replace("{1}",(String)system_get_boot_version());
+    #endif  
   }
   else if(id=="cpufreq"){
     p = FPSTR(HTTP_INFO_cpufreq);
@@ -1114,18 +1082,50 @@ String WiFiManager::getInfoData(String id){
     p.replace("{1}",(String)ESP.getFreeHeap());
   }
   else if(id=="memsketch"){
-    p = FPSTR(HTTP_INFO_memsketch);
-    p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
-    p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_memsketch);
+      p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+      p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #endif  
   }
   else if(id=="memsmeter"){
-    p = FPSTR(HTTP_INFO_memsmeter);
-    p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
-    p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_memsmeter);
+      p.replace("{1}",(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+      p.replace("{2}",(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #endif 
   }
   else if(id=="lastreset"){
-    p = FPSTR(HTTP_INFO_lastreset);
-    p.replace("{1}",(String)ESP.getResetReason());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_lastreset);
+      p.replace("{1}",(String)ESP.getResetReason());
+    #elif defined(ESP32) && defined(_ROM_RTC_H_)
+      // requires #include <rom/rtc.h>
+      p = FPSTR(HTTP_INFO_lastreset);
+      for(int i=0;i<2;i++){
+        int reason = rtc_get_reset_reason(i);
+        String tok = "{"+(String)(i+1)+"}";
+        switch (reason)
+        {
+          case 1  : p.replace(tok,"Vbat power on reset");break;
+          case 3  : p.replace(tok,"Software reset digital core");break;
+          case 4  : p.replace(tok,"Legacy watch dog reset digital core");break;
+          case 5  : p.replace(tok,"Deep Sleep reset digital core");break;
+          case 6  : p.replace(tok,"Reset by SLC module, reset digital core");break;
+          case 7  : p.replace(tok,"Timer Group0 Watch dog reset digital core");break;
+          case 8  : p.replace(tok,"Timer Group1 Watch dog reset digital core");break;
+          case 9  : p.replace(tok,"RTC Watch dog Reset digital core");break;
+          case 10 : p.replace(tok,"Instrusion tested to reset CPU");break;
+          case 11 : p.replace(tok,"Time Group reset CPU");break;
+          case 12 : p.replace(tok,"Software reset CPU");break;
+          case 13 : p.replace(tok,"RTC Watch dog Reset CPU");break;
+          case 14 : p.replace(tok,"for APP CPU, reseted by PRO CPU");break;
+          case 15 : p.replace(tok,"Reset when the vdd voltage is not stable");break;
+          case 16 : p.replace(tok,"RTC Watch dog reset digital core and rtc module");break;
+          default : p.replace(tok,"NO_MEAN");
+        }
+      }
+    #endif
   }
   else if(id=="apip"){
     p = FPSTR(HTTP_INFO_apip);
@@ -1137,7 +1137,7 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id=="apssid"){
     p = FPSTR(HTTP_INFO_apssid);
-    p.replace("{1}",(String)WiFi.SSID());
+    p.replace("{1}",(String)WiFi_SSID());
   }
   else if(id=="apbssid"){
     p = FPSTR(HTTP_INFO_apbssid);
@@ -1161,7 +1161,11 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id=="host"){
     p = FPSTR(HTTP_INFO_host);
-    p.replace("{1}",WiFi.hostname());
+    #ifdef ESP32
+      p.replace("{1}",WiFi.getHostname());
+    #else
+      p.replace("{1}",WiFi.hostname());
+    #endif
   }
   else if(id=="stamac)"){
     p = FPSTR(HTTP_INFO_stamac);
@@ -1175,7 +1179,6 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace("{1}",WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
   }
-
   return p;
 }
 
