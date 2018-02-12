@@ -33,13 +33,16 @@
     
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WIFI_AUTH_OPEN   WIFI_AUTH_OPEN
-    
-    #ifdef WEBSERVERSHIM
-        #include <WebServer.h>
-    #else
-        #include <ESP8266WebServer.h>
-        // Forthcoming official
-        // https://github.com/esp8266/ESPWebServer
+
+    #ifndef WEBSERVER_H
+        #warning "WEBSERVER not implemented in espressif/esp32, see readme notes"
+        #ifdef WEBSERVERSHIM
+            #include <WebServer.h>
+        #else
+            #include <ESP8266WebServer.h>
+            // Forthcoming official
+            // https://github.com/esp8266/ESPWebServer
+        #endif
     #endif
 
 #else
