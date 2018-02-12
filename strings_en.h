@@ -43,6 +43,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 ".msg{padding:20px;margin:20px 0;border:1px solid #eee;border-left-width:5px;border-radius:3px;border-left-color:#777}.msg h4{margin-top:0;margin-bottom:5px}.msg.P{border-left-color:#1fa3ec}.msg.P h4{color:#1fa3ec}.msg.D{border-left-color:#d9534f}.msg.D h4{color:#d9534f}"
 // lists
 "dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
+"td{vertical-align: top;}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
