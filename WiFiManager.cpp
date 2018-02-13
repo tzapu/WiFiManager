@@ -971,8 +971,8 @@ String WiFiManager::getInfoData(String id){
   else if(id=="uptime"){
     // subject to rollover!
     p = FPSTR(HTTP_INFO_uptime);
-    p.replace("{1}",(String)(system_get_time() / 1000000 / 60));
-    p.replace("{2}",(String)((system_get_time() / 1000000)%60));
+    p.replace("{1}",(String)(millis() / 1000 / 60));
+    p.replace("{2}",(String)((millis() / 1000)%60));
   }
   else if(id=="chipid"){
     p = FPSTR(HTTP_INFO_chipid);

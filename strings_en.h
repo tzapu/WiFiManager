@@ -42,7 +42,8 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 // msg callouts
 ".msg{padding:20px;margin:20px 0;border:1px solid #eee;border-left-width:5px;border-radius:3px;border-left-color:#777}.msg h4{margin-top:0;margin-bottom:5px}.msg.P{border-left-color:#1fa3ec}.msg.P h4{color:#1fa3ec}.msg.D{border-left-color:#d9534f}.msg.D h4{color:#d9534f}"
 // lists
-"dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0}"
+"dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
+"td{vertical-align: top;}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
@@ -95,8 +96,8 @@ const char HTTP_JS[] PROGMEM =
 const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
 const char HTTP_INFO_wifihead[]   PROGMEM = "<br/><h3>WiFi</h3><hr>";
 
-const char HTTP_INFO_uptime[]     PROGMEM = "<dt>Uptime</dt>{1} Mins {2} Secs<dd></dd>";
-const char HTTP_INFO_chipid[]     PROGMEM = "<dt>Chip ID</dt>{1}<dd></dd>";
+const char HTTP_INFO_uptime[]     PROGMEM = "<dt>Uptime</dt><dd>{1} Mins {2} Secs</dd>";
+const char HTTP_INFO_chipid[]     PROGMEM = "<dt>Chip ID</dt><dd>{1}</dd>";
 const char HTTP_INFO_fchipid[]    PROGMEM = "<dt>Flash Chip ID</dt><dd>{1}</dd>";
 const char HTTP_INFO_idesize[]    PROGMEM = "<dt>IDE Flash Size</dt><dd>{1} bytes</dd>";
 const char HTTP_INFO_flashsize[]  PROGMEM = "<dt>Actual Flash Size</dt><dd>{1} bytes</dd>";

@@ -134,6 +134,9 @@ dd {
 	margin: 0;
 	padding: 0 0 0.5em 0;
 }
+td {
+	vertical-align: top;
+}
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
@@ -208,11 +211,35 @@ dd {
 				<dt>Flash Chip ID</dt><dd>1234556</dd>
 				<dt>IDE Flash Size</dt><dd>4194304 bytes</dd>
 				<dt>Real Flash Size</dt><dd>4194304 bytes</dd>
+				<dt>Empty</dt><dd></dd>
 				<dt>Soft AP IP</dt><dd>192.168.4.1</dd>
 				<dt>Soft AP MAC</dt><dd>00:00:00:00:00:00</dd>
 				<dt>Station MAC</dt><dd>00:00:00:00:00:00</dd>
 			</dl>
 			<!-- /SAMPLE -->
+			<!-- HTTP_HELP -->
+		 		<br/><h3>Available Pages</h3><hr>
+		 		<table class='table'>
+		 		<thead><tr><th>Page</th><th>Function</th></tr></thead><tbody>
+		 		<tr><td><a href='/'>/</a></td>
+		 		<td>Menu page.</td></tr>
+		 		<tr><td><a href='/wifi'>/wifi</a></td>
+		 		<td>Show WiFi scan results and enter WiFi configuration.(/0wifi noscan)</td></tr>
+		 		<tr><td><a href='/wifisave'>/wifisave</a></td>
+		 		<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>
+		 		<tr><td><a href='/close'>/close</a></td>
+		 		<td>Close the configuration server and configuration WiFi network.</td></tr>
+		 		<tr><td><a href='/i'>/i</a></td>
+		 		<td>Information page</td></tr>
+		 		<tr><td><a href='/exit'>/exit</a></td>
+		 		<td>Exit Config Portal, configportal will close</td></tr>
+		 		<tr><td><a href='/r'>/r</a></td>
+		 		<td>Reboot the device</td></tr>
+		 		<tr><td><a href='/erase'>/erase</a></td>
+		 		<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>
+		 		</table>
+		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.;
+			<!-- /HTTP_HELP -->
 <!-- HTTP_END -->
     </div>
 	</body>
