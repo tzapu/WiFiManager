@@ -416,7 +416,7 @@ void WiFiManager::handleRoot() {
   page += String(F("<h1>"));
   page += _apName;
   page += String(F("</h1>"));
-  page += Strint(F("<h3>WiFiManager</h3>"));
+  page += String(F("<h3>WiFiManager</h3>"));
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += FPSTR(HTTP_END);
 
