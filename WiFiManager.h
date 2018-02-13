@@ -213,7 +213,7 @@ class WiFiManager
     boolean       _staShowStaticFields    = false;
     boolean       _enableCaptivePortal    = true;
     boolean       _userpersistent         = true;
-    boolean       _wifiAutoReconnect      = false;
+    boolean       _wifiAutoReconnect      = true;  // there is no getter for this, we must assume its true and make it so
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true; // keep cp alive if web have client
 
