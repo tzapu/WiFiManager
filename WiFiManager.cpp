@@ -92,14 +92,14 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
     if (new_params != NULL) {
       _params = new_params;
     } else {
-      DEBUG_WM("ERROR: failed to realloc params, size not increased!");
+      DEBUG_WM(F("ERROR: failed to realloc params, size not increased!"));
       return false;
     }
   }
 
   _params[_paramsCount] = p;
   _paramsCount++;
-  DEBUG_WM("Adding parameter");
+  DEBUG_WM(F("Adding parameter"));
   DEBUG_WM(p->getID());
   return true;
 }
@@ -199,7 +199,7 @@ boolean WiFiManager::startConfigPortal() {
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   WiFi.mode(WIFI_AP_STA);
-  DEBUG_WM("SET AP STA");
+  DEBUG_WM(F("SET AP STA"));
 
   _apName = apName;
   _apPassword = apPassword;
@@ -273,7 +273,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
   //fix for auto connect racing issue
   if (WiFi.status() == WL_CONNECTED) {
-    DEBUG_WM("Already connected. Bailing out.");
+    DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
   //check if we have ssid and pass and force those, if not, try with last saved values
@@ -281,7 +281,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID()) {
-      DEBUG_WM("Using last saved values, should be faster");
+      DEBUG_WM(F("Using last saved values, should be faster"));
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
@@ -289,7 +289,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 
       WiFi.begin();
     } else {
-      DEBUG_WM("No saved credentials");
+      DEBUG_WM(F("No saved credentials"));
     }
   }
 
@@ -329,9 +329,9 @@ uint8_t WiFiManager::waitForConnectResult() {
 }
 
 void WiFiManager::startWPS() {
-  DEBUG_WM("START WPS");
+  DEBUG_WM(F("START WPS"));
   WiFi.beginWPSConfig();
-  DEBUG_WM("END WPS");
+  DEBUG_WM(F("END WPS"));
 }
 /*
   String WiFiManager::getSSID() {
@@ -764,7 +764,7 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    Serial.print("*WM: ");
+    Serial.print(F("*WM: "));
     Serial.println(text);
   }
 }
