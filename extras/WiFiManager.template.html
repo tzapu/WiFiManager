@@ -44,6 +44,9 @@ a:hover {
     color: #1fa3ec;
     text-decoration: underline;
 }
+.h {
+	display: none;
+}
 .q {
     height: 16px;
     margin: 0;
@@ -142,6 +145,7 @@ dd {
 	</head>
 	<body>
 		<div class='wrap'>
+		<!-- <div class='wrap ql qinv'> -->
 <!-- /HTTP_HEAD_END -->
 			<!-- SAMPLE -->
 			<h2>/</h2><hR>
@@ -160,17 +164,18 @@ dd {
 			<div><a href='#p' onclick='c(this)'>Acccess Point 07</a><div role='img' aria-label='40%' title='40%' class='q q-2 l'></div></div>
 			<div><a href='#p' onclick='c(this)'>Acccess Point 08</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
 			<div><a href='#p' onclick='c(this)'>Acccess Point 09</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 10</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 11</a><div role='img' aria-label='10%' title='10%' class='q q-0'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 12</a><div role='img' aria-label='10%' title='10%' class='q q-0'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 13</a><div role='img' aria-label='10%' title='10%' class='q q-0'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 14</a><div role='img' aria-label='10%' title='10%' class='q q-0 l'></div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 10</a><div role='img' aria-label='20%' title='20%' class='q q-4 l'></div><div class='q '>100%</div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 11</a><div role='img' aria-label='10%' title='10%' class='q q-3'></div><div class='q '>70%</div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 12</a><div role='img' aria-label='10%' title='10%' class='q q-1 l'></div><div class='q '>10%</div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 13</a><div role='img' aria-label='10%' title='10%' class='q q-0 h'></div><div class='q '>100%</div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 14</a><div class='q'>66%</div></div>
+			<div><a href='#p' onclick='c(this)'>Acccess Point 15</a><div class='q'>56%</div></div>
 			<!-- /SAMPLE -->
 			<!-- HTTP_ITEM -->
 			<div><a href='#p' onclick='c(this)'>{v}</a><div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div></div>
 			<!-- /HTTP_ITEM -->
 			<!-- HTTP_FORM_START -->
-			<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/>
+			<form method='get' action='wifisave'><label for='s'>SSID</label><input id='s' name='s' length=32 placeholder='SSID'><br/><label for='p'>Password</label><input id='p' name='p' length=64 type='password' placeholder='password'><br/>
 			<!-- /HTTP_FORM_START -->
 			<!-- SAMPLE -->
 			<h3>custom parameter</h3><hr>
