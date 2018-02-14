@@ -140,6 +140,9 @@ class WiFiManager
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
 
+    void          debugSoftAPConfig();
+    void          debugPlatformInfo();
+    
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
@@ -213,7 +216,6 @@ class WiFiManager
     bool          WiFi_enableSTA(bool enable);
     bool          WiFi_enableSTA(bool enable,bool persistent);
     bool          WiFi_eraseConfig();
-    void          debugSoftAPConfig();
 
     // output helpers
     String        getParamOut();
@@ -230,7 +232,6 @@ class WiFiManager
     boolean       validApPassword();
     String        encryptionTypeStr(uint8_t authmode);
     void          reportStatus(String &page);
-    void          debugPlatformInfo();
     String        getInfoData(String id);
 
     // flags
