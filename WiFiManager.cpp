@@ -675,11 +675,10 @@ String WiFiManager::getScanItemOut(){
       bool tok_i = HTTP_ITEM_STR.indexOf(FPSTR(T_i)) > 0;
       
       // toggle icons with percentage
-      bool _scanDispOptions = true;
       if(_scanDispOptions && tok_q && !tok_r){
         HTTP_ITEM_STR.replace(FPSTR(T_q), FPSTR(HTTP_ITEM_QP));
         tok_r = true;
-      }
+      } else HTTP_ITEM_STR.replace(FPSTR(T_q), FPSTR(HTTP_ITEM_QI));
  
       //display networks in page
       for (int i = 0; i < n; i++) {
