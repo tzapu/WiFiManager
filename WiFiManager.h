@@ -179,7 +179,8 @@ class WiFiManager
     boolean       _enableCaptivePortal    = true;
     boolean       _userpersistent         = true;
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
-    boolean       _webClientCheck         = true; // keep cp alive if web have client
+    boolean       _webClientCheck         = true;  // keep cp alive if web have client
+    boolean       _scanDispOptions        = false; // show percentage in scans not icons
 
     const char*   _customHeadElement      = "";
 
