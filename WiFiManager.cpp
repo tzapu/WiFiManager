@@ -583,12 +583,12 @@ void WiFiManager::handleRoot() {
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 }
 
-/** 
+/**
  * HTTPD CALLBACK Wifi config page handler
  */
 void WiFiManager::handleWifi(boolean scan) {
@@ -610,8 +610,8 @@ void WiFiManager::handleWifi(boolean scan) {
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
   // Serial.println(page);
@@ -736,11 +736,11 @@ String WiFiManager::getStaticOut(){
   if (_staShowStaticFields || _sta_static_ip) {
 
     // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
-    page += getIpForm(F("ip"),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
+    page += getIpForm(FPSTR(S_ip),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
     // WiFi.localIP().toString();
-    page += getIpForm(F("gw"),FPSTR(S_staticgw),(_sta_static_gw ? _sta_static_gw.toString() : "")); // @token staticgw
+    page += getIpForm(FPSTR(S_gw),FPSTR(S_staticgw),(_sta_static_gw ? _sta_static_gw.toString() : "")); // @token staticgw
     // WiFi.gatewayIP().toString();
-    page += getIpForm(F("sn"),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
+    page += getIpForm(FPSTR(S_sn),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
     // WiFi.subnetMask().toString();
     page += F("<br/>"); // @todo remove these, use css
   }
@@ -822,8 +822,8 @@ void WiFiManager::handleWiFiStatus(){
   #ifdef JSTEST
     page = FPSTR(HTTP_JS);
   #endif
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 }
 
 /** 
@@ -831,7 +831,7 @@ void WiFiManager::handleWiFiStatus(){
  */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("<- HTTP WiFi save "));
-  DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? (String)F("GET") : (String)F("POST"));
+  DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
 
   //SAVE/connect here
@@ -841,7 +841,7 @@ void WiFiManager::handleWifiSave() {
   //parameters
   if(_paramsCount > 0){
     DEBUG_WM(F("Parameters"));
-    DEBUG_WM(F("-----------"));
+    DEBUG_WM(FPSTR(D_HR));
     for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL) {
         break;
@@ -855,22 +855,22 @@ void WiFiManager::handleWifiSave() {
       value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
       DEBUG_WM((String)_params[i]->getID() + ":",value);
     }
-    DEBUG_WM(F("-----------"));
+    DEBUG_WM(FPSTR(D_HR));
   }
 
-  if (server->arg(F("ip")) != "") {
-    //_sta_static_ip.fromString(server->arg(F("ip")));
-    String ip = server->arg(F("ip"));
+  if (server->arg(FPSTR(S_ip)) != "") {
+    //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
+    String ip = server->arg(FPSTR(S_ip));
     optionalIPFromString(&_sta_static_ip, ip.c_str());
     DEBUG_WM(F("static ip:"),ip);
   }
-  if (server->arg(F("gw")) != "") {
-    String gw = server->arg(F("gw"));
+  if (server->arg(FPSTR(S_gw)) != "") {
+    String gw = server->arg(FPSTR(S_gw));
     optionalIPFromString(&_sta_static_gw, gw.c_str());
     DEBUG_WM(F("static gateway:"),gw);
   }
-  if (server->arg(F("sn")) != "") {
-    String sn = server->arg(F("sn"));
+  if (server->arg(FPSTR(S_sn)) != "") {
+    String sn = server->arg(FPSTR(S_sn));
     optionalIPFromString(&_sta_static_sn, sn.c_str());
     DEBUG_WM(F("static netmask:"),sn);
   }
@@ -879,8 +879,8 @@ void WiFiManager::handleWifiSave() {
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 
   DEBUG_WM(F("Sent wifi save page"));
 
@@ -935,8 +935,8 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 
   DEBUG_WM(F("Sent info page"));
 }
@@ -1063,8 +1063,8 @@ void WiFiManager::handleExit() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
   abort = true;
 }
 
@@ -1078,8 +1078,8 @@ void WiFiManager::handleReset() {
   page += FPSTR(S_resetting); //@token resetting
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 
   DEBUG_WM(F("RESETTING ESP"));
   delay(1000);
@@ -1104,8 +1104,8 @@ void WiFiManager::handleErase() {
   }
 
   page += FPSTR(HTTP_END);
-  server->sendHeader(F("Content-Length"), String(page.length()));
-  server->send(200, F("text/html"), page);
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 
   if(ret){
     delay(2000);
@@ -1124,7 +1124,7 @@ void WiFiManager::handleNotFound() {
   message += FPSTR(S_uri); // @token uri
   message += server->uri();
   message += FPSTR(S_method); // @token method
-  message += ( server->method() == HTTP_GET ) ? F("GET") : F("POST");
+  message += ( server->method() == HTTP_GET ) ? FPSTR(S_GET) : FPSTR(S_POST);
   message += FPSTR(S_args); // @token args
   message += server->args();
   message += F("\n");
@@ -1135,8 +1135,8 @@ void WiFiManager::handleNotFound() {
   server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
   server->sendHeader(F("Pragma"), F("no-cache"));
   server->sendHeader(F("Expires"), F("-1"));
-  server->sendHeader(F("Content-Length"), String(message.length()));
-  server->send ( 404, F("text/plain"), message );
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(message.length()));
+  server->send ( 404, FPSTR(HTTP_HEAD_CT2), message );
 }
 
 /**
@@ -1152,7 +1152,7 @@ boolean WiFiManager::captivePortal() {
   if (!isIp(server->hostHeader())) {
     DEBUG_WM(F("<- Request redirected to captive portal"));
     server->sendHeader(F("Location"), (String)F("http://") + toStringIp(server->client().localIP()), true);
-    server->send ( 302, F("text/plain"), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    server->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
@@ -1267,7 +1267,7 @@ void WiFiManager::debugSoftAPConfig(){
     wifi_softap_get_config(&config);
 
     DEBUG_WM(F("SoftAP Configuration"));
-    DEBUG_WM(F("--------------------"));
+    DEBUG_WM(FPSTR(D_HR));
     DEBUG_WM(F("ssid:            "),(char *) config.ssid);
     DEBUG_WM(F("password:        "),(char *) config.password);
     DEBUG_WM(F("ssid_len:        "),config.ssid_len);
@@ -1276,7 +1276,7 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "),config.max_connection);
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
-    DEBUG_WM(F("--------------------"));
+    DEBUG_WM(FPSTR(D_HR));
 }
 
 void WiFiManager::debugPlatformInfo(){

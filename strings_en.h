@@ -8,18 +8,23 @@
 const char HTTP_HEAD[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
+
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
 const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form><br/><form action='/exit' method='GET'><button>Quit</button></form>";
+
 const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div>"; // rssi icons
 const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q'>{r}%</div>"; // rssi percentage
 const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{q}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
 // const char HTTP_ITEM[]            PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
+
 const char HTTP_FORM_START[]       PROGMEM = "<form method='POST' action='wifisave'><label for='s'>SSID</label><input id='s' name='s' maxlength=32 placeholder='{v}'><br/><label for='p'>Password</label><input id='p' name='p' maxlength='64' type='password' placeholder=''><br/>";
 const char HTTP_FORM_END[]         PROGMEM = "<br/><button type='submit'>Save</button></form>";
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
+
 const char HTTP_FORM_PARAM_START[] PROGMEM = "<hr>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength={l} placeholder='' value='{v}' {c}>";
 const char HTTP_FORM_PARAM_END[]   PROGMEM = "<br/>";
+
 const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi' method='get'><button>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
@@ -122,11 +127,20 @@ const char HTTP_INFO_stamac[]     PROGMEM = "<dt>Station MAC</dt><dd>{1}</dd>";
 const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
 const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
 
+const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
+const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
+const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
+
 // Strings
+const char S_GET[]                PROGMEM = "GET";
+const char S_POST[]               PROGMEM = "POST";
 const char S_y[]                  PROGMEM = "Yes";
 const char S_n[]                  PROGMEM = "No";
 const char S_enable[]             PROGMEM = "Enabled";
 const char S_disable[]            PROGMEM = "Disabled";
+const char S_ip[]                 PROGMEM = "ip";
+const char S_gw[]                 PROGMEM = "gw";
+const char S_sn[]                 PROGMEM = "sn";
 
 const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
 const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
@@ -163,5 +177,8 @@ const char T_e[]                  PROGMEM = "{e}"; // @token e
 const char T_q[]                  PROGMEM = "{q}"; // @token q
 const char T_r[]                  PROGMEM = "{r}"; // @token r
 const char T_R[]                  PROGMEM = "{R}"; // @token R
+
+// debug strings
+const char D_HR[]                 PROGMEM = "--------------------";
 
 #endif 
