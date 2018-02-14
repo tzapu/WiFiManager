@@ -11,7 +11,6 @@
  **************************************************************/
 
 #include "WiFiManager.h"
-#include "strings_en.h"
 
 // PARAMETERS
 
@@ -114,7 +113,7 @@ WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
 }
 
 WiFiManager::WiFiManager():_debugPort(Serial) {
-  if(_debug) debugPlatformInfo();
+  if(_debug && _debugLevel > 0) debugPlatformInfo();
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
@@ -178,7 +177,7 @@ bool WiFiManager::startAP(){
     ret = WiFi.softAP(_apName.c_str());
   }
 
-  debugSoftAPConfig();
+  if(_debugLevel > 1) debugSoftAPConfig();
 
   if(!ret) DEBUG_WM("[ERROR] There was a problem starting the AP"); // @bug startAP returns unreliable success status
 
@@ -211,7 +210,7 @@ boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || (_cpClientCheck && (wifi_softap_get_station_num() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
-        DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
+        if(_debugLevel > 0) DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
       }
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
@@ -222,7 +221,7 @@ boolean WiFiManager::configPortalHasTimeout(){
     if(millis() > _configPortalStart + _configPortalTimeout){
       DEBUG_WM(F("config portal has timed out"));
       return true;
-    } else {
+    } else if(_debugLevel > 0) {
       if((millis() - timer) > 1000){
         timer = millis();
         DEBUG_WM(F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
@@ -375,7 +374,7 @@ uint8_t WiFiManager::handleConfigPortal(){
         // sta off to stabilize AP on connect failure
         WiFi_Disconnect();
         WiFi_enableSTA(false);
-        DEBUG_WM(F("Disabling STA"));
+        DEBUG_WM(F("Disabling STA")); 
       }
     }
 
@@ -407,6 +406,7 @@ boolean WiFiManager::stopConfigPortal(){
   // @todo bug *WM: disconnect configportal
   // [APdisconnect] set_config failed!
   // *WM: disconnect configportal - softAPdisconnect failed
+  // still no way to reproduce reliably
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
@@ -508,7 +508,6 @@ String WiFiManager::getConfigPortalSSID() {
 // SETTERS
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
-  DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA.")); // @todo WHUT?
   WiFi.persistent(true);
   WiFi.disconnect(true);
   WiFi.persistent(false);
@@ -712,59 +711,31 @@ String WiFiManager::getScanItemOut(){
     return page;
 }
 
+String WiFiManager::getIpForm(String id, String title, String value){
+    String item = FPSTR(HTTP_FORM_LABEL);
+    item += FPSTR(HTTP_FORM_PARAM);
+    item.replace(F("{i}"), id);
+    item.replace(F("{n}"), id);
+    item.replace(F("{p}"), F("{t}"));
+    // item.replace(F("{p}"), default);
+    item.replace(F("{t}"), title);
+    item.replace(F("{l}"), F("15"));
+    item.replace(F("{v}"), value);
+    item.replace(F("{c}"), "");
+    return item;  
+}
+
 String WiFiManager::getStaticOut(){
   String page;
   if (_staShowStaticFields || _sta_static_ip) {
 
-    // @todo how can we get these settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
-    // @todo move titles to params for i18n
-    
-    String item = FPSTR(HTTP_FORM_LABEL);
-    item += FPSTR(HTTP_FORM_PARAM);
-    item.replace(F("{i}"), F("ip"));
-    item.replace(F("{n}"), F("ip"));
-    item.replace(F("{p}"), F("{t}"));
-    item.replace(F("{t}"), FPSTR(S_staticip)); // @token staticip
-    item.replace(F("{l}"), F("15"));
-    item.replace(F("{v}"), (_sta_static_ip ? _sta_static_ip.toString() : ""));
-    item.replace(F("{c}"), "");
-    
-    // actuals as placeholder
-    // IPAddress sta_ip = WiFi.localIP();
-    // item.replace(F("{p}"), sta_ip.toString());
-
-    page += item;
-
-    item = FPSTR(HTTP_FORM_LABEL);
-    item += FPSTR(HTTP_FORM_PARAM);
-    item.replace(F("{i}"), F("gw"));
-    item.replace(F("{n}"), F("gw"));
-    item.replace(F("{p}"), F("{t}"));    
-    item.replace(F("{t}"), FPSTR(S_staticgw)); // @token staticgw
-    item.replace(F("{l}"), F("15"));
-    item.replace(F("{v}"), (_sta_static_gw ? _sta_static_gw.toString() : ""));
-    item.replace(F("{c}"), "");
-
-    // actuals as placeholder
-    // IPAddress sta_gateway = WiFi.gatewayIP();
-    // item.replace(F("{p}"), sta_gateway.toString());
-
-    page += item;
-
-    item = FPSTR(HTTP_FORM_LABEL);
-    item += FPSTR(HTTP_FORM_PARAM);
-    item.replace(F("{i}"), F("sn"));
-    item.replace(F("{n}"), F("sn"));
-    item.replace(F("{p}"), F("{t}"));    
-    item.replace(F("{t}"), FPSTR(S_subnet)); // @token subnet
-    item.replace(F("{l}"), F("15"));
-    item.replace(F("{v}"), (_sta_static_sn ? _sta_static_sn.toString() : ""));
-    item.replace(F("{c}"), "");
-
-    // actuals as placeholder
-    // IPAddress sta_subnet = WiFi.subnetMask();
-    // item.replace("{p}", sta_subnet.toString());
-    page += item;
+    // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
+    page += getIpForm(F("ip"),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
+    // WiFi.localIP().toString();
+    page += getIpForm(F("gw"),FPSTR(S_staticgw),(_sta_static_gw ? _sta_static_gw.toString() : "")); // @token staticgw
+    // WiFi.gatewayIP().toString();
+    page += getIpForm(F("sn"),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
+    // WiFi.subnetMask().toString();
     page += F("<br/>"); // @todo remove these, use css
   }
   return page;
@@ -1254,8 +1225,10 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   if (_debug) {
-    _debugPort.print("MEM: ");
-    _debugPort.println((String)ESP.getFreeHeap());     
+    if(_debugLevel > 2){
+      _debugPort.print("MEM: ");
+      _debugPort.println((String)ESP.getFreeHeap());
+    }  
     _debugPort.print("*WM: ");
     _debugPort.print(text);
     _debugPort.print("\n");
@@ -1265,8 +1238,10 @@ void WiFiManager::DEBUG_WM(Generic text) {
 template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
   if (_debug) {
-    _debugPort.print("MEM: ");
-    _debugPort.println((String)ESP.getFreeHeap());    
+    if(_debugLevel > 2){
+      _debugPort.print("MEM: ");
+      _debugPort.println((String)ESP.getFreeHeap());
+    }
     _debugPort.print("*WM: ");
     _debugPort.print(text);
     _debugPort.print(" ");
@@ -1294,10 +1269,10 @@ void WiFiManager::debugSoftAPConfig(){
 
 void WiFiManager::debugPlatformInfo(){
     system_print_meminfo();
-    DEBUG_WM(F("getCoreVersion():"),ESP.getCoreVersion());
-    DEBUG_WM(F("system_get_sdk_version():"),system_get_sdk_version());
+    DEBUG_WM(F("getCoreVersion():         "),ESP.getCoreVersion());
+    DEBUG_WM(F("system_get_sdk_version(): "),system_get_sdk_version());
     DEBUG_WM(F("system_get_boot_version():"),system_get_boot_version());
-    DEBUG_WM((String)ESP.getFreeHeap());
+    DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
 }
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
@@ -1406,7 +1381,7 @@ bool WiFiManager::WiFi_Disconnect() {
         DEBUG_WM(F("wifi station disconnect"));
         ETS_UART_INTR_DISABLE(); 
         ret = wifi_station_disconnect();
-        ETS_UART_INTR_ENABLE();        
+        ETS_UART_INTR_ENABLE();
         return ret;
     }
 }

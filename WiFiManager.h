@@ -27,6 +27,8 @@
   }
 #endif
 
+#include "strings_en.h"
+
 #define WIFI_getChipId() ESP.getChipId()
 #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
@@ -214,6 +216,7 @@ class WiFiManager
 
     // output helpers
     String        getParamOut();
+    String        getIpForm(String id, String title, String value);
     String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title);
@@ -247,6 +250,7 @@ class WiFiManager
 
     // debugging
     boolean       _debug              = true;
+    uint8_t       _debugLevel         = 2;
     Stream&     _debugPort; // debug output stream ref
     template <typename Generic>
     void        DEBUG_WM(Generic text);
