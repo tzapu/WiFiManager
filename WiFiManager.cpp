@@ -674,6 +674,12 @@ String WiFiManager::getScanItemOut(){
       bool tok_q = HTTP_ITEM_STR.indexOf(FPSTR(T_q)) > 0;
       bool tok_i = HTTP_ITEM_STR.indexOf(FPSTR(T_i)) > 0;
       
+      // toggle icons with percentage
+      bool _scanDispOptions = true;
+      if(_scanDispOptions && tok_q && !tok_r){
+        HTTP_ITEM_STR.replace(FPSTR(T_q), FPSTR(HTTP_ITEM_QP));
+        tok_r = true;
+      }
  
       //display networks in page
       for (int i = 0; i < n; i++) {
@@ -1221,6 +1227,10 @@ void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
 
 void WiFiManager::setWebPortalClientCheck(boolean enabled){
   _webClientCheck = enabled;
+}
+
+void WiFiManager::setScanDispPerc(boolean enabled){
+  _scanDispOptions = true;
 }
 
 // HELPERS
