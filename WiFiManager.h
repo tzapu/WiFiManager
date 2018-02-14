@@ -95,7 +95,7 @@ class WiFiManager
 
     void          resetSettings();
     void          reboot();
-    bool       disconnect(); // non persistent disconnect
+    bool          disconnect(); // non persistent disconnect
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
@@ -123,8 +123,6 @@ class WiFiManager
     void          setBreakAfterConfig(boolean shouldBreak);
     //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
     void          setConfigPortalBlocking(boolean shouldBlock);
-
-
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
@@ -139,6 +137,8 @@ class WiFiManager
     void          setCaptivePortalClientCheck(boolean enabled);
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
+    // if true, wifiscan will show percentage instead of quality icons, until we have better templating
+    void          setScanDispPerc(boolean enabled);
 
     void          debugSoftAPConfig();
     void          debugPlatformInfo();

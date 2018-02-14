@@ -23,8 +23,8 @@ const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credential
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
-const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {s}<br/><em><small>with IP {u}</small></em></div>";
-const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {s}</div>";
+const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
+const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {v}</div>";
 const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
@@ -69,6 +69,7 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
+#ifdef JSTEST
 const char HTTP_JS[] PROGMEM = 
 "<script>function postAjax(url, data, success) {"
 "    var params = typeof data == 'string' ? data : Object.keys(data).map("
@@ -85,14 +86,14 @@ const char HTTP_JS[] PROGMEM =
 "    xhr.send(params);"
 "    return xhr;"
 "}"
-""
 "// example request\n"
 "postAjax('/status', 'p1=1&p2=Hello+World', function(data){ console.log(data); });"
-""
 "// example request with data object\n"
 "postAjax('/status', { p1: 1, p2: 'Hello World' }, function(data){ console.log(data); });"
 "</script>";
+#endif
 
+// Info html
 const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
 const char HTTP_INFO_wifihead[]   PROGMEM = "<br/><h3>WiFi</h3><hr>";
 
@@ -123,6 +124,7 @@ const char HTTP_INFO_stamac[]     PROGMEM = "<dt>Station MAC</dt><dd>{1}</dd>";
 const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
 const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
 
+// Strings
 const char S_y[]                  PROGMEM = "Yes";
 const char S_n[]                  PROGMEM = "No";
 const char S_enable[]             PROGMEM = "Enabled";
@@ -147,5 +149,21 @@ const char S_uri[]                PROGMEM = "URI: "; // @token uri
 const char S_method[]             PROGMEM = "\nMethod: "; // @token method
 const char S_args[]               PROGMEM = "\nArguments: "; // @token args
 
-#endif 
+//Tokens
+//@todo consolidate and reduce
+const char T_1[]                  PROGMEM = "{1}"; // @token 1
+const char T_2[]                  PROGMEM = "{2}"; // @token 2
+const char T_v[]                  PROGMEM = "{v}"; // @token v
+const char T_I[]                  PROGMEM = "{I}"; // @token I
+const char T_i[]                  PROGMEM = "{i}"; // @token i
+const char T_n[]                  PROGMEM = "{n}"; // @token n
+const char T_p[]                  PROGMEM = "{p}"; // @token p
+const char T_t[]                  PROGMEM = "{t}"; // @token t
+const char T_l[]                  PROGMEM = "{l}"; // @token l
+const char T_c[]                  PROGMEM = "{c}"; // @token c
+const char T_e[]                  PROGMEM = "{e}"; // @token e
+const char T_q[]                  PROGMEM = "{q}"; // @token q
+const char T_r[]                  PROGMEM = "{r}"; // @token r
+const char T_R[]                  PROGMEM = "{R}"; // @token R
 
+#endif 
