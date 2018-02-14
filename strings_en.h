@@ -127,15 +127,12 @@ const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
 const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
 
 // Strings
-const char S_GET[]                PROGMEM = "GET";
-const char S_POST[]               PROGMEM = "POST";
 const char S_y[]                  PROGMEM = "Yes";
 const char S_n[]                  PROGMEM = "No";
 const char S_enable[]             PROGMEM = "Enabled";
 const char S_disable[]            PROGMEM = "Disabled";
-const char S_ip[]                 PROGMEM = "ip";
-const char S_gw[]                 PROGMEM = "gw";
-const char S_sn[]                 PROGMEM = "sn";
+const char S_GET[]                PROGMEM = "GET";
+const char S_POST[]               PROGMEM = "POST";
 
 const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
 const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
@@ -164,6 +161,12 @@ const char D_HR[]                 PROGMEM = "--------------------";
 
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
+
+//Strings
+const char S_ip[]                 PROGMEM = "ip";
+const char S_gw[]                 PROGMEM = "gw";
+const char S_sn[]                 PROGMEM = "sn";
+
 //Tokens
 //@todo consolidate and reduce
 const char T_1[]                  PROGMEM = "{1}"; // @token 1
