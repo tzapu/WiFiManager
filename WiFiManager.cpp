@@ -1337,19 +1337,8 @@ boolean WiFiManager::validApPassword(){
 }
 
 String WiFiManager::getWLStatusString(uint8_t status){
-  const char * const WIFI_STA_STATUS[]
-  {
-      "WL_IDLE_STATUS",
-      "WL_NO_SSID_AVAIL",
-      "WL_SCAN_COMPLETED",
-      "WL_CONNECTED",
-      "WL_CONNECT_FAILED",
-      "WL_CONNECTION_LOST",
-      "WL_DISCONNECTED"
-  };
-
   if(status >=0 && status <=6) return WIFI_STA_STATUS[status];
-  return F("UNKNOWN");
+  return FPSTR(S_NA);
 }
 
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {
@@ -1365,7 +1354,7 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
         case ENC_TYPE_AUTO:
             return F("WPA_WPA2_PSK");
         default:
-            return F("Unknown");
+            return FPSTR(S_NA);
     }
 }
 
