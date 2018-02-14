@@ -8,23 +8,30 @@
 const char HTTP_HEAD[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
+
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
 const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form><br/><form action='/exit' method='GET'><button>Quit</button></form>";
-const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a><div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div></div>";
+
+const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div>"; // rssi icons
+const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q'>{r}%</div>"; // rssi percentage
+const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{q}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
 // const char HTTP_ITEM[]            PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
+
 const char HTTP_FORM_START[]       PROGMEM = "<form method='POST' action='wifisave'><label for='s'>SSID</label><input id='s' name='s' maxlength=32 placeholder='{v}'><br/><label for='p'>Password</label><input id='p' name='p' maxlength='64' type='password' placeholder=''><br/>";
 const char HTTP_FORM_END[]         PROGMEM = "<br/><button type='submit'>Save</button></form>";
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
+
 const char HTTP_FORM_PARAM_START[] PROGMEM = "<hr>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength={l} placeholder='' value='{v}' {c}>";
 const char HTTP_FORM_PARAM_END[]   PROGMEM = "<br/>";
+
 const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi' method='get'><button>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
-const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {s}<br/><em><small>with IP {u}</small></em></div>";
-const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {s}</div>";
+const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
+const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {v}</div>";
 const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
@@ -69,12 +76,12 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
+#ifdef JSTEST
 const char HTTP_JS[] PROGMEM = 
 "<script>function postAjax(url, data, success) {"
 "    var params = typeof data == 'string' ? data : Object.keys(data).map("
 "            function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }"
 "        ).join('&');"
-""
 "    var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject(\"Microsoft.XMLHTTP\");"
 "    xhr.open('POST', url);"
 "    xhr.onreadystatechange = function() {"
@@ -83,16 +90,13 @@ const char HTTP_JS[] PROGMEM =
 "    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');"
 "    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
 "    xhr.send(params);"
-"    return xhr;"
-"}"
-""
-"// example request\n"
+"    return xhr;}"
 "postAjax('/status', 'p1=1&p2=Hello+World', function(data){ console.log(data); });"
-""
-"// example request with data object\n"
 "postAjax('/status', { p1: 1, p2: 'Hello World' }, function(data){ console.log(data); });"
 "</script>";
+#endif
 
+// Info html
 #ifdef ESP32
 	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp32</h3><hr><dl>";
 	const char HTTP_INFO_chiprev[]    PROGMEM = "<dt>Chip Rev</dt><dd>{1}</dd>";
@@ -129,10 +133,13 @@ const char HTTP_INFO_stamac[]     PROGMEM = "<dt>Station MAC</dt><dd>{1}</dd>";
 const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
 const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
 
+// Strings
 const char S_y[]                  PROGMEM = "Yes";
 const char S_n[]                  PROGMEM = "No";
 const char S_enable[]             PROGMEM = "Enabled";
 const char S_disable[]            PROGMEM = "Disabled";
+const char S_GET[]                PROGMEM = "GET";
+const char S_POST[]               PROGMEM = "POST";
 
 const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
 const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
@@ -153,5 +160,38 @@ const char S_uri[]                PROGMEM = "URI: "; // @token uri
 const char S_method[]             PROGMEM = "\nMethod: "; // @token method
 const char S_args[]               PROGMEM = "\nArguments: "; // @token args
 
-#endif 
+// debug strings
+const char D_HR[]                 PROGMEM = "--------------------";
 
+// END WIFI_MANAGER_OVERRIDE_STRINGS
+#endif
+
+// -----------------------------------------------------------------------------------------------
+// DO NOT EDIT BELOW THIS LINE
+
+//Strings
+const char S_ip[]                 PROGMEM = "ip";
+const char S_gw[]                 PROGMEM = "gw";
+const char S_sn[]                 PROGMEM = "sn";
+
+//Tokens
+//@todo consolidate and reduce
+const char T_1[]                  PROGMEM = "{1}"; // @token 1
+const char T_2[]                  PROGMEM = "{2}"; // @token 2
+const char T_v[]                  PROGMEM = "{v}"; // @token v
+const char T_I[]                  PROGMEM = "{I}"; // @token I
+const char T_i[]                  PROGMEM = "{i}"; // @token i
+const char T_n[]                  PROGMEM = "{n}"; // @token n
+const char T_p[]                  PROGMEM = "{p}"; // @token p
+const char T_t[]                  PROGMEM = "{t}"; // @token t
+const char T_l[]                  PROGMEM = "{l}"; // @token l
+const char T_c[]                  PROGMEM = "{c}"; // @token c
+const char T_e[]                  PROGMEM = "{e}"; // @token e
+const char T_q[]                  PROGMEM = "{q}"; // @token q
+const char T_r[]                  PROGMEM = "{r}"; // @token r
+const char T_R[]                  PROGMEM = "{R}"; // @token R
+
+// http
+const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
+const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
+const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";

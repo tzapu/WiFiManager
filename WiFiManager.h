@@ -51,6 +51,17 @@
 #include <DNSServer.h>
 #include <memory>
 
+#if defined(ESP8266)
+  extern "C" {
+    #include "user_interface.h"
+  }
+#endif
+
+#include "strings_en.h"
+
+#define WIFI_getChipId() ESP.getChipId()
+#define WIFI_AUTH_OPEN   ENC_TYPE_NONE
+
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
@@ -114,6 +125,7 @@ class WiFiManager
 
     void          resetSettings();
     void          reboot();
+    bool          disconnect(); // non persistent disconnect
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
@@ -141,8 +153,6 @@ class WiFiManager
     void          setBreakAfterConfig(boolean shouldBreak);
     //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
     void          setConfigPortalBlocking(boolean shouldBlock);
-
-
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
@@ -159,10 +169,12 @@ class WiFiManager
     void          setWebPortalClientCheck(boolean enabled);
     // if true enable autoreconnecting
     void          setWiFiAutoReconnect(boolean enabled);
-    
-    void          debugPlatformInfo();
+    // if true, wifiscan will show percentage instead of quality icons, until we have better templating
+    void          setScanDispPerc(boolean enabled);
+
     void          debugSoftAPConfig();
-    
+    void          debugPlatformInfo();
+
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -215,7 +227,8 @@ class WiFiManager
     boolean       _userpersistent         = true;
     boolean       _wifiAutoReconnect      = true;  // there is no getter for this, we must assume its true and make it so
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
-    boolean       _webClientCheck         = true; // keep cp alive if web have client
+    boolean       _webClientCheck         = true;  // keep cp alive if web have client
+    boolean       _scanDispOptions        = false; // show percentage in scans not icons
 
     const char*   _customHeadElement      = "";
 
@@ -262,6 +275,7 @@ class WiFiManager
     
     // output helpers
     String        getParamOut();
+    String        getIpForm(String id, String title, String value);
     String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title);
@@ -294,6 +308,7 @@ class WiFiManager
 
     // debugging
     boolean       _debug              = true;
+    uint8_t       _debugLevel         = 2;
     Stream&     _debugPort; // debug output stream ref
     template <typename Generic>
     void        DEBUG_WM(Generic text);
