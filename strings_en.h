@@ -110,8 +110,7 @@ const char HTTP_INFO_corever[]    PROGMEM = "<dt>Core Version</dt><dd>{1}</dd>";
 const char HTTP_INFO_bootver[]    PROGMEM = "<dt>Boot Version</dt><dd>{1}</dd>";
 const char HTTP_INFO_cpufreq[]    PROGMEM = "<dt>CPU Frequency</dt><dd>{1}MHz</dd>";
 const char HTTP_INFO_freeheap[]   PROGMEM = "<dt>Memory - Free Heap</dt><dd>{1} bytes available</dd>"; 
-const char HTTP_INFO_memsketch[]  PROGMEM = "<dt>Memory - Sketch Size</dt><dd>{1}";
-const char HTTP_INFO_memstbytes[] PROGMEM = "Used/Total bytes<br/>{1}/{2}";
+const char HTTP_INFO_memsketch[]  PROGMEM = "<dt>Memory - Sketch Size</dt><dd>Used / Total bytes<br/>{1} / {2}";
 const char HTTP_INFO_memsmeter[]  PROGMEM = "<br/><progress value='{1}' max='{2}'></progress></dd>";
 const char HTTP_INFO_lastreset[]  PROGMEM = "<dt>Last reset reason</dt><dd>{1}</dd>";
 const char HTTP_INFO_apip[]       PROGMEM = "<dt>Access Point IP</dt><dd>{1}</dd>";
@@ -126,10 +125,6 @@ const char HTTP_INFO_host[]       PROGMEM = "<dt>Hostname</dt><dd>{1}</dd>";
 const char HTTP_INFO_stamac[]     PROGMEM = "<dt>Station MAC</dt><dd>{1}</dd>";
 const char HTTP_INFO_conx[]       PROGMEM = "<dt>Connected</dt><dd>{1}</dd>";
 const char HTTP_INFO_autoconx[]   PROGMEM = "<dt>Autoconnect</dt><dd>{1}</dd>";
-
-const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
-const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
-const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
 
 // Strings
 const char S_GET[]                PROGMEM = "GET";
@@ -161,6 +156,14 @@ const char S_uri[]                PROGMEM = "URI: "; // @token uri
 const char S_method[]             PROGMEM = "\nMethod: "; // @token method
 const char S_args[]               PROGMEM = "\nArguments: "; // @token args
 
+// debug strings
+const char D_HR[]                 PROGMEM = "--------------------";
+
+// END WIFI_MANAGER_OVERRIDE_STRINGS
+#endif
+
+// -----------------------------------------------------------------------------------------------
+// DO NOT EDIT BELOW THIS LINE
 //Tokens
 //@todo consolidate and reduce
 const char T_1[]                  PROGMEM = "{1}"; // @token 1
@@ -178,7 +181,7 @@ const char T_q[]                  PROGMEM = "{q}"; // @token q
 const char T_r[]                  PROGMEM = "{r}"; // @token r
 const char T_R[]                  PROGMEM = "{R}"; // @token R
 
-// debug strings
-const char D_HR[]                 PROGMEM = "--------------------";
-
-#endif 
+// http
+const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
+const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
+const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
