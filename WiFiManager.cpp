@@ -991,12 +991,12 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id==F("memsketch")){
     p = FPSTR(HTTP_INFO_memsketch);
-    p.replace(FPSTR(T_1),(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+    p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
   else if(id==F("memsmeter")){
     p = FPSTR(HTTP_INFO_memsmeter);
-    p.replace(FPSTR(T_1),(String)((ESP.getSketchSize()+ESP.getFreeSketchSpace())-ESP.getFreeSketchSpace()));
+    p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
   else if(id==F("lastreset")){
