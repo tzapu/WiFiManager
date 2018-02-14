@@ -1374,6 +1374,10 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 	return WiFi_Mode(m,false);
 }
 
+bool WiFiManager::disconnect(){
+  return WiFi_Disconnect();
+}
+
 // sta disconnect without persistent
 bool WiFiManager::WiFi_Disconnect() {
     if((WiFi.getMode() & WIFI_STA) != 0) {

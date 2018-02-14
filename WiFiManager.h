@@ -95,6 +95,7 @@ class WiFiManager
 
     void          resetSettings();
     void          reboot();
+    boolean       disconnect(); // non persistent disconnect
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
