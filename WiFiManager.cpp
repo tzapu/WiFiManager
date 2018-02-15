@@ -1459,55 +1459,13 @@ boolean WiFiManager::validApPassword(){
 }
 
 String WiFiManager::getWLStatusString(uint8_t status){
-  const char * const WIFI_STA_STATUS[]
-  {
-      "WL_IDLE_STATUS",
-      "WL_NO_SSID_AVAIL",
-      "WL_SCAN_COMPLETED",
-      "WL_CONNECTED",
-      "WL_CONNECT_FAILED",
-      "WL_CONNECTION_LOST",
-      "WL_DISCONNECTED"
-  };
-
   if(status >=0 && status <=6) return WIFI_STA_STATUS[status];
-  return F("UNKNOWN");
+  return FPSTR(S_NA);
 }
 
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {
-    #ifdef ESP8266
-      switch(authmode) {
-          case ENC_TYPE_NONE:
-              return "None";
-          case ENC_TYPE_WEP:
-              return "WEP";
-          case ENC_TYPE_TKIP:
-              return "WPA_PSK";
-          case ENC_TYPE_CCMP:
-              return "WPA2_PSK";
-          case ENC_TYPE_AUTO:
-              return "WPA_WPA2_PSK";
-          default:
-              return "Unknown";
-      }
-    #elif defined(ESP32)
-      switch(authmode) {
-          case WIFI_AUTH_OPEN:
-              return "None";
-          case WIFI_AUTH_WEP:
-              return "WEP";
-          case WIFI_AUTH_WPA_PSK:
-              return "WPA_PSK";
-          case WIFI_AUTH_WPA_WPA2_PSK:
-              return "WPA2_PSK";
-          case WIFI_AUTH_WPA2_ENTERPRISE:
-              return "WPA_WPA2_ENTERPRISE";
-          case WIFI_AUTH_MAX:
-              return "MAX";
-          default:
-              return "Unknown";
-      }
-    #endif
+  // DEBUG_WM("enc_tye: ",authmode);
+  return AUTH_MODE_NAMES[authmode];
 }
 
 // set mode ignores WiFi.persistent 

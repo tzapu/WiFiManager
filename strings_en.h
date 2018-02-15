@@ -139,6 +139,7 @@ const char S_enable[]             PROGMEM = "Enabled";
 const char S_disable[]            PROGMEM = "Disabled";
 const char S_GET[]                PROGMEM = "GET";
 const char S_POST[]               PROGMEM = "POST";
+const char S_NA[]                 PROGMEM = "Unknown";
 
 const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
 const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
@@ -194,3 +195,40 @@ const char T_R[]                  PROGMEM = "{R}"; // @token R
 const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
 const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
 const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
+
+const char * const WIFI_STA_STATUS[] PROGMEM
+{
+  "WL_IDLE_STATUS",
+  "WL_NO_SSID_AVAIL",
+  "WL_SCAN_COMPLETED",
+  "WL_CONNECTED",
+  "WL_CONNECT_FAILED",
+  "WL_CONNECTION_LOST",
+  "WL_DISCONNECTED"
+};
+
+#ifdef ESP32
+const char * const AUTH_MODE_NAMES[] PROGMEM
+{
+    "OPEN",
+    "WEP",             
+    "WPA_PSK",         
+    "WPA2_PSK",        
+    "WPA_WPA2_PSK",    
+    "WPA2_ENTERPRISE", 
+    "MAX"
+};
+#elif defined(ESP8266)
+const char * const AUTH_MODE_NAMES[] PROGMEM
+{
+    "",
+    "",
+    "WPA_PSK",      // 2 ENC_TYPE_TKIP
+    "",
+    "WPA2_PSK",     // 4 ENC_TYPE_CCMP
+    "WEP",          // 5 ENC_TYPE_WEP
+    "",
+    "OPEN",         //7 ENC_TYPE_NONE
+    "WPA_WPA2_PSK", // 8 ENC_TYPE_AUTO
+};
+#endif
