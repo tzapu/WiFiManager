@@ -198,13 +198,7 @@ class WiFiManager
     unsigned long _webPortalAccessed      = 0;
     WiFiMode_t    _usermode               = WIFI_OFF;
     
-    #ifdef ESP8266
-        String        _wifissidprefix         = "ESP";
-    #elif defined(ESP32)
-        String        _wifissidprefix         = "ESP32";
-    #else
-        String        _wifissidprefix         = "WM";
-    #endif
+    String    _wifissidprefix             = FPSTR(S_ssidpre);
 
     // option parameters
     int           _minimumQuality         = -1;
