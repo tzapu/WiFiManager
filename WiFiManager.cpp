@@ -91,9 +91,9 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
     _max_params += WIFI_MANAGER_MAX_PARAMS;
     DEBUG_WM(F("Updated _max_params:"),_max_params);
     WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
-    DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
-    DEBUG_WM(_paramsCount);
-    DEBUG_WM(_max_params);
+    // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
+    // DEBUG_WM(_paramsCount);
+    // DEBUG_WM(_max_params);
     if (new_params != NULL) {
       _params = new_params;
     } else {
