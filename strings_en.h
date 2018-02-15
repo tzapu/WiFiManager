@@ -1,3 +1,15 @@
+/**
+ * strings_en.h
+ * engligh strings for
+ * WiFiManager, a library for the ESP8266/Arduino platform
+ * for configuration of WiFi credentials using a Captive Portal
+ * 
+ * @author Creator tzapu
+ * @author tablatronix
+ * @version 0.0.0
+ * @license MIT
+ */
+
 #ifndef WIFI_MANAGER_OVERRIDE_STRINGS
 
 // To override the strings below in your project, make the following changes above the line that includes "WiFIManager.h"

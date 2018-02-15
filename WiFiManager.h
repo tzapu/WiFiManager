@@ -1,14 +1,14 @@
-/**************************************************************
-   WiFiManager is a library for the ESP8266/Arduino platform
-   (https://github.com/esp8266/Arduino) to enable easy
-   configuration and reconfiguration of WiFi credentials using a Captive Portal
-   inspired by:
-   http://www.esp8266.com/viewtopic.php?f=29&t=2520
-   https://github.com/chriscook8/esp-arduino-apboot
-   https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
-   Built by AlexT https://github.com/tzapu
-   Licensed under MIT license
- **************************************************************/
+/**
+ * WiFiManager.h
+ * 
+ * WiFiManager, a library for the ESP8266/Arduino platform
+ * for configuration of WiFi credentials using a Captive Portal
+ * 
+ * @author Creator tzapu
+ * @author tablatronix
+ * @version 0.0.0
+ * @license MIT
+ */
 
 #ifndef WiFiManager_h
 #define WiFiManager_h

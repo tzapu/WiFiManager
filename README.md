@@ -390,4 +390,7 @@ __THANK YOU__
 And countless others
 
 #### Inspiration
-- http://www.esp8266.com/viewtopic.php?f=29&t=2520
+ * http://www.esp8266.com/viewtopic.php?f=29&t=2520
+ * https://github.com/chriscook8/esp-arduino-apboot
+ * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
+ * Built by AlexT https://github.com/tzapu
