@@ -698,18 +698,20 @@ String WiFiManager::getScanItemOut(){
 
       // token precheck, to speed up replacements on large ap lists
       String HTTP_ITEM_STR = FPSTR(HTTP_ITEM);
+
+
+      // toggle icons with percentage
+      HTTP_ITEM_STR.replace("{qp}", FPSTR(HTTP_ITEM_QP));
+      HTTP_ITEM_STR.replace("{h}",_scanDispOptions ? "" : "h");
+      HTTP_ITEM_STR.replace("{qi}", FPSTR(HTTP_ITEM_QI));
+      HTTP_ITEM_STR.replace("{h}",_scanDispOptions ? "h" : "");
+ 
       bool tok_r = HTTP_ITEM_STR.indexOf(FPSTR(T_r)) > 0;
       bool tok_R = HTTP_ITEM_STR.indexOf(FPSTR(T_R)) > 0;
       bool tok_e = HTTP_ITEM_STR.indexOf(FPSTR(T_e)) > 0;
       bool tok_q = HTTP_ITEM_STR.indexOf(FPSTR(T_q)) > 0;
       bool tok_i = HTTP_ITEM_STR.indexOf(FPSTR(T_i)) > 0;
       
-      // toggle icons with percentage
-      if(_scanDispOptions && tok_q && !tok_r){
-        HTTP_ITEM_STR.replace(FPSTR(T_q), FPSTR(HTTP_ITEM_QP));
-        tok_r = true;
-      } else HTTP_ITEM_STR.replace(FPSTR(T_q), FPSTR(HTTP_ITEM_QI));
- 
       //display networks in page
       for (int i = 0; i < n; i++) {
         if (indices[i] == -1) continue; // skip dups

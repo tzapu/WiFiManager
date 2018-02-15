@@ -24,9 +24,9 @@ const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
 const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form><br/><form action='/exit' method='GET'><button>Quit</button></form>";
 
-const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div>"; // rssi icons
-const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q'>{r}%</div>"; // rssi percentage
-const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{q}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
+const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i} {h}'></div>"; // rssi icons
+const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q {h}'>{r}%</div>"; // rssi percentage
+const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{qi}{qp}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
 // const char HTTP_ITEM[]            PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
 
 const char HTTP_FORM_START[]       PROGMEM = "<form method='POST' action='wifisave'><label for='s'>SSID</label><input id='s' name='s' maxlength=32 placeholder='{v}'><br/><label for='p'>Password</label><input id='p' name='p' maxlength='64' type='password' placeholder=''><br/>";
@@ -63,6 +63,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 // lists
 "dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
 "td{vertical-align: top;}"
+".h{display:none}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
@@ -213,6 +214,7 @@ const char T_e[]                  PROGMEM = "{e}"; // @token e
 const char T_q[]                  PROGMEM = "{q}"; // @token q
 const char T_r[]                  PROGMEM = "{r}"; // @token r
 const char T_R[]                  PROGMEM = "{R}"; // @token R
+const char T_h[]                  PROGMEM = "{h}"; // @token h
 
 // http
 const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
