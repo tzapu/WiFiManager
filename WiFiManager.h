@@ -117,6 +117,8 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    //callback in loop during the setup phase, to allow for third party execution during setup wait
+    void          setSetupLoopCallback(void (*func)(void));
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -152,6 +154,8 @@ class WiFiManager
     boolean       _tryWPS                 = false;
 
     const char*   _customHeadElement      = "";
+
+    void          (*_setupLoopCallback)(void) = NULL;
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);
