@@ -136,7 +136,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
 // destructor
 WiFiManager::~WiFiManager() {
   if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
-  WiFi.mode(_usermode);
+  if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
 
   // parameters
   // @todo belongs to wifimanagerparameter
@@ -150,7 +150,7 @@ WiFiManager::~WiFiManager() {
 
 // AUTOCONNECT
 boolean WiFiManager::autoConnect() {
-  String ssid = (String)F("ESP") + String(WIFI_getChipId());
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
 
@@ -159,6 +159,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
   WiFi_enableSTA(true);
+  _usermode = WIFI_STA;
+
+  WiFi_autoReconnect();
 
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
@@ -220,24 +223,28 @@ void WiFiManager::stopWebPortal() {
 
 boolean WiFiManager::configPortalHasTimeout(){
 
-    if(_configPortalTimeout == 0 || (_cpClientCheck && (wifi_softap_get_station_num() > 0))){
+    if(_configPortalTimeout == 0 || (_cpClientCheck && (WiFi_softap_num_stations() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
-        if(_debugLevel > 0) DEBUG_WM("NUM CLIENTS: " + (String)wifi_softap_get_station_num());
+        if(_debugLevel > 0) DEBUG_WM("NUM CLIENTS: " + (String)WiFi_softap_num_stations());
       }
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
-
+    // handle timeout
     if(_webClientCheck && _webPortalAccessed>_configPortalStart>0) _configPortalStart = _webPortalAccessed;
 
     if(millis() > _configPortalStart + _configPortalTimeout){
       DEBUG_WM(F("config portal has timed out"));
       return true;
     } else if(_debugLevel > 0) {
-      if((millis() - timer) > 1000){
-        timer = millis();
-        DEBUG_WM(F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
+      // log timeout
+      if(_debug){
+        uint16_t logintvl = 30000; // how often to emit timeing out counter logging
+        if((millis() - timer) > logintvl){
+          timer = millis();
+          DEBUG_WM(F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
+        }
       }
     }
 
@@ -250,7 +257,11 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  server.reset(new ESP8266WebServer(80));
+  #if defined(ESP32) && defined(WEBSERVERSHIM)
+    server.reset(new WebServer(80));
+  #else
+    server.reset(new ESP8266WebServer(80));
+  #endif
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -274,7 +285,7 @@ void WiFiManager::setupConfigPortal() {
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = (String)F("ESP") + String(WIFI_getChipId());
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());  
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
@@ -364,19 +375,21 @@ uint8_t WiFiManager::handleConfigPortal(){
     server->handleClient();
 
     // Waiting for save...
-    if (connect) {
+    if(connect) {
       connect = false;
-      delay(2000);
-      DEBUG_WM(F("Connecting save WiFi"));
+      DEBUG_WM(F("Connecting to a new AP"));
+      if(_enableCaptivePortal) delay(2000); // configportal close delay
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
-        DEBUG_WM(F("Connect to new AP SUCCESS"));        
+        DEBUG_WM(F("Connect to new AP [SUCCESS]"));
+        DEBUG_WM(F("Got IP Address:"));
+        DEBUG_WM(WiFi.localIP());
         stopConfigPortal();
         return WL_CONNECTED; // success
       }
 
-      DEBUG_WM(F("Failed to connect."));
+      DEBUG_WM(F("Connect to new AP [FAILED]"));
 
       if (_shouldBreakAfterConfig) {
         // this is more of an exiting callback than a save
@@ -455,7 +468,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     //@todo catch failures in set_config
   } else {
     // connect using saved ssid if there is one
-    if (WiFi.SSID() != "") {
+    if (WiFi_hasAutoConnect()) {
       DEBUG_WM(F("Connecting to saved AP"));
   	  WiFi_enableSTA(true,storeSTAmode);
       WiFi.begin();
@@ -509,7 +522,11 @@ uint8_t WiFiManager::waitForConnectResult() {
 
 void WiFiManager::startWPS() {
   DEBUG_WM(F("START WPS"));
-  WiFi.beginWPSConfig();
+  #ifdef ESP8266  
+    WiFi.beginWPSConfig();
+  #else
+    // @todo
+  #endif
   DEBUG_WM(F("END WPS"));
 }
 
@@ -521,10 +538,8 @@ String WiFiManager::getConfigPortalSSID() {
 // SETTERS
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
-  WiFi.persistent(true);
+  WiFi_enableSTA(true,true);
   WiFi.disconnect(true);
-  WiFi.persistent(false);
-  //delay(200);
 }
 
 void WiFiManager::setTimeout(unsigned long seconds) {
@@ -612,7 +627,7 @@ void WiFiManager::handleWifi(boolean scan) {
     page += getScanItemOut();
   }
   String pitem = FPSTR(HTTP_FORM_START);
-  pitem.replace(FPSTR(T_v), WiFi.SSID());
+  pitem.replace(FPSTR(T_v), WiFi_SSID());
   page += pitem;
 
   page += getStaticOut();
@@ -908,42 +923,82 @@ void WiFiManager::handleInfo() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
-  
-  String infoids[] = {
-  F("esphead"),
-  F("uptime"),
-  F("chipid"),
-  F("fchipid"),
-  F("idesize"),
-  F("flashsize"),
-  F("sdkver"),
-  F("corever"),
-  F("bootver"),
-  F("cpufreq"),
-  F("freeheap"),
-  F("memsketch"),
-  F("memsmeter"),
-  F("lastreset"),
-  F("wifihead"),
-  F("apip"),
-  F("apmac"),
-  F("apssid"),
-  F("apbssid"),
-  F("staip"),
-  F("stagw"),
-  F("stasub"),
-  F("dnss"),
-  F("host"),
-  F("stamac"),
-  F("conx"),
-  F("autoconx")
-  };
 
-  for(int i=0; i<25;i++){
-    page += getInfoData(infoids[i]);
-  }
+  //@todo convert to enum
+  #ifdef ESP8266
+    String infoids[] = {
+      F("esphead"),
+      F("uptime"),
+      F("chipid"),
+      F("fchipid"),
+      F("idesize"),
+      F("flashsize"),
+      F("sdkver"),
+      F("corever"),
+      F("bootver"),
+      F("cpufreq"),
+      F("freeheap"),
+      F("memsketch"),
+      F("memsmeter"),
+      F("lastreset"),
+      F("wifihead"),
+      F("apip"),
+      F("apmac"),
+      F("apssid"),
+      F("apbssid"),
+      F("staip"),
+      F("stagw"),
+      F("stasub"),
+      F("dnss"),
+      F("host"),
+      F("stamac"),
+      F("conx"),
+      F("autoconx")
+    };
 
-  page += F("</dl>");
+    for(int i=0; i<25;i++){
+      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    }
+    page += F("</dl>");
+
+  #elif defined(ESP32)
+    String infoids[] = {
+      F("esphead"),
+      F("uptime"),
+      F("chipid"),
+      F("chiprev"), // esp32
+      // "fchipid)", //esp8266
+      F("idesize"), //esp8266
+      // "flashsize)", //esp8266
+      F("sdkver"),
+      // "corever)", //esp8266
+      // "bootver)", //esp8266
+      F("cpufreq"),
+      F("freeheap"),
+      // "memsketch)", //esp8266
+      // "memsmeter)", //esp8266
+      F("lastreset"), //esp8266
+      F("wifihead"),
+      F("apip"),
+      F("apmac"),
+      F("apssid"),
+      F("apbssid"),
+      F("staip"),
+      F("stagw"),
+      F("stasub"),
+      F("dnss"),
+      F("host"),
+      F("stamac"),
+      F("conx"),
+      F("autoconx")
+    };
+
+    for(int i=0; i<19;i++){
+      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    }
+    page += F("</dl>");
+  #endif
+
   page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
@@ -970,29 +1025,47 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_chipid);
     p.replace(FPSTR(T_1),(String)WIFI_getChipId());
   }
+  else if(id==F("chiprev")){
+    #ifdef ESP32
+      p = FPSTR(HTTP_INFO_chiprev);
+      p.replace(FPSTR(T_1),(String)ESP.getChipRevision());
+    #endif
+  }
   else if(id==F("fchipid")){
-    p = FPSTR(HTTP_INFO_fchipid);
-    p.replace(FPSTR(T_1),(String)ESP.getFlashChipId());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_fchipid);
+      p.replace(FPSTR(T_1),(String)ESP.getFlashChipId());
+    #endif
   }
   else if(id==F("idesize")){
     p = FPSTR(HTTP_INFO_idesize);
     p.replace(FPSTR(T_1),(String)ESP.getFlashChipSize());
   }
   else if(id==F("flashsize")){
-    p = FPSTR(HTTP_INFO_flashsize);
-    p.replace(FPSTR(T_1),(String)ESP.getFlashChipRealSize());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_flashsize);
+      p.replace(FPSTR(T_1),(String)ESP.getFlashChipRealSize());
+    #endif
   }
   else if(id==F("sdkver")){
     p = FPSTR(HTTP_INFO_sdkver);
+    #ifdef ESP32
+      p.replace(FPSTR(T_1),(String)esp_get_idf_version());
+    #else
     p.replace(FPSTR(T_1),(String)system_get_sdk_version());
+    #endif
   }
   else if(id==F("corever")){
-    p = FPSTR(HTTP_INFO_corever);
-    p.replace(FPSTR(T_1),(String)ESP.getCoreVersion());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_corever);
+      p.replace(FPSTR(T_1),(String)ESP.getCoreVersion());
+    #endif      
   }
   else if(id==F("bootver")){
-    p = FPSTR(HTTP_INFO_bootver);
-    p.replace(FPSTR(T_1),(String)system_get_boot_version());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_bootver);
+      p.replace(FPSTR(T_1),(String)system_get_boot_version());
+    #endif  
   }
   else if(id==F("cpufreq")){
     p = FPSTR(HTTP_INFO_cpufreq);
@@ -1003,18 +1076,51 @@ String WiFiManager::getInfoData(String id){
     p.replace(FPSTR(T_1),(String)ESP.getFreeHeap());
   }
   else if(id==F("memsketch")){
+    #ifdef ESP8266
     p = FPSTR(HTTP_INFO_memsketch);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #endif  
   }
   else if(id==F("memsmeter")){
+    #ifdef ESP8266
     p = FPSTR(HTTP_INFO_memsmeter);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
+    #endif 
   }
   else if(id==F("lastreset")){
-    p = FPSTR(HTTP_INFO_lastreset);
-    p.replace(FPSTR(T_1),(String)ESP.getResetReason());
+    #ifdef ESP8266
+      p = FPSTR(HTTP_INFO_lastreset);
+      p.replace(FPSTR(T_1),(String)ESP.getResetReason());
+    #elif defined(ESP32) && defined(_ROM_RTC_H_)
+      // requires #include <rom/rtc.h>
+      p = FPSTR(HTTP_INFO_lastreset);
+      for(int i=0;i<2;i++){
+        int reason = rtc_get_reset_reason(i);
+        String tok = (String)T_ss+(String)(i+1)+(String)T_es;
+        switch (reason)
+        {
+          //@todo move to array
+          case 1  : p.replace(tok,F("Vbat power on reset"));break;
+          case 3  : p.replace(tok,F("Software reset digital core"));break;
+          case 4  : p.replace(tok,F("Legacy watch dog reset digital core"));break;
+          case 5  : p.replace(tok,F("Deep Sleep reset digital core"));break;
+          case 6  : p.replace(tok,F("Reset by SLC module, reset digital core"));break;
+          case 7  : p.replace(tok,F("Timer Group0 Watch dog reset digital core"));break;
+          case 8  : p.replace(tok,F("Timer Group1 Watch dog reset digital core"));break;
+          case 9  : p.replace(tok,F("RTC Watch dog Reset digital core"));break;
+          case 10 : p.replace(tok,F("Instrusion tested to reset CPU"));break;
+          case 11 : p.replace(tok,F("Time Group reset CPU"));break;
+          case 12 : p.replace(tok,F("Software reset CPU"));break;
+          case 13 : p.replace(tok,F("RTC Watch dog Reset CPU"));break;
+          case 14 : p.replace(tok,F("for APP CPU, reseted by PRO CPU"));break;
+          case 15 : p.replace(tok,F("Reset when the vdd voltage is not stable"));break;
+          case 16 : p.replace(tok,F("RTC Watch dog reset digital core and rtc module"));break;
+          default : p.replace(tok,F("NO_MEAN"));
+        }
+      }
+    #endif
   }
   else if(id==F("apip")){
     p = FPSTR(HTTP_INFO_apip);
@@ -1026,7 +1132,7 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
-    p.replace(FPSTR(T_1),(String)WiFi.SSID());
+    p.replace(FPSTR(T_1),(String)WiFi_SSID());
   }
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
@@ -1050,7 +1156,11 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id==F("host")){
     p = FPSTR(HTTP_INFO_host);
+    #ifdef ESP32
+      p.replace(FPSTR(T_1),WiFi.getHostname());
+    #else
     p.replace(FPSTR(T_1),WiFi.hostname());
+    #endif
   }
   else if(id==F("stamac")){
     p = FPSTR(HTTP_INFO_stamac);
@@ -1064,7 +1174,6 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace(FPSTR(T_1),WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
   }
-
   return p;
 }
 
@@ -1174,15 +1283,15 @@ boolean WiFiManager::captivePortal() {
 
 void WiFiManager::reportStatus(String &page){
   String str;
-  if (WiFi.SSID() != ""){
+  if (WiFi_SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){
       str = FPSTR(HTTP_STATUS_ON);
       str.replace(FPSTR(T_i),WiFi.localIP().toString());
-      str.replace(FPSTR(T_v),WiFi.SSID());
+      str.replace(FPSTR(T_v),WiFi_SSID());
     }
     else {
       str = FPSTR(HTTP_STATUS_OFF);
-      str.replace(FPSTR(T_v),WiFi.SSID());
+      str.replace(FPSTR(T_v),WiFi_SSID());
     }
   }
   else {
@@ -1190,7 +1299,6 @@ void WiFiManager::reportStatus(String &page){
   }
   page += str;
 }
-
 
 // MORE SETTERS
 
@@ -1231,6 +1339,10 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
 
 void WiFiManager::setCaptivePortalEnable(boolean enabled){
   _enableCaptivePortal = enabled;
+}
+
+void WiFiManager::setWiFiAutoReconnect(boolean enabled){
+  _wifiAutoReconnect = enabled;
 }
 
 void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
@@ -1276,8 +1388,14 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
 }
 
 void WiFiManager::debugSoftAPConfig(){
-    softap_config config;
-    wifi_softap_get_config(&config);
+    #ifdef ESP8266
+      softap_config config;
+      wifi_softap_get_config(&config);
+    #elif defined(ESP32)
+      wifi_config_t conf_config;
+      esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
+      wifi_ap_config_t config = conf_config.ap;
+    #endif
 
     DEBUG_WM(F("SoftAP Configuration"));
     DEBUG_WM(FPSTR(D_HR));
@@ -1293,11 +1411,17 @@ void WiFiManager::debugSoftAPConfig(){
 }
 
 void WiFiManager::debugPlatformInfo(){
+  #ifdef ESP8266
     system_print_meminfo();
     DEBUG_WM(F("getCoreVersion():         "),ESP.getCoreVersion());
     DEBUG_WM(F("system_get_sdk_version(): "),system_get_sdk_version());
     DEBUG_WM(F("system_get_boot_version():"),system_get_boot_version());
     DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
+  #elif defined(ESP32)
+    size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+    DEBUG_WM("Free heap: ", freeHeap);
+    DEBUG_WM("ESP-IDF version: ", esp_get_idf_version());
+  #endif
 }
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
@@ -1355,34 +1479,26 @@ String WiFiManager::getWLStatusString(uint8_t status){
 }
 
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {
-    switch(authmode) {
-        case ENC_TYPE_NONE:
-            return F("None");
-        case ENC_TYPE_WEP:
-            return F("WEP");
-        case ENC_TYPE_TKIP:
-            return F("WPA_PSK");
-        case ENC_TYPE_CCMP:
-            return F("WPA2_PSK");
-        case ENC_TYPE_AUTO:
-            return F("WPA_WPA2_PSK");
-        default:
-            return FPSTR(S_NA);
-    }
+  // DEBUG_WM("enc_tye: ",authmode);
+  return AUTH_MODE_NAMES[authmode];
 }
 
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
-    if((wifi_get_opmode() == (uint8) m ) && !persistent) {
-        return true;
-    }
-    bool ret;
-    ETS_UART_INTR_DISABLE();
-    if(persistent) ret = wifi_set_opmode(m);
-    else ret = wifi_set_opmode_current(m);
-    ETS_UART_INTR_ENABLE();
+    #ifdef ESP8266
+      if((wifi_get_opmode() == (uint8) m ) && !persistent) {
+          return true;
+      }
+      bool ret;
+      ETS_UART_INTR_DISABLE();
+      if(persistent) ret = wifi_set_opmode(m);
+      else ret = wifi_set_opmode_current(m);
+      ETS_UART_INTR_ENABLE();
 
-  return ret;
+    return ret;
+    #elif defined(ESP32)
+      return WiFi.mode(m); // @todo persistent not implemented?
+    #endif
 }
 bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 	return WiFi_Mode(m,false);
@@ -1394,53 +1510,116 @@ bool WiFiManager::disconnect(){
 
 // sta disconnect without persistent
 bool WiFiManager::WiFi_Disconnect() {
-    if((WiFi.getMode() & WIFI_STA) != 0) {
-        bool ret;
-        DEBUG_WM(F("wifi station disconnect"));
-        ETS_UART_INTR_DISABLE(); 
-        ret = wifi_station_disconnect();
-        ETS_UART_INTR_ENABLE();
-        return ret;
-    }
+    #ifdef ESP8266
+      if((WiFi.getMode() & WIFI_STA) != 0) {
+          bool ret;
+          DEBUG_WM(F("wifi station disconnect"));
+          ETS_UART_INTR_DISABLE(); 
+          ret = wifi_station_disconnect();
+          ETS_UART_INTR_ENABLE();        
+          return ret;
+      }
+    #elif defined(ESP32)
+      DEBUG_WM(F("wifi station disconnect"));
+      // @todo why does disconnect call these, might be needed
+      // WiFi.getMode(); // @todo wifiLowLevelInit(), probably not needed, for save config only
+      // esp_wifi_start(); // @todo can only disconnect if enabled perhaps, prevent failure, or correct for previous call ?
+      return esp_wifi_disconnect() == ESP_OK;
+      // return WiFi.disconnect();
+    #endif
 }
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
-
+    WiFiMode_t newMode;
     WiFiMode_t currentMode = WiFi.getMode();
-    bool isEnabled = ((currentMode & WIFI_STA) != 0);
+    bool isEnabled         = (currentMode & WIFI_STA) != 0;
+    if(enable) newMode     = (WiFiMode_t)(currentMode | WIFI_STA);
+    else newMode           = (WiFiMode_t)(currentMode & (~WIFI_STA));
 
-    if((isEnabled != enable) || persistent) {
-        if(enable) {
-        	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
-            return WiFi_Mode((WiFiMode_t)(currentMode | WIFI_STA),persistent);
-        } else {
-            return WiFi_Mode((WiFiMode_t)(currentMode & (~WIFI_STA)),persistent);
-        }
-    } else {
-        return true;
-    }
+    #ifdef ESP8266
+      if((isEnabled != enable) || persistent) {
+          if(enable) {
+          	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
+              return WiFi_Mode(newMode,persistent);
+          } else {
+              return WiFi_Mode(newMode,persistent);
+          }
+      } else {
+          return true;
+      }
+    #elif defined(ESP32)
+      return WiFi.mode(newMode); // @todo persistent not implemented?
+    #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
 	return WiFi_enableSTA(enable,false);
 }
 
-// erase config BUG polyfill
-// https://github.com/esp8266/Arduino/pull/3635
 bool WiFiManager::WiFi_eraseConfig(void) {
-    // return ESP.eraseConfig();
+    #ifdef ESP8266
+      return ESP.eraseConfig();
+      // https://github.com/esp8266/Arduino/pull/3635
+      // erase config BUG polyfill
+      // const size_t cfgSize = 0x4000;
+      // size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
 
-    const size_t cfgSize = 0x4000;
-    size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
-
-    for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
-        if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
-            return false;
-        }
-    }
-    return true;
+      // for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
+      //     if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
+      //         return false;
+      //     }
+      // }
+      // return true;
+    #elif defined(ESP32)
+      WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode
+      return WiFi.disconnect(true);
+    #endif
 }
 
 void WiFiManager::reboot(){
   ESP.restart();
+}
+
+uint8_t WiFiManager::WiFi_softap_num_stations(){
+  #ifdef ESP8266
+    return wifi_softap_get_station_num();
+  #elif defined(ESP32)
+    return WiFi.softAPgetStationNum();
+  #endif
+}
+
+bool WiFiManager::WiFi_hasAutoConnect(){
+  return WiFi_SSID() != "";
+}
+
+String WiFiManager::WiFi_SSID(){
+  #ifdef ESP8266
+    return WiFi.SSID();
+  #elif defined(ESP32)
+    wifi_config_t conf;
+    esp_wifi_get_config(WIFI_IF_STA, &conf);
+    return String(reinterpret_cast<const char*>(conf.sta.ssid));
+  #endif
+}
+
+void WiFiManager::WiFiEvent(WiFiEvent_t event){
+  #ifdef ESP32
+    WiFiManager _WiFiManager;
+    if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+      // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
+      _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
+      WiFi.reconnect();
+    }
+  #endif  
+}
+
+void WiFiManager::WiFi_autoReconnect(){
+  #ifdef ESP8266
+    WiFi.setAutoReconnect(_wifiAutoReconnect);
+  #elif defined(ESP32)
+    if(_wifiAutoReconnect){
+      DEBUG_WM("ESP32 autoreconnect handler enabled");
+      WiFi.onEvent(WiFiEvent);
+    }  
+  #endif
 }

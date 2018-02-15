@@ -1,20 +1,38 @@
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-//needed for library
-#include <ESP8266WebServer.h>
-#include <DNSServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
 // ESP-01 users please note: the only pins available (0 and 2), are shared 
 // with the bootloader, so always set them HIGH at power-up
 #define TRIGGER_PIN 0
+const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\n Starting");
+
+  Serial.setDebugOutput(true);  
+  Serial.println(modes[WiFi.getMode()]);
+  WiFi.printDiag(Serial);
+
+  //Local intialization. Once its business is done, there is no need to keep it around
+  WiFiManager wifiManager;
+  //reset settings - for testing
+  //wifiManager.resetSettings();
+
+  //sets timeout until configuration portal gets turned off
+  //useful to make it all retry or go to sleep
+  //in seconds
+  wifiManager.setConfigPortalTimeout(180);
+  
+  //fetches ssid and pass and tries to connect
+  //if it does not connect it starts an access point with the specified name
+  //here  "AutoConnectAP"
+  //and goes into a blocking loop awaiting configuration
+  if(!wifiManager.autoConnect("AutoConnectAP","12345678")) {
+    Serial.println("failed to connect and hit timeout");
+  } 
 
   pinMode(TRIGGER_PIN, INPUT);
 }

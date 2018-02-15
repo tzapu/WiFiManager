@@ -7,7 +7,18 @@ The configuration portal is of the captive variety, so on various devices it wil
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
-#### This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer) https://github.com/esp8266/Arduino
+**This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer)**
+
+[https://github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
+
+**This works with the ESP32 Arduino platform with staging , with caveats below** 
+
+[https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+
+### Known Issues
+* :exclamation: ESP32 must be patched with webserver library, see [https://github.com/tzapu/WiFiManager/issues/513](https://github.com/tzapu/WiFiManager/issues/513)
+* :exclamation: ESP32 espressif/dnsserver contains bugs that prevent captive portal from working, see [https://github.com/tzapu/WiFiManager/issues/513](https://github.com/tzapu/WiFiManager/issues/513)
+* Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
 
 ## Contents
  - [How it works](#how-it-works)
@@ -347,6 +358,8 @@ The support and help I got from the community has been nothing short of phenomen
 __THANK YOU__
 
 [Shawn A](https://github.com/tablatronix)
+
+[bbx10](https://github.com/bbx10)
 
 [kentaylor](https://github.com/kentaylor)
 

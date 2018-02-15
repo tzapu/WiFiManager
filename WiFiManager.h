@@ -13,24 +13,44 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
-#if defined(ESP8266)
-  #include <ESP8266WiFi.h>
-  #include <ESP8266WebServer.h>
+#define WEBSERVERSHIM // use webserver shim lib
+
+#ifdef ESP8266
+
+    extern "C" {
+      #include "user_interface.h"
+    }
+    #include <ESP8266WiFi.h>
+    #include <ESP8266WebServer.h>
+
+    #define WIFI_getChipId() ESP.getChipId()
+    #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
+
+#elif defined(ESP32)
+
+    #include <WiFi.h>
+    #include <esp_wifi.h>  
+    
+    #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
+    #define WIFI_AUTH_OPEN   WIFI_AUTH_OPEN
+
+    #ifndef WEBSERVER_H
+        #warning "WEBSERVER not implemented in espressif/esp32, see readme notes"
+        #ifdef WEBSERVERSHIM
+            #include <WebServer.h>
+        #else
+            #include <ESP8266WebServer.h>
+            // Forthcoming official
+            // https://github.com/esp8266/ESPWebServer
+        #endif
+    #endif
+
+#else
 #endif
 
 #include <DNSServer.h>
 #include <memory>
-
-#if defined(ESP8266)
-  extern "C" {
-    #include "user_interface.h"
-  }
-#endif
-
 #include "strings_en.h"
-
-#define WIFI_getChipId() ESP.getChipId()
-#define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
@@ -137,6 +157,8 @@ class WiFiManager
     void          setCaptivePortalClientCheck(boolean enabled);
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
+    // if true enable autoreconnecting
+    void          setWiFiAutoReconnect(boolean enabled);
     // if true, wifiscan will show percentage instead of quality icons, until we have better templating
     void          setScanDispPerc(boolean enabled);
 
@@ -145,8 +167,15 @@ class WiFiManager
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
-    std::unique_ptr<ESP8266WebServer> server;
 
+    #if defined(ESP32) && defined(WEBSERVERSHIM)
+        std::unique_ptr<WebServer> server;
+    #else
+        std::unique_ptr<ESP8266WebServer> server;
+    #endif
+
+    //const int     WM_DONE                 = 0;
+    //const int     WM_WAIT                 = 10;
     // ip configs
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -168,6 +197,8 @@ class WiFiManager
     unsigned long _configPortalStart      = 0;
     unsigned long _webPortalAccessed      = 0;
     WiFiMode_t    _usermode               = WIFI_OFF;
+    
+    String    _wifissidprefix             = FPSTR(S_ssidpre);
 
     // option parameters
     int           _minimumQuality         = -1;
@@ -178,6 +209,7 @@ class WiFiManager
     boolean       _staShowStaticFields    = false;
     boolean       _enableCaptivePortal    = true;
     boolean       _userpersistent         = true;
+    boolean       _wifiAutoReconnect      = true;  // there is no getter for this, we must assume its true and make it so
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
@@ -217,7 +249,14 @@ class WiFiManager
     bool          WiFi_enableSTA(bool enable);
     bool          WiFi_enableSTA(bool enable,bool persistent);
     bool          WiFi_eraseConfig();
+    uint8_t       WiFi_softap_num_stations();
+    bool          WiFi_hasAutoConnect();
+    void          WiFi_autoReconnect();
+    String        WiFi_SSID();
 
+    static void   WiFiEvent(WiFiEvent_t event);
+
+    
     // output helpers
     String        getParamOut();
     String        getIpForm(String id, String title, String value);
