@@ -911,7 +911,8 @@ void WiFiManager::handleInfo() {
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
-  #ifdef ESP8266    
+  //@todo convert to enum
+  #ifdef ESP8266
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1084,7 +1085,7 @@ String WiFiManager::getInfoData(String id){
       p = FPSTR(HTTP_INFO_lastreset);
       for(int i=0;i<2;i++){
         int reason = rtc_get_reset_reason(i);
-        String tok = "{"+(String)(i+1)+"}";
+        String tok = (String)T_ss+(String)(i+1)+(String)T_es;
         switch (reason)
         {
           //@todo move to array

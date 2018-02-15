@@ -184,6 +184,8 @@ const char S_sn[]                 PROGMEM = "sn";
 
 //Tokens
 //@todo consolidate and reduce
+const char T_ss[]                 PROGMEM = "{"; // token start sentinel
+const char T_es[]                 PROGMEM = "}"; // token end sentinel
 const char T_1[]                  PROGMEM = "{1}"; // @token 1
 const char T_2[]                  PROGMEM = "{2}"; // @token 2
 const char T_v[]                  PROGMEM = "{v}"; // @token v
