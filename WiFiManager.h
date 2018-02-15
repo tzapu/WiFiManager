@@ -100,22 +100,30 @@ class WiFiManager
     WiFiManager();
     ~WiFiManager();
 
+    // auto connect to saved wifi, or custom, and start config portal on failures
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 
-    //if you want to always start the config portal, without trying to connect first
-    boolean       startConfigPortal();
+    //manually start the config portal, autoconnect does this automatically on connect failure
+    boolean       startConfigPortal(); // auto generates apname
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
-    boolean       process();
+    
+    //manually start the web portal, autoconnect does this automatically on connect failure    
     void          startWebPortal();
+    //manually stop the web portal if started manually
     void          stopWebPortal();
+    // Run webserver processing, if setConfigPortalBlocking(false)
+    boolean       process();
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
 
+    // erase wifi credentials
     void          resetSettings();
+    // reboot esp
     void          reboot();
-    bool          disconnect(); // non persistent disconnect
+    // disconnect wifi, without persistent saving or erasing
+    bool          disconnect();
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
@@ -125,7 +133,7 @@ class WiFiManager
 
     //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
-
+    // toggle debug output
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
@@ -141,7 +149,7 @@ class WiFiManager
     bool          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
-    //if this is set, portal will be blocking and wait until save or exit, is false user must manually process to handle config portal
+    //if this is set, portal will be blocking and wait until save or exit, is false user must manually `process()` to handle config portal
     void          setConfigPortalBlocking(boolean shouldBlock);
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
@@ -161,8 +169,9 @@ class WiFiManager
     void          setWiFiAutoReconnect(boolean enabled);
     // if true, wifiscan will show percentage instead of quality icons, until we have better templating
     void          setScanDispPerc(boolean enabled);
-
+    // debug output the softap config
     void          debugSoftAPConfig();
+    // debug output platform info and versioning
     void          debugPlatformInfo();
 
   private:
@@ -174,8 +183,6 @@ class WiFiManager
         std::unique_ptr<ESP8266WebServer> server;
     #endif
 
-    //const int     WM_DONE                 = 0;
-    //const int     WM_WAIT                 = 10;
     // ip configs
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
@@ -192,29 +199,29 @@ class WiFiManager
     String        _pass                   = "";
     
     // options flags
-    unsigned long _configPortalTimeout    = 0;
-    unsigned long _connectTimeout         = 0;
-    unsigned long _configPortalStart      = 0;
-    unsigned long _webPortalAccessed      = 0;
+    unsigned long _configPortalTimeout    = 0; // close config portal loop if set (depending on  _cp/webClientCheck options)
+    unsigned long _connectTimeout         = 0; // stop trying to connect to ap if set
+    unsigned long _configPortalStart      = 0; // config portal start time (updated for timeouts)
+    unsigned long _webPortalAccessed      = 0; // last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
     
-    String    _wifissidprefix             = FPSTR(S_ssidpre);
+    String    _wifissidprefix             = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
 
     // option parameters
-    int           _minimumQuality         = -1;
-    boolean       _removeDuplicateAPs     = true;
-    boolean       _shouldBreakAfterConfig = false;
-    boolean       _tryWPS                 = false;
-    boolean       _configPortalIsBlocking = true;
-    boolean       _staShowStaticFields    = false;
-    boolean       _enableCaptivePortal    = true;
-    boolean       _userpersistent         = true;
-    boolean       _wifiAutoReconnect      = true;  // there is no getter for this, we must assume its true and make it so
+    int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
+    boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
+    boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
+    boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
+    boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
+    boolean       _staShowStaticFields    = false; // always show static ip fields, even if not set in code
+    boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
+    boolean       _userpersistent         = true;  // users preffered persistence to restore
+    boolean       _wifiAutoReconnect      = true;  // there is no platform getter for this, we must assume its true and make it so
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
 
-    const char*   _customHeadElement      = "";
+    const char*   _customHeadElement      = ""; // store custom head element html from user
 
     void          setupConfigPortal();
     void          startWPS();

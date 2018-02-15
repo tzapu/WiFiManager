@@ -161,6 +161,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   WiFi_enableSTA(true);
   _usermode = WIFI_STA;
 
+  // no getter for autoreconnectpolicy before this
+  // https://github.com/esp8266/Arduino/pull/4359
+  // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
   WiFi_autoReconnect();
 
   // if already connected, or try stored connect 
@@ -392,7 +395,12 @@ uint8_t WiFiManager::handleConfigPortal(){
       DEBUG_WM(F("Connect to new AP [FAILED]"));
 
       if (_shouldBreakAfterConfig) {
-        // this is more of an exiting callback than a save
+        // do save callback
+        // @todo this is more of an exiting callback than a save, clarify when this should actually occur
+        // confirm or verify data was saved to make this more accurate callback
+        if ( _savecallback != NULL) {
+          _savecallback();
+        }
         stopConfigPortal();
         return WL_CONNECT_FAILED; // fail
       }
@@ -409,12 +417,6 @@ uint8_t WiFiManager::handleConfigPortal(){
 
 boolean WiFiManager::stopConfigPortal(){
   if(webPortalActive) return false;
-
-  // do save callback, @todo move out of here
-  if ( _savecallback != NULL) {
-    //todo: confirm or verify data was saved
-    _savecallback();
-  }
 
   //DNS handler
   dnsServer->processNextRequest();
@@ -1302,57 +1304,124 @@ void WiFiManager::reportStatus(String &page){
 
 // MORE SETTERS
 
-//start up config portal callback
+/**
+ * setAPCallback, set a callback when softap is started
+ * @param {[type]} void (*func)(WiFiManager* myWiFiManager) [description]
+ */
 void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
   _apcallback = func;
 }
 
-//start up save config callback
+/**
+ * setSaveConfigCallback, set a save config callback after closing configportal
+ * @todo only calls if configportal stopped
+ * @param {[type]} void (*func)(void) [description]
+ */
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
 
-//sets a custom element to add to head, like a new style tag
+/**
+ * set custom head html
+ * custom element will be added to head, eg. new style tag etc.
+ * @param char element
+ */
 void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
 //if this is true, remove duplicated Access Points - defaut true
+/**
+ * toggle wifiscan hiding of duplicate ssid names
+ * if enabled, then the webportal wifiscan page will show all aps
+ * @param boolean removeDuplicates [true]
+ */
 void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
 }
 
-//if this is true, remove duplicated Access Points - defaut true
+/**
+ * toggle configportal blocking loop
+ * if enabled, then the configportal will enter a blocking loop and wait for configuration
+ * if disabled use with process() to manually process webserver
+ * @since $dev
+ * @param boolean shoudlBlock [false]
+ */
 void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
   _configPortalIsBlocking = shoudlBlock;
 }
 
-//setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
+/**
+ * toggle restore persistent, track internally
+ * sets ESP wifi.persistent so we can remember it and restore user preference on destruct
+ * there is no getter in esp8266 platform prior to https://github.com/esp8266/Arduino/pull/3857
+ * @since $dev
+ * @param boolean persistent [true]
+ */
 void WiFiManager::setRestorePersistent(boolean persistent) {
   _userpersistent = persistent;
   if(!persistent) DEBUG_WM(F("persistent is off"));
 }
 
+/**
+ * toggle showing static ip form fields
+ * if enabled, then the static ip, gateway, subnet fields will be visible, even if not set in code
+ * @since $dev
+ * @param boolean alwaysShow [false]
+ */
 void WiFiManager::setShowStaticFields(boolean alwaysShow){
   _staShowStaticFields = alwaysShow;
 }
 
+/**
+ * toggle captive portal
+ * if enabled, then devices that use captive portal checks will be redirected to root
+ * if not you will automatically have to navigate to ip [192.168.4.1]
+ * @since $dev
+ * @param boolean enabled [true]
+ */
 void WiFiManager::setCaptivePortalEnable(boolean enabled){
   _enableCaptivePortal = enabled;
 }
 
+/**
+ * toggle wifi autoreconnect policy
+ * if enabled, then wifi will autoreconnect automatically always
+ * On esp8266 we force this on when autoconnect is called, see notes
+ * On esp32 this is handled on SYSTEM_EVENT_STA_DISCONNECTED since it does not exist in core yet
+ * @since $dev
+ * @param boolean enabled [true]
+ */
 void WiFiManager::setWiFiAutoReconnect(boolean enabled){
   _wifiAutoReconnect = enabled;
 }
 
+/**
+ * toggle configportal timeout wait for station client
+ * if enabled, then the configportal will start timeout when no stations are connected to softAP
+ * disabled by default as rogue stations can keep it open if there is no auth
+ * @since $dev
+ * @param boolean enabled [false]
+ */
 void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
   _cpClientCheck = enabled;
 }
 
+/**
+ * toggle configportal timeout wait for web client
+ * if enabled, then the configportal will restart timeout when client requests come in
+ * @since $dev
+ * @param boolean enabled [true]
+ */
 void WiFiManager::setWebPortalClientCheck(boolean enabled){
   _webClientCheck = enabled;
 }
 
+/**
+ * toggle wifiscan percentages or quality icons
+ * @since $dev
+ * @param boolean enabled [false]
+ */
 void WiFiManager::setScanDispPerc(boolean enabled){
   _scanDispOptions = true;
 }
@@ -1504,6 +1573,11 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 	return WiFi_Mode(m,false);
 }
 
+/**
+ * disconnect
+ * @since $dev
+ * @return bool success
+ */
 bool WiFiManager::disconnect(){
   return WiFi_Disconnect();
 }
@@ -1558,18 +1632,21 @@ bool WiFiManager::WiFi_enableSTA(bool enable) {
 
 bool WiFiManager::WiFi_eraseConfig(void) {
     #ifdef ESP8266
-      return ESP.eraseConfig();
-      // https://github.com/esp8266/Arduino/pull/3635
-      // erase config BUG polyfill
-      // const size_t cfgSize = 0x4000;
-      // size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
+      #ifndef FIXERASECONFIG 
+        return ESP.eraseConfig();
+      #else  
+        // erase config BUG polyfill
+        // https://github.com/esp8266/Arduino/pull/3635
+        const size_t cfgSize = 0x4000;
+        size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;
 
-      // for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
-      //     if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
-      //         return false;
-      //     }
-      // }
-      // return true;
+        for (size_t offset = 0; offset < cfgSize; offset += SPI_FLASH_SEC_SIZE) {
+            if (!ESP.flashEraseSector((cfgAddr + offset) / SPI_FLASH_SEC_SIZE)) {
+                return false;
+            }
+        }
+        return true;
+      #endif
     #elif defined(ESP32)
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode
       return WiFi.disconnect(true);
