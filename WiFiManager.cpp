@@ -438,7 +438,8 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
-  WiFi_Mode(_usermode); // restore users wifi mode
+  // WiFi_Mode(_usermode); // restore users wifi mode
+  DEBUG_WM("uswermode",_usermode);
   configPortalActive = false;
   return ret;
 }
