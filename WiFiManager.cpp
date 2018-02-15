@@ -12,7 +12,11 @@
 
 #include "WiFiManager.h"
 
-// PARAMETERS
+/**
+ * --------------------------------------------------------------------------------
+ *  WiFiManagerParameter
+ * --------------------------------------------------------------------------------
+**/
 
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
@@ -91,9 +95,9 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
     _max_params += WIFI_MANAGER_MAX_PARAMS;
     DEBUG_WM(F("Updated _max_params:"),_max_params);
     WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
-    DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
-    DEBUG_WM(_paramsCount);
-    DEBUG_WM(_max_params);
+    // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
+    // DEBUG_WM(_paramsCount);
+    // DEBUG_WM(_max_params);
     if (new_params != NULL) {
       _params = new_params;
     } else {
@@ -107,6 +111,12 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   return true;
 }
 
+/**
+ * --------------------------------------------------------------------------------
+ *  WiFiManager 
+ * --------------------------------------------------------------------------------
+**/
+
 // constructors
 WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
   WiFiManager();
@@ -118,6 +128,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
   //parameters
+  // @todo belongs to wifimanagerparameter
   _max_params = WIFI_MANAGER_MAX_PARAMS;
   _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));  
 }
@@ -128,10 +139,12 @@ WiFiManager::~WiFiManager() {
   if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
 
   // parameters
+  // @todo belongs to wifimanagerparameter
   if (_params != NULL){
     DEBUG_WM(F("freeing allocated params!"));
     free(_params);
   }
+
   DEBUG_WM(F("unloading"));
 }
 
