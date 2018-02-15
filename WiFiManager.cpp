@@ -764,7 +764,7 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
 }
 
 //callback in loop during the setup phase, to allow for third party execution during setup wait
-void setSetupLoopCallback(void (*func)(void)) {
+void WiFiManager::setSetupLoopCallback(void (*func)(void)) {
   _setupLoopCallback = func;
 }
 
