@@ -50,17 +50,7 @@
 
 #include <DNSServer.h>
 #include <memory>
-
-#if defined(ESP8266)
-  extern "C" {
-    #include "user_interface.h"
-  }
-#endif
-
 #include "strings_en.h"
-
-#define WIFI_getChipId() ESP.getChipId()
-#define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
@@ -208,13 +198,7 @@ class WiFiManager
     unsigned long _webPortalAccessed      = 0;
     WiFiMode_t    _usermode               = WIFI_OFF;
     
-    #ifdef ESP8266
-        String        _wifissidprefix         = "ESP";
-    #elif defined(ESP32)
-        String        _wifissidprefix         = "ESP32";
-    #else
-        String        _wifissidprefix         = "WM";
-    #endif
+    String    _wifissidprefix             = FPSTR(S_ssidpre);
 
     // option parameters
     int           _minimumQuality         = -1;

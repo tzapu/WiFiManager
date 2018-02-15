@@ -911,7 +911,8 @@ void WiFiManager::handleInfo() {
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
-  #ifdef ESP8266    
+  //@todo convert to enum
+  #ifdef ESP8266
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1011,16 +1012,16 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_chipid);
     p.replace(FPSTR(T_1),(String)WIFI_getChipId());
   }
-  else if(id=="chiprev"){
+  else if(id==F("chiprev")){
     #ifdef ESP32
       p = FPSTR(HTTP_INFO_chiprev);
-      p.replace("{1}",(String)ESP.getChipRevision());
+      p.replace(FPSTR(T_1),(String)ESP.getChipRevision());
     #endif
   }
-  else if(id=="fchipid"){
+  else if(id==F("fchipid")){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_fchipid);
-      p.replace("{1}",(String)ESP.getFlashChipId());
+      p.replace(FPSTR(T_1),(String)ESP.getFlashChipId());
     #endif
   }
   else if(id==F("idesize")){
@@ -1036,7 +1037,7 @@ String WiFiManager::getInfoData(String id){
   else if(id==F("sdkver")){
     p = FPSTR(HTTP_INFO_sdkver);
     #ifdef ESP32
-      p.replace("{1}",(String)esp_get_idf_version());
+      p.replace(FPSTR(T_1),(String)esp_get_idf_version());
     #else
     p.replace(FPSTR(T_1),(String)system_get_sdk_version());
     #endif
@@ -1078,31 +1079,32 @@ String WiFiManager::getInfoData(String id){
   else if(id==F("lastreset")){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_lastreset);
-      p.replace("{1}",(String)ESP.getResetReason());
+      p.replace(FPSTR(T_1),(String)ESP.getResetReason());
     #elif defined(ESP32) && defined(_ROM_RTC_H_)
       // requires #include <rom/rtc.h>
       p = FPSTR(HTTP_INFO_lastreset);
       for(int i=0;i<2;i++){
         int reason = rtc_get_reset_reason(i);
-        String tok = "{"+(String)(i+1)+"}";
+        String tok = (String)T_ss+(String)(i+1)+(String)T_es;
         switch (reason)
         {
-          case 1  : p.replace(tok,"Vbat power on reset");break;
-          case 3  : p.replace(tok,"Software reset digital core");break;
-          case 4  : p.replace(tok,"Legacy watch dog reset digital core");break;
-          case 5  : p.replace(tok,"Deep Sleep reset digital core");break;
-          case 6  : p.replace(tok,"Reset by SLC module, reset digital core");break;
-          case 7  : p.replace(tok,"Timer Group0 Watch dog reset digital core");break;
-          case 8  : p.replace(tok,"Timer Group1 Watch dog reset digital core");break;
-          case 9  : p.replace(tok,"RTC Watch dog Reset digital core");break;
-          case 10 : p.replace(tok,"Instrusion tested to reset CPU");break;
-          case 11 : p.replace(tok,"Time Group reset CPU");break;
-          case 12 : p.replace(tok,"Software reset CPU");break;
-          case 13 : p.replace(tok,"RTC Watch dog Reset CPU");break;
-          case 14 : p.replace(tok,"for APP CPU, reseted by PRO CPU");break;
-          case 15 : p.replace(tok,"Reset when the vdd voltage is not stable");break;
-          case 16 : p.replace(tok,"RTC Watch dog reset digital core and rtc module");break;
-          default : p.replace(tok,"NO_MEAN");
+          //@todo move to array
+          case 1  : p.replace(tok,F("Vbat power on reset"));break;
+          case 3  : p.replace(tok,F("Software reset digital core"));break;
+          case 4  : p.replace(tok,F("Legacy watch dog reset digital core"));break;
+          case 5  : p.replace(tok,F("Deep Sleep reset digital core"));break;
+          case 6  : p.replace(tok,F("Reset by SLC module, reset digital core"));break;
+          case 7  : p.replace(tok,F("Timer Group0 Watch dog reset digital core"));break;
+          case 8  : p.replace(tok,F("Timer Group1 Watch dog reset digital core"));break;
+          case 9  : p.replace(tok,F("RTC Watch dog Reset digital core"));break;
+          case 10 : p.replace(tok,F("Instrusion tested to reset CPU"));break;
+          case 11 : p.replace(tok,F("Time Group reset CPU"));break;
+          case 12 : p.replace(tok,F("Software reset CPU"));break;
+          case 13 : p.replace(tok,F("RTC Watch dog Reset CPU"));break;
+          case 14 : p.replace(tok,F("for APP CPU, reseted by PRO CPU"));break;
+          case 15 : p.replace(tok,F("Reset when the vdd voltage is not stable"));break;
+          case 16 : p.replace(tok,F("RTC Watch dog reset digital core and rtc module"));break;
+          default : p.replace(tok,F("NO_MEAN"));
         }
       }
     #endif
@@ -1142,7 +1144,7 @@ String WiFiManager::getInfoData(String id){
   else if(id==F("host")){
     p = FPSTR(HTTP_INFO_host);
     #ifdef ESP32
-      p.replace("{1}",WiFi.getHostname());
+      p.replace(FPSTR(T_1),WiFi.getHostname());
     #else
     p.replace(FPSTR(T_1),WiFi.hostname());
     #endif

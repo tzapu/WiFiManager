@@ -174,8 +174,19 @@ const char S_ip[]                 PROGMEM = "ip";
 const char S_gw[]                 PROGMEM = "gw";
 const char S_sn[]                 PROGMEM = "sn";
 
+// softap ssid default prefix
+#ifdef ESP8266
+	const char S_ssidpre[]        PROGMEM = "ESP";
+#elif defined(ESP32)
+	const char S_ssidpre[]        PROGMEM = "ESP32";
+#else
+	const char S_ssidpre[]        PROGMEM = "WM";
+#endif
+
 //Tokens
 //@todo consolidate and reduce
+const char T_ss[]                 PROGMEM = "{"; // token start sentinel
+const char T_es[]                 PROGMEM = "}"; // token end sentinel
 const char T_1[]                  PROGMEM = "{1}"; // @token 1
 const char T_2[]                  PROGMEM = "{2}"; // @token 2
 const char T_v[]                  PROGMEM = "{v}"; // @token v
