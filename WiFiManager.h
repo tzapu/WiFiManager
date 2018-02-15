@@ -50,17 +50,7 @@
 
 #include <DNSServer.h>
 #include <memory>
-
-#if defined(ESP8266)
-  extern "C" {
-    #include "user_interface.h"
-  }
-#endif
-
 #include "strings_en.h"
-
-#define WIFI_getChipId() ESP.getChipId()
-#define WIFI_AUTH_OPEN   ENC_TYPE_NONE
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
