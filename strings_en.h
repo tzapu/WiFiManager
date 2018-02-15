@@ -173,6 +173,7 @@ const char S_ip[]                 PROGMEM = "ip";
 const char S_gw[]                 PROGMEM = "gw";
 const char S_sn[]                 PROGMEM = "sn";
 
+// softap ssid default prefix
 #ifdef ESP8266
 	const char S_ssidpre[]        PROGMEM = "ESP";
 #elif defined(ESP32)
