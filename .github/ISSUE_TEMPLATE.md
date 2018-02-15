@@ -12,8 +12,9 @@ https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/debugging.rst
 ### Basic Infos
 
 #### Hardware
-Hardware:			?ESP-12?
-Core Version:      	?2.1.0-rc2?
+WiFimanager Branch/Release:  Development
+Hardware:			ESP-12e, wemos, esp01
+Core Version:      	2.4.0, staging
 
 ### Description
 
@@ -21,14 +22,8 @@ Problem description
 
 ### Settings in IDE
 
-Module:  			?Generic ESP8266 Module?
-Flash Size: 		?4MB/1MB?
-CPU Frequency:		?80Mhz?
-Flash Mode:			?qio?
-Flash Frequency:	?40Mhz?
-Upload Using:		?OTA / SERIAL?
-Reset Method:		?ck / nodemcu?
-
+Module:  			NodeMcu, Wemos D1
+Additional libraries: 
 
 ### Sketch
 
