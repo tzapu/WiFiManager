@@ -743,7 +743,7 @@ String WiFiManager::getScanItemOut(){
         }
 
       }
-      page += "<br/>";
+      page += FPSTR(HTTP_BR);
     }
 
     return page;
@@ -774,7 +774,7 @@ String WiFiManager::getStaticOut(){
     // WiFi.gatewayIP().toString();
     page += getIpForm(FPSTR(S_sn),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
     // WiFi.subnetMask().toString();
-    page += F("<br/>"); // @todo remove these, use css
+    page += FPSTR(HTTP_BR); // @todo remove these, use css
   }
   return page;
 }
@@ -823,7 +823,7 @@ String WiFiManager::getParamOut(){
 
       // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
-        if(tok_I)pitem.replace(FPSTR(T_i), (String)F("param_")+(String)i);
+        if(tok_I)pitem.replace(FPSTR(T_i), (String)FPSTR(S_parampre)+(String)i);
         if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID());
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID());
         if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t));
@@ -880,7 +880,7 @@ void WiFiManager::handleWifiSave() {
       }
       //read parameter from server
       String value;
-      if(server->arg("param_"+(String)i) != NULL) value = server->arg("param_"+(String)i).c_str();
+      if(server->arg((String)FPSTR(S_parampre)+(String)i) != NULL) value = server->arg((String)FPSTR(S_parampre)+(String)i).c_str();
       else value = server->arg(_params[i]->getID()).c_str();
 
       //store it in array

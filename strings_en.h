@@ -45,6 +45,7 @@ const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method=
 const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
 const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {v}</div>";
 const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
+const char HTTP_BR[]               PROGMEM = "<br/>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
 ".c,body{text-align:center;font-family:verdana}div,input{padding:5px;font-size:1em}input{width:95%;margin:5px 0}button{cursor:pointer;border:0;border-radius:.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
@@ -154,24 +155,25 @@ const char S_GET[]                PROGMEM = "GET";
 const char S_POST[]               PROGMEM = "POST";
 const char S_NA[]                 PROGMEM = "Unknown";
 
-const char S_titlewifisaved[]     PROGMEM = "Credentials Saved"; // @token titlewifisaved
-const char S_titlewifi[]          PROGMEM = "Config ESP"; // @token titlewifi
-const char S_titleinfo[]          PROGMEM = "Info"; // @token titleinfo
-const char S_titleexit[]          PROGMEM = "Exit"; // @token titleexit
-const char S_titlereset[]         PROGMEM = "Reset"; //@token titlereset
-const char S_titleerase[]         PROGMEM = "Erase"; // @token titleerase
-const char S_options[]            PROGMEM = "options"; // @token options
-const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again."; // @token nonetworks
-const char S_staticip[]           PROGMEM = "Static IP"; // @token staticip
-const char S_staticgw[]           PROGMEM = "Static Gateway"; // @token staticgw
-const char S_subnet[]             PROGMEM = "Subnet"; // @token subnet
-const char S_exiting[]            PROGMEM = "Exiting"; // @token exiting
-const char S_resetting[]          PROGMEM = "Module will reset in a few seconds."; //@token resetting
-const char S_error[]              PROGMEM = "An Error Occured"; // @token erroroccur
-const char S_notfound[]           PROGMEM = "File Not Found\n\n"; // @token notfound
-const char S_uri[]                PROGMEM = "URI: "; // @token uri
-const char S_method[]             PROGMEM = "\nMethod: "; // @token method
-const char S_args[]               PROGMEM = "\nArguments: "; // @token args
+const char S_titlewifisaved[]     PROGMEM = "Credentials Saved";
+const char S_titlewifi[]          PROGMEM = "Config ESP";
+const char S_titleinfo[]          PROGMEM = "Info";
+const char S_titleexit[]          PROGMEM = "Exit";
+const char S_titlereset[]         PROGMEM = "Reset";
+const char S_titleerase[]         PROGMEM = "Erase";
+const char S_options[]            PROGMEM = "options";
+const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.";
+const char S_staticip[]           PROGMEM = "Static IP";
+const char S_staticgw[]           PROGMEM = "Static Gateway";
+const char S_subnet[]             PROGMEM = "Subnet";
+const char S_exiting[]            PROGMEM = "Exiting";
+const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
+const char S_error[]              PROGMEM = "An Error Occured";
+const char S_notfound[]           PROGMEM = "File Not Found\n\n";
+const char S_uri[]                PROGMEM = "URI: ";
+const char S_method[]             PROGMEM = "\nMethod: ";
+const char S_args[]               PROGMEM = "\nArguments: ";
+const char S_parampre[]           PROGMEM = "param_";
 
 // debug strings
 const char D_HR[]                 PROGMEM = "--------------------";
