@@ -155,7 +155,7 @@ class WiFiManager
 
     const char*   _customHeadElement      = "";
 
-    void          (*_setupLoopCallback)(void) = null;
+    void          (*_setupLoopCallback)(void) = NULL;
 
     //String        getEEPROMString(int start, int len);
     //void          setEEPROMString(int start, int len, String string);
