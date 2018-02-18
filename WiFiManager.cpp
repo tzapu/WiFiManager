@@ -170,6 +170,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
     DEBUG_WM(F("IP Address:"),WiFi.localIP());
+    _lastconxresult = WL_CONNECTED;
     return true;
   }
   // not connected start configportal
@@ -492,6 +493,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     connRes = waitForConnectResult();
   }
 
+  _lastconxresult = connRes;
   return connRes;
 }
 
@@ -1427,6 +1429,10 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
  */
 void WiFiManager::setScanDispPerc(boolean enabled){
   _scanDispOptions = true;
+}
+
+uint8_t WiFiManager::getLastConxResult(){
+  return _lastconxresult;
 }
 
 // HELPERS

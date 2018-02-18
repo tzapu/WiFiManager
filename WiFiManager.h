@@ -173,6 +173,10 @@ class WiFiManager
     void          debugSoftAPConfig();
     // debug output platform info and versioning
     void          debugPlatformInfo();
+    // get last connection result, includes autoconnect and wifisave
+    uint8_t       getLastConxResult();
+    // get a status as string
+    String        getWLStatusString(uint8_t status);    
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -204,8 +208,8 @@ class WiFiManager
     unsigned long _configPortalStart      = 0; // config portal start time (updated for timeouts)
     unsigned long _webPortalAccessed      = 0; // last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
-    
-    String    _wifissidprefix             = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
+    String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
+    uint8_t       _lastconxresult         = WL_IDLE_STATUS;
 
     // option parameters
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
@@ -272,7 +276,6 @@ class WiFiManager
     String        getHTTPHead(String title);
 
     //helpers
-    String        getWLStatusString(uint8_t status);    
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
@@ -299,7 +302,7 @@ class WiFiManager
 
     // debugging
     boolean       _debug              = true;
-    uint8_t       _debugLevel         = 2;
+    uint8_t       _debugLevel         = 1;
     Stream&     _debugPort; // debug output stream ref
     template <typename Generic>
     void        DEBUG_WM(Generic text);
