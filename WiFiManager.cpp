@@ -166,6 +166,14 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
   WiFi_autoReconnect();
 
+  if(_hostname != ""){
+    #ifdef ESP8266
+      WiFi.hostname(_hostname);
+    #elif defined(ESP32)
+      WiFi.setHostname(_hostname);
+    #endif
+  }
+
   // if already connected, or try stored connect 
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
@@ -208,7 +216,13 @@ bool WiFiManager::startAP(){
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-  
+
+  #ifdef ESP32
+    if(ret && _hostname != ""){
+       WiFi.softAPsetHostname(_hostname);
+   }
+  #endif
+
   return ret;
 }
 
@@ -279,6 +293,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)F("/i"), std::bind(&WiFiManager::handleInfo, this));
   server->on((String)F("/r"), std::bind(&WiFiManager::handleReset, this));
   server->on((String)F("/exit"), std::bind(&WiFiManager::handleExit, this));
+  // server->on((String)F("/exit"), std::bind(&WiFiManager::stopCaptivePortal, this));
   server->on((String)F("/erase"), std::bind(&WiFiManager::handleErase, this));
   server->on((String)F("/status"), std::bind(&WiFiManager::handleWiFiStatus, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -439,8 +454,8 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(F("disconnect configportal"));
   bool ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
-  // WiFi_Mode(_usermode); // restore users wifi mode
-  DEBUG_WM("uswermode",_usermode);
+  // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
+  // DEBUG_WM("usermode",_usermode);
   configPortalActive = false;
   return ret;
 }
@@ -494,6 +509,15 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   _lastconxresult = connRes;
+
+  if(connRes == WL_CONNECTED && _hostname != ""){
+    #ifdef ESP8266
+      WiFi.hostname(_hostname);
+    #elif defined(ESP32)
+      WiFi.setHostname(_hostname);
+    #endif
+  }
+
   return connRes;
 }
 
@@ -1295,6 +1319,10 @@ boolean WiFiManager::captivePortal() {
   return false;
 }
 
+void WiFiManager::stopCaptivePortal(){
+  _enableCaptivePortal= false;
+}
+
 void WiFiManager::reportStatus(String &page){
   String str;
   if (WiFi_SSID() != ""){
@@ -1440,6 +1468,11 @@ void WiFiManager::setScanDispPerc(boolean enabled){
 
 uint8_t WiFiManager::getLastConxResult(){
   return _lastconxresult;
+}
+
+bool  WiFiManager::setHostname(const char * hostname){
+  //@todo max length 32
+  _hostname = hostname;
 }
 
 // HELPERS

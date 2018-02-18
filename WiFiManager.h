@@ -177,6 +177,7 @@ class WiFiManager
     uint8_t       getLastConxResult();
     // get a status as string
     String        getWLStatusString(uint8_t status);    
+    bool          setHostname(const char * hostname);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -211,6 +212,7 @@ class WiFiManager
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
 
+
     // option parameters
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
@@ -224,6 +226,7 @@ class WiFiManager
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
+    const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
 
@@ -252,6 +255,7 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
     uint8_t       handleConfigPortal();
+    void          stopCaptivePortal();
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
