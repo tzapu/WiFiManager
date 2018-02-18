@@ -234,6 +234,7 @@ class WiFiManager
 
     // webserver handlers
     void          handleRoot();
+    void          handleWifiList();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleInfo();

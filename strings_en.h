@@ -37,7 +37,9 @@ const char HTTP_FORM_PARAM_START[] PROGMEM = "<hr>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength={l} placeholder='' value='{v}' {c}>";
 const char HTTP_FORM_PARAM_END[]   PROGMEM = "<br/>";
 
-const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi' method='get'><button>Refresh</button></form>";
+const char HTTP_ASYNC_CONTENT[]    PROGMEM = "<div id='content'></div>";
+const char HTTP_LOAD_LIST[]        PROGMEM = "<script>getList();</script>";
+const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><button onclick=\"getList();\"><div id='spinner'>Refresh</div></button>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
@@ -48,7 +50,7 @@ const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 const char HTTP_BR[]               PROGMEM = "<br/>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
-".c,body{text-align:center;font-family:verdana}div,input{padding:5px;font-size:1em}input{width:95%;margin:5px 0}button{cursor:pointer;border:0;border-radius:.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
+".c,body{text-align:center;font-family:verdana}input{padding:5px;font-size:1em}input{width:95%;margin:5px 0}button{cursor:pointer;border:0;border-radius:.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
 ".wrap {text-align:left;display:inline-block;min-width:260px}"
 // links
 "a{color:#000;font-weight:700;text-decoration:none}a:hover{color:#1fa3ec;text-decoration:underline}"
@@ -65,6 +67,8 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
 "td{vertical-align: top;}"
 ".h{display:none}"
+//loading spinner
+"@keyframes spin{0%{-webkit-transform:rotate(0);transform:rotate(0)}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@-webkit-keyframes pulse{50%{background:#fff}}@keyframes pulse{50%{background:#fff}}.loading{width:12px;height:12px;border:.15rem solid rgba(255,255,255,.2);border-radius:50%;border-top-color:#fff;display:inline-block;-webkit-animation:spin 1s infinite linear;animation:spin 1s infinite linear;cursor:default}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
@@ -90,7 +94,6 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
-#ifdef JSTEST
 const char HTTP_JS[] PROGMEM = 
 "<script>function postAjax(url, data, success) {"
 "    var params = typeof data == 'string' ? data : Object.keys(data).map("
@@ -105,10 +108,8 @@ const char HTTP_JS[] PROGMEM =
 "    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
 "    xhr.send(params);"
 "    return xhr;}"
-"postAjax('/status', 'p1=1&p2=Hello+World', function(data){ console.log(data); });"
-"postAjax('/status', { p1: 1, p2: 'Hello World' }, function(data){ console.log(data); });"
+"function getList(){spinner=document.getElementById('spinner'),content=document.getElementById('content'),spinner.className='loading',spinner.innerHTML='',postAjax('/wifilist','',function(n){spinner.className='',spinner.innerHTML='Refresh',content.innerHTML=n})}"
 "</script>";
-#endif
 
 // Info html
 #ifdef ESP32
