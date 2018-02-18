@@ -963,7 +963,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<25;i++){
+    for(int i=0; i<27;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -988,6 +988,7 @@ void WiFiManager::handleInfo() {
       F("wifihead"),
       F("apip"),
       F("apmac"),
+      F("aphost"),
       F("apssid"),
       F("apbssid"),
       F("staip"),
@@ -1000,7 +1001,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<19;i++){
+    for(int i=0; i<23;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -1137,6 +1138,12 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_apmac);
     p.replace(FPSTR(T_1),(String)WiFi.softAPmacAddress());
   }
+  #ifdef ESP32
+    else if(id==F("aphost")){
+      p = FPSTR(HTTP_INFO_aphost);
+      p.replace(FPSTR(T_1),WiFi.softAPgetHostname());
+    }
+  #endif
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
     p.replace(FPSTR(T_1),(String)WiFi_SSID());
