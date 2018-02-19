@@ -181,13 +181,16 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // set hostname before stating
   if(_hostname != ""){
+    bool res = true;
     #ifdef ESP8266
-      WiFi.hostname(_hostname);
+      res = WiFi.hostname(_hostname);
     #elif defined(ESP32)
       // @note hostname must be set after STA_START
       delay(200); // do not remove, give time for STA_START
-      WiFi.setHostname(_hostname);
+      res = WiFi.setHostname(_hostname);
     #endif
+    
+    if(!res)DEBUG_WM(F("hostname: set failed!"));
     
     if(WiFi.status() == WL_CONNECTED){
       DEBUG_WM(F("reconnecting to set new hostname"));
@@ -203,8 +206,17 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     //connected
     DEBUG_WM(F("IP Address:"),WiFi.localIP());
     _lastconxresult = WL_CONNECTED;
+
+    if(_hostname != ""){
+      #ifdef ESP8266
+        DEBUG_WM("hostname: STA",WiFi.hostname());
+      #elif defined(ESP32)
+        DEBUG_WM("hostname: STA",WiFi.getHostname());
+      #endif
+    }
     return true;
   }
+
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
@@ -238,8 +250,9 @@ bool WiFiManager::startAP(){
   // set ap hostname
   #ifdef ESP32
     if(ret && _hostname != ""){
-      WiFi.softAPsetHostname(_hostname);
-      DEBUG_WM(F("aphostname: "),WiFi.softAPgetHostname());
+      bool res =  WiFi.softAPsetHostname(_hostname);
+      if(!res)DEBUG_WM(F("hostname: AP set failed!"));
+      DEBUG_WM(F("hostname: AP"),WiFi.softAPgetHostname());
    }
   #endif
 
@@ -247,7 +260,7 @@ bool WiFiManager::startAP(){
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-  
+
   return ret;
 }
 
