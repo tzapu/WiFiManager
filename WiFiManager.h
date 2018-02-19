@@ -177,7 +177,10 @@ class WiFiManager
     uint8_t       getLastConxResult();
     // get a status as string
     String        getWLStatusString(uint8_t status);    
+    // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
+    // check if the module has a saved ap to connect to
+    bool          getWiFiIsSaved();
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;

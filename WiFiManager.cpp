@@ -1476,13 +1476,36 @@ void WiFiManager::setScanDispPerc(boolean enabled){
   _scanDispOptions = true;
 }
 
+/**
+ * return the last known connection result
+ * logged on autoconnect and wifisave, can be used to check why failed
+ * get as readable string with getWLStatusString(getLastConxResult);
+ * @since $dev
+ * @return bool return wl_status codes
+ */
 uint8_t WiFiManager::getLastConxResult(){
   return _lastconxresult;
 }
 
+/**
+ * set the hostname (dhcp client id)
+ * @since $dev
+ * @param  char* hostname 32 character hostname to use for sta+ap in esp32, sta in esp8266
+ * @return bool false if hostname is not valid
+ */
 bool  WiFiManager::setHostname(const char * hostname){
   //@todo max length 32
   _hostname = hostname;
+  return true;
+}
+
+/**
+ * check if wifi has a saved ap or not
+ * @since $dev
+ * @return bool true if a saved ap config exists
+ */
+bool WiFiManager::getWiFiIsSaved(){
+  return WiFi_hasAutoConnect();
 }
 
 // HELPERS
