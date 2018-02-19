@@ -230,7 +230,7 @@ class WiFiManager
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
-    const char *  _hostname               = "wmtest";
+    const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
 
