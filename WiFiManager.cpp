@@ -172,13 +172,14 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       WiFi.hostname(_hostname);
     #elif defined(ESP32)
       WiFi.setHostname(_hostname);
-      if(WiFi.status() == WL_CONNECTED){
-        DEBUG_WM("reconnecting to set new hostname");
-        // WiFi.reconnect(); // does not reset dhcp
-        WiFi_Disconnect();
-        delay(500); // need a delay for disconnect to change status()
-      }
     #endif
+    
+    if(WiFi.status() == WL_CONNECTED){
+      DEBUG_WM("reconnecting to set new hostname");
+      // WiFi.reconnect(); // does not reset dhcp
+      WiFi_Disconnect();
+      delay(500); // need a delay for disconnect to change status()
+    }
   }
 
   // if already connected, or try stored connect 
