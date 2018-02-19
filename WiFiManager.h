@@ -204,10 +204,10 @@ class WiFiManager
     String        _pass                   = "";
     
     // options flags
-    unsigned long _configPortalTimeout    = 0; // close config portal loop if set (depending on  _cp/webClientCheck options)
-    unsigned long _connectTimeout         = 0; // stop trying to connect to ap if set
-    unsigned long _configPortalStart      = 0; // config portal start time (updated for timeouts)
-    unsigned long _webPortalAccessed      = 0; // last web access time
+    unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
+    unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
+    unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
+    unsigned long _webPortalAccessed      = 0; // ms last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;

@@ -158,7 +158,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  WiFi_enableSTA(true);
+  WiFi.enableSTA(true);
   _usermode = WIFI_STA;
 
   // no getter for autoreconnectpolicy before this
@@ -166,19 +166,36 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
   WiFi_autoReconnect();
 
+  // set hostname before stating
   if(_hostname != ""){
     #ifdef ESP8266
       WiFi.hostname(_hostname);
     #elif defined(ESP32)
       WiFi.setHostname(_hostname);
+      if(WiFi.status() == WL_CONNECTED){
+        DEBUG_WM("reconnecting to set new hostname");
+        // WiFi.reconnect(); // does not reset dhcp
+        WiFi_Disconnect();
+        delay(500); // need a delay for disconnect to change status()
+      }
     #endif
   }
 
   // if already connected, or try stored connect 
+  // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
     DEBUG_WM(F("IP Address:"),WiFi.localIP());
     _lastconxresult = WL_CONNECTED;
+
+    if(_hostname != ""){
+      #ifdef ESP8266
+        DEBUG_WM("hostname: ",WiFi.hostname());
+      #elif defined(ESP32)
+        DEBUG_WM("hostname: ",WiFi.getHostname());
+      #endif
+    }
+
     return true;
   }
   // not connected start configportal
@@ -509,14 +526,6 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   _lastconxresult = connRes;
-
-  if(connRes == WL_CONNECTED && _hostname != ""){
-    #ifdef ESP8266
-      WiFi.hostname(_hostname);
-    #elif defined(ESP32)
-      WiFi.setHostname(_hostname);
-    #endif
-  }
 
   return connRes;
 }
@@ -1628,6 +1637,10 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
  * @return bool success
  */
 bool WiFiManager::disconnect(){
+  if(WiFi.status() != WL_CONNECTED){
+    DEBUG_WM("Disconnect: Not connected");
+    return false;
+  }  
   return WiFi_Disconnect();
 }
 
@@ -1654,13 +1667,13 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
-    WiFiMode_t newMode;
-    WiFiMode_t currentMode = WiFi.getMode();
-    bool isEnabled         = (currentMode & WIFI_STA) != 0;
-    if(enable) newMode     = (WiFiMode_t)(currentMode | WIFI_STA);
-    else newMode           = (WiFiMode_t)(currentMode & (~WIFI_STA));
-
     #ifdef ESP8266
+      WiFiMode_t newMode;
+      WiFiMode_t currentMode = WiFi.getMode();
+      bool isEnabled         = (currentMode & WIFI_STA) != 0;
+      if(enable) newMode     = (WiFiMode_t)(currentMode | WIFI_STA);
+      else newMode           = (WiFiMode_t)(currentMode & (~WIFI_STA));
+
       if((isEnabled != enable) || persistent) {
           if(enable) {
           	if(persistent) DEBUG_WM(F("enableSTA PERSISTENT ON"));
@@ -1672,7 +1685,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
           return true;
       }
     #elif defined(ESP32)
-      return WiFi.mode(newMode); // @todo persistent not implemented?
+      return WiFi.enableSTA(enable); // @todo handle persistent when it is implemented in platform
     #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
@@ -1730,10 +1743,11 @@ String WiFiManager::WiFi_SSID(){
 
 void WiFiManager::WiFiEvent(WiFiEvent_t event){
   #ifdef ESP32
-    WiFiManager _WiFiManager;
+    // WiFiManager _WiFiManager;
+    // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
-      _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
+      // _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
       WiFi.reconnect();
     }
   #endif  
