@@ -573,7 +573,17 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
     connRes = waitForConnectResult();
   }
 
-  _lastconxresult = connRes;
+  if(connRes != WL_SCAN_COMPLETED){
+    _lastconxresult = connRes;
+    #ifdef ESP8266
+      // hack in wrong password detection
+      if(_lastconxresult == WL_CONNECT_FAILED){
+        if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
+          _lastconxresult = WL_STATION_WRONG_PASSWORD;
+        }
+      }
+    #endif
+  }
 
   return connRes;
 }
@@ -735,7 +745,6 @@ String WiFiManager::getScanItemOut(){
 
       // token precheck, to speed up replacements on large ap lists
       String HTTP_ITEM_STR = FPSTR(HTTP_ITEM);
-
 
       // toggle icons with percentage
       HTTP_ITEM_STR.replace("{qp}", FPSTR(HTTP_ITEM_QP));
@@ -1344,6 +1353,25 @@ void WiFiManager::reportStatus(String &page){
     else {
       str = FPSTR(HTTP_STATUS_OFF);
       str.replace(FPSTR(T_v),WiFi_SSID());
+      if(_lastconxresult == WL_STATION_WRONG_PASSWORD){
+        // wrong password
+        str.replace(FPSTR(T_c),"D"); // class
+        str.replace(FPSTR(T_r),FPSTR(HTTP_STATUS_OFFPW));
+      }
+      else if(_lastconxresult == WL_NO_SSID_AVAIL){
+        // connect failed, or ap not found
+        str.replace(FPSTR(T_c),"D");
+        str.replace(FPSTR(T_r),FPSTR(HTTP_STATUS_OFFNOAP));
+      }
+      else if(_lastconxresult == WL_CONNECT_FAILED){
+        // connect failed
+        str.replace(FPSTR(T_c),"D");
+        str.replace(FPSTR(T_r),FPSTR(HTTP_STATUS_OFFFAIL));
+      }
+      else{
+        str.replace(FPSTR(T_c),"");
+        str.replace(FPSTR(T_r),"");
+      } 
     }
   }
   else {
@@ -1791,7 +1819,7 @@ boolean WiFiManager::validApPassword(){
  * @return {[type]}         [description]
  */
 String WiFiManager::getWLStatusString(uint8_t status){
-  if(status >=0 && status <=6) return WIFI_STA_STATUS[status];
+  if(status >=0 && status <=7) return WIFI_STA_STATUS[status];
   return FPSTR(S_NA);
 }
 

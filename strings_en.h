@@ -43,7 +43,10 @@ const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
 
 const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
-const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg'><strong>Not Connected</strong> to {v}</div>";
+const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg {c}'><strong>Not Connected</strong> to {v}{r}</div>";
+const char HTTP_STATUS_OFFPW[]     PROGMEM = "<br/>Wrong Password";
+const char HTTP_STATUS_OFFNOAP[]   PROGMEM = "<br/>AP not found";
+const char HTTP_STATUS_OFFFAIL[]   PROGMEM = "<br/>Could not Connect";
 const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 const char HTTP_BR[]               PROGMEM = "<br/>";
 
@@ -226,13 +229,14 @@ const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
 
 const char * const WIFI_STA_STATUS[] PROGMEM
 {
-  "WL_IDLE_STATUS",   // STATION_IDLE
-  "WL_NO_SSID_AVAIL", // STATION_NO_AP_FOUND
-  "WL_SCAN_COMPLETED",
-  "WL_CONNECTED",     // STATION_GOT_IP
-  "WL_CONNECT_FAILED",// STATION_CONNECT_FAIL, STATION_WRONG_PASSWORD(NI)
-  "WL_CONNECTION_LOST",
-  "WL_DISCONNECTED"
+  "WL_IDLE_STATUS",     // 0 STATION_IDLE
+  "WL_NO_SSID_AVAIL",   // 1 STATION_NO_AP_FOUND
+  "WL_SCAN_COMPLETED",  // 2
+  "WL_CONNECTED",       // 3 STATION_GOT_IP
+  "WL_CONNECT_FAILED",  // 4 STATION_CONNECT_FAIL, STATION_WRONG_PASSWORD(NI)
+  "WL_CONNECTION_LOST", // 5
+  "WL_DISCONNECTED",    // 6 
+  "WL_STATION_WRONG_PASSWORD" // 7 KLUDGE 
 };
 
 #ifdef ESP32

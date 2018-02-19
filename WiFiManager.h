@@ -215,7 +215,10 @@ class WiFiManager
     WiFiMode_t    _usermode               = WIFI_OFF;
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
-
+    
+    #ifndef WL_STATION_WRONG_PASSWORD
+    uint8_t WL_STATION_WRONG_PASSWORD     = 7;
+    #endif
 
     // option parameters
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
