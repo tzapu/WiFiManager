@@ -365,6 +365,11 @@ boolean WiFiManager::startConfigPortal() {
  */
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
+  _apName     = apName; // @todo check valid apname ?
+  _apPassword = apPassword;
+  
+  if(_apName == "") _apName = _wifissidprefix + "_" + String(WIFI_getChipId());
+  if(!validApPassword()) return false;
   
   bool disableSTA = false; // debug, always disable sta
 
@@ -381,24 +386,19 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     WiFi_enableSTA(true);
   }
 
-  DEBUG_WM(F("Enabling AP"));
-
-  _apName     = apName; // @todo check valid apname ?
-  _apPassword = apPassword;
-  if(!validApPassword()) return false;
-
   // init configportal globals to known states
   configPortalActive = true;
   bool result = connect = abort = false; // loop flags, connect true success, abort true break
   uint8_t state;
 
-  DEBUG_WM(F("setupConfigPortal"));
   _configPortalStart = millis();
 
   // start access point
+  DEBUG_WM(F("Enabling AP"));
   startAP();
 
   // init configportal
+  DEBUG_WM(F("setupConfigPortal"));
   setupConfigPortal();
 
   if(!_configPortalIsBlocking){
