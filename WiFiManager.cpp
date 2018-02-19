@@ -184,14 +184,16 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #ifdef ESP8266
       WiFi.hostname(_hostname);
     #elif defined(ESP32)
+      // @note hostname must be set after STA_START
+      delay(200); // do not remove, give time for STA_START
       WiFi.setHostname(_hostname);
     #endif
     
     if(WiFi.status() == WL_CONNECTED){
       DEBUG_WM("reconnecting to set new hostname");
-      // WiFi.reconnect(); // does not reset dhcp
+      // WiFi.reconnect(); // This does not reset dhcp
       WiFi_Disconnect();
-      delay(500); // need a delay for disconnect to change status()
+      delay(200); // do not remove, need a delay for disconnect to change status()
     }
   }
 
@@ -238,7 +240,7 @@ bool WiFiManager::startAP(){
 
   if(_debugLevel > 1) debugSoftAPConfig();
 
-  if(!ret) DEBUG_WM("[ERROR] There was a problem starting the AP"); // @bug startAP returns unreliable success status
+  if(!ret) DEBUG_WM("[ERROR] There was a problem starting the AP");
 
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
@@ -250,7 +252,7 @@ bool WiFiManager::startAP(){
 
   #ifdef ESP32
     if(ret && _hostname != ""){
-       WiFi.softAPsetHostname(_hostname);
+      WiFi.softAPsetHostname(_hostname);
    }
   #endif
 
@@ -554,7 +556,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       waitforconx = false;
     }
   }
-
+    
   uint8_t connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
   DEBUG_WM (F("Connection result:"),getWLStatusString(connRes));
 
@@ -1911,6 +1913,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event){
   #ifdef ESP32
     // WiFiManager _WiFiManager;
     // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
+    // if(event == SYSTEM_EVENT_AP_START) WiFi.softAPsetHostname("wmtest"); 
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       // _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
