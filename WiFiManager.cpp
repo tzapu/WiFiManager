@@ -190,7 +190,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #endif
     
     if(WiFi.status() == WL_CONNECTED){
-      DEBUG_WM("reconnecting to set new hostname");
+      DEBUG_WM(F("reconnecting to set new hostname"));
       // WiFi.reconnect(); // This does not reset dhcp
       WiFi_Disconnect();
       delay(200); // do not remove, need a delay for disconnect to change status()
@@ -203,15 +203,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     //connected
     DEBUG_WM(F("IP Address:"),WiFi.localIP());
     _lastconxresult = WL_CONNECTED;
-
-    if(_hostname != ""){
-      #ifdef ESP8266
-        DEBUG_WM("hostname: ",WiFi.hostname());
-      #elif defined(ESP32)
-        DEBUG_WM("hostname: ",WiFi.getHostname());
-      #endif
-    }
-
     return true;
   }
   // not connected start configportal
@@ -220,6 +211,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
 // CONFIG PORTAL
 bool WiFiManager::startAP(){
+  bool ret = true;
   DEBUG_WM(F("StartAP with SSID: "),_apName);
 
   // setup optional soft AP static ip config
@@ -227,8 +219,6 @@ bool WiFiManager::startAP(){
     DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
-
-  bool ret = true;
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
@@ -245,17 +235,19 @@ bool WiFiManager::startAP(){
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
 
+  // set ap hostname
+  #ifdef ESP32
+    if(ret && _hostname != ""){
+      WiFi.softAPsetHostname(_hostname);
+      DEBUG_WM(F("aphostname: "),WiFi.softAPgetHostname());
+   }
+  #endif
+
   // do AP callback if set
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-
-  #ifdef ESP32
-    if(ret && _hostname != ""){
-      WiFi.softAPsetHostname(_hostname);
-   }
-  #endif
-
+  
   return ret;
 }
 
