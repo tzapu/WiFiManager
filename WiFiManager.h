@@ -169,19 +169,20 @@ class WiFiManager
     void          setWiFiAutoReconnect(boolean enabled);
     // if true, wifiscan will show percentage instead of quality icons, until we have better templating
     void          setScanDispPerc(boolean enabled);
-    // debug output the softap config
-    void          debugSoftAPConfig();
-    // debug output platform info and versioning
-    void          debugPlatformInfo();
+    // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
+    bool          setHostname(const char * hostname);
+
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
     // get a status as string
     String        getWLStatusString(uint8_t status);    
-    // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
-    bool          setHostname(const char * hostname);
     // check if the module has a saved ap to connect to
     bool          getWiFiIsSaved();
 
+    // debug output the softap config
+    void          debugSoftAPConfig();
+    // debug output platform info and versioning
+    void          debugPlatformInfo();
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 

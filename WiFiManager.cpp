@@ -80,6 +80,11 @@ const char* WiFiManagerParameter::getCustomHTML() {
   return _customHTML;
 }
 
+/**
+ * [addParameter description]
+ * @access public
+ * @param {[type]} WiFiManagerParameter *p [description]
+ */
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 
   // check param id is valid
@@ -149,11 +154,19 @@ WiFiManager::~WiFiManager() {
 }
 
 // AUTOCONNECT
+
 boolean WiFiManager::autoConnect() {
   String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());
   return autoConnect(ssid.c_str(), NULL);
 }
 
+/**
+ * [autoConnect description]
+ * @access public
+ * @param  {[type]} char const         *apName     [description]
+ * @param  {[type]} char const         *apPassword [description]
+ * @return {[type]}      [description]
+ */
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
@@ -244,12 +257,22 @@ bool WiFiManager::startAP(){
   return ret;
 }
 
+/**
+ * [startWebPortal description]
+ * @access public
+ * @return {[type]} [description]
+ */
 void WiFiManager::startWebPortal() {
   if(configPortalActive || webPortalActive) return;
   setupConfigPortal();
   webPortalActive = true;
 }
 
+/**
+ * [stopWebPortal description]
+ * @access public
+ * @return {[type]} [description]
+ */
 void WiFiManager::stopWebPortal() {
   if(!configPortalActive && !webPortalActive) return;
   DEBUG_WM(F("Stopping Web Portal"));  
@@ -326,6 +349,13 @@ boolean WiFiManager::startConfigPortal() {
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
+/**
+ * [startConfigPortal description]
+ * @access public
+ * @param  {[type]} char const         *apName     [description]
+ * @param  {[type]} char const         *apPassword [description]
+ * @return {[type]}      [description]
+ */
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
   //setup AP
   
@@ -396,6 +426,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   return result;
 }
 
+/**
+ * [process description]
+ * @access public
+ * @return {[type]} [description]
+ */
 boolean WiFiManager::process(){
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
         uint8_t state = handleConfigPortal();
@@ -449,6 +484,11 @@ uint8_t WiFiManager::handleConfigPortal(){
     return WL_IDLE_STATUS;
 }
 
+/**
+ * [stopConfigPortal description]
+ * @access public
+ * @return {[type]} [description]
+ */
 boolean WiFiManager::stopConfigPortal(){
   if(webPortalActive) return false;
 
@@ -569,53 +609,6 @@ void WiFiManager::startWPS() {
   DEBUG_WM(F("END WPS"));
 }
 
-// GETTERS
-String WiFiManager::getConfigPortalSSID() {
-  return _apName;
-}
-
-// SETTERS
-void WiFiManager::resetSettings() {
-  DEBUG_WM(F("SETTINGS ERASED"));
-  WiFi_enableSTA(true,true);
-  WiFi.disconnect(true);
-}
-
-void WiFiManager::setTimeout(unsigned long seconds) {
-  setConfigPortalTimeout(seconds);
-}
-
-void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
-  _configPortalTimeout = seconds * 1000;
-}
-
-void WiFiManager::setConnectTimeout(unsigned long seconds) {
-  _connectTimeout = seconds * 1000;
-}
-
-void WiFiManager::setDebugOutput(boolean debug) {
-  _debug = debug;
-}
-
-void WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
-  _ap_static_ip = ip;
-  _ap_static_gw = gw;
-  _ap_static_sn = sn;
-}
-
-void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
-  _sta_static_ip = ip;
-  _sta_static_gw = gw;
-  _sta_static_sn = sn;
-}
-
-void WiFiManager::setMinimumSignalQuality(int quality) {
-  _minimumQuality = quality;
-}
-
-void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
-  _shouldBreakAfterConfig = shouldBreak;
-}
 
 String WiFiManager::getHTTPHead(String title){
   String page;
@@ -1352,10 +1345,132 @@ void WiFiManager::reportStatus(String &page){
   page += str;
 }
 
-// MORE SETTERS
+// PUBLIC
+
+// METHODS
+
+/**
+ * reset wifi settings, clean stored ap password
+ */
+
+/**
+ * disconnect
+ * @access public
+ * @since $dev
+ * @return bool success
+ */
+bool WiFiManager::disconnect(){
+  if(WiFi.status() != WL_CONNECTED){
+    DEBUG_WM("Disconnect: Not connected");
+    return false;
+  }  
+  return WiFi_Disconnect();
+}
+
+/**
+ * reboot the device
+ * @access public
+ */
+void WiFiManager::reboot(){
+  ESP.restart();
+}
+
+
+/**
+ * [resetSettings description]
+ * @access public
+ */
+void WiFiManager::resetSettings() {
+  DEBUG_WM(F("SETTINGS ERASED"));
+  WiFi_enableSTA(true,true);
+  WiFi.disconnect(true);
+}
+
+// SETTERS
+
+/**
+ * [setTimeout description]
+ * @access public
+ * @param {[type]} unsigned long seconds [description]
+ */
+void WiFiManager::setTimeout(unsigned long seconds) {
+  setConfigPortalTimeout(seconds);
+}
+
+/**
+ * [setConfigPortalTimeout description]
+ * @access public
+ * @param {[type]} unsigned long seconds [description]
+ */
+void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
+  _configPortalTimeout = seconds * 1000;
+}
+
+/**
+ * [setConnectTimeout description]
+ * @access public
+ * @param {[type]} unsigned long seconds [description]
+ */
+void WiFiManager::setConnectTimeout(unsigned long seconds) {
+  _connectTimeout = seconds * 1000;
+}
+
+/**
+ * [setDebugOutput description]
+ * @access public
+ * @param {[type]} boolean debug [description]
+ */
+void WiFiManager::setDebugOutput(boolean debug) {
+  _debug = debug;
+}
+
+/**
+ * [setAPStaticIPConfig description]
+ * @access public
+ * @param {[type]} IPAddress ip [description]
+ * @param {[type]} IPAddress gw [description]
+ * @param {[type]} IPAddress sn [description]
+ */
+void WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
+  _ap_static_ip = ip;
+  _ap_static_gw = gw;
+  _ap_static_sn = sn;
+}
+
+/**
+ * [setSTAStaticIPConfig description]
+ * @access public
+ * @param {[type]} IPAddress ip [description]
+ * @param {[type]} IPAddress gw [description]
+ * @param {[type]} IPAddress sn [description]
+ */
+void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn) {
+  _sta_static_ip = ip;
+  _sta_static_gw = gw;
+  _sta_static_sn = sn;
+}
+
+/**
+ * [setMinimumSignalQuality description]
+ * @access public
+ * @param {[type]} int quality [description]
+ */
+void WiFiManager::setMinimumSignalQuality(int quality) {
+  _minimumQuality = quality;
+}
+
+/**
+ * [setBreakAfterConfig description]
+ * @access public
+ * @param {[type]} boolean shouldBreak [description]
+ */
+void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
+  _shouldBreakAfterConfig = shouldBreak;
+}
 
 /**
  * setAPCallback, set a callback when softap is started
+ * @access public 
  * @param {[type]} void (*func)(WiFiManager* myWiFiManager) [description]
  */
 void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
@@ -1365,6 +1480,7 @@ void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
 /**
  * setSaveConfigCallback, set a save config callback after closing configportal
  * @todo only calls if configportal stopped
+ * @access public
  * @param {[type]} void (*func)(void) [description]
  */
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
@@ -1374,6 +1490,7 @@ void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
 /**
  * set custom head html
  * custom element will be added to head, eg. new style tag etc.
+ * @access public
  * @param char element
  */
 void WiFiManager::setCustomHeadElement(const char* element) {
@@ -1384,6 +1501,7 @@ void WiFiManager::setCustomHeadElement(const char* element) {
 /**
  * toggle wifiscan hiding of duplicate ssid names
  * if enabled, then the webportal wifiscan page will show all aps
+ * @access public
  * @param boolean removeDuplicates [true]
  */
 void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
@@ -1395,6 +1513,7 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
  * if enabled, then the configportal will enter a blocking loop and wait for configuration
  * if disabled use with process() to manually process webserver
  * @since $dev
+ * @access public
  * @param boolean shoudlBlock [false]
  */
 void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
@@ -1406,6 +1525,7 @@ void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
  * sets ESP wifi.persistent so we can remember it and restore user preference on destruct
  * there is no getter in esp8266 platform prior to https://github.com/esp8266/Arduino/pull/3857
  * @since $dev
+ * @access public
  * @param boolean persistent [true]
  */
 void WiFiManager::setRestorePersistent(boolean persistent) {
@@ -1417,6 +1537,7 @@ void WiFiManager::setRestorePersistent(boolean persistent) {
  * toggle showing static ip form fields
  * if enabled, then the static ip, gateway, subnet fields will be visible, even if not set in code
  * @since $dev
+ * @access public
  * @param boolean alwaysShow [false]
  */
 void WiFiManager::setShowStaticFields(boolean alwaysShow){
@@ -1428,6 +1549,7 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
  * if enabled, then devices that use captive portal checks will be redirected to root
  * if not you will automatically have to navigate to ip [192.168.4.1]
  * @since $dev
+ * @access public
  * @param boolean enabled [true]
  */
 void WiFiManager::setCaptivePortalEnable(boolean enabled){
@@ -1440,6 +1562,7 @@ void WiFiManager::setCaptivePortalEnable(boolean enabled){
  * On esp8266 we force this on when autoconnect is called, see notes
  * On esp32 this is handled on SYSTEM_EVENT_STA_DISCONNECTED since it does not exist in core yet
  * @since $dev
+ * @access public
  * @param boolean enabled [true]
  */
 void WiFiManager::setWiFiAutoReconnect(boolean enabled){
@@ -1451,6 +1574,7 @@ void WiFiManager::setWiFiAutoReconnect(boolean enabled){
  * if enabled, then the configportal will start timeout when no stations are connected to softAP
  * disabled by default as rogue stations can keep it open if there is no auth
  * @since $dev
+ * @access public
  * @param boolean enabled [false]
  */
 void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
@@ -1461,6 +1585,7 @@ void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
  * toggle configportal timeout wait for web client
  * if enabled, then the configportal will restart timeout when client requests come in
  * @since $dev
+ * @access public
  * @param boolean enabled [true]
  */
 void WiFiManager::setWebPortalClientCheck(boolean enabled){
@@ -1470,6 +1595,7 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
 /**
  * toggle wifiscan percentages or quality icons
  * @since $dev
+ * @access public
  * @param boolean enabled [false]
  */
 void WiFiManager::setScanDispPerc(boolean enabled){
@@ -1477,19 +1603,9 @@ void WiFiManager::setScanDispPerc(boolean enabled){
 }
 
 /**
- * return the last known connection result
- * logged on autoconnect and wifisave, can be used to check why failed
- * get as readable string with getWLStatusString(getLastConxResult);
- * @since $dev
- * @return bool return wl_status codes
- */
-uint8_t WiFiManager::getLastConxResult(){
-  return _lastconxresult;
-}
-
-/**
  * set the hostname (dhcp client id)
  * @since $dev
+ * @access public
  * @param  char* hostname 32 character hostname to use for sta+ap in esp32, sta in esp8266
  * @return bool false if hostname is not valid
  */
@@ -1499,14 +1615,41 @@ bool  WiFiManager::setHostname(const char * hostname){
   return true;
 }
 
+
+// GETTERS
+
+/**
+ * get config portal AP SSID
+ * @since 0.0.1
+ * @access public
+ * @return String the configportal ap name
+ */
+String WiFiManager::getConfigPortalSSID() {
+  return _apName;
+}
+
+/**
+ * return the last known connection result
+ * logged on autoconnect and wifisave, can be used to check why failed
+ * get as readable string with getWLStatusString(getLastConxResult);
+ * @since $dev
+ * @access public
+ * @return bool return wl_status codes
+ */
+uint8_t WiFiManager::getLastConxResult(){
+  return _lastconxresult;
+}
+
 /**
  * check if wifi has a saved ap or not
  * @since $dev
+ * @access public
  * @return bool true if a saved ap config exists
  */
 bool WiFiManager::getWiFiIsSaved(){
   return WiFi_hasAutoConnect();
 }
+
 
 // HELPERS
 
@@ -1538,6 +1681,11 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
   }
 }
 
+/**
+ * [debugSoftAPConfig description]
+ * @access public
+ * @return {[type]} [description]
+ */
 void WiFiManager::debugSoftAPConfig(){
     #ifdef ESP8266
       softap_config config;
@@ -1561,6 +1709,11 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(FPSTR(D_HR));
 }
 
+/**
+ * [debugPlatformInfo description]
+ * @access public
+ * @return {[type]} [description]
+ */
 void WiFiManager::debugPlatformInfo(){
   #ifdef ESP8266
     system_print_meminfo();
@@ -1624,6 +1777,12 @@ boolean WiFiManager::validApPassword(){
   return true;
 }
 
+/**
+ * [getWLStatusString description]
+ * @access public
+ * @param  {[type]} uint8_t status        [description]
+ * @return {[type]}         [description]
+ */
 String WiFiManager::getWLStatusString(uint8_t status){
   if(status >=0 && status <=6) return WIFI_STA_STATUS[status];
   return FPSTR(S_NA);
@@ -1653,19 +1812,6 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
 }
 bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
 	return WiFi_Mode(m,false);
-}
-
-/**
- * disconnect
- * @since $dev
- * @return bool success
- */
-bool WiFiManager::disconnect(){
-  if(WiFi.status() != WL_CONNECTED){
-    DEBUG_WM("Disconnect: Not connected");
-    return false;
-  }  
-  return WiFi_Disconnect();
 }
 
 // sta disconnect without persistent
@@ -1737,10 +1883,6 @@ bool WiFiManager::WiFi_eraseConfig(void) {
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode
       return WiFi.disconnect(true);
     #endif
-}
-
-void WiFiManager::reboot(){
-  ESP.restart();
 }
 
 uint8_t WiFiManager::WiFi_softap_num_stations(){
