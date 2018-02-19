@@ -528,7 +528,7 @@ boolean WiFiManager::stopConfigPortal(){
 // @todo refactor this up into seperate functions
 // one for connecting to flash , one for new client
 // clean up, flow is convoluted, and causes bugs
-int WiFiManager::connectWifi(String ssid, String pass) {
+uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Connecting as wifi client..."));
   
   bool waitforconx = true;
@@ -1735,8 +1735,8 @@ void WiFiManager::debugPlatformInfo(){
   #endif
 }
 
-int WiFiManager::getRSSIasQuality(int RSSI) {
-  int quality = 0;
+uint8_t WiFiManager::getRSSIasQuality(uint8_t RSSI) {
+  uint8_t quality = 0;
 
   if (RSSI <= -100) {
     quality = 0;

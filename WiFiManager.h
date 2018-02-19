@@ -238,8 +238,7 @@ class WiFiManager
     void          startWPS();
     bool          startAP();
 
-    int           status = WL_IDLE_STATUS;
-    int           connectWifi(String ssid, String pass);
+    uint8_t       connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
 
@@ -284,7 +283,7 @@ class WiFiManager
     String        getHTTPHead(String title);
 
     //helpers
-    int           getRSSIasQuality(int RSSI);
+    uint8_t       getRSSIasQuality(uint8_t RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
     boolean       validApPassword();
