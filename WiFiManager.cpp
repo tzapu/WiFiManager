@@ -11,6 +11,7 @@
  */
 
 #include "WiFiManager.h"
+uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
 
 /**
  * --------------------------------------------------------------------------------
@@ -575,14 +576,21 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   if(connRes != WL_SCAN_COMPLETED){
     _lastconxresult = connRes;
-    #ifdef ESP8266
       // hack in wrong password detection
       if(_lastconxresult == WL_CONNECT_FAILED){
-        if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
-          _lastconxresult = WL_STATION_WRONG_PASSWORD;
-        }
+        #ifdef ESP8266
+          if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
+            _lastconxresult = WL_STATION_WRONG_PASSWORD;
+          }
+        #elif defined(ESP32)
+          // DEBUG_WM("lastconxresulttmp:",getWLStatusString(_lastconxresulttmp));            
+          if(_lastconxresulttmp != WL_IDLE_STATUS){
+            _lastconxresult    = _lastconxresulttmp;
+            _lastconxresulttmp = WL_IDLE_STATUS;
+          }
+        #endif
       }
-    #endif
+      DEBUG_WM("lastconxresult:",getWLStatusString(_lastconxresult));
   }
 
   return connRes;
@@ -1945,15 +1953,17 @@ String WiFiManager::WiFi_SSID(){
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
   #ifdef ESP32
     // WiFiManager _WiFiManager;
-    // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
-    // if(event == SYSTEM_EVENT_AP_START) WiFi.softAPsetHostname("wmtest"); 
-        if(event == SYSTEM_EVENT_STA_DISCONNECTED){
-        // Serial.println(info.disconnected.reason);
-        if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE) Serial.println("*WM: EVENT: WIFI_REASON: AUTH_EXPIRE");
-        if(info.disconnected.reason == WIFI_REASON_AUTH_FAIL)   Serial.println("*WM: EVENT: WIFI_REASON: AUTH_FAIL");
-        if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
-      // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
-      // _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
+    // Serial.print("WM: EVENT: ");Serial.println(event);
+    if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+      if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
+        Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
+        _lastconxresulttmp = 7;
+        return;
+      }
+      // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
+      // if(event == SYSTEM_EVENT_AP_START) WiFi.softAPsetHostname("wmtest"); 
+      // if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
+      Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       WiFi.reconnect();
     }
   #endif  
@@ -1964,7 +1974,7 @@ void WiFiManager::WiFi_autoReconnect(){
     WiFi.setAutoReconnect(_wifiAutoReconnect);
   #elif defined(ESP32)
     if(_wifiAutoReconnect){
-      DEBUG_WM("ESP32 autoreconnect handler enabled");
+      DEBUG_WM("ESP32 event handler enabled");
       WiFi.onEvent(WiFiEvent);
     }  
   #endif
