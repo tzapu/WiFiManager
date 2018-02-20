@@ -189,10 +189,11 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WEBSERVERSHIM)
-        std::unique_ptr<WebServer> server;
+        using WM_WebServer = WebServer;
     #else
-        std::unique_ptr<ESP8266WebServer> server;
+        using WM_WebServer = ESP8266WebServer;
     #endif
+        std::unique_ptr<WM_WebServer> server;
 
     // ip configs
     IPAddress     _ap_static_ip;

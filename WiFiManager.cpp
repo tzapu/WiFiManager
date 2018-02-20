@@ -332,11 +332,7 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  #if defined(ESP32) && defined(WEBSERVERSHIM)
-    server.reset(new WebServer(80));
-  #else
-    server.reset(new ESP8266WebServer(80));
-  #endif
+  server.reset(new WM_WebServer(80));
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
