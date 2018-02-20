@@ -275,7 +275,7 @@ class WiFiManager
     void          WiFi_autoReconnect();
     String        WiFi_SSID();
 
-    static void   WiFiEvent(WiFiEvent_t event);
+    static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
 
     
     // output helpers

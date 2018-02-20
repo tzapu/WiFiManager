@@ -128,7 +128,7 @@ WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
 }
 
 WiFiManager::WiFiManager():_debugPort(Serial) {
-  if(_debug && _debugLevel > 0) debugPlatformInfo();
+  if(_debug && _debugLevel > 2) debugPlatformInfo();
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
@@ -1942,12 +1942,16 @@ String WiFiManager::WiFi_SSID(){
   #endif
 }
 
-void WiFiManager::WiFiEvent(WiFiEvent_t event){
+void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
   #ifdef ESP32
     // WiFiManager _WiFiManager;
     // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
     // if(event == SYSTEM_EVENT_AP_START) WiFi.softAPsetHostname("wmtest"); 
-    if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+        if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+        // Serial.println(info.disconnected.reason);
+        if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE) Serial.println("*WM: EVENT: WIFI_REASON: AUTH_EXPIRE");
+        if(info.disconnected.reason == WIFI_REASON_AUTH_FAIL)   Serial.println("*WM: EVENT: WIFI_REASON: AUTH_FAIL");
+        if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
       // Serial.println("Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       // _WiFiManager.DEBUG_WM("ESP32 Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting"); // @todo remove debugging from prod, or change static method
       WiFi.reconnect();
