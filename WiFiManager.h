@@ -209,14 +209,17 @@ class WiFiManager
     
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
-    unsigned long _connectTimeout         = 10000; // ms stop trying to connect to ap if set
+    unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
     unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
     unsigned long _webPortalAccessed      = 0; // ms last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t _lastconxresult               = WL_IDLE_STATUS;
-    static uint8_t _lastconxresulttmp;
     
+    #ifdef ESP32
+    static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
+    #endif
+
     #ifndef WL_STATION_WRONG_PASSWORD
     uint8_t WL_STATION_WRONG_PASSWORD     = 7;
     #endif

@@ -11,7 +11,10 @@
  */
 
 #include "WiFiManager.h"
+
+#ifdef ESP32
 uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
+#endif
 
 /**
  * --------------------------------------------------------------------------------
@@ -217,7 +220,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     }
     return true;
   }
-
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
@@ -577,19 +579,22 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   if(connRes != WL_SCAN_COMPLETED){
     _lastconxresult = connRes;
       // hack in wrong password detection
-      if(_lastconxresult == WL_CONNECT_FAILED){
-        #ifdef ESP8266
+      #ifdef ESP8266
+        if(_lastconxresult == WL_CONNECT_FAILED){
           if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
             _lastconxresult = WL_STATION_WRONG_PASSWORD;
           }
-        #elif defined(ESP32)
-          // DEBUG_WM("lastconxresulttmp:",getWLStatusString(_lastconxresulttmp));            
+        }    
+      #elif defined(ESP32)
+        // if(_lastconxresult == WL_CONNECT_FAILED){
+        if(_lastconxresult == WL_CONNECT_FAILED || _lastconxresult == WL_DISCONNECTED){
+          DEBUG_WM("lastconxresulttmp:",getWLStatusString(_lastconxresulttmp));            
           if(_lastconxresulttmp != WL_IDLE_STATUS){
             _lastconxresult    = _lastconxresulttmp;
             _lastconxresulttmp = WL_IDLE_STATUS;
           }
+        }
         #endif
-      }
       DEBUG_WM("lastconxresult:",getWLStatusString(_lastconxresult));
   }
 
@@ -1955,8 +1960,8 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     // WiFiManager _WiFiManager;
     // Serial.print("WM: EVENT: ");Serial.println(event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
+      Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
       if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
-        Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
         _lastconxresulttmp = 7;
         return;
       }
