@@ -31,6 +31,10 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _customHTML     = custom;
 }
 
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder) {
+  init(id, placeholder, "", 0, "", WFM_LABEL_BEFORE);
+}
+
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
   init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
 }
@@ -46,17 +50,9 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placehold
 void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
   _id             = id;
   _placeholder    = placeholder;
-  _length         = length;
   _labelPlacement = labelPlacement;
-  _value          = new char[length + 1];
-  for (int i = 0; i < length + 1; i++) {
-    _value[i] = 0;
-  }
-  if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length + 1); // length+1 due to null terminated string
-  }
-
-  _customHTML = custom;
+  _customHTML     = custom;
+  setValue(defaultValue,length);
 }
 
 WiFiManagerParameter::~WiFiManagerParameter() {
@@ -65,6 +61,16 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   }
 }
 
+void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
+  _length         = length;
+  _value          = new char[length + 1];
+  for (int i = 0; i < length + 1; i++) {
+    _value[i] = 0;
+  }
+  if (defaultValue != NULL) {
+    strncpy(_value, defaultValue, length + 1); // length+1 due to null terminated string
+  }
+}
 const char* WiFiManagerParameter::getValue() {
   return _value;
 }
