@@ -252,6 +252,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
         break;
       }
     }
+
+    if (_loop)
+      _loop();
+
     yield();
   }
 

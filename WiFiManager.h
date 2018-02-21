@@ -118,6 +118,8 @@ class WiFiManager
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
 
+    void          setUserLoopInAP (void (*loop)()) { _loop = loop; }
+
   private:
     std::unique_ptr<DNSServer>        dnsServer;
     std::unique_ptr<ESP8266WebServer> server;
@@ -137,6 +139,7 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
+    void          (*_loop)()              = 0;
 
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
