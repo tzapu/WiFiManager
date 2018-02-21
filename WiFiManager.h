@@ -293,7 +293,7 @@ class WiFiManager
     String        getHTTPHead(String title);
 
     //helpers
-    uint8_t       getRSSIasQuality(uint8_t RSSI);
+    int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
     boolean       validApPassword();

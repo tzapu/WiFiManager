@@ -190,7 +190,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   WiFi_autoReconnect();
 
   // set hostname before stating
-  if(_hostname != ""){
+  if((String)_hostname != ""){
     bool res = true;
     #ifdef ESP8266
       res = WiFi.hostname(_hostname);
@@ -217,7 +217,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(F("IP Address:"),WiFi.localIP());
     _lastconxresult = WL_CONNECTED;
 
-    if(_hostname != ""){
+    if((String)_hostname != ""){
       #ifdef ESP8266
         DEBUG_WM("hostname: STA",WiFi.hostname());
       #elif defined(ESP32)
@@ -258,7 +258,7 @@ bool WiFiManager::startAP(){
 
   // set ap hostname
   #ifdef ESP32
-    if(ret && _hostname != ""){
+    if(ret && (String)_hostname != ""){
       bool res =  WiFi.softAPsetHostname(_hostname);
       if(!res)DEBUG_WM(F("hostname: AP set failed!"));
       DEBUG_WM(F("hostname: AP"),WiFi.softAPgetHostname());
@@ -307,7 +307,7 @@ boolean WiFiManager::configPortalHasTimeout(){
       return false;
     }
     // handle timeout
-    if(_webClientCheck && _webPortalAccessed>_configPortalStart>0) _configPortalStart = _webPortalAccessed;
+    if(_webClientCheck && (_webPortalAccessed>_configPortalStart)>0) _configPortalStart = _webPortalAccessed;
 
     if(millis() > _configPortalStart + _configPortalTimeout){
       DEBUG_WM(F("config portal has timed out"));
@@ -567,7 +567,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
     }
   }
     
-  uint8_t connRes = waitforconx ? waitForConnectResult() : WL_NO_SSID_AVAIL;
+  uint8_t connRes = waitforconx ? waitForConnectResult() : (uint8_t)WL_NO_SSID_AVAIL;
   DEBUG_WM (F("Connection result:"),getWLStatusString(connRes));
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
@@ -616,7 +616,7 @@ uint8_t WiFiManager::waitForConnectResult() {
   }
 
   DEBUG_WM (F("connectTimeout set, waiting for connect...."));
-  uint8_t status;
+  uint8_t status = WiFi.status();
   int timeout = millis() + _connectTimeout;
   
   while(millis() < timeout) {
@@ -1778,8 +1778,8 @@ void WiFiManager::debugPlatformInfo(){
   #endif
 }
 
-uint8_t WiFiManager::getRSSIasQuality(uint8_t RSSI) {
-  uint8_t quality = 0;
+int WiFiManager::getRSSIasQuality(int RSSI) {
+  int quality = 0;
 
   if (RSSI <= -100) {
     quality = 0;
@@ -1834,7 +1834,7 @@ boolean WiFiManager::validApPassword(){
  * @return {[type]}         [description]
  */
 String WiFiManager::getWLStatusString(uint8_t status){
-  if(status >=0 && status <=7) return WIFI_STA_STATUS[status];
+  if(status <= 7) return WIFI_STA_STATUS[status];
   return FPSTR(S_NA);
 }
 
