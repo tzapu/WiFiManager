@@ -102,6 +102,18 @@ class WiFiManager
     WiFiManager();
     ~WiFiManager();
 
+    typedef enum {
+        MENU_WIFI       = 0,
+        MENU_WIFINOSCAN = 1,
+        MENU_INFO       = 2,
+        MENU_PARAM      = 3,
+        MENU_CLOSE      = 4,
+        MENU_RESTART    = 5,
+        MENU_EXIT       = 6,
+        MENU_ERASE      = 7,
+        MENU_SEP        = 8
+    } menu_page_t;
+
     // auto connect to saved wifi, or custom, and start config portal on failures
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -173,6 +185,8 @@ class WiFiManager
     void          setScanDispPerc(boolean enabled);
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
+    // set custom menu
+    void          setMenu(uint8_t menu[]);
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
@@ -194,6 +208,9 @@ class WiFiManager
         using WM_WebServer = ESP8266WebServer;
     #endif
         std::unique_ptr<WM_WebServer> server;
+
+    // std:vector<uint8_t> _menuids;
+    uint8_t _menuIds[7] = {MENU_WIFI,MENU_INFO,MENU_PARAM,MENU_SEP,MENU_CLOSE,MENU_ERASE,MENU_EXIT};
 
     // ip configs
     IPAddress     _ap_static_ip;
@@ -217,14 +234,14 @@ class WiFiManager
     unsigned long _webPortalAccessed      = 0; // ms last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
-    uint8_t _lastconxresult               = WL_IDLE_STATUS;
+    uint8_t       _lastconxresult         = WL_IDLE_STATUS;
     
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
     #ifndef WL_STATION_WRONG_PASSWORD
-    uint8_t WL_STATION_WRONG_PASSWORD     = 7;
+    uint8_t WL_STATION_WRONG_PASSWORD     = 7; // @kludge define a WL status for wrong password
     #endif
 
     // option parameters
@@ -240,6 +257,7 @@ class WiFiManager
     boolean       _cpClientCheck          = false; // keep cp alive if cp have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
+    boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
@@ -261,13 +279,14 @@ class WiFiManager
     void          handleNotFound();
     void          handleExit();
     void          handleErase();
+    void          handleParam();
     void          handleWiFiStatus();
     void          handleRequest();
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
     boolean       stopConfigPortal();
-    uint8_t       handleConfigPortal();
+    uint8_t       processConfigPortal();
     void          stopCaptivePortal();
 
     // wifi platform abstractions
@@ -291,7 +310,7 @@ class WiFiManager
     String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title);
-
+    String        getMenuOut();
     //helpers
     int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);

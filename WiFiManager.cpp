@@ -145,7 +145,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
   //parameters
   // @todo belongs to wifimanagerparameter
   _max_params = WIFI_MANAGER_MAX_PARAMS;
-  _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));  
+  _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
 }
 
 // destructor
@@ -179,6 +179,8 @@ boolean WiFiManager::autoConnect() {
  */
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
+
+  Serial.println(getMenuOut());
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
   WiFi.enableSTA(true);
@@ -343,10 +345,11 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)F("/wifi"), std::bind(&WiFiManager::handleWifi, this, true));
   server->on((String)F("/0wifi"), std::bind(&WiFiManager::handleWifi, this, false));
   server->on((String)F("/wifisave"), std::bind(&WiFiManager::handleWifiSave, this));
-  server->on((String)F("/i"), std::bind(&WiFiManager::handleInfo, this));
-  server->on((String)F("/r"), std::bind(&WiFiManager::handleReset, this));
+  server->on((String)F("/info"), std::bind(&WiFiManager::handleInfo, this));
+  server->on((String)F("/param"), std::bind(&WiFiManager::handleParam, this));
+  server->on((String)F("/restart"), std::bind(&WiFiManager::handleReset, this));
   server->on((String)F("/exit"), std::bind(&WiFiManager::handleExit, this));
-  // server->on((String)F("/exit"), std::bind(&WiFiManager::stopCaptivePortal, this));
+  server->on((String)F("/close"), std::bind(&WiFiManager::stopCaptivePortal, this));
   server->on((String)F("/erase"), std::bind(&WiFiManager::handleErase, this));
   server->on((String)F("/status"), std::bind(&WiFiManager::handleWiFiStatus, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -423,7 +426,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       break;
     }
 
-    state = handleConfigPortal();
+    state = processConfigPortal();
 
     // status change, break
     if(state != WL_IDLE_STATUS){
@@ -445,14 +448,14 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
  */
 boolean WiFiManager::process(){
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
-        uint8_t state = handleConfigPortal();
+        uint8_t state = processConfigPortal();
         return state == WL_CONNECTED;
     }
     return false;
 }
 
 //using esp enums returns for now, should be fine
-uint8_t WiFiManager::handleConfigPortal(){
+uint8_t WiFiManager::processConfigPortal(){
     //DNS handler
     dnsServer->processNextRequest();
     //HTTP handler
@@ -672,6 +675,7 @@ void WiFiManager::handleRoot() {
   str.replace(FPSTR(T_v),configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
   page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
+  page += getMenuOut();
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
@@ -695,8 +699,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += pitem;
 
   page += getStaticOut();
-  page += getParamOut();
-
+  if(_paramsInWifi) page += getParamOut();
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
   reportStatus(page);
@@ -709,6 +712,38 @@ void WiFiManager::handleWifi(boolean scan) {
   // Serial.println(page);
 
   DEBUG_WM(F("Sent config page"));
+}
+
+/**
+ * HTTPD CALLBACK Wifi param page handler
+ */
+void WiFiManager::handleParam(){
+  DEBUG_WM(F("<- HTTP Param"));
+  handleRequest();
+  String page = getHTTPHead(FPSTR(S_titleparam)); // @token titlewifi
+
+  page += getParamOut();
+  page += FPSTR(HTTP_FORM_END);
+  reportStatus(page);
+  page += FPSTR(HTTP_END);
+
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+  DEBUG_WM(F("Sent param page"));
+}
+
+
+String WiFiManager::getMenuOut(){
+  String page;  
+  int i;
+  for(i=0;i<sizeof(_menuIds);i++){
+    if(i == MENU_PARAM){
+      if(_paramsCount == 0) continue;
+    }
+    page += HTTP_PORTAL_MENU[_menuIds[i]];
+  }
+  return page;
 }
 
 String WiFiManager::getScanItemOut(){
@@ -1665,6 +1700,9 @@ bool  WiFiManager::setHostname(const char * hostname){
   return true;
 }
 
+void WiFiManager::setMenu(uint8_t menu[]){
+  // _menuIds = menu;
+}
 
 // GETTERS
 

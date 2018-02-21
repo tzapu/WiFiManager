@@ -22,8 +22,20 @@ const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.get
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
 
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
-const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "<form action='/wifi' method='GET'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='GET'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='GET'><button>Info</button></form><br/><form action='/r' method='GET'><button>Restart</button></form><br/><form action='/exit' method='GET'><button>Quit</button></form>";
+const char * const HTTP_PORTAL_MENU[] PROGMEM = {
+"<form action='/wifi'    method='GET'><button>Configure WiFi</button></form><br/>\n", // MENU_WIFI
+"<form action='/0wifi'   method='GET'><button>Configure WiFi (No Scan)</button></form><br/>\n", // MENU_WIFINOSCAN
+"<form action='/info'    method='GET'><button>Info</button></form><br/>\n", // MENU_INFO
+"<form action='/param'   method='GET'><button>Setup</button></form><br/>\n",//MENU_PARAM
+"<form action='/close'   method='GET'><button>Close</button></form><br/>\n", // MENU_CLOSE
+"<form action='/restart' method='GET'><button>Restart</button></form><br/>\n",// MENU_RESTART
+"<form action='/exit'    method='GET'><button>Quit</button></form>",  // MENU_EXIT
+"<form action='/erase'   method='GET'><button>Erase</button></form>", // MENU_ERASE
+"<hr>" // MENU_SEP
+};
 
+// const char HTTP_PORTAL_OPTIONS[]   PROGMEM = strcat(HTTP_PORTAL_MENU[0] , HTTP_PORTAL_MENU[3] , HTTP_PORTAL_MENU[7]);
+const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "";
 const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i} {h}'></div>"; // rssi icons
 const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q {h}'>{r}%</div>"; // rssi percentage
 const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>{qi}{qp}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
@@ -80,13 +92,13 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Show WiFi scan results and enter WiFi configuration.(/0wifi noscan)</td></tr>"
  "<tr><td><a href='/wifisave'>/wifisave</a></td>"
  "<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>"
- "<tr><td><a href='/close'>/close</a></td>"
- "<td>Close the configuration server and configuration WiFi network.</td></tr>"
- "<tr><td><a href='/i'>/i</a></td>"
+ "<tr><td><a href='/info'>/i</a></td>"
  "<td>Information page</td></tr>"
+ "<tr><td><a href='/close'>/close</a></td>"
+ "<td>Close the captiveportal popup,configportal will remain active</td></tr>"
  "<tr><td><a href='/exit'>/exit</a></td>"
  "<td>Exit Config Portal, configportal will close</td></tr>"
- "<tr><td><a href='/r'>/r</a></td>"
+ "<tr><td><a href='/restart'>/r</a></td>"
  "<td>Reboot the device</td></tr>"
  "<tr><td><a href='/erase'>/erase</a></td>"
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
@@ -162,6 +174,7 @@ const char S_NA[]                 PROGMEM = "Unknown";
 const char S_titlewifisaved[]     PROGMEM = "Credentials Saved";
 const char S_titlewifi[]          PROGMEM = "Config ESP";
 const char S_titleinfo[]          PROGMEM = "Info";
+const char S_titleparam[]         PROGMEM = "Setup";
 const char S_titleexit[]          PROGMEM = "Exit";
 const char S_titlereset[]         PROGMEM = "Reset";
 const char S_titleerase[]         PROGMEM = "Erase";
