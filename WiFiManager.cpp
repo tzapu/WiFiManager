@@ -340,6 +340,7 @@ void WiFiManager::setupConfigPortal() {
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on((String)F("/"), std::bind(&WiFiManager::handleRoot, this));
+  server->on((String)F("/wifilist"), std::bind(&WiFiManager::handleWifiList, this));
   server->on((String)F("/wifi"), std::bind(&WiFiManager::handleWifi, this, true));
   server->on((String)F("/0wifi"), std::bind(&WiFiManager::handleWifi, this, false));
   server->on((String)F("/wifisave"), std::bind(&WiFiManager::handleWifiSave, this));
@@ -680,26 +681,39 @@ void WiFiManager::handleRoot() {
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 }
 
+/** 
+ * HTTPD CALLBACK get list of available wifi networks
+ */
+void WiFiManager::handleWifiList() {
+  DEBUG_WM(F("<- HTTP Wifi list"));
+  
+  String page = getScanItemOut();
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+  DEBUG_WM(F("<- HTTP Sent wifi list"));
+}
+
 /**
  * HTTPD CALLBACK Wifi config page handler
  */
 void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM(F("<- HTTP Wifi"));
   handleRequest();
-  String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
-  if (scan) {
-    page += getScanItemOut();
-  }
+
   String pitem = FPSTR(HTTP_FORM_START);
   pitem.replace(FPSTR(T_v), WiFi_SSID());
-  page += pitem;
 
+  String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
+  page += FPSTR(HTTP_JS);
+  page += FPSTR(HTTP_ASYNC_CONTENT);
+  page += pitem;
   page += getStaticOut();
   page += getParamOut();
-
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
   reportStatus(page);
+  if (scan) page += FPSTR(HTTP_LOAD_LIST);
   page += FPSTR(HTTP_END);
 
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
