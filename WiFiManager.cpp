@@ -1793,7 +1793,7 @@ uint8_t WiFiManager::getRSSIasQuality(uint8_t RSSI) {
 
 /** Is this an IP? */
 boolean WiFiManager::isIp(String str) {
-  for (int i = 0; i < str.length(); i++) {
+  for (size_t i = 0; i < str.length(); i++) {
     int c = str.charAt(i);
     if (c != '.' && (c < '0' || c > '9')) {
       return false;
