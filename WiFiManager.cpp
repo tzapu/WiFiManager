@@ -180,8 +180,6 @@ boolean WiFiManager::autoConnect() {
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
-  Serial.println(getMenuOut());
-
   // attempt to connect using saved settings, on fail fallback to AP config portal
   WiFi.enableSTA(true);
   _usermode = WIFI_STA;
@@ -738,9 +736,8 @@ String WiFiManager::getMenuOut(){
   String page;  
   int i;
   for(i=0;i<sizeof(_menuIds);i++){
-    if(i == MENU_PARAM){
-      if(_paramsCount == 0) continue;
-    }
+    if(_menuIds[i] == 255) continue;
+    if((i == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
     page += HTTP_PORTAL_MENU[_menuIds[i]];
   }
   return page;
@@ -1701,7 +1698,12 @@ bool  WiFiManager::setHostname(const char * hostname){
 }
 
 void WiFiManager::setMenu(uint8_t menu[]){
-  // _menuIds = menu;
+  int i;
+  int n = sizeof(menu);
+  for(i=0;i<sizeof(_menuIds);i++){
+    if(_menuIds[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
+    _menuIds[i] = i<n ? menu[i] : 255;
+  }
 }
 
 // GETTERS
@@ -1995,8 +1997,8 @@ String WiFiManager::WiFi_SSID(){
   #endif
 }
 
+#ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
-  #ifdef ESP32
     // WiFiManager _WiFiManager;
     // Serial.print("WM: EVENT: ");Serial.println(event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
@@ -2011,8 +2013,8 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
       Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       WiFi.reconnect();
     }
-  #endif  
 }
+#endif
 
 void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266
