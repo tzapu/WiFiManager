@@ -92,6 +92,8 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Show WiFi scan results and enter WiFi configuration.(/0wifi noscan)</td></tr>"
  "<tr><td><a href='/wifisave'>/wifisave</a></td>"
  "<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>"
+ "<tr><td><a href='/param'>/param</a></td>"
+ "<td>Parameter page</td></tr>"
  "<tr><td><a href='/info'>/i</a></td>"
  "<td>Information page</td></tr>"
  "<tr><td><a href='/close'>/close</a></td>"
