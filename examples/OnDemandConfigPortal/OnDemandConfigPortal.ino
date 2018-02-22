@@ -6,10 +6,13 @@
 #define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
+WiFiManager wifiManager;
+
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  delay(3000);
   Serial.println("\n Starting");
 
   Serial.setDebugOutput(true);  
@@ -17,7 +20,6 @@ void setup() {
   WiFi.printDiag(Serial);
 
   //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
   //reset settings - for testing
   //wifiManager.resetSettings();
 
@@ -25,14 +27,16 @@ void setup() {
   //useful to make it all retry or go to sleep
   //in seconds
   wifiManager.setConfigPortalTimeout(180);
-  
+  // uint8_t menu[] = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE};
+  // wifiManager.setMenu(menu);
+
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
   if(!wifiManager.autoConnect("AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
-  } 
+  }
 
   pinMode(TRIGGER_PIN, INPUT);
 }
@@ -43,7 +47,6 @@ void loop() {
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifiManager;
 
     //reset settings - for testing
     //wifiManager.resetSettings();
