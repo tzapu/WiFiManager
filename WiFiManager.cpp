@@ -1995,8 +1995,8 @@ String WiFiManager::WiFi_SSID(){
   #endif
 }
 
+#ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
-  #ifdef ESP32
     // WiFiManager _WiFiManager;
     // Serial.print("WM: EVENT: ");Serial.println(event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
@@ -2011,8 +2011,8 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
       Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       WiFi.reconnect();
     }
-  #endif  
 }
+#endif
 
 void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266

@@ -301,9 +301,10 @@ class WiFiManager
     void          WiFi_autoReconnect();
     String        WiFi_SSID();
 
+    #ifdef ESP32
     static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+    #endif
 
-    
     // output helpers
     String        getParamOut();
     String        getIpForm(String id, String title, String value);
@@ -338,7 +339,7 @@ class WiFiManager
 
     // debugging
     boolean       _debug              = true;
-    uint8_t       _debugLevel         = 1;
+    uint8_t       _debugLevel         = 2;
     Stream&     _debugPort; // debug output stream ref
     template <typename Generic>
     void        DEBUG_WM(Generic text);
