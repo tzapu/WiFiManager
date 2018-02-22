@@ -200,31 +200,30 @@ td {
 			<!-- HTTP_SAVED -->
 			<div class='msg'><h4>Saving Credentials</h4>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>
 			<!-- /HTTP_SAVED -->
-			<!-- HTTP_STATUS_ON> -->
+			<!-- HTTP_STATUS_ON -->
 			<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>
-			<!-- /HTTP_STATUS_ON> -->     	
+			<!-- /HTTP_STATUS_ON -->     	
 			<!-- HTTP_STATUS_OFF -->
 			<div class='msg {c}'><strong>Not Connected</strong> to {v}{r}</div>
-			<!-- /HTTP_STATUS_OFF> --> 
+			<!-- /HTTP_STATUS_OFF --> 
 			<!-- sample -->
 			<div class='msg D'><strong>Not Connected</strong> to apname
 			<!-- /sample -->
-			<!-- HTTP_STATUS_OFF -->
-				<br/>Wrong Password
-			<!-- /HTTP_STATUS_OFFPW> -->
-			<!-- HTTP_STATUS_OFF -->
+			<!-- HTTP_STATUS_OFFPW -->
+				<br/>Authentication Failure
+			<!-- /HTTP_STATUS_OFFPW -->
+			<!-- HTTP_STATUS_OFFNOAP -->
 				<br/>AP not found
 			<!-- /HTTP_STATUS_OFFNOAP> -->	
-			<!-- HTTP_STATUS_OFF -->
+			<!-- HTTP_STATUS_OFFFAIL -->
 				<br/>Could not Connect
-			<!-- /HTTP_STATUS_OFFFAIL> -->	
+			<!-- /HTTP_STATUS_OFFFAIL -->	
 			</div>
-			<!-- SAMPLE -->
-			<!-- HTTP_STATUS_NON -->
+			<!-- HTTP_STATUS_NONE -->
 			<div class='msg'>No AP set</div>
-			<!-- /HTTP_STATUS_NONE> -->
-			<div class='msg P'><h4>Information</h4>Connected to AP: homeAP</div>
-			<div class='msg D'><h4>Connect Failed</h4>An error occured</div>
+			<!-- /HTTP_STATUS_NONE -->
+			<!-- SAMPLE -->
+			<div class='msg P'><h4>Header</h4>content</div>
 			<!-- /SAMPLE -->
 			<!-- SAMPLE -->
 			<h2>/info</h3><hr>
@@ -251,11 +250,13 @@ td {
 		 		<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>
 		 		<tr><td><a href='/close'>/close</a></td>
 		 		<td>Close the configuration server and configuration WiFi network.</td></tr>
-		 		<tr><td><a href='/i'>/i</a></td>
+		 		<tr><td><a href='/info'>/info</a></td>
 		 		<td>Information page</td></tr>
+ 				<tr><td><a href='/close'>/close</a></td>
+ 				<td>Close the captiveportal popup,configportal will remain active</td></tr>
 		 		<tr><td><a href='/exit'>/exit</a></td>
 		 		<td>Exit Config Portal, configportal will close</td></tr>
-		 		<tr><td><a href='/r'>/r</a></td>
+		 		<tr><td><a href='/restart'>/restart</a></td>
 		 		<td>Reboot the device</td></tr>
 		 		<tr><td><a href='/erase'>/erase</a></td>
 		 		<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>
