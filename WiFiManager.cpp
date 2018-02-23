@@ -189,6 +189,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
   WiFi_autoReconnect();
 
+  getMenuOut();
+
   // set hostname before stating
   if((String)_hostname != ""){
     bool res = true;
@@ -737,7 +739,7 @@ String WiFiManager::getMenuOut(){
   int i;
   for(i=0;i<sizeof(_menuIds);i++){
     if(_menuIds[i] == 255) continue;
-    if((i == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
+    if((_menuIds[i] == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
     page += HTTP_PORTAL_MENU[_menuIds[i]];
   }
   return page;

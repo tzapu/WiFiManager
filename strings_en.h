@@ -31,7 +31,7 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/restart' method='GET'><button>Restart</button></form><br/>\n",// MENU_RESTART
 "<form action='/exit'    method='GET'><button>Quit</button></form>",  // MENU_EXIT
 "<form action='/erase'   method='GET'><button>Erase</button></form>", // MENU_ERASE
-"<hr>" // MENU_SEP
+"<hr><br/>" // MENU_SEP
 };
 
 // const char HTTP_PORTAL_OPTIONS[]   PROGMEM = strcat(HTTP_PORTAL_MENU[0] , HTTP_PORTAL_MENU[3] , HTTP_PORTAL_MENU[7]);
@@ -52,7 +52,7 @@ const char HTTP_FORM_PARAM_END[]   PROGMEM = "<br/>";
 const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi' method='get'><button>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
-const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button>Erase WiFi Config</button></form>";
+const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button class='D'>Erase WiFi Config</button></form>";
 
 const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
 const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg {c}'><strong>Not Connected</strong> to {v}{r}</div>";
@@ -80,6 +80,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
 "td{vertical-align: top;}"
 ".h{display:none}"
+"button.D{background-color:#d9534f}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =

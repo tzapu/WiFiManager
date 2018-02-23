@@ -210,7 +210,7 @@ class WiFiManager
         std::unique_ptr<WM_WebServer> server;
 
     // std:vector<uint8_t> _menuids;
-    uint8_t _menuIds[7] = {MENU_WIFI,MENU_INFO,MENU_PARAM,MENU_SEP,MENU_CLOSE,MENU_ERASE,MENU_EXIT};
+    uint8_t _menuIds[3] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
 
     // ip configs
     IPAddress     _ap_static_ip;

@@ -137,6 +137,10 @@ dd {
 td {
 	vertical-align: top;
 }
+button.D{
+	background-color:#d9534f;
+}
+
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
@@ -154,8 +158,18 @@ td {
 			<h2>/</h2><hR>
 			<!-- /SAMPLE -->
 			<!-- HTTP_PORTAL_OPTIONS -->
-			<form action='/wifi' method='get'><button>Configure WiFi</button></form><br/><form action='/0wifi' method='get'><button>Configure WiFi (No Scan)</button></form><br/><form action='/i' method='get'><button>Info</button></form><br/><form action='/r' method='post'><button>Restart</button></form>
 			<!-- /HTTP_PORTAL_OPTIONS -->
+			<!-- HTTP_PORTAL_MENU[] -->
+			<form action='/wifi' method='get'><button>Configure WiFi</button></form><br/>
+			<form action='/0wifi' method='get'><button>Configure WiFi (No Scan)</button></form><br/>
+			<form action='/info' method='get'><button>Info</button></form><br/>
+			<form action='/param' method='get'><button>Setup</button></form><br/>
+			<Hr><br/>
+			<form action='/close' method='post'><button>Close</button></form><br/>
+			<form action='/erase' method='post'><button class='D'>Erase</button></form><br/>
+			<form action='/restart' method='post'><button>Restart</button></form><br/>
+			<form action='/exit' method='post'><button>Exit</button></form><br/>
+			<!-- /HTTP_PORTAL_MENU -->
 			<!-- SAMPLE -->
 			<h2>/wifi</h2><hr>
 			<div><a href='#p' onclick='c(this)'>Acccess Point 01</a><div role='img' aria-label='88%' title='88%' class='q q-4 l'></div></div>
