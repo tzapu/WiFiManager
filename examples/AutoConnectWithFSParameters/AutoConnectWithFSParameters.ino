@@ -1,7 +1,7 @@
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
-#include <spiffs.h>
+// #include <spiffs.h>
 
 //define your default values here, if there are different values in config.json, they are overwritten.
 char mqtt_server[40];
@@ -69,15 +69,15 @@ void setup() {
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  // WiFiManagerParameter custom_blynk_token("blynk", "blynk token", "", 0);
-
-  WiFiManagerParameter custom_blynk_token("blynk", "blynk token");
-  custom_blynk_token.setValue("setvalue override",32);
+  WiFiManagerParameter custom_blynk_token("blynk", "blynk token", "", 0);
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
 
+  uint8_t menu[] = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE};
+  wifiManager.setMenu(menu);
+  
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
 

@@ -347,6 +347,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)F("/wifisave"), std::bind(&WiFiManager::handleWifiSave, this));
   server->on((String)F("/info"), std::bind(&WiFiManager::handleInfo, this));
   server->on((String)F("/param"), std::bind(&WiFiManager::handleParam, this));
+  server->on((String)F("/paramsave"), std::bind(&WiFiManager::handleParamSave, this));
   server->on((String)F("/restart"), std::bind(&WiFiManager::handleReset, this));
   server->on((String)F("/exit"), std::bind(&WiFiManager::handleExit, this));
   server->on((String)F("/close"), std::bind(&WiFiManager::stopCaptivePortal, this));
@@ -694,12 +695,21 @@ void WiFiManager::handleWifi(boolean scan) {
   if (scan) {
     page += getScanItemOut();
   }
-  String pitem = FPSTR(HTTP_FORM_START);
+  String pitem = "";
+
+  pitem = FPSTR(HTTP_FORM_START);
+  pitem.replace(FPSTR(T_v), F("wifisave"));
+  page += pitem;
+
+  pitem = FPSTR(HTTP_FORM_WIFI);
   pitem.replace(FPSTR(T_v), WiFi_SSID());
   page += pitem;
 
   page += getStaticOut();
-  if(_paramsInWifi) page += getParamOut();
+  if(_paramsInWifi){
+    page += getParamOut();
+    page += FPSTR(HTTP_FORM_WIFI_END);
+  }
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
   reportStatus(page);
@@ -721,6 +731,12 @@ void WiFiManager::handleParam(){
   DEBUG_WM(F("<- HTTP Param"));
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleparam)); // @token titlewifi
+
+  String pitem = "";
+
+  pitem = FPSTR(HTTP_FORM_START);
+  pitem.replace(FPSTR(T_v), F("paramsave"));
+  page += pitem;
 
   page += getParamOut();
   page += FPSTR(HTTP_FORM_END);
@@ -890,8 +906,6 @@ String WiFiManager::getParamOut(){
     bool tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
     bool tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
 
-    page += FPSTR(HTTP_FORM_PARAM_START);
-
     char parLength[5];
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
@@ -933,9 +947,6 @@ String WiFiManager::getParamOut(){
 
       page += pitem;
     }
-    if (_params[0] != NULL) {
-      page += FPSTR(HTTP_FORM_PARAM_END);
-    }
   }
 
   return page;
@@ -965,25 +976,7 @@ void WiFiManager::handleWifiSave() {
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
 
-  //parameters
-  if(_paramsCount > 0){
-    DEBUG_WM(F("Parameters"));
-    DEBUG_WM(FPSTR(D_HR));
-    for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL) {
-        break;
-      }
-      //read parameter from server
-      String value;
-      if(server->arg((String)FPSTR(S_parampre)+(String)i) != NULL) value = server->arg((String)FPSTR(S_parampre)+(String)i).c_str();
-      else value = server->arg(_params[i]->getID()).c_str();
-
-      //store it in array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
-      DEBUG_WM((String)_params[i]->getID() + ":",value);
-    }
-    DEBUG_WM(FPSTR(D_HR));
-  }
+  if(_paramsInWifi) doParamSave();
 
   if (server->arg(FPSTR(S_ip)) != "") {
     //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
@@ -1012,6 +1005,45 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
+}
+
+void WiFiManager::handleParamSave() {
+
+  DEBUG_WM(F("<- HTTP WiFi save "));
+  DEBUG_WM(F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
+  handleRequest();
+  doParamSave();
+
+  String page = getHTTPHead(FPSTR(S_titleparamsaved)); // @token titleparamsaved
+  page += FPSTR(HTTP_PARAMSAVED);
+  page += FPSTR(HTTP_END);
+
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+  DEBUG_WM(F("Sent param save page"));
+}
+
+void WiFiManager::doParamSave(){
+  //parameters
+  if(_paramsCount > 0){
+    DEBUG_WM(F("Parameters"));
+    DEBUG_WM(FPSTR(D_HR));
+    for (int i = 0; i < _paramsCount; i++) {
+      if (_params[i] == NULL) {
+        break;
+      }
+      //read parameter from server
+      String value;
+      if(server->arg((String)FPSTR(S_parampre)+(String)i) != NULL) value = server->arg((String)FPSTR(S_parampre)+(String)i).c_str();
+      else value = server->arg(_params[i]->getID()).c_str();
+
+      //store it in params array
+      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      DEBUG_WM((String)_params[i]->getID() + ":",value);
+    }
+    DEBUG_WM(FPSTR(D_HR));
+  }
 }
 
 /** 
@@ -1703,7 +1735,7 @@ void WiFiManager::setMenu(uint8_t menu[]){
   int i;
   int n = sizeof(menu);
   for(i=0;i<sizeof(_menuIds);i++){
-    if(_menuIds[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
+    if(menu[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
     _menuIds[i] = i<n ? menu[i] : 255;
   }
 }

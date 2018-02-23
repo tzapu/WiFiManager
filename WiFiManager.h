@@ -210,7 +210,7 @@ class WiFiManager
         std::unique_ptr<WM_WebServer> server;
 
     // std:vector<uint8_t> _menuids;
-    uint8_t _menuIds[3] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
+    uint8_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
 
     // ip configs
     IPAddress     _ap_static_ip;
@@ -282,6 +282,8 @@ class WiFiManager
     void          handleParam();
     void          handleWiFiStatus();
     void          handleRequest();
+    void          handleParamSave();
+    void          doParamSave();
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
