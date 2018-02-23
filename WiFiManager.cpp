@@ -1499,7 +1499,9 @@ void WiFiManager::reboot(){
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
   WiFi_enableSTA(true,true);
+  WiFi.persistent(true);
   WiFi.disconnect(true);
+  WiFi.persistent(false);
 }
 
 // SETTERS
