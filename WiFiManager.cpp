@@ -1794,15 +1794,7 @@ bool WiFiManager::getWiFiIsSaved(){
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
-  if (_debug) {
-    if(_debugLevel > 2){
-      _debugPort.print("MEM: ");
-      _debugPort.println((String)ESP.getFreeHeap());
-    }  
-    _debugPort.print("*WM: ");
-    _debugPort.print(text);
-    _debugPort.print("\n");
-  }
+  DEBUG_WM(text,"");
 }
 
 template <typename Generic, typename Genericb>
@@ -1814,8 +1806,10 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
     }
     _debugPort.print("*WM: ");
     _debugPort.print(text);
-    _debugPort.print(" ");
-    _debugPort.print(textb);
+    if(textb){
+      _debugPort.print(" ");
+      _debugPort.print(textb);
+    }
     _debugPort.print("\n");
   }
 }
