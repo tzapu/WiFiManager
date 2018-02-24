@@ -245,7 +245,9 @@ class WiFiManager
     WiFiMode_t    _usermode               = WIFI_OFF;
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
-    
+    int           _numNetworks            = 0;
+    unsigned long _lastscan               = 0; // ms
+
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
@@ -312,6 +314,9 @@ class WiFiManager
     bool          WiFi_hasAutoConnect();
     void          WiFi_autoReconnect();
     String        WiFi_SSID();
+    bool          WiFi_scanNetworks();
+    bool          WiFi_scanNetworks(bool force);
+    bool          WiFi_scanNetworks(int cachetime);
 
     #ifdef ESP32
     static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);

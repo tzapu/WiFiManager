@@ -372,6 +372,8 @@ void WiFiManager::setupConfigPortal() {
   
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
+
+  WiFi_scanNetworks(); // preload wifiscan 
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -696,7 +698,8 @@ void WiFiManager::handleRoot() {
 
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
-  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
+  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
+  WiFi_scanNetworks(10000); // preload wifiscan throttled
 }
 
 /**
@@ -707,6 +710,7 @@ void WiFiManager::handleWifi(boolean scan) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
+    if(server->hasArg(F("refresh"))) WiFi_scanNetworks(true); // preload wifiscan, force
     page += getScanItemOut();
   }
   String pitem = "";
@@ -775,11 +779,28 @@ String WiFiManager::getMenuOut(){
   return page;
 }
 
-String WiFiManager::getScanItemOut(){
+bool WiFiManager::WiFi_scanNetworks(){
+  return WiFi_scanNetworks(false);
+}
+bool WiFiManager::WiFi_scanNetworks(int cachetime){
+    return WiFi_scanNetworks(millis()-_lastscan > cachetime);
+}
+bool WiFiManager::WiFi_scanNetworks(bool force){
+    DEBUG_WM(_numNetworks,(millis()-_lastscan ));
+    if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
+      _numNetworks = WiFi.scanNetworks();
+      _lastscan = millis();
+      DEBUG_WM(F("Scan done"));
+      return true;
+    } else DEBUG_WM("Scan is cached");
+    return false;
+}
+
+String WiFiManager::WiFiManager::getScanItemOut(){
     String page;
 
-    int n = WiFi.scanNetworks();
-    DEBUG_WM(F("Scan done"));
+    int n = _numNetworks;
+    WiFi_scanNetworks();
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
       page += FPSTR(S_nonetworks); // @token nonetworks
