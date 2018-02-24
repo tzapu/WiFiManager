@@ -34,7 +34,7 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if(!wifiManager.autoConnect("AutoConnectAP","12345678")) {
+  if(!wifiManager.autoConnect("AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
   }
 

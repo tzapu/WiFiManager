@@ -142,6 +142,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
+  setMenu(_menuIds);
   //parameters
   // @todo belongs to wifimanagerparameter
   _max_params = WIFI_MANAGER_MAX_PARAMS;
@@ -719,7 +720,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += pitem;
 
   page += getStaticOut();
-  if(_paramsInWifi){
+  if(_paramsInWifi && _paramsCount>0){
     page += getParamOut();
     page += FPSTR(HTTP_FORM_WIFI_END);
   }
@@ -1757,7 +1758,7 @@ void WiFiManager::setMenu(uint8_t menu[]){
   int n = sizeof(menu);
   for(i=0;i<sizeof(_menuIds);i++){
     if(menu[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
-    _menuIds[i] = i<n ? menu[i] : 255;
+    _menuIds[i] = i < n-1 ? menu[i] : 255;
   }
 }
 

@@ -29,7 +29,7 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/param'   method='GET'><button>Setup</button></form><br/>\n",//MENU_PARAM
 "<form action='/close'   method='GET'><button>Close</button></form><br/>\n", // MENU_CLOSE
 "<form action='/restart' method='GET'><button>Restart</button></form><br/>\n",// MENU_RESTART
-"<form action='/exit'    method='GET'><button>Quit</button></form>",  // MENU_EXIT
+"<form action='/exit'    method='GET'><button>Exit</button></form>",  // MENU_EXIT
 "<form action='/erase'   method='GET'><button>Erase</button></form>", // MENU_ERASE
 "<hr><br/>" // MENU_SEP
 };
@@ -43,12 +43,12 @@ const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)
 
 const char HTTP_FORM_START[]       PROGMEM = "<form method='POST' action='{v}'>";
 const char HTTP_FORM_WIFI[]        PROGMEM = "<label for='s'>SSID</label><input id='s' name='s' maxlength=32 placeholder='{v}'><br/><label for='p'>Password</label><input id='p' name='p' maxlength='64' type='password' placeholder=''>";
-const char HTTP_FORM_WIFI_END[]    PROGMEM = "<hr><br>";
-const char HTTP_FORM_END[]         PROGMEM = "<br/><button type='submit'>Save</button></form>";
+const char HTTP_FORM_WIFI_END[]    PROGMEM = "<hr><br/>";
+const char HTTP_FORM_END[]         PROGMEM = "<br/><br/><button type='submit'>Save</button></form>";
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength={l} placeholder='' value='{v}' {c}>";
 
-const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi' method='get'><button>Refresh</button></form>";
+const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi?refresh=1' method='post'><button>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg'>Saved<br/></div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
