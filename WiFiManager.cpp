@@ -373,7 +373,7 @@ void WiFiManager::setupConfigPortal() {
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
 
-  WiFi_scanNetworks(); // preload wifiscan 
+  if(_preloadwifiscan) WiFi_scanNetworks(); // preload wifiscan 
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -699,7 +699,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  WiFi_scanNetworks(10000); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks(10000); // preload wifiscan throttled
 }
 
 /**

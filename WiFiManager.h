@@ -270,6 +270,7 @@ class WiFiManager
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
+    boolean       _preloadwifiscan        = true;  // preload wifiscan
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
