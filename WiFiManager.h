@@ -30,7 +30,7 @@
     #endif
 
     #define WIFI_getChipId() ESP.getChipId()
-    #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
+    #define WM_WIFIOPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
 
@@ -38,7 +38,7 @@
     #include <esp_wifi.h>  
     
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
-    #define WIFI_AUTH_OPEN   WIFI_AUTH_OPEN
+    #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
     #ifndef WEBSERVER_H
         #warning "WEBSERVER not implemented in espressif/esp32, see readme notes"
