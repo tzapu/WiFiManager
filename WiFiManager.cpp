@@ -1746,6 +1746,12 @@ bool  WiFiManager::setHostname(const char * hostname){
   return true;
 }
 
+/**
+ * set menu items and order
+ * if param is present, it will be removed from wifi
+ * @shiftIncrement $dev
+ * @param uint8_t menu[] array of menu ids
+ */
 void WiFiManager::setMenu(uint8_t menu[]){
   int i;
   int n = sizeof(menu);
@@ -2013,7 +2019,7 @@ bool WiFiManager::WiFi_eraseConfig(void) {
         return true;
       #endif
     #elif defined(ESP32)
-      WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode
+      WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
       return WiFi.disconnect(true);
     #endif
 }
@@ -2034,6 +2040,7 @@ String WiFiManager::WiFi_SSID(){
   #ifdef ESP8266
     return WiFi.SSID();
   #elif defined(ESP32)
+    //@todo , workaround only when not connected
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
     return String(reinterpret_cast<const char*>(conf.sta.ssid));
