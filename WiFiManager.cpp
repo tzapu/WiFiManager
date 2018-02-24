@@ -193,13 +193,26 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // set hostname before stating
   if((String)_hostname != ""){
+    DEBUG_WM("Setting hostname:",_hostname);
     bool res = true;
     #ifdef ESP8266
       res = WiFi.hostname(_hostname);
+      #ifdef ESP8266MDNS_H
+        DEBUG_WM("Setting MDNS hostname");
+        if(MDNS.begin(_hostname)){
+          MDNS.addService("http", "tcp", 80);
+        }
+      #endif
     #elif defined(ESP32)
       // @note hostname must be set after STA_START
       delay(200); // do not remove, give time for STA_START
       res = WiFi.setHostname(_hostname);
+      #ifdef ESP32MDNS_H
+        DEBUG_WM("Setting MDNS hostname");
+        if(MDNS.begin(_hostname)){
+          MDNS.addService("http", "tcp", 80);
+        }
+      #endif
     #endif
     
     if(!res)DEBUG_WM(F("hostname: set failed!"));
@@ -1990,10 +2003,10 @@ bool WiFiManager::WiFi_enableSTA(bool enable) {
 
 bool WiFiManager::WiFi_eraseConfig(void) {
     #ifdef ESP8266
-      #ifndef FIXERASECONFIG 
+      #ifndef WM_FIXERASECONFIG 
         return ESP.eraseConfig();
-      #else  
-        // erase config BUG polyfill
+      #else
+        // erase config BUG replacement
         // https://github.com/esp8266/Arduino/pull/3635
         const size_t cfgSize = 0x4000;
         size_t cfgAddr = ESP.getFlashChipSize() - cfgSize;

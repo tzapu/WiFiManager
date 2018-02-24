@@ -13,7 +13,9 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
-#define WEBSERVERSHIM // use webserver shim lib
+#define WM_WEBSERVERSHIM // use webserver shim lib
+// #define WM_MDNS       // use MDNS
+// #define WM_FIXERASECONFIG // use erase flash fix
 
 #ifdef ESP8266
 
@@ -22,6 +24,10 @@
     }
     #include <ESP8266WiFi.h>
     #include <ESP8266WebServer.h>
+
+    #ifdef WM_MDNS
+        #include <ESP8266mDNS.h>
+    #endif
 
     #define WIFI_getChipId() ESP.getChipId()
     #define WIFI_AUTH_OPEN   ENC_TYPE_NONE
@@ -36,7 +42,7 @@
 
     #ifndef WEBSERVER_H
         #warning "WEBSERVER not implemented in espressif/esp32, see readme notes"
-        #ifdef WEBSERVERSHIM
+        #ifdef WM_WEBSERVERSHIM
             #include <WebServer.h>
         #else
             #include <ESP8266WebServer.h>
@@ -45,6 +51,9 @@
         #endif
     #endif
 
+    #ifdef WM_MDNS
+        #include <ESPmDNS.h>
+    #endif
 #else
 #endif
 
@@ -222,6 +231,7 @@ class WiFiManager
 
     // defaults
     const byte    DNS_PORT                = 53;
+    const byte    HTTP_PORT               = 80;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = "";
