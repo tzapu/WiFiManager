@@ -182,13 +182,13 @@ class WiFiManager
     void          setRestorePersistent(boolean persistent);
     //if true, always show static net inputs, IP, subnet, gateway, if false, only show when already set.
     void          setShowStaticFields(boolean alwaysShow);
-    //if true disable captive portal redirection
+    //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
-    //if true, timeout captive portal even if a STA client connected (true), suggest disabling if captiveportal is open
+    //if false, timeout captive portal even if a STA client connected (false), suggest disabling if captiveportal is open
     void          setCaptivePortalClientCheck(boolean enabled);
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
-    // if true enable autoreconnecting
+    // if true, enable autoreconnecting
     void          setWiFiAutoReconnect(boolean enabled);
     // if true, wifiscan will show percentage instead of quality icons, until we have better templating
     void          setScanDispPerc(boolean enabled);

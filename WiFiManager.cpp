@@ -710,6 +710,7 @@ void WiFiManager::handleWifi(boolean scan) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
+    // DEBUG_WM("arg:",server->hasArg(F("refresh"))); // arg has to have value, and has to be post, why!!
     if(server->hasArg(F("refresh"))) WiFi_scanNetworks(true); // preload wifiscan, force
     page += getScanItemOut();
   }
@@ -786,7 +787,7 @@ bool WiFiManager::WiFi_scanNetworks(int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force){
-    DEBUG_WM(_numNetworks,(millis()-_lastscan ));
+    // DEBUG_WM(_numNetworks,(millis()-_lastscan ));
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       _numNetworks = WiFi.scanNetworks();
       _lastscan = millis();
