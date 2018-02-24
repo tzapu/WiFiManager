@@ -799,8 +799,8 @@ bool WiFiManager::WiFi_scanNetworks(bool force){
 String WiFiManager::WiFiManager::getScanItemOut(){
     String page;
 
-    int n = _numNetworks;
     WiFi_scanNetworks();
+    int n = _numNetworks;
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
       page += FPSTR(S_nonetworks); // @token nonetworks
