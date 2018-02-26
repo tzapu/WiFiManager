@@ -104,7 +104,7 @@ password_box_parameter::password_box_parameter(const char * id, const char * pla
 // method that returns the HTML code for the field
 String password_box_parameter::get_render()
 {
-  String temp = "<br/><input type='password' id='{i}' name='{n}' maxlength={l} placeholder='{p}'{c}>";
+  String temp = "<br/><input style='width:80%' type='password' id='{i}' name='{n}' maxlength={l} placeholder='{p}'{c}><img style='position:relative;top:8px;left:8px;' id='eye_{i}' onClick=\"sh('eye_{i}','{i}')\" ontouchstart=\"sh('eye_{i}','{i}')\" src=''><script>document.getElementById('eye_{i}').src=ep;</script>";
 
   temp.replace("{i}", get_ID());
   temp.replace("{n}", get_ID());

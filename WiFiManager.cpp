@@ -142,6 +142,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timeout
     if(configPortalHasTimeout()) break;
 
+    // User job
+    if (_user_job != NULL) _user_job();
     //DNS
     dnsServer->processNextRequest();
     //HTTP
@@ -649,6 +651,11 @@ void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
 //start up save config callback
 void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
+}
+
+void WiFiManager::setUserJobCallback( void (*func)(void) )
+{
+  _user_job = func;
 }
 
 //sets a custom element to add to head, like a new style tag
