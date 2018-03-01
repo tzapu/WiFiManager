@@ -182,7 +182,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
-  WiFi.enableSTA(true);
+  if(!WiFi.enableSTA(true)){
+    // handle failure mode Brownout detector etc.
+    DEBUG_WM("[FATAL] Unable to enable wifi!");
+    return false;
+  }
+
   _usermode = WIFI_STA;
 
   // no getter for autoreconnectpolicy before this
