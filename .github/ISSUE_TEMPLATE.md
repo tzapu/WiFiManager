@@ -7,6 +7,8 @@ https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/stack_dump.rs
 for better debug messages:
 https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/debugging.rst
 
+## PLEASE TRY DEVELOPMENT BRANCH BEFORE SUBMITTING BUGS ON RELEAASE, IN CASE THEY WERE ALREADY FIXED. ##
+
 ----------------------------- Remove above -----------------------------
 
 ### Basic Infos
