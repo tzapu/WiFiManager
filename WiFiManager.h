@@ -110,6 +110,7 @@ class WiFiManager
     WiFiManager(Stream& consolePort);
     WiFiManager();
     ~WiFiManager();
+    void WiFiManagerInit();
 
     typedef enum {
         MENU_WIFI       = 0,

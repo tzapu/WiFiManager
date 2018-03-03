@@ -133,12 +133,16 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 **/
 
 // constructors
-WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort) {
-  WiFiManager();
+WiFiManager::WiFiManager(Stream& consolePort):WiFiManager(),_debugPort(consolePort){
+  WiFiManagerInit();
 }
 
 WiFiManager::WiFiManager():_debugPort(Serial) {
-  if(_debug && _debugLevel > 2) debugPlatformInfo();
+  WiFiManagerInit();
+}
+
+void WiFiManager::WiFiManagerInit(){
+  // if(_debug && _debugLevel > 2) debugPlatformInfo();
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
@@ -146,6 +150,7 @@ WiFiManager::WiFiManager():_debugPort(Serial) {
   //parameters
   // @todo belongs to wifimanagerparameter
   _max_params = WIFI_MANAGER_MAX_PARAMS;
+  DEBUG_WM("allocating",_max_params * sizeof(WiFiManagerParameter*));
   _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
 }
 
