@@ -133,7 +133,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 **/
 
 // constructors
-WiFiManager::WiFiManager(Stream& consolePort):WiFiManager(),_debugPort(consolePort){
+WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort){
   WiFiManagerInit();
 }
 
