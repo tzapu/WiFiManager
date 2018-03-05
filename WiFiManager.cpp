@@ -1544,21 +1544,27 @@ void WiFiManager::reboot(){
  * @access public
  */
 bool WiFiManager::erase(){
-  DEBUG_WM("Erasing");
-
-  #if defined(WM_ERASE_NVS)
-    DEBUG_WM("Erasing NVS");
-    int err;
-    err=nvs_flash_init();
-    DEBUG_WM("nvs_flash_init: ",err ? err : "Success");
-    err=nvs_flash_erase();
-    DEBUG_WM("nvs_flash_erase: ", err ? err : "Success");
-    return;
-  #endif
-  
-  return WiFi_eraseConfig();
+  return erase(false);
 }
 
+bool WiFiManager::erase(bool opt){
+  DEBUG_WM("Erasing");
+
+  #if defined(ESP32) && defined(WM_ERASE_NVS)
+    // if opt true, do nvs erase
+    if(opt){
+      DEBUG_WM("Erasing NVS");
+      int err;
+      err=nvs_flash_init();
+      DEBUG_WM("nvs_flash_init: ",err ? err : "Success");
+      err=nvs_flash_erase();
+      DEBUG_WM("nvs_flash_erase: ", err ? err : "Success");
+      return err;
+    }  
+  #endif
+
+  return WiFi_eraseConfig();
+}
 
 /**
  * [resetSettings description]
