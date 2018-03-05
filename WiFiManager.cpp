@@ -1545,6 +1545,17 @@ void WiFiManager::reboot(){
  */
 bool WiFiManager::erase(){
   DEBUG_WM("Erasing");
+
+  #if defined(WM_ERASE_NVS)
+    DEBUG_WM("Erasing NVS");
+    int err;
+    err=nvs_flash_init();
+    DEBUG_WM("nvs_flash_init: ",err ? err : "Success");
+    err=nvs_flash_erase();
+    DEBUG_WM("nvs_flash_erase: ", ? err : "Success");
+    return;
+  #endif
+      
   return WiFi_eraseConfig();
 }
 

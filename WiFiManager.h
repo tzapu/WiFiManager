@@ -16,6 +16,7 @@
 #define WM_WEBSERVERSHIM // use webserver shim lib
 // #define WM_MDNS       // use MDNS
 // #define WM_FIXERASECONFIG // use erase flash fix
+// #define WM_ERASE_NVS // esp32 erase() will erase NVS
 
 #ifdef ESP8266
 
@@ -49,6 +50,11 @@
             // Forthcoming official
             // https://github.com/esp8266/ESPWebServer
         #endif
+    #endif
+
+    #ifdef WM_ERASE_NVS
+       #include <nvs.h>
+       #include <nvs_flash.h>
     #endif
 
     #ifdef WM_MDNS
