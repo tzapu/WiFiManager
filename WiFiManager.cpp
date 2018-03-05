@@ -1552,10 +1552,10 @@ bool WiFiManager::erase(){
     err=nvs_flash_init();
     DEBUG_WM("nvs_flash_init: ",err ? err : "Success");
     err=nvs_flash_erase();
-    DEBUG_WM("nvs_flash_erase: ", ? err : "Success");
+    DEBUG_WM("nvs_flash_erase: ", err ? err : "Success");
     return;
   #endif
-      
+  
   return WiFi_eraseConfig();
 }
 
