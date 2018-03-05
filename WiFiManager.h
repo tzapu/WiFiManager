@@ -147,6 +147,8 @@ class WiFiManager
     void          reboot();
     // disconnect wifi, without persistent saving or erasing
     bool          disconnect();
+    // erase esp
+    bool          erase();
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop

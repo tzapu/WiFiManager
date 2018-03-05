@@ -1518,9 +1518,10 @@ void WiFiManager::reportStatus(String &page){
  */
 bool WiFiManager::disconnect(){
   if(WiFi.status() != WL_CONNECTED){
-    DEBUG_WM("Disconnect: Not connected");
+    DEBUG_WM("Disconnecting: Not connected");
     return false;
   }  
+  DEBUG_WM("Disconnecting");
   return WiFi_Disconnect();
 }
 
@@ -1529,7 +1530,17 @@ bool WiFiManager::disconnect(){
  * @access public
  */
 void WiFiManager::reboot(){
+  DEBUG_WM("Restarting");
   ESP.restart();
+}
+
+/**
+ * reboot the device
+ * @access public
+ */
+bool WiFiManager::erase(){
+  DEBUG_WM("Erasing");
+  return WiFi_eraseConfig();
 }
 
 
