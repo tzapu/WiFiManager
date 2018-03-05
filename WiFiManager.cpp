@@ -588,7 +588,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   } else {
     // connect using saved ssid if there is one
     if (WiFi_hasAutoConnect()) {
-      DEBUG_WM(F("Connecting to saved AP"));
+      DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
   	  WiFi_enableSTA(true,storeSTAmode);
       WiFi.begin();
     } else {
