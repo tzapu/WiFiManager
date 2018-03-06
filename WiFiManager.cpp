@@ -499,6 +499,9 @@ uint8_t WiFiManager::processConfigPortal(){
         DEBUG_WM(F("Connect to new AP [SUCCESS]"));
         DEBUG_WM(F("Got IP Address:"));
         DEBUG_WM(WiFi.localIP());
+        if ( _savecallback != NULL) {
+          _savecallback();
+        }        
         stopConfigPortal();
         return WL_CONNECTED; // success
       }
