@@ -205,6 +205,20 @@ const char D_HR[]                 PROGMEM = "--------------------";
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
 
+const char R_root[]               PROGMEM = "/";
+const char R_wifi[]               PROGMEM = "/wifi";
+const char R_wifinoscan[]         PROGMEM = "/0wifi";
+const char R_wifisave[]           PROGMEM = "/wifisave";
+const char R_info[]               PROGMEM = "/info";
+const char R_param[]              PROGMEM = "/param";
+const char R_paramsave[]          PROGMEM = "/paramsave";
+const char R_restart[]            PROGMEM = "/restart";
+const char R_exit[]               PROGMEM = "/exit";
+const char R_close[]              PROGMEM = "/close";
+const char R_erase[]              PROGMEM = "/erase"; 
+const char R_status[]             PROGMEM = "/status";
+
+
 //Strings
 const char S_ip[]                 PROGMEM = "ip";
 const char S_gw[]                 PROGMEM = "gw";
@@ -212,11 +226,11 @@ const char S_sn[]                 PROGMEM = "sn";
 
 // softap ssid default prefix
 #ifdef ESP8266
-	const char S_ssidpre[]        PROGMEM = "ESP";
+	const char S_ssidpre[]          PROGMEM = "ESP";
 #elif defined(ESP32)
-	const char S_ssidpre[]        PROGMEM = "ESP32";
+	const char S_ssidpre[]          PROGMEM = "ESP32";
 #else
-	const char S_ssidpre[]        PROGMEM = "WM";
+	const char S_ssidpre[]          PROGMEM = "WM";
 #endif
 
 //Tokens

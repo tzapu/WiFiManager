@@ -365,18 +365,18 @@ void WiFiManager::setupConfigPortal() {
   dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server->on((String)F("/"), std::bind(&WiFiManager::handleRoot, this));
-  server->on((String)F("/wifi"), std::bind(&WiFiManager::handleWifi, this, true));
-  server->on((String)F("/0wifi"), std::bind(&WiFiManager::handleWifi, this, false));
-  server->on((String)F("/wifisave"), std::bind(&WiFiManager::handleWifiSave, this));
-  server->on((String)F("/info"), std::bind(&WiFiManager::handleInfo, this));
-  server->on((String)F("/param"), std::bind(&WiFiManager::handleParam, this));
-  server->on((String)F("/paramsave"), std::bind(&WiFiManager::handleParamSave, this));
-  server->on((String)F("/restart"), std::bind(&WiFiManager::handleReset, this));
-  server->on((String)F("/exit"), std::bind(&WiFiManager::handleExit, this));
-  server->on((String)F("/close"), std::bind(&WiFiManager::stopCaptivePortal, this));
-  server->on((String)F("/erase"), std::bind(&WiFiManager::handleErase, this));
-  server->on((String)F("/status"), std::bind(&WiFiManager::handleWiFiStatus, this));
+  server->on((String)FPSTR(R_root), std::bind(&WiFiManager::handleRoot, this));
+  server->on((String)FPSTR(R_wifi), std::bind(&WiFiManager::handleWifi, this, true));
+  server->on((String)FPSTR(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
+  server->on((String)FPSTR(R_wifisave), std::bind(&WiFiManager::handleWifiSave, this));
+  server->on((String)FPSTR(R_info), std::bind(&WiFiManager::handleInfo, this));
+  server->on((String)FPSTR(R_param), std::bind(&WiFiManager::handleParam, this));
+  server->on((String)FPSTR(R_paramsave), std::bind(&WiFiManager::handleParamSave, this));
+  server->on((String)FPSTR(R_restart), std::bind(&WiFiManager::handleReset, this));
+  server->on((String)FPSTR(R_exit), std::bind(&WiFiManager::handleExit, this));
+  server->on((String)FPSTR(R_close), std::bind(&WiFiManager::stopCaptivePortal, this));
+  server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this));
+  server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
