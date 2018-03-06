@@ -16,6 +16,7 @@
 #define WM_WEBSERVERSHIM // use webserver shim lib
 // #define WM_MDNS       // use MDNS
 // #define WM_FIXERASECONFIG // use erase flash fix
+// #define WM_ERASE_NVS // esp32 erase() will erase
 
 #ifdef ESP8266
 
@@ -49,6 +50,11 @@
             // Forthcoming official
             // https://github.com/esp8266/ESPWebServer
         #endif
+    #endif
+
+    #ifdef WM_ERASE_NVS
+       #include <nvs.h>
+       #include <nvs_flash.h>
     #endif
 
     #ifdef WM_MDNS
@@ -148,6 +154,9 @@ class WiFiManager
     void          reboot();
     // disconnect wifi, without persistent saving or erasing
     bool          disconnect();
+    // erase esp
+    bool          erase();
+    bool          erase(bool opt);
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop

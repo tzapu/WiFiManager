@@ -17,7 +17,6 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ### Known Issues
 * :exclamation: ESP32 must be patched with webserver library, see [https://github.com/tzapu/WiFiManager/issues/513](https://github.com/tzapu/WiFiManager/issues/513)
-* :exclamation: ESP32 espressif/dnsserver contains bugs that prevent captive portal from working, see [https://github.com/tzapu/WiFiManager/issues/513](https://github.com/tzapu/WiFiManager/issues/513)
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
 
 ## Contents

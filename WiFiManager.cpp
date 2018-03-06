@@ -591,7 +591,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   } else {
     // connect using saved ssid if there is one
     if (WiFi_hasAutoConnect()) {
-      DEBUG_WM(F("Connecting to saved AP"));
+      DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
   	  WiFi_enableSTA(true,storeSTAmode);
       WiFi.begin();
     } else {
@@ -1526,9 +1526,10 @@ void WiFiManager::reportStatus(String &page){
  */
 bool WiFiManager::disconnect(){
   if(WiFi.status() != WL_CONNECTED){
-    DEBUG_WM("Disconnect: Not connected");
+    DEBUG_WM("Disconnecting: Not connected");
     return false;
   }  
+  DEBUG_WM("Disconnecting");
   return WiFi_Disconnect();
 }
 
@@ -1537,9 +1538,36 @@ bool WiFiManager::disconnect(){
  * @access public
  */
 void WiFiManager::reboot(){
+  DEBUG_WM("Restarting");
   ESP.restart();
 }
 
+/**
+ * reboot the device
+ * @access public
+ */
+bool WiFiManager::erase(){
+  return erase(false);
+}
+
+bool WiFiManager::erase(bool opt){
+  DEBUG_WM("Erasing");
+
+  #if defined(ESP32) && defined(WM_ERASE_NVS)
+    // if opt true, do nvs erase
+    if(opt){
+      DEBUG_WM("Erasing NVS");
+      int err;
+      err=nvs_flash_init();
+      DEBUG_WM("nvs_flash_init: ",err ? err : "Success");
+      err=nvs_flash_erase();
+      DEBUG_WM("nvs_flash_erase: ", err ? err : "Success");
+      return err;
+    }  
+  #endif
+
+  return WiFi_eraseConfig();
+}
 
 /**
  * [resetSettings description]
