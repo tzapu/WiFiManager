@@ -105,10 +105,16 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
      }
   }
 
+  if(_params == NULL){
+    DEBUG_WM("allocating params bytes:",_max_params * sizeof(WiFiManagerParameter*));        
+    _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
+  }
+
   if(_paramsCount == _max_params){
     // resize the params array by increment of WIFI_MANAGER_MAX_PARAMS
     _max_params += WIFI_MANAGER_MAX_PARAMS;
     DEBUG_WM(F("Updated _max_params:"),_max_params);
+    DEBUG_WM("re-allocating params bytes:",_max_params * sizeof(WiFiManagerParameter*));    
     WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
     // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
     // DEBUG_WM(_paramsCount);
@@ -146,11 +152,7 @@ void WiFiManager::WiFiManagerInit(){
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
   setMenu(_menuIds);
-  //parameters
-  // @todo belongs to wifimanagerparameter
   _max_params = WIFI_MANAGER_MAX_PARAMS;
-  DEBUG_WM("allocating",_max_params * sizeof(WiFiManagerParameter*));
-  _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
 }
 
 // destructor
