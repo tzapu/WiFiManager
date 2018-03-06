@@ -137,7 +137,7 @@ WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort){
   WiFiManagerInit();
 }
 
-WiFiManager::WiFiManager():_debugPort(Serial) {
+WiFiManager::WiFiManager():WiFiManager(Serial) {
   WiFiManagerInit();
 }
 
