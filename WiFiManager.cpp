@@ -98,13 +98,15 @@ const char* WiFiManagerParameter::getCustomHTML() {
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 
   // check param id is valid
-  for (int i = 0; i < strlen(p->getID()); i++){
-     if(!isAlphaNumeric(p->getID()[i])){
-      DEBUG_WM("[ERROR] parameter IDs can only contain alpha numeric chars");
-      return false;
-     }
+  // check param id is valid, unless null
+  if(p->getID()){
+    for (int i = 0; i < strlen(p->getID()); i++){
+       if(!isAlphaNumeric(p->getID()[i])){
+        DEBUG_WM("[ERROR] parameter IDs can only contain alpha numeric chars");
+        return false;
+       }
+    }
   }
-
   if(_params == NULL){
     DEBUG_WM("allocating params bytes:",_max_params * sizeof(WiFiManagerParameter*));        
     _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
@@ -153,6 +155,7 @@ void WiFiManager::WiFiManagerInit(){
   
   setMenu(_menuIds);
   _max_params = WIFI_MANAGER_MAX_PARAMS;
+  DEBUG_WM("allocating",_max_params * sizeof(WiFiManagerParameter*));
 }
 
 // destructor
