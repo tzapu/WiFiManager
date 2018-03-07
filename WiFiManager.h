@@ -363,7 +363,7 @@ class WiFiManager
     // WiFiManagerParameter
     int         _paramsCount          = 0;
     int         _max_params;
-    WiFiManagerParameter** _params;
+    WiFiManagerParameter** _params    = NULL;
 
     // debugging
     boolean       _debug              = true;
