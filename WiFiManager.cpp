@@ -155,7 +155,6 @@ void WiFiManager::WiFiManagerInit(){
   
   setMenu(_menuIds);
   _max_params = WIFI_MANAGER_MAX_PARAMS;
-  DEBUG_WM("allocating",_max_params * sizeof(WiFiManagerParameter*));
 }
 
 // destructor
