@@ -257,6 +257,7 @@ class WiFiManager
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
     int           _numNetworks            = 0;
     unsigned long _lastscan               = 0; // ms
+    int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback

@@ -160,7 +160,7 @@ void WiFiManager::WiFiManagerInit(){
 // destructor
 WiFiManager::~WiFiManager() {
   if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
-  if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
+  // if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
 
   // parameters
   // @todo belongs to wifimanagerparameter
@@ -460,7 +460,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
     // status change, break
     if(state != WL_IDLE_STATUS){
-        result = state == WL_CONNECTED; // true if connected
+        result = (state == WL_CONNECTED); // true if connected
         break;
     }
 
@@ -495,7 +495,7 @@ uint8_t WiFiManager::processConfigPortal(){
     if(connect) {
       connect = false;
       DEBUG_WM(F("Connecting to a new AP"));
-      if(_enableCaptivePortal) delay(2000); // configportal close delay
+      if(_enableCaptivePortal) delay(_cpclosedelay); // keeps the captiveportal from closing to fast.
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
@@ -506,7 +506,7 @@ uint8_t WiFiManager::processConfigPortal(){
           _savecallback();
         }        
         stopConfigPortal();
-        return WL_CONNECTED; // success
+        return WL_CONNECTED; // CONNECT SUCCESS
       }
 
       DEBUG_WM(F("Connect to new AP [FAILED]"));
@@ -519,13 +519,13 @@ uint8_t WiFiManager::processConfigPortal(){
           _savecallback();
         }
         stopConfigPortal();
-        return WL_CONNECT_FAILED; // fail
+        return WL_CONNECT_FAILED; // CONNECT FAIL
       }
       else{
-        // sta off to stabilize AP on connect failure
+        // if connect fails, turn sta off to stabilize AP
         WiFi_Disconnect();
         WiFi_enableSTA(false);
-        DEBUG_WM(F("Disabling STA")); 
+        DEBUG_WM(F("Disabling STA"));
       }
     }
 
@@ -558,10 +558,13 @@ boolean WiFiManager::stopConfigPortal(){
   // *WM: disconnect configportal - softAPdisconnect failed
   // still no way to reproduce reliably
   DEBUG_WM(F("disconnect configportal"));
-  bool ret = WiFi.softAPdisconnect(false);
-  if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect failed"));
+  bool ret = false;
+  // ret = WiFi.softAPdisconnect(false);
+  if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect FAILED"));
   // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   // DEBUG_WM("usermode",_usermode);
+  // DEBUG_WM(getWLStatusString(WiFi.status()));
+  if(WiFi.status()==WL_IDLE_STATUS) WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
   configPortalActive = false;
   return ret;
 }
@@ -2026,7 +2029,7 @@ bool WiFiManager::WiFi_Disconnect() {
       if((WiFi.getMode() & WIFI_STA) != 0) {
           bool ret;
           DEBUG_WM(F("wifi station disconnect"));
-          ETS_UART_INTR_DISABLE(); 
+          ETS_UART_INTR_DISABLE(); // @todo probably not needed
           ret = wifi_station_disconnect();
           ETS_UART_INTR_ENABLE();        
           return ret;
