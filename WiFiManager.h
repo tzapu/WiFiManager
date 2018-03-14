@@ -228,6 +228,14 @@ class WiFiManager
     #endif
         std::unique_ptr<WM_WebServer> server;
 
+    typedef enum {
+        DEBUG_ERROR     = 0,
+        DEBUG_NOTIFY    = 1, // default
+        DEBUG_VERBOSE   = 2,
+        DEBUG_DEV       = 3,
+        DEBUG_MAX       = 4
+    } wm_debuglevel_t;
+
     // std:vector<uint8_t> _menuids;
     uint8_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
 
@@ -369,12 +377,17 @@ class WiFiManager
 
     // debugging
     boolean       _debug              = true;
-    uint8_t       _debugLevel         = 2;
+    uint8_t       _debugLevel         = DEBUG_NOTIFY;
     Stream&     _debugPort; // debug output stream ref
+    
     template <typename Generic>
     void        DEBUG_WM(Generic text);
+    template <typename Generic>
+    void        DEBUG_WM(wm_debuglevel_t level,Generic text);
     template <typename Generic, typename Genericb>
     void        DEBUG_WM(Generic text,Genericb textb);
+    template <typename Generic, typename Genericb>
+    void        DEBUG_WM(wm_debuglevel_t level, Generic text,Genericb textb);
 
     // callbacks
     void (*_apcallback)(WiFiManager*) = NULL;
