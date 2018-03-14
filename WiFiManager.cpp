@@ -2131,8 +2131,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
       // Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
       if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
         _lastconxresulttmp = 7; // hack in wrong password internally, sdk emit WIFI_REASON_AUTH_EXPIRE on some routers on auth_fail
-        return;
-      }
+      } else _lastconxresulttmp = WiFi.status();
       // if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
       // Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       WiFi.reconnect();
