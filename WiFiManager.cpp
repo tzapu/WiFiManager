@@ -620,28 +620,33 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   if(connRes != WL_SCAN_COMPLETED){
-    _lastconxresult = connRes;
-      // hack in wrong password detection
-      #ifdef ESP8266
-        if(_lastconxresult == WL_CONNECT_FAILED){
-          if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
-            _lastconxresult = WL_STATION_WRONG_PASSWORD;
-          }
-        }    
-      #elif defined(ESP32)
-        // if(_lastconxresult == WL_CONNECT_FAILED){
-        if(_lastconxresult == WL_CONNECT_FAILED || _lastconxresult == WL_DISCONNECTED){
-          DEBUG_WM("lastconxresulttmp:",getWLStatusString(_lastconxresulttmp));            
-          if(_lastconxresulttmp != WL_IDLE_STATUS){
-            _lastconxresult    = _lastconxresulttmp;
-            _lastconxresulttmp = WL_IDLE_STATUS;
-          }
-        }
-        #endif
-      DEBUG_WM("lastconxresult:",getWLStatusString(_lastconxresult));
+    updateConxResult(connRes);
   }
 
   return connRes;
+}
+
+// @todo change to getLastFailureReason and do not touch conxresult
+void WiFiManager::updateConxResult(uint8_t status){
+  // hack in wrong password detection
+  _lastconxresult = status;
+    #ifdef ESP8266
+      if(_lastconxresult == WL_CONNECT_FAILED){
+        if(wifi_station_get_connect_status() == STATION_WRONG_PASSWORD){
+          _lastconxresult = WL_STATION_WRONG_PASSWORD;
+        }
+      }
+    #elif defined(ESP32)
+      // if(_lastconxresult == WL_CONNECT_FAILED){
+      if(_lastconxresult == WL_CONNECT_FAILED || _lastconxresult == WL_DISCONNECTED){
+        DEBUG_WM("lastconxresulttmp:",getWLStatusString(_lastconxresulttmp));            
+        if(_lastconxresulttmp != WL_IDLE_STATUS){
+          _lastconxresult    = _lastconxresulttmp;
+          // _lastconxresulttmp = WL_IDLE_STATUS;
+        }
+      }
+    #endif
+    DEBUG_WM("lastconxresult:",getWLStatusString(_lastconxresult));
 }
 
 // @todo uses _connectTimeout for wifi save also, add timeout argument to bypass?
@@ -1479,6 +1484,7 @@ void WiFiManager::stopCaptivePortal(){
 }
 
 void WiFiManager::reportStatus(String &page){
+  updateConxResult(WiFi.status());
   String str;
   if (WiFi_SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){

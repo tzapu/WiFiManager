@@ -293,6 +293,7 @@ class WiFiManager
     uint8_t       connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
+    void          updateConxResult(uint8_t status);
 
     // webserver handlers
     void          handleRoot();
