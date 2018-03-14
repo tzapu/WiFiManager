@@ -365,6 +365,8 @@ void WiFiManager::setupConfigPortal() {
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  // DEBUG_WM("dns server started port: ",DNS_PORT);
+  DEBUG_WM("dns server started with ip: ",WiFi.softAPIP());
   dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
@@ -756,8 +758,6 @@ void WiFiManager::handleWifi(boolean scan) {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
-
-  // Serial.println(page);
 
   DEBUG_WM(F("Sent config page"));
 }
@@ -2122,17 +2122,15 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     // WiFiManager _WiFiManager;
     // Serial.print("WM: EVENT: ");Serial.println(event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
-      Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
+      // Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
       if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
-        _lastconxresulttmp = 7;
+        _lastconxresulttmp = 7; // hack in wrong password internally, sdk emit WIFI_REASON_AUTH_EXPIRE on some routers on auth_fail
         return;
       }
-      // if(event == SYSTEM_EVENT_STA_START) WiFi.setHostname("wmtest"); 
-      // if(event == SYSTEM_EVENT_AP_START) WiFi.softAPsetHostname("wmtest"); 
       // if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
-      Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
+      // Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
       WiFi.reconnect();
-    }
+  }
 }
 #endif
 
