@@ -555,7 +555,8 @@ boolean WiFiManager::stopConfigPortal(){
   if(!configPortalActive) return false;
 
   // turn off AP
-  // @todo bug *WM: disconnect configportal
+  // @todo bug workaround *WM: disconnect configportal
+  // https://github.com/esp8266/Arduino/issues/3793
   // [APdisconnect] set_config failed!
   // *WM: disconnect configportal - softAPdisconnect failed
   // still no way to reproduce reliably
