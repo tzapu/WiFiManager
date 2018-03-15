@@ -586,8 +586,15 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   // Setup static IP config if provided
   if (_sta_static_ip) {
-    WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
-    DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet:"),WiFi.localIP());
+    if(_sta_static_dns) {
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
+      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
+    }
+    else {
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
+      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    }
+    DEBUG_WM(WiFi.localIP());
   }
 
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
@@ -952,6 +959,7 @@ String WiFiManager::getStaticOut(){
     // WiFi.gatewayIP().toString();
     page += getIpForm(FPSTR(S_sn),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
     // WiFi.subnetMask().toString();
+    page += getIpForm(FPSTR(S_dns),FPSTR(S_staticdns),(_sta_static_dns ? _sta_static_dns.toString() : "")); // @token dns
     page += FPSTR(HTTP_BR); // @todo remove these, use css
   }
   return page;
@@ -1060,6 +1068,11 @@ void WiFiManager::handleWifiSave() {
     String sn = server->arg(FPSTR(S_sn));
     optionalIPFromString(&_sta_static_sn, sn.c_str());
     DEBUG_WM(DEBUG_DEV,F("static netmask:"),sn);
+  }
+  if (server->arg(FPSTR(S_dns)) != "") {
+    String dns = server->arg(FPSTR(S_dns));
+    optionalIPFromString(&_sta_static_dns, dns.c_str());
+    DEBUG_WM(DEBUG_DEV,F("static DNS:"),dns);
   }
 
   String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
@@ -1662,6 +1675,21 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
   _sta_static_ip = ip;
   _sta_static_gw = gw;
   _sta_static_sn = sn;
+}
+
+/**
+ * [setSTAStaticIPConfig description]
+ * @access public
+ * @param {[type]} IPAddress ip [description]
+ * @param {[type]} IPAddress gw [description]
+ * @param {[type]} IPAddress sn [description]
+ * @param {[type]} IPAddress dns [description]
+ */
+void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns) {
+  _sta_static_ip = ip;
+  _sta_static_gw = gw;
+  _sta_static_sn = sn;
+  _sta_static_dns = dns;
 }
 
 /**
