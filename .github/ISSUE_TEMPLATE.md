@@ -1,3 +1,6 @@
+## PLEASE TRY DEVELOPMENT BRANCH before submitting bugs on release or master, in case they were already fixed. ##
+
+Issues without basic info will be ignored or closed!
 
 Please fill the info fields, it helps to get you faster support ;)
 
@@ -7,14 +10,14 @@ https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/stack_dump.rs
 for better debug messages:
 https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/debugging.rst
 
-## PLEASE TRY DEVELOPMENT BRANCH BEFORE SUBMITTING BUGS ON RELEAASE, IN CASE THEY WERE ALREADY FIXED. ##
-
 ----------------------------- Remove above -----------------------------
 
 ### Basic Infos
 
 #### Hardware
 WiFimanager Branch/Release:  Development
+
+Esp8266/Esp32: 
 
 Hardware:			ESP-12e, esp01, esp25
 
