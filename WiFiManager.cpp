@@ -586,13 +586,14 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   // Setup static IP config if provided
   if (_sta_static_ip) {
-	if(_sta_static_dns) {
+    if(_sta_static_dns) {
       DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
-	  WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
-	} else {
+      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
+    }
+    else {
       DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
       WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
-	}
+    }
     DEBUG_WM(WiFi.localIP());
   }
 
@@ -958,7 +959,7 @@ String WiFiManager::getStaticOut(){
     // WiFi.gatewayIP().toString();
     page += getIpForm(FPSTR(S_sn),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
     // WiFi.subnetMask().toString();
-	if(_sta_static_dns) page += getIpForm(FPSTR(S_dns),FPSTR(S_staticdns),(_sta_static_dns ? _sta_static_dns.toString() : "")); // @token DNS
+    page += getIpForm(FPSTR(S_dns),FPSTR(S_staticdns),(_sta_static_dns ? _sta_static_dns.toString() : "")); // @token dns
     page += FPSTR(HTTP_BR); // @todo remove these, use css
   }
   return page;
