@@ -764,8 +764,8 @@ void WiFiManager::handleWifi(boolean scan) {
 
   page += getStaticOut();
   if(_paramsInWifi && _paramsCount>0){
-    page += getParamOut();
     page += FPSTR(HTTP_FORM_WIFI_END);
+    page += getParamOut();
   }
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
@@ -951,6 +951,7 @@ String WiFiManager::getIpForm(String id, String title, String value){
 String WiFiManager::getStaticOut(){
   String page;
   if (_staShowStaticFields || _sta_static_ip) {
+    page += FPSTR(HTTP_FORM_STATIC_HEAD);
     // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     page += getIpForm(FPSTR(S_ip),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
     // WiFi.localIP().toString();
