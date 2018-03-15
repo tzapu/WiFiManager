@@ -74,9 +74,6 @@ void setup() {
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-
-  uint8_t menu[] = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE};
-  wifiManager.setMenu(menu);
   
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
