@@ -1679,6 +1679,7 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
 
 /**
  * [setSTAStaticIPConfig description]
+ * @since $dev
  * @access public
  * @param {[type]} IPAddress ip [description]
  * @param {[type]} IPAddress gw [description]
@@ -1686,9 +1687,7 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
  * @param {[type]} IPAddress dns [description]
  */
 void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns) {
-  _sta_static_ip = ip;
-  _sta_static_gw = gw;
-  _sta_static_sn = sn;
+  setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
   _sta_static_dns = dns;
 }
 

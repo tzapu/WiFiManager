@@ -249,7 +249,7 @@ class WiFiManager
     // std:vector<uint8_t> _menuids;
     uint8_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
 
-    // ip configs
+    // ip configs @todo struct ?
     IPAddress     _ap_static_ip;
     IPAddress     _ap_static_gw;
     IPAddress     _ap_static_sn;
