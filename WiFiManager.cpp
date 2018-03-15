@@ -951,7 +951,6 @@ String WiFiManager::getIpForm(String id, String title, String value){
 String WiFiManager::getStaticOut(){
   String page;
   if (_staShowStaticFields || _sta_static_ip) {
-
     // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     page += getIpForm(FPSTR(S_ip),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
     // WiFi.localIP().toString();
@@ -1687,7 +1686,7 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
  * @param {[type]} IPAddress dns [description]
  */
 void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns) {
-  setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+  setSTAStaticIPConfig(ip,gw,sn);
   _sta_static_dns = dns;
 }
 
