@@ -13,10 +13,12 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
-#define WM_WEBSERVERSHIM // use webserver shim lib
-// #define WM_MDNS       // use MDNS
-// #define WM_FIXERASECONFIG // use erase flash fix
-// #define WM_ERASE_NVS // esp32 erase() will erase
+// #define WM_MDNS            // also set MDNS with sethostname
+// #define WM_FIXERASECONFIG  // use erase flash fix
+// #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
+// #define WM_RTC             // esp32 info page will include reset reasons
+
+#define WM_WEBSERVERSHIM      // use webserver shim lib
 
 #ifdef ESP8266
 
@@ -60,6 +62,12 @@
     #ifdef WM_MDNS
         #include <ESPmDNS.h>
     #endif
+
+    #ifdef WM_RTC
+        #include <rom/rtc.h>
+    #endif
+
+
 #else
 #endif
 
