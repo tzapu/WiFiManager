@@ -186,6 +186,7 @@ const char S_options[]            PROGMEM = "options";
 const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.";
 const char S_staticip[]           PROGMEM = "Static IP";
 const char S_staticgw[]           PROGMEM = "Static Gateway";
+const char S_staticdns[]          PROGMEM = "Static DNS";
 const char S_subnet[]             PROGMEM = "Subnet";
 const char S_exiting[]            PROGMEM = "Exiting";
 const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
@@ -223,6 +224,7 @@ const char R_status[]             PROGMEM = "/status";
 const char S_ip[]                 PROGMEM = "ip";
 const char S_gw[]                 PROGMEM = "gw";
 const char S_sn[]                 PROGMEM = "sn";
+const char S_dns[]                PROGMEM = "dns";
 
 // softap ssid default prefix
 #ifdef ESP8266
