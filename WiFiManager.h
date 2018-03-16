@@ -200,8 +200,10 @@ class WiFiManager
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
     //setter for ESP wifi.persistent so we can remember it and restore user preference, as WIFi._persistent is protected
     void          setRestorePersistent(boolean persistent);
-    //if true, always show static net inputs, IP, subnet, gateway, if false, only show when already set.
+    //if true, always show static net inputs, IP, subnet, gateway, else only show if set via setSTAStaticIPConfig
     void          setShowStaticFields(boolean alwaysShow);
+    //if true, always show static dns, esle only show if set via setSTAStaticIPConfig
+    void          setShowDnsFields(boolean alwaysShow);
     //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
     //if false, timeout captive portal even if a STA client connected (false), suggest disabling if captiveportal is open
@@ -286,13 +288,14 @@ class WiFiManager
     uint8_t WL_STATION_WRONG_PASSWORD     = 7; // @kludge define a WL status for wrong password
     #endif
 
-    // option parameters
+    // parameter options
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
+    int            _staShowStaticFields   = 0;     // ternary always show static ip fields, only if not set in code, never(cannot change ips via web!)
+    int            _staShowDns            = 0;     // ternary always show dns, only if not set in code, never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
-    boolean       _staShowStaticFields    = false; // always show static ip fields, even if not set in code
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
     boolean       _wifiAutoReconnect      = true;  // there is no platform getter for this, we must assume its true and make it so
@@ -300,10 +303,13 @@ class WiFiManager
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
-    boolean       _preloadwifiscan        = true;  // preload wifiscan
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
+
+    // internal options
+    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
 
     void          setupConfigPortal();
     void          startWPS();

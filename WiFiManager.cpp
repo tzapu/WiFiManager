@@ -950,7 +950,7 @@ String WiFiManager::getIpForm(String id, String title, String value){
 
 String WiFiManager::getStaticOut(){
   String page;
-  if (_staShowStaticFields || _sta_static_ip) {
+  if ((_staShowStaticFields || _sta_static_ip) && _staShowStaticFields>=0) {
     page += FPSTR(HTTP_FORM_STATIC_HEAD);
     // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     page += getIpForm(FPSTR(S_ip),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
@@ -959,8 +959,10 @@ String WiFiManager::getStaticOut(){
     // WiFi.gatewayIP().toString();
     page += getIpForm(FPSTR(S_sn),FPSTR(S_subnet),(_sta_static_sn ? _sta_static_sn.toString() : "")); // @token subnet
     // WiFi.subnetMask().toString();
+  }
+
+  if((_staShowDns || _sta_static_dns) && _staShowDns>=0){
     page += getIpForm(FPSTR(S_dns),FPSTR(S_staticdns),(_sta_static_dns ? _sta_static_dns.toString() : "")); // @token dns
-    page += FPSTR(HTTP_BR); // @todo remove these, use css
   }
   return page;
 }
@@ -1782,7 +1784,20 @@ void WiFiManager::setRestorePersistent(boolean persistent) {
  * @param boolean alwaysShow [false]
  */
 void WiFiManager::setShowStaticFields(boolean alwaysShow){
-  _staShowStaticFields = alwaysShow;
+  if(_disableIpFields) _staShowStaticFields = alwaysShow ? 1 : -1;
+  else _staShowStaticFields = alwaysShow ? 1 : 0;
+}
+
+/**
+ * toggle showing dns fields
+ * if enabled, then the dns1 field will be visible, even if not set in code
+ * @since $dev
+ * @access public
+ * @param boolean alwaysShow [false]
+ */
+void WiFiManager::setShowDnsFields(boolean alwaysShow){
+  if(_disableIpFields) _staShowDns = alwaysShow ? 1 : -1;
+  _staShowDns = alwaysShow ? 1 : 0;
 }
 
 /**
