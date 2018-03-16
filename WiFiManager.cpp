@@ -809,7 +809,6 @@ String WiFiManager::getMenuOut(){
   String page;  
   int i;
   for(i=0;i<sizeof(_menuIds);i++){
-    DEBUG_WM(i,_menuIds[i]);
     if(_menuIds[i] == MENU_END) break; // MENU_END
     if((_menuIds[i] == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
     page += HTTP_PORTAL_MENU[_menuIds[i]];
