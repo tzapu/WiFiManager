@@ -23,14 +23,14 @@ const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
 
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
 const char * const HTTP_PORTAL_MENU[] PROGMEM = {
-"<form action='/wifi'    method='GET'><button>Configure WiFi</button></form><br/>\n", // MENU_WIFI
-"<form action='/0wifi'   method='GET'><button>Configure WiFi (No Scan)</button></form><br/>\n", // MENU_WIFINOSCAN
-"<form action='/info'    method='GET'><button>Info</button></form><br/>\n", // MENU_INFO
-"<form action='/param'   method='GET'><button>Setup</button></form><br/>\n",//MENU_PARAM
-"<form action='/close'   method='GET'><button>Close</button></form><br/>\n", // MENU_CLOSE
-"<form action='/restart' method='GET'><button>Restart</button></form><br/>\n",// MENU_RESTART
-"<form action='/exit'    method='GET'><button>Exit</button></form>",  // MENU_EXIT
-"<form action='/erase'   method='GET'><button>Erase</button></form>", // MENU_ERASE
+"<form action='/wifi'    method='get'><button>Configure WiFi</button></form><br/>\n", // MENU_WIFI
+"<form action='/0wifi'   method='get'><button>Configure WiFi (No Scan)</button></form><br/>\n", // MENU_WIFINOSCAN
+"<form action='/info'    method='get'><button>Info</button></form><br/>\n", // MENU_INFO
+"<form action='/param'   method='get'><button>Setup</button></form><br/>\n",//MENU_PARAM
+"<form action='/close'   method='get'><button>Close</button></form><br/>\n", // MENU_CLOSE
+"<form action='/restart' method='get'><button>Restart</button></form><br/>\n",// MENU_RESTART
+"<form action='/exit'    method='get'><button>Exit</button></form><br/>\n",  // MENU_EXIT
+"<form action='/erase'   method='get'><button class='D'>Erase</button></form><br/>\n", // MENU_ERASE
 "<hr><br/>" // MENU_SEP
 };
 

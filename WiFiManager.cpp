@@ -1217,7 +1217,7 @@ void WiFiManager::handleInfo() {
     page += F("</dl>");
   #endif
 
-  page += FPSTR(HTTP_ERASEBTN);
+  if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
 
@@ -1876,9 +1876,17 @@ bool  WiFiManager::setHostname(const char * hostname){
 }
 
 /**
+ * toggle showing erase wifi config button on info page
+ * @param boolean enabled
+ */
+void WiFiManager::setShowInfoErase(boolean enabled){
+  _showInfoErase = enabled;
+}
+
+/**
  * set menu items and order
  * if param is present, it will be removed from wifi
- * @shiftIncrement $dev
+ * @since $dev
  * @param uint8_t menu[] array of menu ids
  */
 void WiFiManager::setMenu(uint8_t menu[]){

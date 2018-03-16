@@ -216,6 +216,8 @@ class WiFiManager
     void          setScanDispPerc(boolean enabled);
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
+    // show erase wifi onfig button on info page, true
+    void          setShowInfoErase(boolean enabled);
     // set custom menu
     void          setMenu(uint8_t menu[]);
 
@@ -303,6 +305,7 @@ class WiFiManager
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
+    boolean       _showInfoErase          = true;  // info page erase button
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
