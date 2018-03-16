@@ -763,8 +763,9 @@ void WiFiManager::handleWifi(boolean scan) {
   page += pitem;
 
   page += getStaticOut();
+  page += FPSTR(HTTP_FORM_WIFI_END);
   if(_paramsInWifi && _paramsCount>0){
-    page += FPSTR(HTTP_FORM_WIFI_END);
+    page += FPSTR(HTTP_FORM_PARAM_HEAD);
     page += getParamOut();
   }
   page += FPSTR(HTTP_FORM_END);
@@ -964,6 +965,9 @@ String WiFiManager::getStaticOut(){
   if((_staShowDns || _sta_static_dns) && _staShowDns>=0){
     page += getIpForm(FPSTR(S_dns),FPSTR(S_staticdns),(_sta_static_dns ? _sta_static_dns.toString() : "")); // @token dns
   }
+
+  if(page!="") page += FPSTR(HTTP_BR); // @todo remove these, use css
+
   return page;
 }
 
