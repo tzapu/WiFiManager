@@ -13,6 +13,8 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
+#include <vector>
+
 // #define WM_MDNS            // also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
@@ -220,8 +222,8 @@ class WiFiManager
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
     // set custom menu
-    
-    // void          setMenu(const std:vector<menu_page_t>& menu);
+
+    void          setMenu(std::vector<menu_page_t>& menu);
     void          setMenu(menu_page_t menu[], uint8_t size);
 
     // get last connection result, includes autoconnect and wifisave
@@ -254,6 +256,7 @@ class WiFiManager
     } wm_debuglevel_t;
 
     menu_page_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT,MENU_END};
+    std::vector<menu_page_t> _menuIds_v = {MENU_WIFI,MENU_INFO,MENU_EXIT};
 
     // ip configs @todo struct ?
     IPAddress     _ap_static_ip;

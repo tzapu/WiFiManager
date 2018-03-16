@@ -807,12 +807,14 @@ void WiFiManager::handleParam(){
 
 String WiFiManager::getMenuOut(){
   String page;  
-  int i;
-  for(i=0;i<sizeof(_menuIds);i++){
-    if(_menuIds[i] == MENU_END) break; // MENU_END
-    if((_menuIds[i] == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
-    page += HTTP_PORTAL_MENU[_menuIds[i]];
+
+  for(menu_page_t& v :_menuIds_v ){
+    // DEBUG_WM("menuid:",(String)v);
+    // if(v == MENU_END) break; // MENU_END
+    if((v == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
+    page += HTTP_PORTAL_MENU[v];
   }
+
   return page;
 }
 
@@ -1896,6 +1898,12 @@ void WiFiManager::setMenu(menu_page_t menu[], uint8_t size){
       if(i >= n) _menuIds[i] = MENU_END;
       else _menuIds[i] = menu[i];
   }
+
+  // @todo copy into vector if we keep this..
+}
+
+void WiFiManager::setMenu(std::vector<menu_page_t>& menu){
+  _menuIds_v = menu;
 }
 
 // GETTERS
@@ -1936,6 +1944,7 @@ bool WiFiManager::getWiFiIsSaved(){
 // HELPERS
 
 // DEBUG
+// @todo fix DEBUG_WM(0,0);
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
   DEBUG_WM(DEBUG_NOTIFY,text,"");
