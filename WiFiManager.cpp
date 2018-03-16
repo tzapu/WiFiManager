@@ -156,7 +156,6 @@ void WiFiManager::WiFiManagerInit(){
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
-  setMenu(_menuIds);
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
 
@@ -810,7 +809,8 @@ String WiFiManager::getMenuOut(){
   String page;  
   int i;
   for(i=0;i<sizeof(_menuIds);i++){
-    if(_menuIds[i] == 255) continue;
+    DEBUG_WM(i,_menuIds[i]);
+    if(_menuIds[i] == MENU_END) break; // MENU_END
     if((_menuIds[i] == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
     page += HTTP_PORTAL_MENU[_menuIds[i]];
   }
@@ -1889,12 +1889,13 @@ void WiFiManager::setShowInfoErase(boolean enabled){
  * @since $dev
  * @param uint8_t menu[] array of menu ids
  */
-void WiFiManager::setMenu(uint8_t menu[]){
+void WiFiManager::setMenu(menu_page_t menu[], uint8_t size){
   int i;
-  int n = sizeof(menu);
+  size_t n = size;
   for(i=0;i<sizeof(_menuIds);i++){
     if(menu[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
-    _menuIds[i] = i < n-1 ? menu[i] : 255;
+      if(i >= n) _menuIds[i] = MENU_END;
+      else _menuIds[i] = menu[i];
   }
 }
 

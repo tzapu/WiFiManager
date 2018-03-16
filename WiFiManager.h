@@ -135,7 +135,8 @@ class WiFiManager
         MENU_RESTART    = 5,
         MENU_EXIT       = 6,
         MENU_ERASE      = 7,
-        MENU_SEP        = 8
+        MENU_SEP        = 8,
+        MENU_END        = 255
     } menu_page_t;
 
     // auto connect to saved wifi, or custom, and start config portal on failures
@@ -219,7 +220,9 @@ class WiFiManager
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
     // set custom menu
-    void          setMenu(uint8_t menu[]);
+    
+    // void          setMenu(const std:vector<menu_page_t>& menu);
+    void          setMenu(menu_page_t menu[], uint8_t size);
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
@@ -250,8 +253,7 @@ class WiFiManager
         DEBUG_MAX       = 4
     } wm_debuglevel_t;
 
-    // std:vector<uint8_t> _menuids;
-    uint8_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT};
+    menu_page_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT,MENU_END};
 
     // ip configs @todo struct ?
     IPAddress     _ap_static_ip;
