@@ -272,6 +272,15 @@ bool WiFiManager::startAP(){
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
 
+  #ifdef ESP8266
+    // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
+    if(!WiFi.enableAP(true)) {
+      DEBUG_WM("enableAP failed!");
+      return false;
+    }
+    delay(500);
+  #endif
+
   // start soft AP with password or anonymous
   if (_apPassword != "") {
     ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
