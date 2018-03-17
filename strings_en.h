@@ -193,7 +193,6 @@ const char S_staticdns[]          PROGMEM = "Static DNS";
 const char S_subnet[]             PROGMEM = "Subnet";
 const char S_exiting[]            PROGMEM = "Exiting";
 const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
-const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
 const char S_closing[]            PROGMEM = "You can close the page, portal will continue to run";
 const char S_error[]              PROGMEM = "An Error Occured";
 const char S_notfound[]           PROGMEM = "File Not Found\n\n";
