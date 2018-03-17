@@ -283,7 +283,8 @@ bool WiFiManager::startAP(){
   if(_debugLevel > DEBUG_DEV) debugSoftAPConfig();
 
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] There was a problem starting the AP");
-
+  // @tood add softAP retry here
+  
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
 
@@ -382,7 +383,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_paramsave), std::bind(&WiFiManager::handleParamSave, this));
   server->on((String)FPSTR(R_restart), std::bind(&WiFiManager::handleReset, this));
   server->on((String)FPSTR(R_exit), std::bind(&WiFiManager::handleExit, this));
-  server->on((String)FPSTR(R_close), std::bind(&WiFiManager::stopCaptivePortal, this));
+  server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
   server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
   //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -1508,6 +1509,17 @@ boolean WiFiManager::captivePortal() {
 
 void WiFiManager::stopCaptivePortal(){
   _enableCaptivePortal= false;
+  // @todo maybe disable configportaltimeout(optional), or just provide callback for user
+}
+
+void WiFiManager::handleClose(){
+  stopCaptivePortal();
+  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP close"));
+  handleRequest();
+  String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
+  page += FPSTR(S_closing); // @token closing
+  server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->send(200, FPSTR(HTTP_HEAD_CT), page);
 }
 
 void WiFiManager::reportStatus(String &page){

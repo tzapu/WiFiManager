@@ -97,13 +97,13 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr>"
  "<tr><td><a href='/param'>/param</a></td>"
  "<td>Parameter page</td></tr>"
- "<tr><td><a href='/info'>/i</a></td>"
+ "<tr><td><a href='/info'>/info</a></td>"
  "<td>Information page</td></tr>"
  "<tr><td><a href='/close'>/close</a></td>"
  "<td>Close the captiveportal popup,configportal will remain active</td></tr>"
  "<tr><td><a href='/exit'>/exit</a></td>"
  "<td>Exit Config Portal, configportal will close</td></tr>"
- "<tr><td><a href='/restart'>/r</a></td>"
+ "<tr><td><a href='/restart'>/restart</a></td>"
  "<td>Reboot the device</td></tr>"
  "<tr><td><a href='/erase'>/erase</a></td>"
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
@@ -184,6 +184,7 @@ const char S_titleparamsaved[]    PROGMEM = "Setup Saved";
 const char S_titleexit[]          PROGMEM = "Exit";
 const char S_titlereset[]         PROGMEM = "Reset";
 const char S_titleerase[]         PROGMEM = "Erase";
+const char S_titleclose[]         PROGMEM = "Close";
 const char S_options[]            PROGMEM = "options";
 const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.";
 const char S_staticip[]           PROGMEM = "Static IP";
@@ -192,6 +193,8 @@ const char S_staticdns[]          PROGMEM = "Static DNS";
 const char S_subnet[]             PROGMEM = "Subnet";
 const char S_exiting[]            PROGMEM = "Exiting";
 const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
+const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
+const char S_closing[]            PROGMEM = "You can close the page, portal will continue to run";
 const char S_error[]              PROGMEM = "An Error Occured";
 const char S_notfound[]           PROGMEM = "File Not Found\n\n";
 const char S_uri[]                PROGMEM = "URI: ";
