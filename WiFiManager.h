@@ -336,6 +336,7 @@ class WiFiManager
     void          handleReset();
     void          handleNotFound();
     void          handleExit();
+    void          handleClose();
     void          handleErase();
     void          handleParam();
     void          handleWiFiStatus();
