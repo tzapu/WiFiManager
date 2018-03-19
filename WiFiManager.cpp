@@ -504,9 +504,11 @@ uint8_t WiFiManager::processConfigPortal(){
 
       // attempt sta connection to submitted _ssid, _pass
       if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+        
         DEBUG_WM(F("Connect to new AP [SUCCESS]"));
         DEBUG_WM(F("Got IP Address:"));
         DEBUG_WM(WiFi.localIP());
+
         if ( _savecallback != NULL) {
           _savecallback();
         }        
@@ -1952,7 +1954,7 @@ void WiFiManager::DEBUG_WM(Generic text) {
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text) {
-  if(_debugLevel >= level) DEBUG_WM(text,"");
+  if(_debugLevel >= level) DEBUG_WM(DEBUG_NOTIFY,text,"");
 }
 
 template <typename Generic, typename Genericb>
@@ -1970,6 +1972,7 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
       _debugPort.println((String)ESP.getFreeHeap());
     }
     _debugPort.print("*WM: ");
+    // _debugPort.print("["+(String)level+"] ");
     _debugPort.print(text);
     if(textb){
       _debugPort.print(" ");
