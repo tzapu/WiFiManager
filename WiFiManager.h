@@ -128,19 +128,6 @@ class WiFiManager
     ~WiFiManager();
     void WiFiManagerInit();
 
-    typedef enum {
-        MENU_WIFI       = 0,
-        MENU_WIFINOSCAN = 1,
-        MENU_INFO       = 2,
-        MENU_PARAM      = 3,
-        MENU_CLOSE      = 4,
-        MENU_RESTART    = 5,
-        MENU_EXIT       = 6,
-        MENU_ERASE      = 7,
-        MENU_SEP        = 8,
-        MENU_END        = 255
-    } menu_page_t;
-
     // auto connect to saved wifi, or custom, and start config portal on failures
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
@@ -223,8 +210,9 @@ class WiFiManager
     void          setShowInfoErase(boolean enabled);
     // set custom menu
 
-    void          setMenu(std::vector<menu_page_t>& menu);
-    void          setMenu(menu_page_t menu[], uint8_t size);
+    // void          setMenu(std::vector<menu_page_t>& menu);
+    void          setMenu(std::vector<const char*>& menu);
+    void          setMenu(const char* menu[], uint8_t size);
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
@@ -247,16 +235,21 @@ class WiFiManager
     #endif
         std::unique_ptr<WM_WebServer> server;
 
-    typedef enum {
-        DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default
-        DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3,
-        DEBUG_MAX       = 4
-    } wm_debuglevel_t;
+    int _menuids_cnt = 9;
+    const char * const _menutokens[9] PROGMEM = {
+        "wifi",
+        "wifinoscan",
+        "info",
+        "param",
+        "close",
+        "restart",
+        "exit",
+        "erase",
+        "sep"
+    };
 
-    menu_page_t _menuIds[10] = {MENU_WIFI,MENU_INFO,MENU_EXIT,MENU_END};
-    std::vector<menu_page_t> _menuIds_v = {MENU_WIFI,MENU_INFO,MENU_EXIT};
+    std::vector<uint8_t> _menuIds;
+    std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
 
     // ip configs @todo struct ?
     IPAddress     _ap_static_ip;
@@ -402,8 +395,16 @@ class WiFiManager
     WiFiManagerParameter** _params    = NULL;
 
     // debugging
+    typedef enum {
+        DEBUG_ERROR     = 0,
+        DEBUG_NOTIFY    = 1, // default
+        DEBUG_VERBOSE   = 2,
+        DEBUG_DEV       = 3,
+        DEBUG_MAX       = 4
+    } wm_debuglevel_t;
+
     boolean       _debug              = true;
-    uint8_t       _debugLevel         = DEBUG_NOTIFY;
+    uint8_t       _debugLevel         = DEBUG_DEV;
     Stream&     _debugPort; // debug output stream ref
     
     template <typename Generic>

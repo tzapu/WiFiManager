@@ -152,7 +152,9 @@ WiFiManager::WiFiManager():WiFiManager(Serial) {
 }
 
 void WiFiManager::WiFiManagerInit(){
+  setMenu(_menuIdsDefault);
   if(_debug && _debugLevel > DEBUG_DEV) debugPlatformInfo();
+  
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
@@ -820,11 +822,9 @@ void WiFiManager::handleParam(){
 String WiFiManager::getMenuOut(){
   String page;  
 
-  for(menu_page_t& v :_menuIds_v ){
-    // DEBUG_WM("menuid:",(String)v);
-    // if(v == MENU_END) break; // MENU_END
-    if((v == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
-    page += HTTP_PORTAL_MENU[v];
+  for(auto& menuId :_menuIds ){
+    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params
+    page += HTTP_PORTAL_MENU[menuId];
   }
 
   return page;
@@ -1916,21 +1916,33 @@ void WiFiManager::setShowInfoErase(boolean enabled){
  * @since $dev
  * @param uint8_t menu[] array of menu ids
  */
-void WiFiManager::setMenu(menu_page_t menu[], uint8_t size){
-  unsigned int i;
-  size_t n = size;
-  for(i=0;i<sizeof(_menuIds);i++){
-    if(menu[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
-      if(i >= n) _menuIds[i] = MENU_END;
-      else _menuIds[i] = menu[i];
+
+void WiFiManager::setMenu(const char * menu[], uint8_t size){
+  _menuIds.clear();
+  for(size_t i = 0; i < size; i++){
+    for(size_t j = 0; j < _menuids_cnt; j++){
+      if(menu[i] == _menutokens[j]){
+        if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
+        _menuIds.push_back(j);
+      }
+    }
   }
-
-  // @todo copy into vector if we keep this..
+  // DEBUG_WM(getMenuOut());  
 }
 
-void WiFiManager::setMenu(std::vector<menu_page_t>& menu){
-  _menuIds_v = menu;
+void WiFiManager::setMenu(std::vector<const char *>& menu){
+  _menuIds.clear();
+  for(auto menuitem : menu ){
+    for(size_t j = 0; j<_menuids_cnt; j++){
+      if(menuitem == _menutokens[j]){
+        if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
+        _menuIds.push_back(j);
+      }
+    }
+  }
+  // DEBUG_WM(getMenuOut());
 }
+
 
 // GETTERS
 
@@ -1991,12 +2003,12 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(_debugLevel < level) return;
 
   if (_debug) {
-    if(_debugLevel > 3){
+    if(_debugLevel >= DEBUG_MAX){
       _debugPort.print("MEM: ");
       _debugPort.println((String)ESP.getFreeHeap());
     }
     _debugPort.print("*WM: ");
-    // _debugPort.print("["+(String)level+"] ");
+    if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
     _debugPort.print(text);
     if(textb){
       _debugPort.print(" ");
