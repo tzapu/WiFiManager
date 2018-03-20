@@ -23,7 +23,7 @@ function build_examples()
     # skip files listed as excludes
     for exclude in "${excludes[@]}"; do
         if [ "${example_file}" == "${exclude}" ] ; then
-            echo "Skipping ${example_file}!"
+            echo ">>>>>>>>>>>>>>>>>>>>>>>> Skipping ${example_file} <<<<<<<<<<<<<<<<<<<<<<<<<<"
             continue 2
         fi
     done
