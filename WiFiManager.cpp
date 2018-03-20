@@ -133,7 +133,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   _params[_paramsCount] = p;
   _paramsCount++;
   
-  DEBUG_WM("Added Parameter:",p->getID());
+  DEBUG_WM(DEBUG_VERBOSE,"Added Parameter:",p->getID());
   return true;
 }
 
@@ -277,7 +277,7 @@ bool WiFiManager::startAP(){
   #ifdef ESP8266
     // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
     if(!WiFi.enableAP(true)) {
-      DEBUG_WM("enableAP failed!");
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] enableAP failed!");
       return false;
     }
     delay(500);
@@ -304,7 +304,7 @@ bool WiFiManager::startAP(){
     if(ret && (String)_hostname != ""){
       DEBUG_WM(DEBUG_VERBOSE,"setting softAP Hostname:",_hostname);
       bool res =  WiFi.softAPsetHostname(_hostname);
-      if(!res)DEBUG_WM(F("hostname: AP set failed!"));
+      if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
       DEBUG_WM(DEBUG_DEV,F("hostname: AP"),WiFi.softAPgetHostname());
    }
   #endif
@@ -397,7 +397,6 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
   server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
-  //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
   server->begin(); // Web server start
@@ -453,7 +452,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   startAP();
 
   // init configportal
-  DEBUG_WM(DEBUG_VERBOSE,F("setupConfigPortal"));
+  DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
   setupConfigPortal();
 
   if(!_configPortalIsBlocking){
@@ -580,7 +579,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
-  if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect FAILED"));
+  if(!ret)DEBUG_WM(,DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
   // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   // DEBUG_WM("usermode",_usermode);
   // DEBUG_WM(getWLStatusString(WiFi.status()));
@@ -1988,7 +1987,7 @@ void WiFiManager::DEBUG_WM(Generic text) {
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text) {
-  if(_debugLevel >= level) DEBUG_WM(DEBUG_NOTIFY,text,"");
+  if(_debugLevel >= level) DEBUG_WM(level,text,"");
 }
 
 template <typename Generic, typename Genericb>
