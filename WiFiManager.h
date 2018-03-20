@@ -356,7 +356,7 @@ class WiFiManager
     String        WiFi_SSID();
     bool          WiFi_scanNetworks();
     bool          WiFi_scanNetworks(bool force);
-    bool          WiFi_scanNetworks(int cachetime);
+    bool          WiFi_scanNetworks(unsigned int cachetime);
 
     #ifdef ESP32
     static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
