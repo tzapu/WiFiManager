@@ -9,6 +9,7 @@ before_install:
   - tar xf arduino-1.8.5-linux64.tar.xz
   - sudo mv arduino-1.8.5 /usr/local/share/arduino
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
   - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
@@ -27,6 +28,7 @@ install:
   - popd
 # esp32 needs WebServer_tng for now
   - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
+
 script:
   - "echo $PWD"
   - "echo $HOME"
