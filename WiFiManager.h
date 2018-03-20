@@ -236,7 +236,7 @@ class WiFiManager
         std::unique_ptr<WM_WebServer> server;
 
     int _menuids_cnt = 9;
-    const char * const _menutokens[9] PROGMEM = {
+    const char * const _menutokens[9] = {
         "wifi",
         "wifinoscan",
         "info",
