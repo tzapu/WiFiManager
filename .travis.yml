@@ -26,6 +26,8 @@ install:
   - cd tools
   - python2 get.py
   - popd
+# esp32 needs WebServer_tng for now
+  - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
 script:
   - "echo $PWD"
   - "echo $HOME"
