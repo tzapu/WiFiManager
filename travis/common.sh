@@ -2,6 +2,7 @@
 
 function build_examples()
 {
+  excludes=("$@")
   # track the exit code for this platform
   local exit_code=0
   # loop through results and add them to the array
@@ -19,6 +20,14 @@ function build_examples()
     # store the filename for the example without the path
     local example_file=$(basename $example)
 
+    # skip files listed as excludes
+    for exclude in "${excludes[@]}"; do
+        if [ "${example_file}" == "${exclude}" ] ; then
+            echo ">>>>>>>>>>>>>>>>>>>>>>>> Skipping ${example_file} <<<<<<<<<<<<<<<<<<<<<<<<<<"
+            continue 2
+        fi
+    done
+    
     echo "$example_file: "
     local sketch="$example_dir/$example_file"
     echo "$sketch"
