@@ -210,6 +210,19 @@ const char D_HR[]                 PROGMEM = "--------------------";
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
 
+const uint8_t _nummenutokens = 9;
+const char * const _menutokens[9] PROGMEM = {
+    "wifi",
+    "wifinoscan",
+    "info",
+    "param",
+    "close",
+    "restart",
+    "exit",
+    "erase",
+    "sep"
+};
+
 const char R_root[]               PROGMEM = "/";
 const char R_wifi[]               PROGMEM = "/wifi";
 const char R_wifinoscan[]         PROGMEM = "/0wifi";

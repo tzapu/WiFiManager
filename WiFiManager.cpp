@@ -99,7 +99,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 
   // check param id is valid, unless null
   if(p->getID()){
-    for (int i = 0; i < strlen(p->getID()); i++){
+    for (size_t i = 0; i < strlen(p->getID()); i++){
        if(!isAlphaNumeric(p->getID()[i])){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] parameter IDs can only contain alpha numeric chars");
         return false;
@@ -133,7 +133,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   _params[_paramsCount] = p;
   _paramsCount++;
   
-  DEBUG_WM("Added Parameter:",p->getID());
+  DEBUG_WM(DEBUG_VERBOSE,"Added Parameter:",p->getID());
   return true;
 }
 
@@ -152,7 +152,9 @@ WiFiManager::WiFiManager():WiFiManager(Serial) {
 }
 
 void WiFiManager::WiFiManagerInit(){
+  setMenu(_menuIdsDefault);
   if(_debug && _debugLevel > DEBUG_DEV) debugPlatformInfo();
+  
   _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   
@@ -275,7 +277,7 @@ bool WiFiManager::startAP(){
   #ifdef ESP8266
     // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
     if(!WiFi.enableAP(true)) {
-      DEBUG_WM("enableAP failed!");
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] enableAP failed!");
       return false;
     }
     delay(500);
@@ -302,7 +304,7 @@ bool WiFiManager::startAP(){
     if(ret && (String)_hostname != ""){
       DEBUG_WM(DEBUG_VERBOSE,"setting softAP Hostname:",_hostname);
       bool res =  WiFi.softAPsetHostname(_hostname);
-      if(!res)DEBUG_WM(F("hostname: AP set failed!"));
+      if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
       DEBUG_WM(DEBUG_DEV,F("hostname: AP"),WiFi.softAPgetHostname());
    }
   #endif
@@ -395,7 +397,6 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
   server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
-  //server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
   server->begin(); // Web server start
@@ -451,7 +452,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   startAP();
 
   // init configportal
-  DEBUG_WM(DEBUG_VERBOSE,F("setupConfigPortal"));
+  DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
   setupConfigPortal();
 
   if(!_configPortalIsBlocking){
@@ -578,7 +579,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
-  if(!ret)DEBUG_WM(F("disconnect configportal - softAPdisconnect FAILED"));
+  if(!ret)DEBUG_WM(,DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
   // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   // DEBUG_WM("usermode",_usermode);
   // DEBUG_WM(getWLStatusString(WiFi.status()));
@@ -686,7 +687,7 @@ uint8_t WiFiManager::waitForConnectResult() {
 
   DEBUG_WM (F("connectTimeout set, waiting for connect...."));
   uint8_t status = WiFi.status();
-  int timeout = millis() + _connectTimeout;
+  unsigned long timeout = millis() + _connectTimeout;
   
   while(millis() < timeout) {
     status = WiFi.status();
@@ -748,7 +749,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks(10000); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)10000); // preload wifiscan throttled
 }
 
 /**
@@ -820,11 +821,9 @@ void WiFiManager::handleParam(){
 String WiFiManager::getMenuOut(){
   String page;  
 
-  for(menu_page_t& v :_menuIds_v ){
-    // DEBUG_WM("menuid:",(String)v);
-    // if(v == MENU_END) break; // MENU_END
-    if((v == MENU_PARAM) && (_paramsCount == 0)) continue; // no params set, omit params
-    page += HTTP_PORTAL_MENU[v];
+  for(auto& menuId :_menuIds ){
+    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params
+    page += HTTP_PORTAL_MENU[menuId];
   }
 
   return page;
@@ -833,7 +832,7 @@ String WiFiManager::getMenuOut(){
 bool WiFiManager::WiFi_scanNetworks(){
   return WiFi_scanNetworks(false);
 }
-bool WiFiManager::WiFi_scanNetworks(int cachetime){
+bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force){
@@ -1186,7 +1185,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<27;i++){
+    for(size_t i=0; i<27;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -1224,7 +1223,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<23;i++){
+    for(size_t i=0; i<23;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -1625,7 +1624,9 @@ bool WiFiManager::erase(bool opt){
       err=nvs_flash_erase();
       DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err ? (String)err : "Success");
       return err;
-    }  
+    }
+  #else 
+    (void)opt;
   #endif
 
   return WiFi_eraseConfig();
@@ -1883,7 +1884,7 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
  * @param boolean enabled [false]
  */
 void WiFiManager::setScanDispPerc(boolean enabled){
-  _scanDispOptions = true;
+  _scanDispOptions = enabled;
 }
 
 /**
@@ -1913,21 +1914,32 @@ void WiFiManager::setShowInfoErase(boolean enabled){
  * @since $dev
  * @param uint8_t menu[] array of menu ids
  */
-void WiFiManager::setMenu(menu_page_t menu[], uint8_t size){
-  int i;
-  size_t n = size;
-  for(i=0;i<sizeof(_menuIds);i++){
-    if(menu[i] == MENU_PARAM) _paramsInWifi = false; // param auto flag
-      if(i >= n) _menuIds[i] = MENU_END;
-      else _menuIds[i] = menu[i];
+void WiFiManager::setMenu(const char * menu[], uint8_t size){
+  _menuIds.clear();
+  for(size_t i = 0; i < size; i++){
+    for(size_t j = 0; j < _nummenutokens; j++){
+      if(menu[i] == _menutokens[j]){
+        if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
+        _menuIds.push_back(j);
+      }
+    }
   }
-
-  // @todo copy into vector if we keep this..
+  // DEBUG_WM(getMenuOut());  
 }
 
-void WiFiManager::setMenu(std::vector<menu_page_t>& menu){
-  _menuIds_v = menu;
+void WiFiManager::setMenu(std::vector<const char *>& menu){
+  _menuIds.clear();
+  for(auto menuitem : menu ){
+    for(size_t j = 0; j < _nummenutokens; j++){
+      if(menuitem == _menutokens[j]){
+        if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
+        _menuIds.push_back(j);
+      }
+    }
+  }
+  // DEBUG_WM(getMenuOut());
 }
+
 
 // GETTERS
 
@@ -1975,7 +1987,7 @@ void WiFiManager::DEBUG_WM(Generic text) {
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text) {
-  if(_debugLevel >= level) DEBUG_WM(DEBUG_NOTIFY,text,"");
+  if(_debugLevel >= level) DEBUG_WM(level,text,"");
 }
 
 template <typename Generic, typename Genericb>
@@ -1988,12 +2000,12 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(_debugLevel < level) return;
 
   if (_debug) {
-    if(_debugLevel > 3){
+    if(_debugLevel >= DEBUG_MAX){
       _debugPort.print("MEM: ");
       _debugPort.println((String)ESP.getFreeHeap());
     }
     _debugPort.print("*WM: ");
-    // _debugPort.print("["+(String)level+"] ");
+    if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
     _debugPort.print(text);
     if(textb){
       _debugPort.print(" ");
@@ -2156,6 +2168,7 @@ bool WiFiManager::WiFi_Disconnect() {
       return esp_wifi_disconnect() == ESP_OK;
       // return WiFi.disconnect();
     #endif
+    return false;
 }
 
 // toggle STA without persistent
@@ -2254,6 +2267,6 @@ void WiFiManager::WiFi_autoReconnect(){
     if(_wifiAutoReconnect){
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       WiFi.onEvent(WiFiEvent);
-    }  
+    }
   #endif
 }
