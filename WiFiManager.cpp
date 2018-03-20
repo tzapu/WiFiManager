@@ -99,7 +99,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 
   // check param id is valid, unless null
   if(p->getID()){
-    for (int i = 0; i < strlen(p->getID()); i++){
+    for (size_t i = 0; i < strlen(p->getID()); i++){
        if(!isAlphaNumeric(p->getID()[i])){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] parameter IDs can only contain alpha numeric chars");
         return false;
@@ -688,7 +688,7 @@ uint8_t WiFiManager::waitForConnectResult() {
 
   DEBUG_WM (F("connectTimeout set, waiting for connect...."));
   uint8_t status = WiFi.status();
-  int timeout = millis() + _connectTimeout;
+  unsigned long timeout = millis() + _connectTimeout;
   
   while(millis() < timeout) {
     status = WiFi.status();
@@ -750,7 +750,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks(10000); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)10000); // preload wifiscan throttled
 }
 
 /**
@@ -833,7 +833,7 @@ String WiFiManager::getMenuOut(){
 bool WiFiManager::WiFi_scanNetworks(){
   return WiFi_scanNetworks(false);
 }
-bool WiFiManager::WiFi_scanNetworks(int cachetime){
+bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force){
@@ -1186,7 +1186,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<27;i++){
+    for(size_t i=0; i<27;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -1224,7 +1224,7 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(int i=0; i<23;i++){
+    for(size_t i=0; i<23;i++){
       if(infoids[i] != NULL) page += getInfoData(infoids[i]);
     }
     page += F("</dl>");
@@ -1625,7 +1625,9 @@ bool WiFiManager::erase(bool opt){
       err=nvs_flash_erase();
       DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err ? (String)err : "Success");
       return err;
-    }  
+    }
+  #else 
+    (void)opt;
   #endif
 
   return WiFi_eraseConfig();
@@ -1883,7 +1885,7 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
  * @param boolean enabled [false]
  */
 void WiFiManager::setScanDispPerc(boolean enabled){
-  _scanDispOptions = true;
+  _scanDispOptions = enabled;
 }
 
 /**
