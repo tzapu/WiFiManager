@@ -579,7 +579,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
-  if(!ret)DEBUG_WM(,DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
+  if(!ret)DEBUG_WM(DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
   // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   // DEBUG_WM("usermode",_usermode);
   // DEBUG_WM(getWLStatusString(WiFi.status()));
