@@ -235,19 +235,6 @@ class WiFiManager
     #endif
         std::unique_ptr<WM_WebServer> server;
 
-    uint8_t _menuids_cnt = 9;
-    const char * const _menutokens[9] = {
-        "wifi",
-        "wifinoscan",
-        "info",
-        "param",
-        "close",
-        "restart",
-        "exit",
-        "erase",
-        "sep"
-    };
-
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
 
