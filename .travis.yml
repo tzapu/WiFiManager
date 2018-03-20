@@ -36,8 +36,7 @@ script:
   - arduino --board espressif:esp32:esp32:FlashMode=qio,FlashFreq=80,FlashSize=4M,DebugLevel=info --save-prefs
   - build_examples
 #  - arduino -v --verbose-build --verify $PWD/examples/AutoConnect/AutoConnect.ino
-#  - arduino --verify --board arduino:avr:uno $PWD/examples/IncomingCall/IncomingCall.ino
-#  - arduino --verify --board arduino:avr:uno $PWD/examples/AdafruitIO_GPS/AdafruitIO_GPS.ino
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
