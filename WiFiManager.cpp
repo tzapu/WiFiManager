@@ -2169,6 +2169,7 @@ bool WiFiManager::WiFi_Disconnect() {
       return esp_wifi_disconnect() == ESP_OK;
       // return WiFi.disconnect();
     #endif
+    return false;
 }
 
 // toggle STA without persistent
@@ -2267,6 +2268,6 @@ void WiFiManager::WiFi_autoReconnect(){
     if(_wifiAutoReconnect){
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       WiFi.onEvent(WiFiEvent);
-    }  
+    }
   #endif
 }

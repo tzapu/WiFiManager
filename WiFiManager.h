@@ -235,7 +235,7 @@ class WiFiManager
     #endif
         std::unique_ptr<WM_WebServer> server;
 
-    int _menuids_cnt = 9;
+    uint8_t _menuids_cnt = 9;
     const char * const _menutokens[9] = {
         "wifi",
         "wifinoscan",
