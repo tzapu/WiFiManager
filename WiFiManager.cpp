@@ -822,9 +822,9 @@ void WiFiManager::handleParam(){
 String WiFiManager::getMenuOut(){
   String page;  
 
-  for(auto& v :_menuIds ){
-    if(((String)v == "param") && (_paramsCount == 0)) continue; // no params set, omit params
-    page += HTTP_PORTAL_MENU[v];
+  for(auto& menuId :_menuIds ){
+    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params
+    page += HTTP_PORTAL_MENU[menuId];
   }
 
   return page;
@@ -1928,10 +1928,10 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
 
 void WiFiManager::setMenu(std::vector<const char *>& menu){
   _menuIds.clear();
-  for(auto v : menu ){
+  for(auto menuitem : menu ){
     for(size_t j = 0; j<_menuids_cnt; j++){
-      if(v == _menutokens[j]){
-        if((String)v == "param") _paramsInWifi = false; // param auto flag
+      if(menuitem == _menutokens[j]){
+        if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
     }
