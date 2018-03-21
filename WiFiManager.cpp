@@ -100,7 +100,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   // check param id is valid, unless null
   if(p->getID()){
     for (size_t i = 0; i < strlen(p->getID()); i++){
-       if(!isAlphaNumeric(p->getID()[i]) && !p->getID()[i]=='_'){
+       if(!(isAlphaNumeric(p->getID()[i])) && !(p->getID()[i]=='_')){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] parameter IDs can only contain alpha numeric chars");
         return false;
        }
