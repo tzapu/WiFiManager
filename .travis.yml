@@ -1,51 +1,58 @@
 language: c
-sudo: false
+sudo: required
 
+env:
+  global:
+     - APPLICATION_FOLDER="${HOME}/arduino-ide"
+     - SKETCHBOOK_FOLDER="${HOME}/arduino-sketchbook"
+     - EXAMPLES_DIR="${SKETCHBOOK_FOLDER}/libraries/WiFiManager/examples"
+     - ESP8266_DEVICE="esp8266:esp8266:generic:CpuFrequency=80,CrystalFreq=26,FlashFreq=40,FlashMode=qio,FlashSize=4M1M,led=2,LwIPVariant=v2mss536,Debug=Serial,DebugLevel=CORE"
+     - ESP32_DEVICE="espressif:esp32:esp32:FlashMode=qio,FlashFreq=80,FlashSize=4M,DebugLevel=info"
+ 
 before_install:
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
-  - sleep 3
-  - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.8.5-linux64.tar.xz
-  - tar xf arduino-1.8.5-linux64.tar.xz
-  - sudo mv arduino-1.8.5 /usr/local/share/arduino
-  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+  # setup arduino-ci-script
+  - git clone https://github.com/per1234/arduino-ci-script.git "${HOME}/scripts"
+  - cd "${HOME}/scripts"
+  # Get new tags from the remote
+  - git fetch --tags
+  # Checkout the latest tag
+  - git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+  - source "${HOME}/scripts/arduino-ci-script.sh"
 
-install:
-  - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
-  - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
-  - arduino --install-library "ArduinoJson"
-  - arduino --install-boards esp8266:esp8266
-  - arduino --pref "compiler.warning_level=all" --save-prefs
-# install esp32
+  # Uncomment the following lines to get verbose output for debugging
+  # 0 (minimum/default) - 2 (maximum) verbosity
+  #- set_script_verbosity 1
+  # Turn on verbose output during compilation
+  #- set_verbose_output_during_compilation "true"
+
+  # Check for library issues that don't affect compilation
+  - set_library_testing "true"
+
+  - set_application_folder "$APPLICATION_FOLDER"
+  - set_sketchbook_folder "$SKETCHBOOK_FOLDER"
+
+  - install_ide "1.8.5"
+
+  - install_package "esp8266:esp8266" "http://arduino.esp8266.com/stable/package_esp8266com_index.json"
+
+  # install esp32 arduino code manually as there is no json for it yet
   - pushd .
-  - mkdir -p ~/Arduino/hardware/espressif
-  - cd ~/Arduino/hardware/espressif
-  - git clone https://github.com/espressif/arduino-esp32.git esp32
-  - cd esp32
+  - git clone https://github.com/espressif/arduino-esp32.git "${SKETCHBOOK_FOLDER}/hardware/espressif/esp32"
+  - cd "${SKETCHBOOK_FOLDER}/hardware/espressif/esp32"
   - git submodule update --init --recursive
   - cd tools
   - python2 get.py
   - popd
-# esp32 needs WebServer_tng for now
-  - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
+
+  # install libraries needed
+  - install_library "ArduinoJson"
+
+  # install the library (WiFiManager) from repo
+  - install_library
 
 script:
-  - "echo $PWD"
-  - "echo $HOME"
-  - "ls $PWD"
-  - source $TRAVIS_BUILD_DIR/travis/common.sh
-  - arduino --board esp8266:esp8266:generic:CpuFrequency=80,CrystalFreq=26,FlashFreq=40,FlashMode=qio,FlashSize=4M1M,led=2,LwIPVariant=v2mss536,Debug=Serial,DebugLevel=CORE --save-prefs
-  - build_examples
-  - arduino --board espressif:esp32:esp32doit-devkit-v1:FlashFreq=80,DebugLevel=info --save-prefs
-# some examples fail (SPIFFS defines differ esp32 vs esp8266) so we exclude them
-  - excludes=("AutoConnectWithFSParametersAndCustomIP.ino" "AutoConnectWithFSParameters.ino")
-  - build_examples "${excludes[@]}"
-#  - arduino -v --verbose-build --verify $PWD/examples/AutoConnect/AutoConnect.ino
-
-# no coverage generated, no need to run
-#
-#after_success:
-#  - bash <(curl -s https://codecov.io/bash)
+  - build_sketch "${EXAMPLES_DIR}" "${ESP8266_DEVICE}" "false" "1.8.5"
+  - build_sketch "${EXAMPLES_DIR}" "${ESP32_DEVICE}"   "false" "1.8.5"
 
 notifications:
   email:
