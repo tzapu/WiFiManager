@@ -3,7 +3,7 @@
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 
 #ifdef ESP32
-  #include <spiffs.h>
+  #include <SPIFFS.h>
 #endif
 
 //define your default values here, if there are different values in config.json, they are overwritten.
