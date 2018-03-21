@@ -19,10 +19,6 @@ void setup() {
   Serial.println(modes[WiFi.getMode()]);
   WiFi.printDiag(Serial);
 
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
-
   //Local intialization. Once its business is done, there is no need to keep it around
   //reset settings - for testing
   //wifiManager.resetSettings();
@@ -30,49 +26,9 @@ void setup() {
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
-  wifiManager.setConfigPortalTimeout(20);
-  wifiManager.setConnectTimeout(10);
-  // wifiManager.setShowStaticFields(true);
-
+  wifiManager.setConfigPortalTimeout(180);
   // uint8_t menu[] = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE};
   // wifiManager.setMenu(menu);
-
-  // std::vector<WiFiManager::menu_page_t> menu = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE,wifiManager.MENU_SEP,wifiManager.MENU_ERASE,wifiManager.MENU_EXIT};
-  // wifiManager.setMenu(menu);
-
-// std::vector<WiFiManager::menu_page_t> menu = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE,wifiManager.MENU_SEP,wifiManager.MENU_ERASE,wifiManager.MENU_EXIT};
-  // wifiManager.setMenu(menu);
-
-
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
-  WiFiManagerParameter custom_blynk_token("api_token", "api token", "", 0);
-
-  //add all your parameters here
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_blynk_token);
-
-        // MENU_WIFI       = 0,
-        // MENU_WIFINOSCAN = 1,
-        // MENU_INFO       = 2,
-        // MENU_PARAM      = 3,
-        // MENU_CLOSE      = 4,
-        // MENU_RESTART    = 5,
-        // MENU_EXIT       = 6,
-        // MENU_ERASE      = 7,
-        // MENU_SEP        = 8
-
-  // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wifiManager.setMenu(menu,9);
-
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  wifiManager.setMenu(menu);
-  
-  //set static ip
-  wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
-  // wifiManager.setShowStaticFields(false);
-  // wifiManager.setShowDnsFields(false);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
