@@ -258,6 +258,7 @@ class WiFiManager
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
+    unsigned long _saveTimeout            = 5000; // ms stop trying to connect to ap on saves
     unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
     unsigned long _webPortalAccessed      = 0; // ms last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
@@ -304,6 +305,10 @@ class WiFiManager
     bool          startAP();
 
     uint8_t       connectWifi(String ssid, String pass);
+    bool          setSTAConfig();
+    bool          wifiConnectDefault();
+    bool          wifiConnectNew(String ssid, String pass);
+
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
     void          updateConxResult(uint8_t status);

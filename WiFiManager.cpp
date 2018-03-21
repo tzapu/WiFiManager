@@ -100,7 +100,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   // check param id is valid, unless null
   if(p->getID()){
     for (size_t i = 0; i < strlen(p->getID()); i++){
-       if(!isAlphaNumeric(p->getID()[i])){
+       if(!isAlphaNumeric(p->getID()[i]) && !p->getID()[i]=='_'){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] parameter IDs can only contain alpha numeric chars");
         return false;
        }
@@ -571,10 +571,9 @@ boolean WiFiManager::stopConfigPortal(){
   if(!configPortalActive) return false;
 
   // turn off AP
-  // @todo bug workaround *WM: disconnect configportal
+  // @todo bug workaround
   // https://github.com/esp8266/Arduino/issues/3793
-  // [APdisconnect] set_config failed!
-  // *WM: disconnect configportal - softAPdisconnect failed
+  // [APdisconnect] set_config failed! *WM: disconnect configportal - softAPdisconnect failed
   // still no way to reproduce reliably
   DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
   bool ret = false;
@@ -594,45 +593,30 @@ boolean WiFiManager::stopConfigPortal(){
 uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(DEBUG_VERBOSE,F("Connecting as wifi client..."));
   
-  bool waitforconx = true;
+  uint8_t connRes = (uint8_t)WL_NO_SSID_AVAIL;
 
-  // Setup static IP config if provided
-  if (_sta_static_ip) {
-    if(_sta_static_dns) {
-      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
-      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
-    }
-    else {
-      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
-      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
-    }
-    DEBUG_WM(WiFi.localIP());
-  }
-
+  setSTAConfig();
+  //@todo catch failures in set_config
+  
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
   WiFi_Disconnect(); // disconnect before begin, in case anything is hung
 
   // if ssid argument provided connect to that
   if (ssid != "") {
-    DEBUG_WM(F("Connecting to new AP"));
-  	WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
-    WiFi.persistent(true);
-    WiFi.begin(ssid.c_str(), pass.c_str());
-    WiFi.persistent(false);
-    //@todo catch failures in set_config
-  } else {
+    wifiConnectNew(ssid,pass);
+    connRes = waitForConnectResult(_saveTimeout);    
+  } 
+  else {
     // connect using saved ssid if there is one
     if (WiFi_hasAutoConnect()) {
-      DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
-  	  WiFi_enableSTA(true,storeSTAmode);
-      WiFi.begin();
-    } else {
+      wifiConnectDefault();
+      connRes = waitForConnectResult();
+    }
+    else {
       DEBUG_WM(F("No saved credentials, skipping wifi"));
-      waitforconx = false;
     }
   }
-    
-  uint8_t connRes = waitforconx ? waitForConnectResult() : (uint8_t)WL_NO_SSID_AVAIL;
+
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
 
   // do WPS, if WPS options enabled and not connected and no password was supplied
@@ -648,6 +632,61 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   }
 
   return connRes;
+}
+
+/**
+ * connect to a new wifi ap
+ * @since $dev
+ * @param  String ssid 
+ * @param  String pass 
+ * @return bool success
+ */
+bool WiFiManager::wifiConnectNew(String ssid, String pass){
+  bool ret = false;
+  DEBUG_WM(F("Connecting to new AP"));
+  WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
+  WiFi.persistent(true);
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  WiFi.persistent(false);
+  if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
+  return ret;
+}
+
+/**
+ * connect to stored wifi
+ * @since dev
+ * @return bool success
+ */
+bool WiFiManager::wifiConnectDefault(){
+  bool ret = false;
+  DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
+  WiFi_enableSTA(true,storeSTAmode);
+  ret = WiFi.begin();
+  if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
+  return ret;
+}
+
+
+/**
+ * set sta config if set
+ * @since $dev
+ * @return bool success
+ */
+bool WiFiManager::setSTAConfig(){
+  bool ret = false;
+  if (_sta_static_ip) {
+    if(_sta_static_dns) {
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
+      ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
+    }
+    else {
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
+      ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    }
+  }
+  if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
+  else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
+  return ret;
 }
 
 // @todo change to getLastFailureReason and do not touch conxresult
@@ -675,27 +714,32 @@ void WiFiManager::updateConxResult(uint8_t status){
 
 // @todo uses _connectTimeout for wifi save also, add timeout argument to bypass?
  
-uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
-  return waitForConnectResult(timeout * 1000);
+uint8_t WiFiManager::waitForConnectResult() {
+  return waitForConnectResult(_connectTimeout);
 }
 
-uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0){
-    DEBUG_WM (F("connectTimeout not set, ESP waitForConnectResult..."));
+/**
+ * waitForConnectResult
+ * @param  uint16_t timeout  in seconds
+ * @return uint8_t  WL Status
+ */
+uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
+  if (timeout == 0){
+    DEBUG_WM(F("connectTimeout not set, ESP waitForConnectResult..."));
     return WiFi.waitForConnectResult();
   }
 
-  DEBUG_WM (F("connectTimeout set, waiting for connect...."));
+  unsigned long timeoutmillis = millis() + timeout;
+  DEBUG_WM(DEBUG_NOTIFY,timeout,F("connectTimeout set, waiting for connect...."));
   uint8_t status = WiFi.status();
-  unsigned long timeout = millis() + _connectTimeout;
   
-  while(millis() < timeout) {
+  while(millis() < timeoutmillis) {
     status = WiFi.status();
     // @todo detect additional states, connect happens, then dhcp then get ip, there is some delay here, make sure not to timeout if waiting on IP
     if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
       return status;
     }
-    DEBUG_WM (2,F("."));
+    DEBUG_WM (DEBUG_VERBOSE,F("."));
     delay(100);
   }
   return status;
