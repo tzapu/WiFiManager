@@ -2,6 +2,10 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 
+#ifdef ESP32
+  #include <spiffs.h>
+#endif
+
 //define your default values here, if there are different values in config.json, they are overwritten.
 //length should be max size + 1 
 char mqtt_server[40];

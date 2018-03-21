@@ -1,7 +1,10 @@
 #include <FS.h>          // this needs to be first, or it all crashes and burns...
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
-// #include <spiffs.h>
+
+#ifdef ESP32
+  #include <spiffs.h>
+#endif
 
 //define your default values here, if there are different values in config.json, they are overwritten.
 char mqtt_server[40];
