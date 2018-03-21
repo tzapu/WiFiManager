@@ -33,7 +33,7 @@ before_install:
 
   - install_ide "1.8.5"
 
-  - install_package "esp8266:esp8266" "https://arduino.esp8266.com/stable/package_esp8266com_index.json"
+  - install_package "esp8266:esp8266" "http://arduino.esp8266.com/stable/package_esp8266com_index.json"
 
   # install esp32 arduino code manually as there is no json for it yet
   - pushd .
