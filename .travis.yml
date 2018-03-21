@@ -46,6 +46,7 @@ before_install:
 
   # install libraries needed
   - install_library "ArduinoJson"
+  - install_library "https://github.com/bbx10/WebServer_tng.git"
 
   # install the library (WiFiManager) from repo
   - install_library
