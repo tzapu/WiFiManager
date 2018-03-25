@@ -259,6 +259,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     }
     return true;
   }
+
+  // possibly skip the config portal
+  if (!_enableConfigPortal) {
+    return false;
+  }
+
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
 }
@@ -1930,6 +1936,19 @@ void WiFiManager::setWebPortalClientCheck(boolean enabled){
 void WiFiManager::setScanDispPerc(boolean enabled){
   _scanDispOptions = enabled;
 }
+
+/**
+ * toggle configportal if autoconnect failed
+ * if enabled, then the configportal will be activated on autoconnect failure
+ * @since $dev
+ * @access public
+ * @param boolean enabled [true]
+ */
+void WiFiManager::setEnableConfigPortal(boolean enable)
+{
+    _enableConfigPortal = enable;
+}
+
 
 /**
  * set the hostname (dhcp client id)
