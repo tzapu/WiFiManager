@@ -681,7 +681,7 @@ bool WiFiManager::wifiConnectDefault(){
  * @return bool success
  */
 bool WiFiManager::setSTAConfig(){
-  bool ret = false;
+  bool ret = true;
   if (_sta_static_ip) {
     if(_sta_static_dns) {
       DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
@@ -691,9 +691,10 @@ bool WiFiManager::setSTAConfig(){
       DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
       ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     }
+
+    if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
+    else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
   }
-  if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
-  else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
   return ret;
 }
 
@@ -1669,7 +1670,7 @@ bool WiFiManager::erase(){
 bool WiFiManager::erase(bool opt){
   DEBUG_WM("Erasing");
 
-  #if defined(ESP32) && (defined(WM_ERASE_NVS) || defined(nvs_flash_h))
+  #if defined(ESP32) && ((defined(WM_ERASE_NVS) || defined(nvs_flash_h)))
     // if opt true, do nvs erase
     if(opt){
       DEBUG_WM("Erasing NVS");
