@@ -204,6 +204,8 @@ class WiFiManager
     void          setWiFiAutoReconnect(boolean enabled);
     // if true, wifiscan will show percentage instead of quality icons, until we have better templating
     void          setScanDispPerc(boolean enabled);
+    // if true (default) then start the config portal from autoConnect if connection failed
+    void          setEnableConfigPortal(boolean enable);
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
     // show erase wifi onfig button on info page, true
@@ -292,6 +294,7 @@ class WiFiManager
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
     boolean       _showInfoErase          = true;  // info page erase button
+    boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
