@@ -1669,14 +1669,14 @@ bool WiFiManager::erase(){
 bool WiFiManager::erase(bool opt){
   DEBUG_WM("Erasing");
 
-  #if defined(ESP32) && (defined(WM_ERASE_NVS) || defined(ESP_NVS_H))
+  #if defined(ESP32) && (defined(WM_ERASE_NVS) || defined(nvs_flash_h))
     // if opt true, do nvs erase
     if(opt){
       DEBUG_WM("Erasing NVS");
       int err;
-      err=nvs_flash_init();
+      err = nvs_flash_init();
       DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_init: ",err==ESP_OK ? (String)err : "Success");
-      err=nvs_flash_erase();
+      err = nvs_flash_erase();
       DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err==ESP_OK ? (String)err : "Success");
       return err == ESP_OK;
     }
