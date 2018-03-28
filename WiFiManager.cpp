@@ -277,7 +277,9 @@ bool WiFiManager::startAP(){
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
-    WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
+    if(!WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn)){
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] softAPConfig failed!");
+    }
   }
 
   #ifdef ESP8266
@@ -401,7 +403,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_restart), std::bind(&WiFiManager::handleReset, this));
   server->on((String)FPSTR(R_exit), std::bind(&WiFiManager::handleExit, this));
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
-  server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this));
+  server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this, false));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
