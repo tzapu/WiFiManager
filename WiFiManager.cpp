@@ -712,7 +712,6 @@ void WiFiManager::updateConxResult(uint8_t status){
     DEBUG_WM(DEBUG_DEV,"lastconxresult:",getWLStatusString(_lastconxresult));
 }
 
-// @todo uses _connectTimeout for wifi save also, add timeout argument to bypass?
  
 uint8_t WiFiManager::waitForConnectResult() {
   return waitForConnectResult(_connectTimeout);
@@ -730,7 +729,7 @@ uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
   }
 
   unsigned long timeoutmillis = millis() + timeout;
-  DEBUG_WM(DEBUG_NOTIFY,timeout,F("connectTimeout set, waiting for connect...."));
+  DEBUG_WM(DEBUG_NOTIFY,timeout,F("ms connectTimeout set, waiting for connect...."));
   uint8_t status = WiFi.status();
   
   while(millis() < timeoutmillis) {
@@ -1491,13 +1490,17 @@ void WiFiManager::handleReset() {
 /** 
  * HTTPD CALLBACK erase page
  */
-void WiFiManager::handleErase() {
+
+// void WiFiManager::handleErase() {
+//   handleErase(false);
+// }
+void WiFiManager::handleErase(boolean opt) {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Erase"));
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
   page += FPSTR(HTTP_HEAD_END);
 
-  bool ret = WiFi_eraseConfig();
+  bool ret = erase(opt);
 
   if(ret) page += FPSTR(S_resetting); // @token resetting
   else {
@@ -1664,10 +1667,10 @@ bool WiFiManager::erase(bool opt){
       DEBUG_WM("Erasing NVS");
       int err;
       err=nvs_flash_init();
-      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_init: ",err ? (String)err : "Success");
+      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_init: ",err==ESP_OK ? (String)err : "Success");
       err=nvs_flash_erase();
-      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err ? (String)err : "Success");
-      return err;
+      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err==ESP_OK ? (String)err : "Success");
+      return err == ESP_OK;
     }
   #else 
     (void)opt;
@@ -2172,6 +2175,11 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
   return AUTH_MODE_NAMES[authmode];
 }
 
+String WiFiManager::getModeString(uint8_t mode){
+  if(mode <= 3) return WIFI_MODES[mode];
+  return FPSTR(S_NA);
+}
+
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
     #ifdef ESP8266
@@ -2242,7 +2250,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable) {
 	return WiFi_enableSTA(enable,false);
 }
 
-bool WiFiManager::WiFi_eraseConfig(void) {
+bool WiFiManager::WiFi_eraseConfig() {
     #ifdef ESP8266
       #ifndef WM_FIXERASECONFIG 
         return ESP.eraseConfig();

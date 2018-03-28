@@ -314,3 +314,5 @@ const char * const AUTH_MODE_NAMES[] PROGMEM
     "WPA_WPA2_PSK", // 8 ENC_TYPE_AUTO
 };
 #endif
+
+const char* const WIFI_MODES[] PROGMEM = { "NULL", "STA", "AP", "STA+AP" };

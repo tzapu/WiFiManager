@@ -210,7 +210,7 @@ class WiFiManager
     void          setShowInfoErase(boolean enabled);
     // set custom menu
 
-    // void          setMenu(std::vector<menu_page_t>& menu);
+    // set custom menu items and order
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
 
@@ -218,6 +218,7 @@ class WiFiManager
     uint8_t       getLastConxResult();
     // get a status as string
     String        getWLStatusString(uint8_t status);    
+    String        getModeString(uint8_t mode);
     // check if the module has a saved ap to connect to
     bool          getWiFiIsSaved();
 
@@ -322,7 +323,8 @@ class WiFiManager
     void          handleNotFound();
     void          handleExit();
     void          handleClose();
-    void          handleErase();
+    // void          handleErase();
+    void          handleErase(boolean opt);
     void          handleParam();
     void          handleWiFiStatus();
     void          handleRequest();
