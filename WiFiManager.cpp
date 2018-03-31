@@ -1307,12 +1307,17 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_chipid);
     p.replace(FPSTR(T_1),(String)WIFI_getChipId());
   }
+  #ifdef ESP32
   else if(id==F("chiprev")){
-    #ifdef ESP32
       p = FPSTR(HTTP_INFO_chiprev);
-      p.replace(FPSTR(T_1),(String)ESP.getChipRevision());
-    #endif
+      #ifdef _SOC_EFUSE_REG_H_
+        String revb = (String)(REG_READ(EFUSE_BLK0_RDATA3_REG) >> (EFUSE_RD_CHIP_VER_RESERVE_S)&&EFUSE_RD_CHIP_VER_RESERVE_V);
+        p.replace(FPSTR(T_1),rev+"<br/>"+revb);
+      #else
+        p.replace(FPSTR(T_1),rev);
+      #endif
   }
+  #endif
   else if(id==F("fchipid")){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_fchipid);
