@@ -20,6 +20,8 @@
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
 
+// #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
+
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
 #ifdef ESP8266
