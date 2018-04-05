@@ -288,7 +288,7 @@ bool WiFiManager::startAP(){
       DEBUG_WM(DEBUG_ERROR,"[ERROR] enableAP failed!");
       return false;
     }
-    delay(500);
+    delay(500); // workaround delay
   #endif
 
   // start soft AP with password or anonymous
