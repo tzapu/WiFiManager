@@ -975,7 +975,7 @@ String WiFiManager::WiFiManager::getScanItemOut(){
 
         if (_minimumQuality == -1 || _minimumQuality < rssiperc) {
           String item = HTTP_ITEM_STR;
-          item.replace(FPSTR(T_v), WiFi.SSID(indices[i])); // ssid no encoding
+          item.replace(FPSTR(T_v), htmlEntities(WiFi.SSID(indices[i]))); // ssid no encoding
           if(tok_e) item.replace(FPSTR(T_e), encryptionTypeStr(enc_type));
           if(tok_r) item.replace(FPSTR(T_r), (String)rssiperc); // rssi percentage 0-100
           if(tok_R) item.replace(FPSTR(T_R), (String)WiFi.RSSI(indices[i])); // rssi db
@@ -1422,7 +1422,7 @@ String WiFiManager::getInfoData(String id){
   #endif
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
-    p.replace(FPSTR(T_1),(String)WiFi_SSID());
+    p.replace(FPSTR(T_1),htmlEntities((String)WiFi_SSID()));
   }
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
@@ -1597,11 +1597,11 @@ void WiFiManager::reportStatus(String &page){
     if (WiFi.status()==WL_CONNECTED){
       str = FPSTR(HTTP_STATUS_ON);
       str.replace(FPSTR(T_i),WiFi.localIP().toString());
-      str.replace(FPSTR(T_v),WiFi_SSID());
+      str.replace(FPSTR(T_v),htmlEntities(WiFi_SSID()));
     }
     else {
       str = FPSTR(HTTP_STATUS_OFF);
-      str.replace(FPSTR(T_v),WiFi_SSID());
+      str.replace(FPSTR(T_v),htmlEntities(WiFi_SSID()));
       if(_lastconxresult == WL_STATION_WRONG_PASSWORD){
         // wrong password
         str.replace(FPSTR(T_c),"D"); // class
@@ -2181,6 +2181,24 @@ boolean WiFiManager::validApPassword(){
     DEBUG_WM(_apPassword);
   }
   return true;
+}
+
+/**
+ * encode htmlentities
+ * @since $dev
+ * @param  string str  string to replace entities
+ * @return string      encoded string
+ */
+String WiFiManager::htmlEntities(String str) {
+  str.replace("&","&amp;");
+  str.replace("<","&lt;");
+  str.replace(">","&gt;");
+  // str.replace("'","&#39;");
+  // str.replace("\"","&quot;");
+  // str.replace("/": "&#x2F;");
+  // str.replace("`": "&#x60;");
+  // str.replace("=": "&#x3D;");
+return str;
 }
 
 /**

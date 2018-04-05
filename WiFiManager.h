@@ -228,6 +228,8 @@ class WiFiManager
     void          debugSoftAPConfig();
     // debug output platform info and versioning
     void          debugPlatformInfo();
+    String        htmlEntities(String str);
+
   private:
     std::unique_ptr<DNSServer>        dnsServer;
 
