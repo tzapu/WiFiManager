@@ -812,8 +812,7 @@ void WiFiManager::handleWifi(boolean scan) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
-    // DEBUG_WM("arg:",server->hasArg(F("refresh"))); // arg has to have value, and has to be post, why!!
-    if(server->hasArg(F("refresh"))) WiFi_scanNetworks(true); // preload wifiscan, force
+    WiFi_scanNetworks(server->hasArg(F("refresh"))); //wifiscan, force if arg refresh
     page += getScanItemOut();
   }
   String pitem = "";
@@ -888,6 +887,7 @@ bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force){
+    // DEBUG_WM("scanNetworks force:",force == true);
     // DEBUG_WM(_numNetworks,(millis()-_lastscan ));
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       _numNetworks = WiFi.scanNetworks();
@@ -901,7 +901,8 @@ bool WiFiManager::WiFi_scanNetworks(bool force){
 String WiFiManager::WiFiManager::getScanItemOut(){
     String page;
 
-    WiFi_scanNetworks();
+    if(!_numNetworks) WiFi_scanNetworks(); // scan in case this gets called before any scans
+
     int n = _numNetworks;
     if (n == 0) {
       DEBUG_WM(F("No networks found"));
