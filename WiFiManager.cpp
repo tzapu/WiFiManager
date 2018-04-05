@@ -518,7 +518,7 @@ uint8_t WiFiManager::processConfigPortal(){
     // Waiting for save...
     if(connect) {
       connect = false;
-      DEBUG_WM(F("Connecting to a new AP"));
+      DEBUG_WM(DEBUG_VERBOSE,F("process connect"));
       if(_enableCaptivePortal) delay(_cpclosedelay); // keeps the captiveportal from closing to fast.
 
       // attempt sta connection to submitted _ssid, _pass
@@ -651,10 +651,10 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
  */
 bool WiFiManager::wifiConnectNew(String ssid, String pass){
   bool ret = false;
-  DEBUG_WM(F("Connecting to new AP"));
+  DEBUG_WM(F("Connecting to new AP:"),ssid);
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
-  WiFi.begin(ssid.c_str(), pass.c_str());
+  ret = WiFi.begin(ssid.c_str(), pass.c_str());
   WiFi.persistent(false);
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
   return ret;
@@ -668,7 +668,8 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
   DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
-  WiFi_enableSTA(true,storeSTAmode);
+  ret = WiFi_enableSTA(true,storeSTAmode);
+  if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
   return ret;
