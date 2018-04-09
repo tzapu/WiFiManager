@@ -343,6 +343,11 @@ class WiFiManager
     boolean       stopConfigPortal();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
+	// OTA Update handler
+	void          handleUpdate();
+	void          handleUpdating();
+	void          handleUpdateDone();
+
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);

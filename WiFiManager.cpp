@@ -400,6 +400,8 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_info), std::bind(&WiFiManager::handleInfo, this));
   server->on((String)FPSTR(R_param), std::bind(&WiFiManager::handleParam, this));
   server->on((String)FPSTR(R_paramsave), std::bind(&WiFiManager::handleParamSave, this));
+  server->on((String)FPSTR(R_update), std::bind(&WiFiManager::handleUpdate, this));
+  server->on((String)FPSTR(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
   server->on((String)FPSTR(R_restart), std::bind(&WiFiManager::handleReset, this));
   server->on((String)FPSTR(R_exit), std::bind(&WiFiManager::handleExit, this));
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
@@ -2369,4 +2371,88 @@ void WiFiManager::WiFi_autoReconnect(){
       WiFi.onEvent(WiFiEvent);
     }
   #endif
+}
+
+
+void WiFiManager::handleUpdate() {
+	DEBUG_WM(F("Handle update"));
+	if (captivePortal()) { // If captive portal return flase to redirect back.
+		return;
+	}
+	String page = FPSTR(HTTP_HEAD);
+	page.replace("{v}", "Options");
+	page += FPSTR(HTTP_SCRIPT);
+	page += FPSTR(HTTP_STYLE);
+	page += _customHeadElement;
+	page += FPSTR(HTTP_HEAD_END);
+	page += "<h1>";
+	page += _apName;
+	page += "</h1>";
+	page += FPSTR(HTTP_ROOT_MAIN);
+	page += FPSTR(HTTP_UPDATE);
+	page += FPSTR(HTTP_END);
+	server->send(200, "text/html", page);
+}
+
+void WiFiManager::handleUpdating(){
+	if (captivePortal()) { // If captive portal return flase to redirect back.
+		return;
+	}
+	// handler for the file upload, get's the sketch bytes, and writes
+	// them through the Update object
+	HTTPUpload& upload = server->upload();
+	if (upload.status == UPLOAD_FILE_START) {
+		Serial.setDebugOutput(true);
+
+		WiFiUDP::stopAll();
+		DEBUG_WM("Update: %s\r\n", upload.filename.c_str());
+		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+		if (!Update.begin(maxSketchSpace)) { // start with max available size
+			Update.printError(Serial);
+		}
+	} else if (upload.status == UPLOAD_FILE_WRITE) {
+		Serial.printf(".");
+		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+			Update.printError(Serial);
+		}
+	} else if (upload.status == UPLOAD_FILE_END) {
+		if (Update.end(true)) { // true to set the size to the current progress
+			Serial.printf("Update Success: %u\r\nRebooting...\r\n", upload.totalSize);
+		} else {
+			Update.printError(Serial);
+		}
+		Serial.setDebugOutput(false);
+	} else if (upload.status == UPLOAD_FILE_ABORTED) {
+		Update.end();
+		DEBUG_WM("Update was aborted");
+	}
+	delay(0);
+} // handleUpdating
+
+void WiFiManager::handleUpdateDone() {
+	DEBUG_WM(F("Handle update done"));
+	if (captivePortal()) { // If captive portal return flase to redirect back.
+	}
+	String page = FPSTR(HTTP_HEAD);
+	page.replace("{v}", "Options");
+	page += FPSTR(HTTP_SCRIPT);
+	page += FPSTR(HTTP_STYLE);
+	page += _customHeadElement;
+	page += FPSTR(HTTP_HEAD_END);
+	page += "<h1>";
+	page += _apName;
+	page += "</h1>";
+	page += FPSTR(HTTP_ROOT_MAIN);
+	if (Update.hasError()) {
+		page += FPSTR(HTTP_UPDATE_FAIL);
+		DEBUG_WM(F("update failed"));
+	}
+	else {
+		page += FPSTR(HTTP_UPDATE_OK);
+		DEBUG_WM(F("update ok"));
+	}
+	page += FPSTR(HTTP_END);
+	server->send(200, "text/html", page);
+	delay(1000); // send page
+	ESP.restart();
 }
