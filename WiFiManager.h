@@ -43,6 +43,7 @@
 
     #include <WiFi.h>
     #include <esp_wifi.h>  
+    #include <Updater.h>
     
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
