@@ -100,6 +100,8 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Parameter page</td></tr>"
  "<tr><td><a href='/info'>/info</a></td>"
  "<td>Information page</td></tr>"
+ "<tr><td><a href='/u'>/u</a></td>"
+ "<td>OTA Update</td></tr>"
  "<tr><td><a href='/close'>/close</a></td>"
  "<td>Close the captiveportal popup,configportal will remain active</td></tr>"
  "<tr><td><a href='/exit'>/exit</a></td>"
@@ -215,15 +217,14 @@ const char D_HR[]                 PROGMEM = "--------------------";
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
 
-const uint8_t _nummenutokens = 10;
-const char * const _menutokens[10] PROGMEM = {
+const uint8_t _nummenutokens = 9;
+const char * const _menutokens[9] PROGMEM = {
     "wifi",
     "wifinoscan",
     "info",
     "param",
     "close",
     "restart",
-	"update",
     "exit",
     "erase",
     "sep"
@@ -242,7 +243,7 @@ const char R_close[]              PROGMEM = "/close";
 const char R_erase[]              PROGMEM = "/erase"; 
 const char R_status[]             PROGMEM = "/status";
 const char R_update[]             PROGMEM = "/u";
-const char R_updatedone[]             PROGMEM = "/update";
+const char R_updatedone[]         PROGMEM = "/update";
 
 
 //Strings

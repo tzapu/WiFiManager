@@ -2373,76 +2373,65 @@ void WiFiManager::WiFi_autoReconnect(){
   #endif
 }
 
-
+// Called when /u is requested
 void WiFiManager::handleUpdate() {
-	DEBUG_WM(F("Handle update"));
-	if (captivePortal()) { // If captive portal return flase to redirect back.
-		return;
-	}
-	String page = FPSTR(HTTP_HEAD);
-	page.replace("{v}", "Options");
-	page += FPSTR(HTTP_SCRIPT);
-	page += FPSTR(HTTP_STYLE);
-	page += _customHeadElement;
-	page += FPSTR(HTTP_HEAD_END);
-	page += "<h1>";
-	page += _apName;
-	page += "</h1>";
-	page += FPSTR(HTTP_ROOT_MAIN);
+	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	String page = getHTTPHead(FPSTR(S_options)); // @token options
+	String str = FPSTR(HTTP_ROOT_MAIN);
+	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+	page += str;
+
 	page += FPSTR(HTTP_UPDATE);
 	page += FPSTR(HTTP_END);
-	server->send(200, "text/html", page);
+
+	server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
 }
 
 void WiFiManager::handleUpdating(){
-	if (captivePortal()) { // If captive portal return flase to redirect back.
-		return;
-	}
-	// handler for the file upload, get's the sketch bytes, and writes
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+								 // handler for the file upload, get's the sketch bytes, and writes
 	// them through the Update object
 	HTTPUpload& upload = server->upload();
 	if (upload.status == UPLOAD_FILE_START) {
 		Serial.setDebugOutput(true);
 
 		WiFiUDP::stopAll();
-		DEBUG_WM("Update: %s\r\n", upload.filename.c_str());
+		Serial.printf("Update: %s\r\n", upload.filename.c_str());
 		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
 		if (!Update.begin(maxSketchSpace)) { // start with max available size
 			Update.printError(Serial);
 		}
 	} else if (upload.status == UPLOAD_FILE_WRITE) {
-		Serial.printf(".");
+		Serial.print(".");
 		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
 			Update.printError(Serial);
 		}
 	} else if (upload.status == UPLOAD_FILE_END) {
 		if (Update.end(true)) { // true to set the size to the current progress
-			Serial.printf("Update Success: %u\r\nRebooting...\r\n", upload.totalSize);
+			Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
 		} else {
 			Update.printError(Serial);
 		}
 		Serial.setDebugOutput(false);
 	} else if (upload.status == UPLOAD_FILE_ABORTED) {
 		Update.end();
-		DEBUG_WM("Update was aborted");
+		DEBUG_WM(F("<- Update was aborted"));
 	}
 	delay(0);
 } // handleUpdating
 
 void WiFiManager::handleUpdateDone() {
-	DEBUG_WM(F("Handle update done"));
-	if (captivePortal()) { // If captive portal return flase to redirect back.
-	}
-	String page = FPSTR(HTTP_HEAD);
-	page.replace("{v}", "Options");
-	page += FPSTR(HTTP_SCRIPT);
-	page += FPSTR(HTTP_STYLE);
-	page += _customHeadElement;
-	page += FPSTR(HTTP_HEAD_END);
-	page += "<h1>";
-	page += _apName;
-	page += "</h1>";
-	page += FPSTR(HTTP_ROOT_MAIN);
+	DEBUG_WM(DEBUG_VERBOSE, F("<- Handle update done"));
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+
+	String page = getHTTPHead(FPSTR(S_options)); // @token options
+	String str = FPSTR(HTTP_ROOT_MAIN);
+	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+	page += str;
+
 	if (Update.hasError()) {
 		page += FPSTR(HTTP_UPDATE_FAIL);
 		DEBUG_WM(F("update failed"));
@@ -2450,9 +2439,16 @@ void WiFiManager::handleUpdateDone() {
 	else {
 		page += FPSTR(HTTP_UPDATE_OK);
 		DEBUG_WM(F("update ok"));
+
 	}
 	page += FPSTR(HTTP_END);
-	server->send(200, "text/html", page);
+
+	server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+
 	delay(1000); // send page
-	ESP.restart();
+	if (!Update.hasError()) {
+		ESP.restart();
+	}
 }
