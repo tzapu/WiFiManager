@@ -166,6 +166,8 @@ class WiFiManager
 
     //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
+    //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
+    void          setSaveConnectTimeout(unsigned long seconds);
     // toggle debug output
     void          setDebugOutput(boolean debug);
     //defaults to not showing anything under 8% signal quality if called
@@ -265,7 +267,7 @@ class WiFiManager
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
-    unsigned long _saveTimeout            = 5000; // ms stop trying to connect to ap on saves
+    unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
     unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
     unsigned long _webPortalAccessed      = 0; // ms last web access time
     WiFiMode_t    _usermode               = WIFI_OFF;
