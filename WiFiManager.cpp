@@ -247,7 +247,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
   if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
     //connected
-    DEBUG_WM(F("IP Address:"),WiFi.localIP());
+    DEBUG_WM(F("AutoConnect: SUCCESS"));
+    DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
     _lastconxresult = WL_CONNECTED;
 
     if((String)_hostname != ""){
@@ -264,6 +265,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   if (!_enableConfigPortal) {
     return false;
   }
+
+  DEBUG_WM(F("AutoConnect: FAILED"));
 
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
@@ -614,8 +617,13 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   // if ssid argument provided connect to that
   if (ssid != "") {
     wifiConnectNew(ssid,pass);
-    connRes = waitForConnectResult(_saveTimeout);    
-  } 
+    if(_saveTimeout > 0){
+      connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
+    }  
+    else {
+       connRes = waitForConnectResult(0);
+    }
+  }
   else {
     // connect using saved ssid if there is one
     if (WiFi_hasAutoConnect()) {
@@ -726,6 +734,7 @@ void WiFiManager::updateConxResult(uint8_t status){
 
  
 uint8_t WiFiManager::waitForConnectResult() {
+  if(_connectTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,_connectTimeout,F("ms connectTimeout set")); 
   return waitForConnectResult(_connectTimeout);
 }
 
@@ -741,7 +750,7 @@ uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
   }
 
   unsigned long timeoutmillis = millis() + timeout;
-  DEBUG_WM(DEBUG_NOTIFY,timeout,F("ms connectTimeout set, waiting for connect...."));
+  DEBUG_WM(DEBUG_VERBOSE,timeout,F("ms timeout, waiting for connect..."));
   uint8_t status = WiFi.status();
   
   while(millis() < timeoutmillis) {
@@ -1737,6 +1746,15 @@ void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
  */
 void WiFiManager::setConnectTimeout(unsigned long seconds) {
   _connectTimeout = seconds * 1000;
+}
+
+/**
+ * [setConnectTimeout description
+ * @access public
+ * @param {[type]} unsigned long seconds [description]
+ */
+void WiFiManager::setSaveConnectTimeout(unsigned long seconds) {
+  _saveTimeout = seconds * 1000;
 }
 
 /**
