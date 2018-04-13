@@ -2416,9 +2416,19 @@ void WiFiManager::handleUpdating(){
 	if (upload.status == UPLOAD_FILE_START) {
 		Serial.setDebugOutput(true);
 
+#ifdef ESP8266
 		WiFiUDP::stopAll();
+#elif defined(ESP32)
+			// Think we do not need to stop WiFIUDP because we haven't started a listener
+#endif
 		Serial.printf("Update: %s\r\n", upload.filename.c_str());
+#ifdef ESP8266
 		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+#elif defined(ESP32)
+		uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+
+#endif
+
 		if (!Update.begin(maxSketchSpace)) { // start with max available size
 			Update.printError(Serial);
 		}
@@ -2463,7 +2473,6 @@ void WiFiManager::handleUpdateDone() {
 
 	server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
 	server->send(200, FPSTR(HTTP_HEAD_CT), page);
-
 
 	delay(1000); // send page
 	if (!Update.hasError()) {
