@@ -742,7 +742,7 @@ boolean WiFiManager::captivePortal() {
   return false;
 }
 
-void WifiManager::setWifiWaitCallback( void (*func)(void) ) {
+void WiFiManager::setWifiWaitCallback( void (*func)(void) ) {
   _wifiWaitCallback = func;
 }
 

@@ -183,7 +183,7 @@ class WiFiManager
     boolean       connect;
     boolean       _debug = true;
 
-    void (*_wifiWaitCallback)(WiFiManager*) = NULL;
+    void (*_wifiWaitCallback)(void) = NULL;
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
