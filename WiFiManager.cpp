@@ -222,7 +222,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     //HTTP
     server->handleClient();
 
-
     if (connect) {
       connect = false;
       delay(2000);
@@ -250,6 +249,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           _savecallback();
         }
         break;
+      }
+    } else {
+      if (_wifiWaitCallback) {
+        _wifiWaitCallback();
       }
     }
     yield();
@@ -737,6 +740,10 @@ boolean WiFiManager::captivePortal() {
     return true;
   }
   return false;
+}
+
+void WifiManager::setWifiWaitCallback( void (*func) WifiManager* myWifiManager) ) {
+  _wifiWaitCallback = func;
 }
 
 //start up config portal callback

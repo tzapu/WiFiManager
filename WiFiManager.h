@@ -41,7 +41,7 @@ const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 class WiFiManagerParameter {
   public:
-    /** 
+    /**
         Create custom parameters that can be added to the WiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
@@ -181,6 +181,7 @@ class WiFiManager
     boolean       connect;
     boolean       _debug = true;
 
+    void (*_wifiWaitCallback)(WiFiManager*) = NULL;
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 
