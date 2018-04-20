@@ -207,8 +207,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
   WiFi_autoReconnect();
 
-  getMenuOut();
-
   // set hostname before stating
   if((String)_hostname != ""){
     DEBUG_WM(DEBUG_VERBOSE,"Setting hostname:",_hostname);
@@ -882,7 +880,7 @@ void WiFiManager::handleParam(){
 String WiFiManager::getMenuOut(){
   String page;  
 
-  for(auto& menuId :_menuIds ){
+  for(auto menuId :_menuIds ){
     if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params
     page += HTTP_PORTAL_MENU[menuId];
   }
@@ -2010,6 +2008,7 @@ void WiFiManager::setShowInfoErase(boolean enabled){
  * @param uint8_t menu[] array of menu ids
  */
 void WiFiManager::setMenu(const char * menu[], uint8_t size){
+  DEBUG_WM(DEBUG_VERBOSE,"setmenu array");
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
@@ -2019,10 +2018,11 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());  
+  DEBUG_WM(getMenuOut());
 }
 
 void WiFiManager::setMenu(std::vector<const char *>& menu){
+  DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
@@ -2032,7 +2032,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());
+  DEBUG_WM(getMenuOut());
 }
 
 
