@@ -217,6 +217,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timeout
     if(configPortalHasTimeout()) break;
 
+    if (_wifiWaitCallback) {
+      _wifiWaitCallback();
+    }
+
     //DNS
     dnsServer->processNextRequest();
     //HTTP
@@ -249,10 +253,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           _savecallback();
         }
         break;
-      }
-    } else {
-      if (_wifiWaitCallback) {
-        _wifiWaitCallback();
       }
     }
     yield();
