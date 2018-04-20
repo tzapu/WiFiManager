@@ -217,11 +217,14 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timeout
     if(configPortalHasTimeout()) break;
 
+    if (_wifiWaitCallback && _wifiWaitCallback()) {
+      break;
+    }
+
     //DNS
     dnsServer->processNextRequest();
     //HTTP
     server->handleClient();
-
 
     if (connect) {
       connect = false;
@@ -737,6 +740,10 @@ boolean WiFiManager::captivePortal() {
     return true;
   }
   return false;
+}
+
+void WiFiManager::setWifiWaitCallback( bool (*func)(void) ) {
+  _wifiWaitCallback = func;
 }
 
 //start up config portal callback
