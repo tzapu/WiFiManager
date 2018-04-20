@@ -108,7 +108,7 @@ class WiFiManager
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
     // called when waiting around for wifi
-    void          setWifiWaitCallback( void (*func)(void) );
+    void          setWifiWaitCallback( bool (*func)(void) );
     //adds a custom parameter, returns false on failure
     bool          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
@@ -183,7 +183,7 @@ class WiFiManager
     boolean       connect;
     boolean       _debug = true;
 
-    void (*_wifiWaitCallback)(void) = NULL;
+    bool (*_wifiWaitCallback)(void) = NULL;
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
 

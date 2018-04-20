@@ -217,8 +217,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // check if timeout
     if(configPortalHasTimeout()) break;
 
-    if (_wifiWaitCallback) {
-      _wifiWaitCallback();
+    if (_wifiWaitCallback && _wifiWaitCallback()) {
+      break;
     }
 
     //DNS
@@ -742,7 +742,7 @@ boolean WiFiManager::captivePortal() {
   return false;
 }
 
-void WiFiManager::setWifiWaitCallback( void (*func)(void) ) {
+void WiFiManager::setWifiWaitCallback( bool (*func)(void) ) {
   _wifiWaitCallback = func;
 }
 
