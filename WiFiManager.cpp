@@ -608,7 +608,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  WiFi_Disconnect(); // disconnect before begin, in case anything is hung
+  WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
 
   // if ssid argument provided connect to that
   if (ssid != "") {
@@ -2008,7 +2008,7 @@ void WiFiManager::setShowInfoErase(boolean enabled){
  * @param uint8_t menu[] array of menu ids
  */
 void WiFiManager::setMenu(const char * menu[], uint8_t size){
-  DEBUG_WM(DEBUG_VERBOSE,"setmenu array");
+  // DEBUG_WM(DEBUG_VERBOSE,"setmenu array");
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
@@ -2018,11 +2018,11 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 void WiFiManager::setMenu(std::vector<const char *>& menu){
-  DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
+  // DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
@@ -2032,7 +2032,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 
@@ -2092,22 +2092,20 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
 
 template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
-  if(_debugLevel < level) return;
+  if(!_debug || _debugLevel < level) return;
 
-  if (_debug) {
-    if(_debugLevel >= DEBUG_MAX){
-      _debugPort.print("MEM: ");
-      _debugPort.println((String)ESP.getFreeHeap());
-    }
-    _debugPort.print("*WM: ");
-    if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
-    _debugPort.print(text);
-    if(textb){
-      _debugPort.print(" ");
-      _debugPort.print(textb);
-    }
-    _debugPort.print("\n");
+  if(_debugLevel >= DEBUG_MAX){
+    _debugPort.print("MEM: ");
+    _debugPort.println((String)ESP.getFreeHeap());
   }
+  _debugPort.print("*WM: ");
+  if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
+  _debugPort.print(text);
+  if(textb){
+    _debugPort.print(" ");
+    _debugPort.print(textb);
+  }
+  _debugPort.print("\n");
 }
 
 
