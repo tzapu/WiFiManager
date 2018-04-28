@@ -78,6 +78,7 @@ WiFiManager::~WiFiManager()
     {
         DEBUG_WM(F("freeing allocated params!"));
         free(_params);
+		_params = NULL;
     }
 }
 
