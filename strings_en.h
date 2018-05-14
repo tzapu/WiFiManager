@@ -276,6 +276,8 @@ const char T_h[]                  PROGMEM = "{h}"; // @token h
 const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
 const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
 const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
+const char HTTP_HEAD_CORS[]        PROGMEM = "Access-Control-Allow-Origin";
+const char HTTP_HEAD_CORS_ALLOW_ALL[]        PROGMEM = "*";
 
 const char * const WIFI_STA_STATUS[] PROGMEM
 {
