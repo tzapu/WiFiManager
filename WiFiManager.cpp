@@ -319,7 +319,7 @@ uint8_t WiFiManager::waitForConnectResult() {
         keepConnecting = false;
         DEBUG_WM (F("Connection timed out"));
       }
-      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+      if (status == WL_CONNECTED) {
         keepConnecting = false;
       }
       delay(100);
