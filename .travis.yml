@@ -38,7 +38,7 @@ script:
   - build_examples
   - arduino --board espressif:esp32:esp32doit-devkit-v1:FlashFreq=80,DebugLevel=info --save-prefs
 # some examples fail (SPIFFS defines differ esp32 vs esp8266) so we exclude them
-  - excludes=("AutoConnectWithFSParametersAndCustomIP.ino" "AutoConnectWithFSParameters.ino")
+  - excludes=("AutoConnectWithFSParametersAndCustomIP.ino" "AutoConnectWithFSParameters.ino" "AutoConnectMultipleNetworksWithFS.ino")
   - build_examples "${excludes[@]}"
 #  - arduino -v --verbose-build --verify $PWD/examples/AutoConnect/AutoConnect.ino
 
