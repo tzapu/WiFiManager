@@ -2352,8 +2352,12 @@ bool WiFiManager::WiFi_eraseConfig() {
         return true;
       #endif
     #elif defined(ESP32)
+      bool ret;
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
-      return WiFi.disconnect(true);
+      WiFi.persistent(true);
+      ret = WiFi.disconnect(true);
+      WiFi.persistent(false);
+      return ret;
     #endif
 }
 
