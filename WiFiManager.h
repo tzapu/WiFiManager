@@ -310,6 +310,11 @@ class WiFiManager
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
     boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
 
+    // wrapper functions for handling setting and unsetting persistent for now.
+    bool          _hasBegun               = false;
+    void          _begin();
+    void          _end();
+
     void          setupConfigPortal();
     void          startWPS();
     bool          startAP();

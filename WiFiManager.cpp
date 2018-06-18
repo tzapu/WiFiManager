@@ -154,20 +154,12 @@ WiFiManager::WiFiManager():WiFiManager(Serial) {
 void WiFiManager::WiFiManagerInit(){
   setMenu(_menuIdsDefault);
   if(_debug && _debugLevel > DEBUG_DEV) debugPlatformInfo();
-  
-  #ifndef ESP32 
-    _usermode = WiFi.getMode();
-    WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
-  #endif
-  
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
 
 // destructor
 WiFiManager::~WiFiManager() {
-  if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
-  // if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
-
+  _end();
   // parameters
   // @todo belongs to wifimanagerparameter
   if (_params != NULL){
@@ -176,6 +168,17 @@ WiFiManager::~WiFiManager() {
   }
 
   DEBUG_WM(DEBUG_DEV,F("unloading"));
+}
+
+void WiFiManager::_begin(){
+  if(_hasBegun) return;
+  _usermode = WiFi.getMode();
+  WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
+}
+
+void WiFiManager::_end(){
+  if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
+  // if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
 }
 
 // AUTOCONNECT
@@ -194,6 +197,7 @@ boolean WiFiManager::autoConnect() {
  */
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
+  _begin();
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
   if(!WiFi.enableSTA(true)){
@@ -429,6 +433,8 @@ boolean WiFiManager::startConfigPortal() {
  * @return {[type]}      [description]
  */
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
+  _begin();
+
   //setup AP
   _apName     = apName; // @todo check valid apname ?
   _apPassword = apPassword;
