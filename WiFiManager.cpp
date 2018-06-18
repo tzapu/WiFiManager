@@ -155,8 +155,10 @@ void WiFiManager::WiFiManagerInit(){
   setMenu(_menuIdsDefault);
   if(_debug && _debugLevel > DEBUG_DEV) debugPlatformInfo();
   
-  _usermode = WiFi.getMode();
-  WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
+  #ifndef ESP32 
+    _usermode = WiFi.getMode();
+    WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
+  #endif
   
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
