@@ -2266,19 +2266,21 @@ String WiFiManager::getModeString(uint8_t mode){
 
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
+    bool ret;
     #ifdef ESP8266
       if((wifi_get_opmode() == (uint8) m ) && !persistent) {
           return true;
       }
-      bool ret;
       ETS_UART_INTR_DISABLE();
       if(persistent) ret = wifi_set_opmode(m);
       else ret = wifi_set_opmode_current(m);
       ETS_UART_INTR_ENABLE();
-
     return ret;
     #elif defined(ESP32)
-      return WiFi.mode(m); // @todo persistent not implemented?
+      if(persistent && esp32persistent) WiFi.persistent(true);
+      ret = WiFi.mode(m); // @todo persistent check persistant mode , NI
+      if(persistent && esp32persistent) WiFi.persistent(false);
+      return ret;
     #endif
 }
 bool WiFiManager::WiFi_Mode(WiFiMode_t m) {
@@ -2327,7 +2329,11 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
           return true;
       }
     #elif defined(ESP32)
-      return WiFi.enableSTA(enable); // @todo handle persistent when it is implemented in platform
+      bool ret;
+      if(persistent && esp32persistent) WiFi.persistent(true);
+      ret =  WiFi.enableSTA(enable); // @todo handle persistent when it is implemented in platform
+      if(persistent && esp32persistent) WiFi.persistent(false);
+      return ret;
     #endif
 }
 bool WiFiManager::WiFi_enableSTA(bool enable) {
