@@ -2005,7 +2005,10 @@ void WiFiManager::setShowInfoErase(boolean enabled){
 
 /**
  * set menu items and order
- * if param is present, it will be removed from wifi
+ * if param is present in menu , params will be removed from wifi page automatically
+ * eg.
+ *  const char * menu[] = {"wifi","setup","sep","info","exit"};
+ *  WiFiManager.setMenu(menu);
  * @since $dev
  * @param uint8_t menu[] array of menu ids
  */
@@ -2023,6 +2026,15 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
   // DEBUG_WM(getMenuOut());
 }
 
+/**
+ * setMenu with vector
+ * eg.
+ * std::vector<const char *> menu = {"wifi","setup","sep","info","exit"};
+ * WiFiManager.setMenu(menu);
+ * tokens can be found in _menutokens array in strings_en.h
+ * @shiftIncrement $dev
+ * @param {[type]} std::vector<const char *>& menu [description]
+ */
 void WiFiManager::setMenu(std::vector<const char *>& menu){
   // DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
   _menuIds.clear();
