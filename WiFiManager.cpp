@@ -412,6 +412,7 @@ void WiFiManager::setupConfigPortal() {
   server->on((String)FPSTR(R_close), std::bind(&WiFiManager::handleClose, this));
   server->on((String)FPSTR(R_erase), std::bind(&WiFiManager::handleErase, this, false));
   server->on((String)FPSTR(R_status), std::bind(&WiFiManager::handleWiFiStatus, this));
+  server->on((String)FPSTR(R_delete), std::bind(&WiFiManager::handleDelete, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
   server->begin(); // Web server start
@@ -641,6 +642,46 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
 
+  //not connected, test known APs
+  if (waitForConnectResult(_connectTimeout ? 10000 : _connectTimeout) != WL_CONNECTED && _apList_size) {
+    DEBUG_WM(F("Scan for known APs"));
+    int n = WiFi.scanNetworks();
+    if (n == 0) {
+      DEBUG_WM(F("No networks found"));
+    } else {
+      // search for strongest networks
+      int8_t best = -1;
+      int32_t best_rssi = -100000;
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < _apList_size; j++) {
+          if (WiFi.SSID(i) == _apList[j].ssid && WiFi.RSSI(i) > best_rssi) {
+            best = j;
+            best_rssi = WiFi.RSSI(i);
+          }
+        }
+      }
+      // connect to known AP
+      if (best >= 0) {
+        DEBUG_WM ("Connecting to: ");
+        DEBUG_WM (_apList[best].ssid);
+        WiFi.begin(_apList[best].ssid.c_str(), _apList[best].pass.c_str());
+      }
+    }
+  }
+				
+  connRes = waitForConnectResult();
+  DEBUG_WM ("Connection result: ");
+  DEBUG_WM ( connRes );
+  if (ssid != "" && connRes == WL_CONNECTED ) {
+    // add to known APs
+    addAP(ssid.c_str(), pass.c_str());
+    // notify application about adding a new network
+    if ( _savecallback != NULL) {
+       _savecallback();
+    }
+
+  }
+
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
@@ -789,6 +830,28 @@ String WiFiManager::getHTTPHead(String title){
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
   return page;
+}
+
+boolean WiFiManager::addAP(char const *ssid, char const *password) {
+  if ( _apList_size < WIFI_MANAGER_MAX_NETWORKS ) {
+    _apList[_apList_size].ssid = ssid;
+    if ( password )
+      _apList[_apList_size].pass = password;
+    else
+      _apList[_apList_size].pass = "";
+    _apList_size++;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+const WiFiManagerCredentials *WiFiManager::getAP(uint8_t index) const {
+  if ( index < _apList_size ) {
+    return &_apList[index];
+  } else {
+    return NULL;
+  }
 }
 
 /** 
@@ -1011,6 +1074,22 @@ String WiFiManager::WiFiManager::getScanItemOut(){
 
       }
       page += FPSTR(HTTP_BR);
+
+	    // show saved networks
+      for (int j = 0; j < _apList_size; j++) {
+        String item = FPSTR(HTTP_ITEM);
+        item.replace(FPSTR(T_v), _apList[j].ssid);
+        item.replace(FPSTR(T_r), "<a href=\"" + (String)FPSTR(R_delete) + "?s="+_apList[j].ssid+"\">X</a>");
+        if ( _apList[j].pass.length() ) {
+          item.replace(FPSTR(T_i), "l");
+        } else {
+          item.replace(FPSTR(T_i), "");
+        }
+        page += item;
+        delay(0);
+      }
+      
+      page += "<br/>";
     }
 
     return page;
@@ -1549,6 +1628,30 @@ void WiFiManager::handleErase(boolean opt) {
   	DEBUG_WM(F("RESETTING ESP"));
   	reboot();
   }	
+}
+
+/** Handle the removal of a known AP */
+void WiFiManager::handleDelete() {
+  DEBUG_WM(F("WiFi delete"));
+
+  String ssid = server->arg("s");
+  
+  // search SSID
+  int j;
+  for (j = 0; j < _apList_size; j++) {
+    if ( ssid == _apList[j].ssid)
+		break;
+  }
+  if ( j < _apList_size ) {
+    // shift list
+    _apList_size--;
+    for (; j < _apList_size; j++) {
+      _apList[j].ssid = _apList[j+1].ssid;
+      _apList[j].pass = _apList[j+1].pass;
+    }
+  }
+  
+  handleWifi(true);
 }
 
 /** 

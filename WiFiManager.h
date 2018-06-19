@@ -82,6 +82,9 @@
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
+#ifndef WIFI_MANAGER_MAX_NETWORKS
+    #define WIFI_MANAGER_MAX_NETWORKS 5 // maximal number of network credentials to be stored
+#endif
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
@@ -121,6 +124,10 @@ class WiFiManagerParameter {
     friend class WiFiManager;
 };
 
+struct WiFiManagerCredentials {
+  String ssid;
+  String pass;
+};
 
 class WiFiManager
 {
@@ -145,6 +152,13 @@ class WiFiManager
     // Run webserver processing, if setConfigPortalBlocking(false)
     boolean       process();
 
+    //add an AP to the list of known access points to be connected to
+    boolean       addAP(char const *ssid, char const *password = NULL);
+	  //returns the SSID and password for a pre-configured access point
+    //or NULL if no access point was found for the given index
+    //the returned values are read-only!
+	const WiFiManagerCredentials *getAP(uint8_t index) const;
+	
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
 
@@ -335,6 +349,7 @@ class WiFiManager
     void          handleWifiSave();
     void          handleInfo();
     void          handleReset();
+	void          handleDelete();
     void          handleNotFound();
     void          handleExit();
     void          handleClose();
@@ -415,6 +430,9 @@ class WiFiManager
     boolean       _debug              = true;
     uint8_t       _debugLevel         = DEBUG_VERBOSE;
     Stream&     _debugPort; // debug output stream ref
+    
+    uint8_t       _apList_size = 0;
+    WiFiManagerCredentials _apList[WIFI_MANAGER_MAX_NETWORKS];
     
     template <typename Generic>
     void        DEBUG_WM(Generic text);
