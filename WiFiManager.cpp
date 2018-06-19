@@ -1833,17 +1833,17 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
  * @access public 
  * @param {[type]} void (*func)(WiFiManager* myWiFiManager) [description]
  */
-void WiFiManager::setAPCallback( void (*func)(WiFiManager* myWiFiManager) ) {
+void WiFiManager::setAPCallback( std::function<void(WiFiManager*)> func ) {
   _apcallback = func;
 }
-
+	
 /**
  * setSaveConfigCallback, set a save config callback after closing configportal
  * @todo only calls if configportal stopped
  * @access public
  * @param {[type]} void (*func)(void) [description]
  */
-void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
+void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
   _savecallback = func;
 }
 
