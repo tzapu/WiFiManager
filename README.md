@@ -16,12 +16,11 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 [https://github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
 
-**This works with the ESP32 Arduino platform with staging , with caveats below** 
+**This works with the ESP32 Arduino platform with staging** 
 
 [https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
 
 ### Known Issues
-* :exclamation: ESP32 must be patched with webserver library, see [https://github.com/tzapu/WiFiManager/issues/513](https://github.com/tzapu/WiFiManager/issues/513)
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
 
 ## Contents

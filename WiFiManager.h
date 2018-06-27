@@ -48,12 +48,11 @@
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
     #ifndef WEBSERVER_H
-        #warning "WEBSERVER not implemented in espressif/esp32, see readme notes"
         #ifdef WM_WEBSERVERSHIM
             #include <WebServer.h>
         #else
             #include <ESP8266WebServer.h>
-            // Forthcoming official
+            // Forthcoming official ?
             // https://github.com/esp8266/ESPWebServer
         #endif
     #endif

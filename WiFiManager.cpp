@@ -165,6 +165,7 @@ WiFiManager::~WiFiManager() {
   if (_params != NULL){
     DEBUG_WM(DEBUG_DEV,F("freeing allocated params!"));
     free(_params);
+    _params = NULL;
   }
 
   DEBUG_WM(DEBUG_DEV,F("unloading"));
@@ -173,7 +174,10 @@ WiFiManager::~WiFiManager() {
 void WiFiManager::_begin(){
   if(_hasBegun) return;
   _usermode = WiFi.getMode();
+
+  #ifndef ESP32
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
+  #endif
 }
 
 void WiFiManager::_end(){
@@ -205,6 +209,10 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(DEBUG_ERROR,"[FATAL] Unable to enable wifi!");
     return false;
   }
+
+  #ifdef ESP32
+  if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
+  #endif
 
   _usermode = WIFI_STA;
 
@@ -2362,7 +2370,7 @@ bool WiFiManager::WiFi_eraseConfig() {
       bool ret;
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
       WiFi.persistent(true);
-      ret = WiFi.disconnect(true);
+      ret = WiFi.disconnect(true,true);
       WiFi.persistent(false);
       return ret;
     #endif
