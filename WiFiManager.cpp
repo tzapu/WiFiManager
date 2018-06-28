@@ -2314,6 +2314,8 @@ bool WiFiManager::WiFi_Disconnect() {
       // esp_wifi_start(); // @todo can only disconnect if enabled perhaps, prevent failure, or correct for previous call ?
       return esp_wifi_disconnect() == ESP_OK;
       // return WiFi.disconnect();
+      DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
+      return WiFi.disconnect(); // not persistent atm
     #endif
     return false;
 }
