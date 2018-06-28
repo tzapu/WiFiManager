@@ -173,9 +173,9 @@ WiFiManager::~WiFiManager() {
 
 void WiFiManager::_begin(){
   if(_hasBegun) return;
-  _usermode = WiFi.getMode();
 
   #ifndef ESP32
+  _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   #endif
 }
@@ -538,21 +538,26 @@ uint8_t WiFiManager::processConfigPortal(){
       DEBUG_WM(DEBUG_VERBOSE,F("process connect"));
       if(_enableCaptivePortal) delay(_cpclosedelay); // keeps the captiveportal from closing to fast.
 
-      // attempt sta connection to submitted _ssid, _pass
-      if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
-        
-        DEBUG_WM(F("Connect to new AP [SUCCESS]"));
-        DEBUG_WM(F("Got IP Address:"));
-        DEBUG_WM(WiFi.localIP());
+      // @todo skip wifi if no ssid
+      // if(_ssid == ""){
+      //   DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi"));
+      // }
+      // else{
+        // attempt sta connection to submitted _ssid, _pass
+        if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+          
+          DEBUG_WM(F("Connect to new AP [SUCCESS]"));
+          DEBUG_WM(F("Got IP Address:"));
+          DEBUG_WM(WiFi.localIP());
 
-        if ( _savecallback != NULL) {
-          _savecallback();
-        }        
-        stopConfigPortal();
-        return WL_CONNECTED; // CONNECT SUCCESS
-      }
-
-      DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
+          if ( _savecallback != NULL) {
+            _savecallback();
+          }
+          stopConfigPortal();
+          return WL_CONNECTED; // CONNECT SUCCESS
+        }
+        DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
+      // }
 
       if (_shouldBreakAfterConfig) {
         // do save callback
@@ -1041,6 +1046,7 @@ String WiFiManager::getIpForm(String id, String title, String value){
 String WiFiManager::getStaticOut(){
   String page;
   if ((_staShowStaticFields || _sta_static_ip) && _staShowStaticFields>=0) {
+    DEBUG_WM(DEBUG_DEV,"_staShowStaticFields");
     page += FPSTR(HTTP_FORM_STATIC_HEAD);
     // @todo how can we get these accurate settings from memory , wifi_get_ip_info does not seem to reveal if struct ip_info is static or not
     page += getIpForm(FPSTR(S_ip),FPSTR(S_staticip),(_sta_static_ip ? _sta_static_ip.toString() : "")); // @token staticip
@@ -1726,10 +1732,15 @@ bool WiFiManager::erase(bool opt){
  */
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
-  WiFi_enableSTA(true,true);
-  WiFi.persistent(true);
-  WiFi.disconnect(true);
-  WiFi.persistent(false);
+  WiFi_enableSTA(true,true); // must be sta to disconnect erase
+  
+  #ifdef ESP32
+    WiFi.disconnect(true,true);
+  #else
+    WiFi.persistent(true);
+    WiFi.disconnect(true);
+    WiFi.persistent(false);
+  #endif  
 }
 
 // SETTERS
@@ -2301,19 +2312,13 @@ bool WiFiManager::WiFi_Disconnect() {
     #ifdef ESP8266
       if((WiFi.getMode() & WIFI_STA) != 0) {
           bool ret;
-          DEBUG_WM(DEBUG_DEV,F("wifi station disconnect"));
+          DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
           ETS_UART_INTR_DISABLE(); // @todo probably not needed
           ret = wifi_station_disconnect();
           ETS_UART_INTR_ENABLE();        
           return ret;
       }
     #elif defined(ESP32)
-      DEBUG_WM(DEBUG_DEV,F("wifi station disconnect"));
-      // @todo why does disconnect call these, might be needed
-      // WiFi.getMode(); // @todo wifiLowLevelInit(), probably not needed, for save config only
-      // esp_wifi_start(); // @todo can only disconnect if enabled perhaps, prevent failure, or correct for previous call ?
-      return esp_wifi_disconnect() == ESP_OK;
-      // return WiFi.disconnect();
       DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
       return WiFi.disconnect(); // not persistent atm
     #endif
@@ -2322,6 +2327,7 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
+    DEBUG_WM(DEBUG_DEV,F("WiFi station enable"));
     #ifdef ESP8266
       WiFiMode_t newMode;
       WiFiMode_t currentMode = WiFi.getMode();
