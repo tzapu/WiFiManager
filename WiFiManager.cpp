@@ -173,9 +173,9 @@ WiFiManager::~WiFiManager() {
 
 void WiFiManager::_begin(){
   if(_hasBegun) return;
+  _usermode = WiFi.getMode();
 
   #ifndef ESP32
-  _usermode = WiFi.getMode();
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   #endif
 }
