@@ -11,6 +11,11 @@ char mqtt_server[40];
 char mqtt_port[6]  = "8080";
 char api_token[32] = "YOUR_API_TOKEN";
 
+//default custom static IP
+char static_ip[16] = "10.0.1.56";
+char static_gw[16] = "10.0.1.1";
+char static_sn[16] = "255.255.255.0";
+
 //flag for saving data
 bool shouldSaveConfig = false;
 
@@ -50,6 +55,16 @@ void setupSpiffs(){
           strcpy(mqtt_port, json["mqtt_port"]);
           strcpy(api_token, json["api_token"]);
 
+          if(json["ip"]) {
+            Serial.println("setting custom ip from config");
+            strcpy(static_ip, json["ip"]);
+            strcpy(static_gw, json["gateway"]);
+            strcpy(static_sn, json["subnet"]);
+            Serial.println(static_ip);
+          } else {
+            Serial.println("no custom ip in config");
+          }
+
         } else {
           Serial.println("failed to load json config");
         }
@@ -88,19 +103,19 @@ void setup() {
   wm.addParameter(&custom_mqtt_port);
   wm.addParameter(&custom_api_token);
 
+  // set static ip
+  IPAddress _ip,_gw,_sn;
+  _ip.fromString(static_ip);
+  _gw.fromString(static_gw);
+  _sn.fromString(static_sn);
+  wm.setSTAStaticIPConfig(_ip, _gw, _sn);
+
   //reset settings - wipe credentials for testing
   //wm.resetSettings();
-
-  //set minimu quality of signal so it ignores AP's under that quality, default is 8%
-  //wm.setMinimumSignalQuality();
-  
-  //sets timeout until configuration portal gets turned off
-  //wm.setConfigPortalTimeout(120);
 
   //automatically connect using saved credentials if they exist
   //If connection fails it starts an access point with the specified name
   //here  "AutoConnectAP" if empty will auto generate basedcon chipid, if password is blank it will be anonymous
-
   //and goes into a blocking loop awaiting configuration
   if (!wm.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect and hit timeout");
@@ -127,20 +142,26 @@ void setup() {
     json["mqtt_port"]   = mqtt_port;
     json["api_token"]   = api_token;
 
+    json["ip"]          = WiFi.localIP().toString();
+    json["gateway"]     = WiFi.gatewayIP().toString();
+    json["subnet"]      = WiFi.subnetMask().toString();
+
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
 
-    json.printTo(Serial);
+    json.prettyPrintTo(Serial);
     json.printTo(configFile);
     configFile.close();
     //end save
+    shouldSaveConfig = false;
   }
 
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
-
+  Serial.println(WiFi.gatewayIP());
+  Serial.println(WiFi.subnetMask());
 }
 
 void loop() {

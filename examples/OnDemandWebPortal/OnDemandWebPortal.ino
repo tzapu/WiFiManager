@@ -7,14 +7,11 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 // select which pin will trigger the configuration portal when set to LOW
-// ESP-01 users please note: the only pins available (0 and 2), are shared 
-// with the bootloader, so always set them HIGH at power-up
 #define TRIGGER_PIN 0
 
-int timeout          = 120; // seconds
+WiFiManager wm;
 
-WiFiManager wifiManager;
-
+int timeout           = 120; // seconds to run for
 bool webportalrunning = false;
 int start             = millis();
 
@@ -27,19 +24,18 @@ void setup() {
 
 
 void loop() {
-  
   if(webportalrunning){
-    wifiManager.process();
+    wm.process();
     if(millis()-start > timeout*1000){
       Serial.println("webportaltimeout");
       webportalrunning = false;
-      wifiManager.stopWebPortal(); // auto off
+      wm.stopWebPortal(); // auto off
    }
   }
-
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW && !webportalrunning) {
-    wifiManager.startWebPortal();
+    wm.startWebPortal();
+    // wm.startWebPortal();
     webportalrunning = true;
     start = millis();
   }
