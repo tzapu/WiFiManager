@@ -8,8 +8,8 @@
 
 //define your default values here, if there are different values in config.json, they are overwritten.
 char mqtt_server[40];
-char mqtt_port[6] = "8080";
-char blynk_token[34] = "YOUR_BLYNK_TOKEN";
+char mqtt_port[6]  = "8080";
+char api_token[32] = "YOUR_API_TOKEN";
 
 //flag for saving data
 bool shouldSaveConfig = false;
@@ -20,14 +20,9 @@ void saveConfigCallback () {
   shouldSaveConfig = true;
 }
 
-
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial.println();
-
+void setupSpiffs(){
   //clean FS, for testing
-  //SPIFFS.format();
+  // SPIFFS.format();
 
   //read configuration from FS json
   Serial.println("mounting FS...");
@@ -53,7 +48,7 @@ void setup() {
 
           strcpy(mqtt_server, json["mqtt_server"]);
           strcpy(mqtt_port, json["mqtt_port"]);
-          strcpy(blynk_token, json["blynk_token"]);
+          strcpy(api_token, json["api_token"]);
 
         } else {
           Serial.println("failed to load json config");
@@ -64,51 +59,53 @@ void setup() {
     Serial.println("failed to mount FS");
   }
   //end read
+}
 
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Serial.println();
 
+  setupSpiffs();
 
+  // WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
+  WiFiManager wm;
+
+  //set config save notify callback
+  wm.setSaveConfigCallback(saveConfigCallback);
+
+  // setup custom parameters
+  // 
   // The extra parameters to be configured (can be either global or just in the setup)
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_blynk_token("blynk", "blynk token", "", 0);
+  WiFiManagerParameter custom_api_token("api", "api token", "", 32);
 
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
-  
-  //set config save notify callback
-  wifiManager.setSaveConfigCallback(saveConfigCallback);
-
-  //set static ip
-  wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
-  
   //add all your parameters here
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_blynk_token);
+  wm.addParameter(&custom_mqtt_server);
+  wm.addParameter(&custom_mqtt_port);
+  wm.addParameter(&custom_api_token);
 
-  //reset settings - for testing
-  //wifiManager.resetSettings();
+  //reset settings - wipe credentials for testing
+  //wm.resetSettings();
 
-  //set minimu quality of signal so it ignores AP's under that quality
-  //defaults to 8%
-  //wifiManager.setMinimumSignalQuality();
+  //set minimu quality of signal so it ignores AP's under that quality, default is 8%
+  //wm.setMinimumSignalQuality();
   
   //sets timeout until configuration portal gets turned off
-  //useful to make it all retry or go to sleep
-  //in seconds
-  //wifiManager.setConfigPortalTimeout(120);
+  //wm.setConfigPortalTimeout(120);
 
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
+  //automatically connect using saved credentials if they exist
+  //If connection fails it starts an access point with the specified name
+  //here  "AutoConnectAP" if empty will auto generate basedcon chipid, if password is blank it will be anonymous
+
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
+  if (!wm.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
-    //reset and try again, or maybe put it to deep sleep
+    // if we still have not connected restart and try all over again
     ESP.restart();
     delay(5000);
   }
@@ -119,7 +116,7 @@ void setup() {
   //read updated parameters
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
-  strcpy(blynk_token, custom_blynk_token.getValue());
+  strcpy(api_token, custom_api_token.getValue());
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
@@ -127,8 +124,8 @@ void setup() {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& json = jsonBuffer.createObject();
     json["mqtt_server"] = mqtt_server;
-    json["mqtt_port"] = mqtt_port;
-    json["blynk_token"] = blynk_token;
+    json["mqtt_port"]   = mqtt_port;
+    json["api_token"]   = api_token;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
