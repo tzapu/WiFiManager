@@ -169,7 +169,7 @@ class WiFiManager
     void          setSaveConnectTimeout(unsigned long seconds);
     // toggle debug output
     void          setDebugOutput(boolean debug);
-    //defaults to not showing anything under 8% signal quality if called
+    //set min quality percentage to include in scan, defaults to 8% if not specified
     void          setMinimumSignalQuality(int quality = 8);
     //sets a custom ip /gateway /subnet configuration
     void          setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
