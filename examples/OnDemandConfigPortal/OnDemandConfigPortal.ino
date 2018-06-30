@@ -22,19 +22,19 @@ void setup() {
 void loop() {
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW) {
-    WiFiManager wifiManager;    
+    WiFiManager wm;    
 
     //reset settings - for testing
     //wifiManager.resetSettings();
   
     // set configportal timeout
-    wm.setConfigPortaltimeout(timeout);
+    wm.setConfigPortalTimeout(timeout);
 
     if (!wm.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
       //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
+      ESP.restart();
       delay(5000);
     }
 
