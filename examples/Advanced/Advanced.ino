@@ -24,7 +24,8 @@ void setup() {
   wm.addParameter(&custom_field);
 
   // custom menu via array or vector
-  // menu tokens, "wifi","wifinoscan","info","param","close","sep","erase","restart","exit"
+  // 
+  // menu tokens, "wifi","wifinoscan","info","param","close","sep","erase","restart","exit" (sep is seperator) (if param is in menu, params will not show up in wifi page!)
   // const char* menu[] = {"wifi","info","param","sep","restart","exit"}; 
   // wm.setMenu(menu,6);
   std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
@@ -41,14 +42,16 @@ void setup() {
 
   // wifi scan settings
   // wm.setRemoveDuplicateAPs(false); // do not remove duplicate ap names (true)
-  // wm.setMinimumSignalQuality(20);  // set min RSSI to show in scans, null = 8%
+  // wm.setMinimumSignalQuality(20);  // set min RSSI (percentage) to show in scans, null = 8%
   // wm.setShowInfoErase(false);      // do not show erase button on info page
   // wm.setScanDispPerc(true);       // show RSSI as percentage not graph icons
+  
+  // wm.setBreakAfterConfig(true);   // always exit configportal even if wifi save fails
 
   bool res;
   // res = wm.autoConnect(); // auto generated AP name from chipid
   // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-  res = wm.autoConnect("AutoConnectAP"); // password protected ap
+  res = wm.autoConnect("AutoConnectAP","password"); // password protected ap
 
   if(!res) {
     Serial.println("Failed to connect or hit timeout");
@@ -59,7 +62,6 @@ void setup() {
   }
 }
 
-
 void loop() {
   // check for button press
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
@@ -69,11 +71,13 @@ void loop() {
     
     delay(3000); // reset timer
     if( digitalRead(TRIGGER_PIN) == LOW ){
+      Serial.println("Erasing Config");
       // holding button 3000 ms, reset settings
       wm.resetSettings();
       ESP.restart();
     }
     
+    Serial.println("Starting config portal");
     wm.setConfigPortalTimeout(120);
     
     if (!wm.startConfigPortal("OnDemandAP")) {
