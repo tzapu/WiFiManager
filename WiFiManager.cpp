@@ -654,6 +654,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
 
+// WPS enabled? https://github.com/esp8266/Arduino/pull/4889
 #ifdef NO_EXTRA_4K_HEAP
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
@@ -784,6 +785,7 @@ uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
   return status;
 }
 
+// WPS enabled? https://github.com/esp8266/Arduino/pull/4889
 #ifdef NO_EXTRA_4K_HEAP
 void WiFiManager::startWPS() {
   DEBUG_WM(F("START WPS"));
