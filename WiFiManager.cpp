@@ -654,6 +654,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
 
+#ifdef NO_EXTRA_4K_HEAP
   // do WPS, if WPS options enabled and not connected and no password was supplied
   // @todo this seems like wrong place for this, is it a fallback or option?
   if (_tryWPS && connRes != WL_CONNECTED && pass == "") {
@@ -661,6 +662,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
     // should be connected at the end of WPS
     connRes = waitForConnectResult();
   }
+#endif
 
   if(connRes != WL_SCAN_COMPLETED){
     updateConxResult(connRes);
@@ -782,6 +784,7 @@ uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
   return status;
 }
 
+#ifdef NO_EXTRA_4K_HEAP
 void WiFiManager::startWPS() {
   DEBUG_WM(F("START WPS"));
   #ifdef ESP8266  
@@ -791,7 +794,7 @@ void WiFiManager::startWPS() {
   #endif
   DEBUG_WM(F("END WPS"));
 }
-
+#endif
 
 String WiFiManager::getHTTPHead(String title){
   String page;
