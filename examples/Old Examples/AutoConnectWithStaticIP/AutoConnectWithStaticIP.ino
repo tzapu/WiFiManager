@@ -51,9 +51,9 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect, we should reset as see if it connects");
-    delay(3000);
+    delay(3000); // to read the message on the console !
     ESP.restart();
-    delay(5000);
+    while (true); // stop the sketch completely until restart
   }
 
   //if you get here you have connected to the WiFi
