@@ -1078,7 +1078,7 @@ String WiFiManager::getParamOut(){
 
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
     HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
-    bool tok_I = HTTP_PARAM_temp.indexOf(FPSTR(T_i)) > 0;
+    bool tok_I = HTTP_PARAM_temp.indexOf(FPSTR(T_I)) > 0;
     bool tok_i = HTTP_PARAM_temp.indexOf(FPSTR(T_i)) > 0;
     bool tok_n = HTTP_PARAM_temp.indexOf(FPSTR(T_n)) > 0;
     bool tok_p = HTTP_PARAM_temp.indexOf(FPSTR(T_p)) > 0;
@@ -1113,7 +1113,7 @@ String WiFiManager::getParamOut(){
 
       // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
-        if(tok_I)pitem.replace(FPSTR(T_i), (String)FPSTR(S_parampre)+(String)i);
+        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i);
         if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID());
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID());
         if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t));
