@@ -17,7 +17,7 @@
 //   #define WIFI_MANAGER_OVERRIDE_STRINGS
 // Copy and paste ALL of the const char lines below and modify to suit.
 
-const char HTTP_HEAD[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
+const char HTTP_HEAD_START[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
 

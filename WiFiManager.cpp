@@ -800,7 +800,7 @@ void WiFiManager::startWPS() {
 
 String WiFiManager::getHTTPHead(String title){
   String page;
-  page += FPSTR(HTTP_HEAD);
+  page += FPSTR(HTTP_HEAD_START);
   page.replace(FPSTR(T_v), title);
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
