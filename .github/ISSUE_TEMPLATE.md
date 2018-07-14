@@ -1,5 +1,9 @@
 ## PLEASE TRY DEVELOPMENT BRANCH before submitting bugs on release or master, in case they were already fixed. ##
 
+## POST SERIAL OUTPUT !
+## POST SERIAL OUTPUT !
+## POST SERIAL OUTPUT !
+
 Issues without basic info will be ignored or closed!
 
 Please fill the info fields, it helps to get you faster support ;)
