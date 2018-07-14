@@ -63,12 +63,17 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   _length         = length;
+  length          = strlen(defaultValue); // length actual
+  if(_length < length){
+    // Serial.println("defaultValue length mismatch");
+  }
   _value          = new char[length + 1];
   for (int i = 0; i < length + 1; i++) {
     _value[i] = 0;
   }
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length + 1); // length+1 due to null terminated string
+    strncpy(_value, defaultValue, length);
+    _value[length] = '\0'; // explicit null
   }
 }
 const char* WiFiManagerParameter::getValue() {
