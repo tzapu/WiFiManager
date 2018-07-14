@@ -59,6 +59,7 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   if (_value != NULL) {
     delete[] _value;
   }
+  _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
@@ -1095,7 +1096,8 @@ String WiFiManager::getParamOut(){
     char parLength[5];
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL) {
+      if (_params[i] == NULL || _params[i]->_length == 0) {
+        DEBUG_WM(DEBUG_ERROR,"[ERROR] WiFiManagerParameter is out of scope");
         break;
       }
 
