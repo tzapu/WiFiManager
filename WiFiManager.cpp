@@ -1228,9 +1228,13 @@ void WiFiManager::doParamSave(){
         break;
       }
       //read parameter from server
+      String name = (String)FPSTR(S_parampre)+(String)i;
       String value;
-      if(server->arg((String)FPSTR(S_parampre)+(String)i) != NULL) value = server->arg((String)FPSTR(S_parampre)+(String)i).c_str();
-      else value = server->arg(_params[i]->getID()).c_str();
+      if(server->hasArg(name)) {
+          value = server->arg(name);
+      } else {
+          value = server->arg(_params[i]->getID());
+      }
 
       //store it in params array
       value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
