@@ -67,14 +67,16 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   length          = strlen(defaultValue); // length actual
   if(_length < length){
     // Serial.println("defaultValue length mismatch");
+    // use the length if it's longer.
+    _length = length;
   }
-  _value          = new char[length + 1];
-  for (int i = 0; i < length + 1; i++) {
+  _value          = new char[_length + 1];
+  for (int i = 0; i < _length + 1; i++) {
     _value[i] = 0;
   }
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, length);
-    _value[length] = '\0'; // explicit null
+    strncpy(_value, defaultValue, _length);
+    _value[_length] = '\0'; // explicit null
   }
 }
 const char* WiFiManagerParameter::getValue() {
@@ -1231,9 +1233,9 @@ void WiFiManager::doParamSave(){
       String name = (String)FPSTR(S_parampre)+(String)i;
       String value;
       if(server->hasArg(name)) {
-          value = server->arg(name);
+        value = server->arg(name);
       } else {
-          value = server->arg(_params[i]->getID());
+        value = server->arg(_params[i]->getID());
       }
 
       //store it in params array
