@@ -64,7 +64,7 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   _length   = length;
-  deflength = strlen(defaultValue); // length actual
+  int deflength = strlen(defaultValue); // length actual
   // use the defult length if it's longer, 
   // @todo consider it might be useful to fail, so user knows they were wrong
   if(_length < length){
