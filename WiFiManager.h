@@ -312,7 +312,7 @@ class WiFiManager
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
     boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
 
-    String        _wificountry            = "US";  // country code, @todo define in strings lang
+    String        _wificountry            = "";  // country code, @todo define in strings lang
 
     // wrapper functions for handling setting and unsetting persistent for now.
     bool          esp32persistent         = false;
