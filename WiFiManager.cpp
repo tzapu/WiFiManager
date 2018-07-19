@@ -2164,7 +2164,7 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     _debugPort.print(" ");
     _debugPort.print(textb);
   }
-  _debugPort.print("\n");
+  _debugPort.println();
 }
 
 
