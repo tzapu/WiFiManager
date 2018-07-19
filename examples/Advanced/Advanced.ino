@@ -30,6 +30,9 @@ void setup() {
   // wm.setMenu(menu,6);
   std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
   wm.setMenu(menu);
+
+  // set dark theme
+  // wm.setClass("invert");
   
   //set static ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); // set static ip,gw,sn
