@@ -294,9 +294,6 @@ class WiFiManager
     int            _staShowDns            = 0;     // ternary always show dns, only if not set in code, never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
-#ifdef NO_EXTRA_4K_HEAP
-    boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
-#endif
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
@@ -324,9 +321,12 @@ class WiFiManager
     void          _end();
 
     void          setupConfigPortal();
+
 #ifdef NO_EXTRA_4K_HEAP
+    boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
     void          startWPS();
 #endif
+
     bool          startAP();
 
     uint8_t       connectWifi(String ssid, String pass);

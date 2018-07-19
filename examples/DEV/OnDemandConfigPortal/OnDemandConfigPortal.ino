@@ -1,12 +1,9 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
-// select which pin will trigger the configuration portal when set to LOW
-// ESP-01 users please note: the only pins available (0 and 2), are shared 
-// with the bootloader, so always set them HIGH at power-up
 #define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
-WiFiManager wifiManager;
+WiFiManager wm;
 
 
 void setup() {
@@ -21,27 +18,27 @@ void setup() {
   // Serial.println(modes[WiFi.getMode()]);
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
-  // WiFiManager wifiManager;
+  // WiFiManager wm;
 
   //Local intialization. Once its business is done, there is no need to keep it around
   //reset settings - for testing
-  //wifiManager.resetSettings();
+  //wm.resetSettings();
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
-  wifiManager.setConfigPortalTimeout(60);
-  wifiManager.setConnectTimeout(20);
-  // wifiManager.setShowStaticFields(true);
+  wm.setConfigPortalTimeout(60);
+  wm.setConnectTimeout(10);
+  // wm.setShowStaticFields(true);
 
-  // uint8_t menu[] = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE};
-  // wifiManager.setMenu(menu);
+  // uint8_t menu[] = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE};
+  // wm.setMenu(menu);
 
-  // std::vector<WiFiManager::menu_page_t> menu = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE,wifiManager.MENU_SEP,wifiManager.MENU_ERASE,wifiManager.MENU_EXIT};
-  // wifiManager.setMenu(menu);
+  // std::vector<WiFiManager::menu_page_t> menu = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE,wm.MENU_SEP,wm.MENU_ERASE,wm.MENU_EXIT};
+  // wm.setMenu(menu);
 
-// std::vector<WiFiManager::menu_page_t> menu = {wifiManager.MENU_WIFI,wifiManager.MENU_INFO,wifiManager.MENU_PARAM,wifiManager.MENU_CLOSE,wifiManager.MENU_SEP,wifiManager.MENU_ERASE,wifiManager.MENU_EXIT};
-  // wifiManager.setMenu(menu);
+// std::vector<WiFiManager::menu_page_t> menu = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE,wm.MENU_SEP,wm.MENU_ERASE,wm.MENU_EXIT};
+  // wm.setMenu(menu);
 
 
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
@@ -50,10 +47,10 @@ void setup() {
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0);
 
   //add all your parameters here
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_token);
-  wifiManager.addParameter(&custom_tokenb);
+  wm.addParameter(&custom_mqtt_server);
+  wm.addParameter(&custom_mqtt_port);
+  wm.addParameter(&custom_token);
+  wm.addParameter(&custom_tokenb);
 
         // MENU_WIFI       = 0,
         // MENU_WIFINOSCAN = 1,
@@ -66,24 +63,32 @@ void setup() {
         // MENU_SEP        = 8
 
   // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wifiManager.setMenu(menu,9);
+  // wm.setMenu(menu,9);
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  wifiManager.setMenu(menu);
+  wm.setMenu(menu);
   
   //set static ip
-  // wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
-  // wifiManager.setShowStaticFields(false);
-  // wifiManager.setShowDnsFields(false);
+  // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+  // wm.setShowStaticFields(false);
+  // wm.setShowDnsFields(false);
 
-  wifiManager.setConfigPortalTimeout(60);
-  wifiManager.startConfigPortal("AutoConnectAP", "password");
+  // WiFi.mode(WIFI_STA);
+  // const wifi_country_t COUNTRY_US{"US",1,11,WIFI_COUNTRY_POLICY_AUTO};
+  // const wifi_country_t COUNTRY_CN{"CN",1,13,WIFI_COUNTRY_POLICY_AUTO};
+  // const wifi_country_t COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
+  // esp_wifi_set_country(&COUNTRY_US);
+
+  wm.setCountry("US");
+
+  // wm.setConfigPortalTimeout(120);
+  // wm.startConfigPortal("AutoConnectAP", "password");
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if(!wifiManager.autoConnect("AutoConnectAP")) {
+  if(!wm.autoConnect("AutoConnectAP","password")) {
     Serial.println("failed to connect and hit timeout");
   }
 
@@ -97,12 +102,12 @@ void loop() {
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
     //reset settings - for testing
-    //wifiManager.resetSettings();
+    //wm.resetSettings();
 
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    wifiManager.setConfigPortalTimeout(120);
+    wm.setConfigPortalTimeout(120);
 
     //it starts an access point with the specified name
     //here  "AutoConnectAP"
@@ -112,9 +117,9 @@ void loop() {
     //WiFi.mode(WIFI_STA);
     
     // disable captive portal redirection
-    // wifiManager.setCaptivePortalEnable(false);
+    // wm.setCaptivePortalEnable(false);
     
-    if (!wifiManager.startConfigPortal("OnDemandAP")) {
+    if (!wm.startConfigPortal("OnDemandAP")) {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
     } else {
