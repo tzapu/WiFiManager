@@ -817,7 +817,16 @@ String WiFiManager::getHTTPHead(String title){
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+
+  if(_bodyClass != ""){
+    String p = FPSTR(HTTP_HEAD_END);
+    p.replace(FPSTR(T_c), _bodyClass); // add class str
+    page += p;
+  }
+  else {
+    page += FPSTR(HTTP_HEAD_END);
+  } 
+
   return page;
 }
 
@@ -1567,7 +1576,6 @@ void WiFiManager::handleErase(boolean opt) {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Erase"));
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
-  page += FPSTR(HTTP_HEAD_END);
 
   bool ret = erase(opt);
 
@@ -2141,6 +2149,14 @@ void WiFiManager::setCountry(String cc){
   _wificountry = cc;
 }
 
+/**
+ * setClass
+ * @param String str body class string
+ */
+void WiFiManager::setClass(String str){
+  _bodyClass = str;
+}
+  
 // HELPERS
 
 // DEBUG

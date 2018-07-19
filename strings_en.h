@@ -11,15 +11,11 @@
  */
 
 #ifndef WIFI_MANAGER_OVERRIDE_STRINGS
+// !!! THIS DOES NOT WORK, you cannot define in a sketch, if anyone one knows how to order includes to be able to do this help!
 
-// To override the strings below in your project, make the following changes above the line that includes "WiFIManager.h"
-// Add the following line:
-//   #define WIFI_MANAGER_OVERRIDE_STRINGS
-// Copy and paste ALL of the const char lines below and modify to suit.
-
-const char HTTP_HEAD_START[]             PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
+const char HTTP_HEAD_START[]       PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'/><title>{v}</title>";
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
-const char HTTP_HEAD_END[]         PROGMEM = "</head><body><div class='wrap'>";
+const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div class='wrap'>";
 
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
 const char * const HTTP_PORTAL_MENU[] PROGMEM = {
@@ -70,7 +66,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 // links
 "a{color:#000;font-weight:700;text-decoration:none}a:hover{color:#1fa3ec;text-decoration:underline}"
 // quality icons
-".q{height:16px;margin:0;padding:0 5px;text-align:right;min-width:38px;float:right}.q.q-0:after{background-position-x:0}.q.q-1:after{background-position-x:-16px}.q.q-2:after{background-position-x:-32px}.q.q-3:after{background-position-x:-48px}.q.q-4:after{background-position-x:-64px}.q.l:before{background-position-x:-80px;padding-right:5px}.ql .q{float:left}.qinv .q{-webkit-filter:invert(1);filter:invert(1)}.q:after,.q:before{content:'';width:16px;height:16px;display:inline-block;background-repeat:no-repeat;background-position: 16px 0;"
+".q{height:16px;margin:0;padding:0 5px;text-align:right;min-width:38px;float:right}.q.q-0:after{background-position-x:0}.q.q-1:after{background-position-x:-16px}.q.q-2:after{background-position-x:-32px}.q.q-3:after{background-position-x:-48px}.q.q-4:after{background-position-x:-64px}.q.l:before{background-position-x:-80px;padding-right:5px}.ql .q{float:left}.q:after,.q:before{content:'';width:16px;height:16px;display:inline-block;background-repeat:no-repeat;background-position: 16px 0;"
 "background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAQCAMAAADeZIrLAAAAJFBMVEX///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADHJj5lAAAAC3RSTlMAIjN3iJmqu8zd7vF8pzcAAABsSURBVHja7Y1BCsAwCASNSVo3/v+/BUEiXnIoXkoX5jAQMxTHzK9cVSnvDxwD8bFx8PhZ9q8FmghXBhqA1faxk92PsxvRc2CCCFdhQCbRkLoAQ3q/wWUBqG35ZxtVzW4Ed6LngPyBU2CobdIDQ5oPWI5nCUwAAAAASUVORK5CYII=');}"
 // icons @2x media query (32px rescaled)
 "@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){.q:before,.q:after {"
@@ -83,6 +79,10 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "td{vertical-align: top;}"
 ".h{display:none}"
 "button.D{background-color:#d9534f}"
+// invert
+"body.invert,body.invert a,body.invert h1 {background-color:black;color:#fff;}"
+"body.invert .msg{border-top:1px solid #696969;border-right:1px solid #696969;border-bottom:1px solid #696969;}"
+"body.invert .q[role=img]{-webkit-filter:invert(1);filter:invert(1);}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
@@ -134,7 +134,7 @@ const char HTTP_JS[] PROGMEM =
 #ifdef ESP32
 	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp32</h3><hr><dl>";
 	const char HTTP_INFO_chiprev[]    PROGMEM = "<dt>Chip Rev</dt><dd>{1}</dd>";
-  const char HTTP_INFO_lastreset[]  PROGMEM = "<dt>Last reset reason</dt><dd>CPU0: {1}<br/>CPU1: {2}</dd>";
+  const char HTTP_INFO_lastreset[]    PROGMEM = "<dt>Last reset reason</dt><dd>CPU0: {1}<br/>CPU1: {2}</dd>";
   const char HTTP_INFO_aphost[]       PROGMEM = "<dt>Acccess Point Hostname</dt><dd>{1}</dd>";  
 #else 
 	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
@@ -245,11 +245,11 @@ const char S_dns[]                PROGMEM = "dns";
 
 // softap ssid default prefix
 #ifdef ESP8266
-	const char S_ssidpre[]          PROGMEM = "ESP";
+	const char S_ssidpre[]        PROGMEM = "ESP";
 #elif defined(ESP32)
-	const char S_ssidpre[]          PROGMEM = "ESP32";
+	const char S_ssidpre[]        PROGMEM = "ESP32";
 #else
-	const char S_ssidpre[]          PROGMEM = "WM";
+	const char S_ssidpre[]        PROGMEM = "WM";
 #endif
 
 //Tokens
@@ -276,8 +276,8 @@ const char T_h[]                  PROGMEM = "{h}"; // @token h
 const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
 const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
 const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
-const char HTTP_HEAD_CORS[]        PROGMEM = "Access-Control-Allow-Origin";
-const char HTTP_HEAD_CORS_ALLOW_ALL[]        PROGMEM = "*";
+const char HTTP_HEAD_CORS[]       PROGMEM = "Access-Control-Allow-Origin";
+const char HTTP_HEAD_CORS_ALLOW_ALL[]  PROGMEM = "*";
 
 const char * const WIFI_STA_STATUS[] PROGMEM
 {

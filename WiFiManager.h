@@ -235,7 +235,11 @@ class WiFiManager
     // debug output platform info and versioning
     void          debugPlatformInfo();
     String        htmlEntities(String str);
+    
+    // set the country code for wifi settings
     void          setCountry(String cc);
+    // set body class (invert)
+    void          setClass(String str);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -307,6 +311,7 @@ class WiFiManager
     const char *  _hostname               = "";
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
+    String        _bodyClass              = ""; // class to add to body
 
     // internal options
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
