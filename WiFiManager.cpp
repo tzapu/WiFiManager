@@ -2437,7 +2437,9 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
       } else _lastconxresulttmp = WiFi.status();
       // if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
       // Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
-      WiFi.reconnect();
+      #ifdef esp32autoreconnect
+        WiFi.reconnect();
+      #endif
   }
 }
 #endif
@@ -2445,7 +2447,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
 void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266
     WiFi.setAutoReconnect(_wifiAutoReconnect);
-  #elif defined(ESP32) && defined(esp32autoreconnect)
+  #elif defined(ESP32)
     if(_wifiAutoReconnect){
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       WiFi.onEvent(WiFiEvent);
