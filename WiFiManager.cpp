@@ -218,6 +218,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(DEBUG_ERROR,"[FATAL] Unable to enable wifi!");
     return false;
   }
+  
+  WiFiSetCountry();
 
   #ifdef ESP32
   if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
@@ -484,6 +486,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // start access point
   DEBUG_WM(DEBUG_VERBOSE,F("Enabling AP"));
   startAP();
+  WiFiSetCountry();
 
   // init configportal
   DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
@@ -2129,6 +2132,14 @@ bool WiFiManager::getWiFiIsSaved(){
   return WiFi_hasAutoConnect();
 }
 
+/**
+ * setCountry
+ * @since $dev
+ * @param String cc country code, must be defined in WiFiSetCountry, US, JP, CN
+ */
+void WiFiManager::setCountry(String cc){
+  _wificountry = cc;
+}
 
 // HELPERS
 
@@ -2166,7 +2177,6 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   }
   _debugPort.println();
 }
-
 
 /**
  * [debugSoftAPConfig description]
@@ -2301,6 +2311,22 @@ String WiFiManager::encryptionTypeStr(uint8_t authmode) {
 String WiFiManager::getModeString(uint8_t mode){
   if(mode <= 3) return WIFI_MODES[mode];
   return FPSTR(S_NA);
+}
+
+
+bool WiFiManager::WiFiSetCountry(){
+  bool ret = false;
+  // @todo check if wifi is init, no idea how, doesnt seem to be exposed
+  if(_wificountry == "") return ret; // skip not set
+  else if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
+  else if(_wificountry == "US") ret = esp_wifi_set_country(&WM_COUNTRY_US) == ESP_OK;
+  else if(_wificountry == "JP") ret = esp_wifi_set_country(&WM_COUNTRY_JP) == ESP_OK;
+  else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
+  else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+  
+  if(ret) DEBUG_WM(DEBUG_VERBOSE,"esp_wifi_set_country: " + _wificountry);
+  else DEBUG_WM(DEBUG_ERROR,"[ERROR] esp_wifi_set_country failed");
+  return ret;
 }
 
 // set mode ignores WiFi.persistent 

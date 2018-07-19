@@ -235,6 +235,7 @@ class WiFiManager
     // debug output platform info and versioning
     void          debugPlatformInfo();
     String        htmlEntities(String str);
+    void          setCountry(String cc);
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -314,6 +315,8 @@ class WiFiManager
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
     boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
 
+    String        _wificountry            = "US";  // country code, @todo define in strings lang
+
     // wrapper functions for handling setting and unsetting persistent for now.
     bool          esp32persistent         = false;
     bool          _hasBegun               = false;
@@ -372,6 +375,7 @@ class WiFiManager
     bool          WiFi_scanNetworks();
     bool          WiFi_scanNetworks(bool force);
     bool          WiFi_scanNetworks(unsigned int cachetime);
+    bool          WiFiSetCountry();
 
     #ifdef ESP32
     static void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
