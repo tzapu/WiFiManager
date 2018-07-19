@@ -80,8 +80,8 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 ".h{display:none}"
 "button.D{background-color:#dc3630}"
 // invert
-"body.invert,body.invert a,body.invert h1 {background-color:black;color:#060606;}"
-"body.invert .msg{	background-color: #282828;border-top:1px solid #555;border-right:1px solid #555;border-bottom:1px solid #555;}"
+"body.invert,body.invert a,body.invert h1 {background-color:#060606;color:#fff;}"
+"body.invert .msg{color:#fff;background-color:#282828;border-top:1px solid #555;border-right:1px solid #555;border-bottom:1px solid #555;}"
 "body.invert .q[role=img]{-webkit-filter:invert(1);filter:invert(1);}"
 "</style>";
 
