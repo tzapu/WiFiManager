@@ -856,7 +856,10 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)10000); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000); // preload wifiscan throttled
+  // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
+  // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
+  // if we can detect these and ignore them that would be great, since they come from the captive portal redirect maybe there is a refferer
 }
 
 /**
@@ -945,11 +948,12 @@ bool WiFiManager::WiFi_scanNetworks(bool force){
     // DEBUG_WM("scanNetworks force:",force == true);
     // DEBUG_WM(_numNetworks,(millis()-_lastscan ));
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
+      unsigned int _scanstart = millis();
       _numNetworks = WiFi.scanNetworks();
       _lastscan = millis();
-      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"));
+      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+"ms");
       return true;
-    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached");
+    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+"ago");
     return false;
 }
 
