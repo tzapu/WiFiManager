@@ -1338,8 +1338,7 @@ void WiFiManager::handleInfo() {
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("conx"),
-      F("autoconx")
+      F("conx")
     };
 
     for(size_t i=0; i<23;i++){
@@ -1532,8 +1531,10 @@ String WiFiManager::getInfoData(String id){
     p.replace(FPSTR(T_1),WiFi.isConnected() ? FPSTR(S_y) : FPSTR(S_n));
   }
   else if(id==F("autoconx")){
+    #ifdef ESP8266
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace(FPSTR(T_1),WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
+    #endif
   }
   return p;
 }
