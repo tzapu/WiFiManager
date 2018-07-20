@@ -12,7 +12,7 @@ void setup() {
   Serial.setDebugOutput(true);  
   delay(3000);
   Serial.println("\n Starting");
-   
+
   // WiFi.mode(WIFI_STA);
   // WiFi.printDiag(Serial);
   // Serial.println(modes[WiFi.getMode()]);
@@ -22,12 +22,14 @@ void setup() {
 
   //Local intialization. Once its business is done, there is no need to keep it around
   //reset settings - for testing
-  //wm.resetSettings();
+  // wm.resetSettings();
+  // 
+  wm.setClass("invert");
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
-  wm.setConfigPortalTimeout(60);
+  // wm.setConfigPortalTimeout(600);
   wm.setConnectTimeout(10);
   // wm.setShowStaticFields(true);
 
@@ -43,7 +45,7 @@ void setup() {
 
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
-  WiFiManagerParameter custom_token("api_token", "api token", "", 0);
+  WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0);
 
   //add all your parameters here
@@ -79,8 +81,8 @@ void setup() {
   // const wifi_country_t COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
   // esp_wifi_set_country(&COUNTRY_US);
 
-  wm.setCountry("US");
-
+  // wm.setCountry("US");
+  
   // wm.setConfigPortalTimeout(120);
   // wm.startConfigPortal("AutoConnectAP", "password");
 
@@ -88,7 +90,7 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if(!wm.autoConnect("AutoConnectAP","password")) {
+  if(!wm.autoConnect("AutoConnectAP","123456789")) {
     Serial.println("failed to connect and hit timeout");
   }
 
