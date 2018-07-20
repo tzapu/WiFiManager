@@ -2285,7 +2285,7 @@ boolean WiFiManager::validApPassword(){
   if (_apPassword == NULL) _apPassword = "";
   if (_apPassword != "") {
     if (_apPassword.length() < 8 || _apPassword.length() > 63) {
-      DEBUG_WM(F("AccessPoint set password is INVALID"));
+      DEBUG_WM(F("AccessPoint set password is INVALID or <8 chars"));
       _apPassword = "";
       return false; // @todo FATAL or fallback to empty ?
     }
