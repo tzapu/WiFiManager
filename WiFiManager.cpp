@@ -2334,9 +2334,9 @@ String WiFiManager::getModeString(uint8_t mode){
   return FPSTR(S_NA);
 }
 
-
 bool WiFiManager::WiFiSetCountry(){
   bool ret = false;
+  #ifdef ESP32
   // @todo check if wifi is init, no idea how, doesnt seem to be exposed
   if(_wificountry == "") return ret; // skip not set
   else if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
@@ -2347,8 +2347,10 @@ bool WiFiManager::WiFiSetCountry(){
   
   if(ret) DEBUG_WM(DEBUG_VERBOSE,"esp_wifi_set_country: " + _wificountry);
   else DEBUG_WM(DEBUG_ERROR,"[ERROR] esp_wifi_set_country failed");
+  #endif
   return ret;
 }
+
 
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
