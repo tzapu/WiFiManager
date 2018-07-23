@@ -319,7 +319,7 @@ const char * const AUTH_MODE_NAMES[] PROGMEM
 
 const char* const WIFI_MODES[] PROGMEM = { "NULL", "STA", "AP", "STA+AP" };
 
-#ifdef esp32
+#ifdef ESP32
 const wifi_country_t WM_COUNTRY_US{"US",1,11,WIFI_COUNTRY_POLICY_AUTO};
 const wifi_country_t WM_COUNTRY_CN{"CN",1,13,WIFI_COUNTRY_POLICY_AUTO};
 const wifi_country_t WM_COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
