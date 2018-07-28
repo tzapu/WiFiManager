@@ -1115,7 +1115,7 @@ String WiFiManager::getParamOut(){
     char parLength[5];
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || (_params[i]->_length == 0 && _params[i]->_customHTML == NULL)) {
+      if (_params[i] == NULL || (_params[i]->_length == 0 && (_params[i]->_customHTML == NULL || _params[i]->_customHTML[0] == '\0'))) {
         DEBUG_WM(DEBUG_ERROR,"[ERROR] WiFiManagerParameter is out of scope");
         break;
       }
