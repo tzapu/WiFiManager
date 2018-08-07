@@ -1272,8 +1272,11 @@ void WiFiManager::handleInfo() {
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
-  //@todo convert to enum
+  int infos = 0;
+
+  //@todo convert to enum or refactor to strings
   #ifdef ESP8266
+    infos = 27;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1304,28 +1307,18 @@ void WiFiManager::handleInfo() {
       F("autoconx")
     };
 
-    for(size_t i=0; i<27;i++){
-      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
-    }
-    page += F("</dl>");
-
   #elif defined(ESP32)
+    infos = 22;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
       F("chipid"),
-      F("chiprev"), // esp32
-      // "fchipid)", //esp8266
-      F("idesize"), //esp8266
-      // "flashsize)", //esp8266
+      F("chiprev"),
+      F("idesize"),
       F("sdkver"),
-      // "corever)", //esp8266
-      // "bootver)", //esp8266
       F("cpufreq"),
       F("freeheap"),
-      // "memsketch)", //esp8266
-      // "memsmeter)", //esp8266
-      F("lastreset"), //esp8266
+      F("lastreset"),
       F("wifihead"),
       F("apip"),
       F("apmac"),
@@ -1340,13 +1333,12 @@ void WiFiManager::handleInfo() {
       F("stamac"),
       F("conx")
     };
-
-    for(size_t i=0; i<23;i++){
-      if(infoids[i] != NULL) page += getInfoData(infoids[i]);
-    }
-    page += F("</dl>");
   #endif
 
+  for(size_t i=0; i<infos;i++){
+    if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+  }
+  page += F("</dl>");
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
@@ -1530,12 +1522,12 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_conx);
     p.replace(FPSTR(T_1),WiFi.isConnected() ? FPSTR(S_y) : FPSTR(S_n));
   }
+  #ifdef ESP8266
   else if(id==F("autoconx")){
-    #ifdef ESP8266
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace(FPSTR(T_1),WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
-    #endif
   }
+  #endif
   return p;
 }
 
