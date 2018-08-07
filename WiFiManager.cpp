@@ -1272,7 +1272,7 @@ void WiFiManager::handleInfo() {
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
-  int infos = 0;
+  uint16_t infos = 0;
 
   //@todo convert to enum or refactor to strings
   #ifdef ESP8266
