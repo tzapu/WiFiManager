@@ -63,6 +63,10 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 }
 
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
+  if(!_id){
+    // Serial.println("cannot set value of this parameter");
+    return;
+  }
   _length       = length;
   int deflength = strlen(defaultValue); // length actual
   // use the defult length if it's longer, 
