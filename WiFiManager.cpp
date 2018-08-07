@@ -25,7 +25,7 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
   _placeholder    = NULL;
-  _length         = 0;
+  _length         = 1;
   _value          = NULL;
   _labelPlacement = WFM_LABEL_BEFORE;
   _customHTML     = custom;
@@ -63,7 +63,7 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 }
 
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
-  _length   = length;
+  _length       = length;
   int deflength = strlen(defaultValue); // length actual
   // use the defult length if it's longer, 
   // @todo consider it might be useful to fail, so user knows they were wrong
