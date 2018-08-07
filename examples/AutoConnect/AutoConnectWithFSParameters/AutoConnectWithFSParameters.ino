@@ -55,15 +55,15 @@ void setupSpiffs(){
           strcpy(mqtt_port, json["mqtt_port"]);
           strcpy(api_token, json["api_token"]);
 
-          if(json["ip"]) {
-            Serial.println("setting custom ip from config");
-            strcpy(static_ip, json["ip"]);
-            strcpy(static_gw, json["gateway"]);
-            strcpy(static_sn, json["subnet"]);
-            Serial.println(static_ip);
-          } else {
-            Serial.println("no custom ip in config");
-          }
+          // if(json["ip"]) {
+          //   Serial.println("setting custom ip from config");
+          //   strcpy(static_ip, json["ip"]);
+          //   strcpy(static_gw, json["gateway"]);
+          //   strcpy(static_sn, json["subnet"]);
+          //   Serial.println(static_ip);
+          // } else {
+          //   Serial.println("no custom ip in config");
+          // }
 
         } else {
           Serial.println("failed to load json config");
@@ -104,11 +104,11 @@ void setup() {
   wm.addParameter(&custom_api_token);
 
   // set static ip
-  IPAddress _ip,_gw,_sn;
-  _ip.fromString(static_ip);
-  _gw.fromString(static_gw);
-  _sn.fromString(static_sn);
-  wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
+  // IPAddress _ip,_gw,_sn;
+  // _ip.fromString(static_ip);
+  // _gw.fromString(static_gw);
+  // _sn.fromString(static_sn);
+  // wm.setSTAStaticIPConfig(_ip, _gw, _sn);
 
   //reset settings - wipe credentials for testing
   //wm.resetSettings();
@@ -124,6 +124,10 @@ void setup() {
     ESP.restart();
     delay(5000);
   }
+
+  // always start configportal for a little while
+  wm.setConfigPortalTimeout(60);
+  wm.startConfigPortal("AutoConnectAP","password");
 
   //if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");
@@ -142,9 +146,9 @@ void setup() {
     json["mqtt_port"]   = mqtt_port;
     json["api_token"]   = api_token;
 
-    json["ip"]          = WiFi.localIP().toString();
-    json["gateway"]     = WiFi.gatewayIP().toString();
-    json["subnet"]      = WiFi.subnetMask().toString();
+    // json["ip"]          = WiFi.localIP().toString();
+    // json["gateway"]     = WiFi.gatewayIP().toString();
+    // json["subnet"]      = WiFi.subnetMask().toString();
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
