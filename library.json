@@ -9,5 +9,5 @@
   },
   "frameworks": "arduino",
   "platforms": "espressif8266",
-  "version": "0.12"
+  "version": "0.14"
 }

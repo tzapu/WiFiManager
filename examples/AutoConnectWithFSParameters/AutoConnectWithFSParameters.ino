@@ -61,6 +61,7 @@ void setup() {
         } else {
           Serial.println("failed to load json config");
         }
+        configFile.close();
       }
     }
   } else {
