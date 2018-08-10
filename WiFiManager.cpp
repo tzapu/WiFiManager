@@ -612,7 +612,9 @@ boolean WiFiManager::stopConfigPortal(){
   // @todo what is the proper way to shutdown and free the server up
   server->stop();
   server.reset();
+  // dnsServer->stop(); // free heap ?
   dnsServer.reset();
+
 
   if(!configPortalActive) return false;
 
@@ -625,8 +627,9 @@ boolean WiFiManager::stopConfigPortal(){
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
-  // WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
-  // DEBUG_WM("usermode",_usermode);
+  delay(1000);
+  DEBUG_WM("restoring usermode",getModeString(_usermode));
+  WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   if(WiFi.status()==WL_IDLE_STATUS) WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
   DEBUG_WM("wifi status:",getWLStatusString(WiFi.status()));
   DEBUG_WM("wifi mode:",getModeString(WiFi.getMode()));
