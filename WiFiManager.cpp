@@ -308,7 +308,7 @@ bool WiFiManager::startAP(){
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-  
+
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
@@ -628,11 +628,14 @@ boolean WiFiManager::stopConfigPortal(){
   ret = WiFi.softAPdisconnect(false);
   if(!ret)DEBUG_WM(DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
   delay(1000);
-  DEBUG_WM("restoring usermode",getModeString(_usermode));
+  DEBUG_WM(DEBUG_VERBOSE,"restoring usermode",getModeString(_usermode));
   WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
-  if(WiFi.status()==WL_IDLE_STATUS) WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
-  DEBUG_WM("wifi status:",getWLStatusString(WiFi.status()));
-  DEBUG_WM("wifi mode:",getModeString(WiFi.getMode()));
+  if(WiFi.status()==WL_IDLE_STATUS){
+    WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
+    DEBUG_WM(DEBUG_VERBOSE,"WiFi Reconnect, was idle");
+  }
+  DEBUG_WM(DEBUG_VERBOSE,"wifi status:",getWLStatusString(WiFi.status()));
+  DEBUG_WM(DEBUG_VERBOSE,"wifi mode:",getModeString(WiFi.getMode()));
   configPortalActive = false;
   return ret;
 }
