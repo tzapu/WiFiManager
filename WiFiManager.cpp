@@ -304,6 +304,11 @@ bool WiFiManager::startAP(){
   bool ret = true;
   DEBUG_WM(F("StartAP with SSID: "),_apName);
 
+  // do AP callback if set
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
+  
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
@@ -346,11 +351,6 @@ bool WiFiManager::startAP(){
       DEBUG_WM(DEBUG_DEV,F("hostname: AP"),WiFi.softAPgetHostname());
    }
   #endif
-
-  // do AP callback if set
-  if ( _apcallback != NULL) {
-    _apcallback(this);
-  }
 
   return ret;
 }
