@@ -612,7 +612,7 @@ boolean WiFiManager::stopConfigPortal(){
   // @todo what is the proper way to shutdown and free the server up
   server->stop();
   server.reset();
-  // dnsServer->stop(); // free heap ?
+  dnsServer->stop(); //  free heap ?
   dnsServer.reset();
 
 
