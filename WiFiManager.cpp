@@ -615,7 +615,6 @@ boolean WiFiManager::stopConfigPortal(){
   dnsServer->stop(); //  free heap ?
   dnsServer.reset();
 
-
   if(!configPortalActive) return false;
 
   // turn off AP
@@ -637,6 +636,7 @@ boolean WiFiManager::stopConfigPortal(){
   DEBUG_WM(DEBUG_VERBOSE,"wifi status:",getWLStatusString(WiFi.status()));
   DEBUG_WM(DEBUG_VERBOSE,"wifi mode:",getModeString(WiFi.getMode()));
   configPortalActive = false;
+  _end()
   return ret;
 }
 
