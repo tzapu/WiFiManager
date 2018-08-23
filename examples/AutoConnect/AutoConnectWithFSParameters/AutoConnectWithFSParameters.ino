@@ -126,8 +126,8 @@ void setup() {
   }
 
   // always start configportal for a little while
-  wm.setConfigPortalTimeout(60);
-  wm.startConfigPortal("AutoConnectAP","password");
+  // wm.setConfigPortalTimeout(60);
+  // wm.startConfigPortal("AutoConnectAP","password");
 
   //if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");
