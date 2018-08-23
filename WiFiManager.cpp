@@ -328,10 +328,12 @@ bool WiFiManager::startAP(){
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
-    ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
+    if(_channelSync) ret = WiFi.softAxP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
+    else ret = WiFi.softAxP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
-    ret = WiFi.softAP(_apName.c_str());
+    if(_channelSync) ret = WiFi.softAP(_apName.c_str(),"",WiFi.channel());
+    else ret = WiFi.softAP(_apName.c_str());
   }
 
   if(_debugLevel > DEBUG_DEV) debugSoftAPConfig();
@@ -465,11 +467,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   if(_apName == "") _apName = _wifissidprefix + "_" + String(WIFI_getChipId());
   if(!validApPassword()) return false;
   
-  bool disableSTA = false; // debug, always disable sta
-
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
   // @todo sometimes still cannot connect to AP for no known reason, no events in log either
-  if(!WiFi.isConnected() || disableSTA){
+  if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
     WiFi_Disconnect();
     WiFi_enableSTA(false);
@@ -652,7 +652,8 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  if(cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
+  if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
+  // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
   // if ssid argument provided connect to that
   if (ssid != "") {

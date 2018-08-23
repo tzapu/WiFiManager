@@ -284,6 +284,9 @@ class WiFiManager
     unsigned long _lastscan               = 0; // ms
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = true; // disconnect before connect in connectwifi, increases stability on connects
+    bool          _disableSTA             = false; // disable sta when starting ap, always
+    bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
+    bool          _channelSync            = false; // use wifi channel when starting ap
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
