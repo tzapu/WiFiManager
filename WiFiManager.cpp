@@ -288,6 +288,9 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     return WL_CONNECTED;
   }
  
+  DEBUG_WM(F("Status:"));
+  DEBUG_WM(WiFi.status());
+
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     //trying to fix connection in progress hanging
