@@ -287,11 +287,13 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
-
-  WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
  
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
+    //trying to fix connection in progress hanging
+    ETS_UART_INTR_DISABLE();
+    wifi_station_disconnect();
+    ETS_UART_INTR_ENABLE();    
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
     if (WiFi.SSID()) {
