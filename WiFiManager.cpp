@@ -652,7 +652,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
+  if(cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
 
   // if ssid argument provided connect to that
   if (ssid != "") {
