@@ -326,20 +326,32 @@ bool WiFiManager::startAP(){
     delay(500); // workaround delay
   #endif
 
+  if(_channelSync){
+    DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
+  } 
+
   // start soft AP with password or anonymous
   if (_apPassword != "") {
-    if(_channelSync) ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
-    else ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
+    if(_channelSync){
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
+    }  
+    else{
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
+    }  
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
-    if(_channelSync) ret = WiFi.softAP(_apName.c_str(),"",WiFi.channel());
-    else ret = WiFi.softAP(_apName.c_str());
+    if(_channelSync){
+      ret = WiFi.softAP(_apName.c_str(),"",WiFi.channel());
+    }  
+    else{
+      ret = WiFi.softAP(_apName.c_str());
+    }  
   }
 
   if(_debugLevel > DEBUG_DEV) debugSoftAPConfig();
 
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] There was a problem starting the AP");
-  // @tood add softAP retry here
+  // @todo add softAP retry here
   
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
