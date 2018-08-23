@@ -287,6 +287,9 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
+
+  WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
+ 
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
