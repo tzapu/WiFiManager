@@ -328,8 +328,8 @@ bool WiFiManager::startAP(){
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
-    if(_channelSync) ret = WiFi.softAxP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
-    else ret = WiFi.softAxP(_apName.c_str(), _apPassword.c_str());//password option
+    if(_channelSync) ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
+    else ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
     if(_channelSync) ret = WiFi.softAP(_apName.c_str(),"",WiFi.channel());
