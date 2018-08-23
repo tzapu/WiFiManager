@@ -383,8 +383,10 @@ class WiFiManager
     void          WiFi_autoReconnect();
     String        WiFi_SSID();
     bool          WiFi_scanNetworks();
-    bool          WiFi_scanNetworks(bool force);
+    bool          WiFi_scanNetworks(bool force,bool async);
+    bool          WiFi_scanNetworks(unsigned int cachetime,bool async);
     bool          WiFi_scanNetworks(unsigned int cachetime);
+    void          WiFi_scanComplete(int networksFound);
     bool          WiFiSetCountry();
 
     #ifdef ESP32

@@ -627,6 +627,8 @@ boolean WiFiManager::stopConfigPortal(){
   dnsServer->stop(); //  free heap ?
   dnsServer.reset();
 
+  WiFi.scanDelete(); // free wifi scan results
+
   if(!configPortalActive) return false;
 
   // turn off AP
@@ -880,7 +882,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000,true); // preload wifiscan throttled
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
   // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
   // if we can detect these and ignore them that would be great, since they come from the captive portal redirect maybe there is a refferer
@@ -962,18 +964,46 @@ String WiFiManager::getMenuOut(){
   return page;
 }
 
+// // is it possible in softap mode to detect aps without scanning
+// bool WiFiManager::WiFi_scanNetworksForAP(bool force){
+//   WiFi_scanNetworks(force);
+// }
+
+void WiFiManager::WiFi_scanComplete(int networksFound){
+  DEBUG_WM(DEBUG_VERBOSE,F("ASYNC WiFi Scan done"));  
+  _numNetworks = networksFound;
+  _lastscan = millis();
+}
+
 bool WiFiManager::WiFi_scanNetworks(){
-  return WiFi_scanNetworks(false);
+  return WiFi_scanNetworks(false,false);
+}
+
+bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime,bool async){
+    return WiFi_scanNetworks(millis()-_lastscan > cachetime,async);
 }
 bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
-    return WiFi_scanNetworks(millis()-_lastscan > cachetime);
+    return WiFi_scanNetworks(millis()-_lastscan > cachetime,false);
 }
-bool WiFiManager::WiFi_scanNetworks(bool force){
+bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM("scanNetworks force:",force == true);
     // DEBUG_WM(_numNetworks,(millis()-_lastscan ));
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       unsigned int _scanstart = millis();
-      _numNetworks = WiFi.scanNetworks();
+      int8_t res;
+      // if(async) res = WiFi.scanNetworksAsync(&WiFiManager::WiFi_scanComplete);
+      // else 
+      res = WiFi.scanNetworks();
+      if(res == WIFI_SCAN_FAILED) DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
+      else if(res == WIFI_SCAN_RUNNING){
+        DEBUG_WM(DEBUG_ERROR,"[ERROR] scan waiting");
+        while(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
+          DEBUG_WM(DEBUG_ERROR,".");
+          delay(100);      
+        }
+        _numNetworks = WiFi.scanComplete();
+      }
+      else if(res >=0 ) _numNetworks = res;
       _lastscan = millis();
       DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+"ms");
       return true;
