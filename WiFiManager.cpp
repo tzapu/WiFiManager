@@ -337,7 +337,7 @@ bool WiFiManager::startAP(){
     }  
     else{
       ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
-    }  
+    }
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
     if(_channelSync){
@@ -454,7 +454,7 @@ void WiFiManager::setupConfigPortal() {
   server->begin(); // Web server start
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
 
-  if(_preloadwifiscan) WiFi_scanNetworks(); // preload wifiscan 
+  if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan 
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -896,7 +896,8 @@ void WiFiManager::handleWifi(boolean scan) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
-    WiFi_scanNetworks(server->hasArg(F("refresh"))); //wifiscan, force if arg refresh
+    DEBUG_WM(DEBUG_DEV,"refresh flag:",server->hasArg(F("refresh")));
+    WiFi_scanNetworks(server->hasArg(F("refresh")),false); //wifiscan, force if arg refresh
     page += getScanItemOut();
   }
   String pitem = "";
@@ -986,20 +987,27 @@ bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime,false);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
-    // DEBUG_WM("scanNetworks force:",force == true);
-    // DEBUG_WM(_numNetworks,(millis()-_lastscan ));
+    // DEBUG_WM(DEBUG_DEV,"scanNetworks async:",async == true);
+    // DEBUG_WM(DEBUG_DEV,_numNetworks,(millis()-_lastscan ));
+    // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       unsigned int _scanstart = millis();
-      int8_t res;
-      // if(async) res = WiFi.scanNetworksAsync(&WiFiManager::WiFi_scanComplete);
-      // else 
-      res = WiFi.scanNetworks();
+      if(async){
+        using namespace std::placeholders; // for `_1`
+        WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
+        DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
+        return false;
+      }
+      else{
+        int8_t res;
+        res = WiFi.scanNetworks();
+      }
       if(res == WIFI_SCAN_FAILED) DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
       else if(res == WIFI_SCAN_RUNNING){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] scan waiting");
         while(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
           DEBUG_WM(DEBUG_ERROR,".");
-          delay(100);      
+          delay(100);
         }
         _numNetworks = WiFi.scanComplete();
       }
@@ -1007,7 +1015,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       _lastscan = millis();
       DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+"ms");
       return true;
-    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+"ago");
+    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+"ms ago");
     return false;
 }
 
