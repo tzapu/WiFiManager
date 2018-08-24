@@ -201,7 +201,7 @@ void WiFiManager::_end(){
 // AUTOCONNECT
 
 boolean WiFiManager::autoConnect() {
-  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);
   return autoConnect(ssid.c_str(), NULL);
 }
 
@@ -458,7 +458,7 @@ void WiFiManager::setupConfigPortal() {
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId());  
+  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);  
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
@@ -476,7 +476,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apName     = apName; // @todo check valid apname ?
   _apPassword = apPassword;
   
-  if(_apName == "") _apName = _wifissidprefix + "_" + String(WIFI_getChipId());
+  if(_apName == "") _apName = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);
   if(!validApPassword()) return false;
   
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
@@ -1425,7 +1425,7 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id==F("chipid")){
     p = FPSTR(HTTP_INFO_chipid);
-    p.replace(FPSTR(T_1),(String)WIFI_getChipId());
+    p.replace(FPSTR(T_1),String(WIFI_getChipId(),HEX));
   }
   #ifdef ESP32
   else if(id==F("chiprev")){
@@ -1817,6 +1817,7 @@ bool WiFiManager::erase(bool opt){
 
 /**
  * [resetSettings description]
+ * ERASES STA CREDENTIALS
  * @access public
  */
 void WiFiManager::resetSettings() {
