@@ -991,6 +991,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,_numNetworks,(millis()-_lastscan ));
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
+      int8_t res;
       unsigned int _scanstart = millis();
       if(async){
         using namespace std::placeholders; // for `_1`
@@ -999,7 +1000,6 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         return false;
       }
       else{
-        int8_t res;
         res = WiFi.scanNetworks();
       }
       if(res == WIFI_SCAN_FAILED) DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
