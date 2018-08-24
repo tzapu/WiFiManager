@@ -454,7 +454,7 @@ void WiFiManager::setupConfigPortal() {
   server->begin(); // Web server start
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
 
-  if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan 
+  if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan , async
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -882,7 +882,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000,true); // preload wifiscan throttled
+  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000,true); // preload wifiscan throttled, async
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
   // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
   // if we can detect these and ignore them that would be great, since they come from the captive portal redirect maybe there is a refferer
@@ -896,7 +896,7 @@ void WiFiManager::handleWifi(boolean scan) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
-    DEBUG_WM(DEBUG_DEV,"refresh flag:",server->hasArg(F("refresh")));
+    // DEBUG_WM(DEBUG_DEV,"refresh flag:",server->hasArg(F("refresh")));
     WiFi_scanNetworks(server->hasArg(F("refresh")),false); //wifiscan, force if arg refresh
     page += getScanItemOut();
   }
