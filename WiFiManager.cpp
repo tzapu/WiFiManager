@@ -994,10 +994,14 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       int8_t res;
       unsigned int _scanstart = millis();
       if(async){
+        #ifdef ESP8266
         using namespace std::placeholders; // for `_1`
         WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
         DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
         return false;
+        #else
+        res = WiFi.scanNetworks();
+        #endif
       }
       else{
         res = WiFi.scanNetworks();
