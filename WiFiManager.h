@@ -281,7 +281,8 @@ class WiFiManager
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
     int           _numNetworks            = 0;
-    unsigned long _lastscan               = 0; // ms
+    unsigned long _lastscan               = 0; // ms for timing wifi scans
+    unsigned long _startscan              = 0; // ms for timing wifi scans
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = true; // disconnect before connect in connectwifi, increases stability on connects
    

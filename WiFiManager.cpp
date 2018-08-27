@@ -971,9 +971,10 @@ String WiFiManager::getMenuOut(){
 // }
 
 void WiFiManager::WiFi_scanComplete(int networksFound){
-  _numNetworks = networksFound;
-  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC completed, found:"),_numNetworks);
   _lastscan = millis();
+  _numNetworks = networksFound;
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");  
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan found:"),_numNetworks);
 }
 
 bool WiFiManager::WiFi_scanNetworks(){
@@ -992,7 +993,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       int8_t res;
-      unsigned int _scanstart = millis();
+      _startscan = millis();
       if(async){
         DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
         #ifdef ESP8266
@@ -1017,7 +1018,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       }
       else if(res >=0 ) _numNetworks = res;
       _lastscan = millis();
-      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+" ms");
+      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");
       return true;
     } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+" ms ago");
     return false;
