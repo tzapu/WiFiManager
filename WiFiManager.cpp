@@ -971,8 +971,8 @@ String WiFiManager::getMenuOut(){
 // }
 
 void WiFiManager::WiFi_scanComplete(int networksFound){
-  DEBUG_WM(DEBUG_VERBOSE,F("ASYNC WiFi Scan done"));  
   _numNetworks = networksFound;
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC completed, found:"),_numNetworks);
   _lastscan = millis();
 }
 
@@ -994,14 +994,14 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       int8_t res;
       unsigned int _scanstart = millis();
       if(async){
+        DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
         #ifdef ESP8266
         using namespace std::placeholders; // for `_1`
         WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
-        DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
-        return false;
         #else
-        res = WiFi.scanNetworks();
+        res = WiFi.scanNetworks(true);
         #endif
+        return false;
       }
       else{
         res = WiFi.scanNetworks();
@@ -1017,9 +1017,9 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       }
       else if(res >=0 ) _numNetworks = res;
       _lastscan = millis();
-      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+"ms");
+      DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan done"), "in "+(String)(_lastscan - _scanstart)+" ms");
       return true;
-    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+"ms ago");
+    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+" ms ago");
     return false;
 }
 
@@ -2536,18 +2536,21 @@ String WiFiManager::WiFi_SSID(){
 
 #ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
-    // WiFiManager _WiFiManager;
-    // Serial.print("WM: EVENT: ");Serial.println(event);
+    DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
-      // Serial.print("WM: EVENT: WIFI_REASON: ");Serial.println(info.disconnected.reason);
+      DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON:",info.disconnected.reason);
       if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
         _lastconxresulttmp = 7; // hack in wrong password internally, sdk emit WIFI_REASON_AUTH_EXPIRE on some routers on auth_fail
       } else _lastconxresulttmp = WiFi.status();
-      // if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) Serial.println("*WM: EVENT: WIFI_REASON: NO_AP_FOUND");
-      // Serial.println("*WM: Event: SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
+      if(info.disconnected.reason == WIFI_REASON_NO_AP_FOUND) DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON: NO_AP_FOUND");
       #ifdef esp32autoreconnect
+        DEBUG_WM(DEBUG_VERBOSE,"[Event] SYSTEM_EVENT_STA_DISCONNECTED, reconnecting");
         WiFi.reconnect();
       #endif
+  }
+  else if(event == SYSTEM_EVENT_SCAN_DONE){
+    uint16_t scans = WiFi.scanComplete();
+    WiFi_scanComplete(scans);
   }
 }
 #endif
@@ -2556,9 +2559,10 @@ void WiFiManager::WiFi_autoReconnect(){
   #ifdef ESP8266
     WiFi.setAutoReconnect(_wifiAutoReconnect);
   #elif defined(ESP32)
-    if(_wifiAutoReconnect){
+    // if(_wifiAutoReconnect){
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
-      WiFi.onEvent(WiFiEvent);
-    }
+      using namespace std::placeholders;
+      WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+    // }
   #endif
 }
