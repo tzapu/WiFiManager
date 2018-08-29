@@ -973,8 +973,8 @@ String WiFiManager::getMenuOut(){
 void WiFiManager::WiFi_scanComplete(int networksFound){
   _lastscan = millis();
   _numNetworks = networksFound;
-  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");  
-  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan found:"),_numNetworks);
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC completed"), "in "+(String)(_lastscan - _startscan)+" ms");  
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC found:"),_numNetworks);
 }
 
 bool WiFiManager::WiFi_scanNetworks(){
