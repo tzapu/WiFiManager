@@ -291,13 +291,18 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(F("Status:"));
   DEBUG_WM(WiFi.status());
 
+  wl_status_t res;
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     //trying to fix connection in progress hanging
     ETS_UART_INTR_DISABLE();
     wifi_station_disconnect();
-    ETS_UART_INTR_ENABLE();    
-    WiFi.begin(ssid.c_str(), pass.c_str());
+    ETS_UART_INTR_ENABLE();
+    res = WiFi.begin(ssid.c_str(), pass.c_str(),0,NULL,true);
+    if(res != WL_CONNECTED){
+      DEBUG_WM(F("[ERROR] WiFi.begin res:"));
+      DEBUG_WM(res);
+    }
   } else {
     if (WiFi.SSID()) {
       DEBUG_WM(F("Using last saved values, should be faster"));
@@ -305,8 +310,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       ETS_UART_INTR_DISABLE();
       wifi_station_disconnect();
       ETS_UART_INTR_ENABLE();
-
-      WiFi.begin();
+      res = WiFi.begin();
     } else {
       DEBUG_WM(F("No saved credentials"));
     }
