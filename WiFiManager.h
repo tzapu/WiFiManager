@@ -198,6 +198,10 @@ class WiFiManager
     void          setSaveConfigCallback( std::function<void()> func );
     //adds a custom parameter, returns false on failure
     bool          addParameter(WiFiManagerParameter *p);
+    //returns the list of Parameters
+    WiFiManagerParameter** getParameters();
+    // returns the Parameters Count
+    int           getParametersCount();
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
     // if this is set, portal will be blocking and wait until save or exit, 

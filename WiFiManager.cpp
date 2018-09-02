@@ -151,6 +151,22 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 }
 
 /**
+ * [getParameters description]
+ * @access public
+ */
+WiFiManagerParameter** WiFiManager::getParameters() {
+  return _params;
+}
+
+/**
+ * [getParametersCount description]
+ * @access public
+ */
+int WiFiManager::getParametersCount() {
+  return _paramsCount;
+}
+
+/**
  * --------------------------------------------------------------------------------
  *  WiFiManager 
  * --------------------------------------------------------------------------------
