@@ -771,6 +771,8 @@ bool WiFiManager::setSTAConfig(){
 
     if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
     else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
+  } else {
+      DEBUG_WM(DEBUG_VERBOSE,F("setSTAConfig static ip not set"));
   }
   return ret;
 }
