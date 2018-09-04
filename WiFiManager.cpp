@@ -272,7 +272,15 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // if already connected, or try stored connect 
   // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
-  if (WiFi.status() == WL_CONNECTED || connectWifi("", "") == WL_CONNECTED)   {
+  // @todo check if correct ssid == saved ssid when already connected
+  bool connected = false;
+  if (WiFi.status() == WL_CONNECTED){
+    connected = true;
+    DEBUG_WM(F("AutoConnect: ESP Already Connected"));
+    setSTAConfig();
+  }
+
+  if(connected || connectWifi("", "") == WL_CONNECTED){
     //connected
     DEBUG_WM(F("AutoConnect: SUCCESS"));
     DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
@@ -763,6 +771,8 @@ bool WiFiManager::setSTAConfig(){
 
     if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
     else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
+  } else {
+      DEBUG_WM(DEBUG_VERBOSE,F("setSTAConfig static ip not set"));
   }
   return ret;
 }
