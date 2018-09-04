@@ -593,8 +593,8 @@ uint8_t WiFiManager::processConfigPortal(){
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
-      // }
-
+      }
+ 
       if (_shouldBreakAfterConfig) {
         // do save callback
         // @todo this is more of an exiting callback than a save, clarify when this should actually occur
