@@ -574,11 +574,11 @@ uint8_t WiFiManager::processConfigPortal(){
       DEBUG_WM(DEBUG_VERBOSE,F("process connect"));
       if(_enableCaptivePortal) delay(_cpclosedelay); // keeps the captiveportal from closing to fast.
 
-      // @todo skip wifi if no ssid
-      // if(_ssid == ""){
-      //   DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi"));
-      // }
-      // else{
+      // skip wifi if no ssid
+      if(_ssid == ""){
+        DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi"));
+      }
+      else{
         // attempt sta connection to submitted _ssid, _pass
         if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
           
