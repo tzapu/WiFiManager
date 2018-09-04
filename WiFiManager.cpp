@@ -1307,6 +1307,11 @@ void WiFiManager::handleParamSave() {
   handleRequest();
   doParamSave();
 
+  // @todo use new callback for paramsaves
+  if ( _savecallback != NULL) {
+    _savecallback();
+  }
+
   String page = getHTTPHead(FPSTR(S_titleparamsaved)); // @token titleparamsaved
   page += FPSTR(HTTP_PARAMSAVED);
   page += FPSTR(HTTP_END);
