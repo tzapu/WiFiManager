@@ -1297,7 +1297,7 @@ void WiFiManager::handleWifiSave() {
 
   DEBUG_WM(DEBUG_DEV,F("Sent wifi save page"));
 
-  connect = true; //signal ready to connect/reset
+  connect = true; //signal ready to connect/reset process in processConfigPortal
 }
 
 void WiFiManager::handleParamSave() {
