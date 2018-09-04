@@ -1807,13 +1807,14 @@ bool WiFiManager::erase(bool opt){
     if(opt){
       DEBUG_WM("Erasing NVS");
       int err;
+      esp_err_t err;
       err = nvs_flash_init();
-      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_init: ",err==ESP_OK ? (String)err : "Success");
+      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_init: ",err!=ESP_OK ? (String)err : "Success");
       err = nvs_flash_erase();
-      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err==ESP_OK ? (String)err : "Success");
+      DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err!=ESP_OK ? (String)err : "Success");
       return err == ESP_OK;
     }
-  #else 
+  #else
     (void)opt;
   #endif
 
