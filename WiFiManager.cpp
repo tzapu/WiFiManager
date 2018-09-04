@@ -606,6 +606,9 @@ uint8_t WiFiManager::processConfigPortal(){
         return WL_CONNECT_FAILED; // CONNECT FAIL
       }
       else{
+        // clear save strings
+        _ssid = "";
+        _pass = "";
         // if connect fails, turn sta off to stabilize AP
         WiFi_Disconnect();
         WiFi_enableSTA(false);
