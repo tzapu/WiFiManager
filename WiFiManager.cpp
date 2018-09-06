@@ -317,14 +317,6 @@ bool WiFiManager::startAP(){
     _apcallback(this);
   }
 
-  // setup optional soft AP static ip config
-  if (_ap_static_ip) {
-    DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
-    if(!WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn)){
-      DEBUG_WM(DEBUG_ERROR,"[ERROR] softAPConfig failed!");
-    }
-  }
-
   #ifdef ESP8266
     // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
     if(!WiFi.enableAP(true)) {
@@ -333,6 +325,15 @@ bool WiFiManager::startAP(){
     }
     delay(500); // workaround delay
   #endif
+
+  // setup optional soft AP static ip config
+  if (_ap_static_ip) {
+    DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
+    if(!WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn)){
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] softAPConfig failed!");
+    }
+  }
+
 
   if(_channelSync){
     DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
