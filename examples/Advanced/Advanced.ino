@@ -58,6 +58,7 @@ void setup() {
 
   if(!res) {
     Serial.println("Failed to connect or hit timeout");
+    // ESP.restart();
   } 
   else {
     //if you get here you have connected to the WiFi    
@@ -65,33 +66,38 @@ void setup() {
   }
 }
 
-void loop() {
+void checkButton(){
   // check for button press
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
-    // poor mans debounce, not recommended for production code
+    // poor mans debounce/press-hold, not recommended for production code
     delay(50);
     if( digitalRead(TRIGGER_PIN) == LOW ){
     
-    delay(3000); // reset timer
-    if( digitalRead(TRIGGER_PIN) == LOW ){
-      Serial.println("Erasing Config");
       // holding button 3000 ms, reset settings
-      wm.resetSettings();
-      ESP.restart();
-    }
-    
-    Serial.println("Starting config portal");
-    wm.setConfigPortalTimeout(120);
-    
-    if (!wm.startConfigPortal("OnDemandAP")) {
-      Serial.println("failed to connect or hit timeout");
-      delay(3000);
-    } else {
-      //if you get here you have connected to the WiFi
-      Serial.println("connected...yeey :)");
+      delay(3000); // reset delay hold
+      if( digitalRead(TRIGGER_PIN) == LOW ){
+        Serial.println("Erasing Config");
+        wm.resetSettings();
+        ESP.restart();
+      }
+      
+      // start portal w delay
+      Serial.println("Starting config portal");
+      wm.setConfigPortalTimeout(120);
+      
+      if (!wm.startConfigPortal("OnDemandAP")) {
+        Serial.println("failed to connect or hit timeout");
+        delay(3000);
+        // ESP.restart();
+      } else {
+        //if you get here you have connected to the WiFi
+        Serial.println("connected...yeey :)");
+      }
     }
   }
-  }
+}
 
+void loop() {
+  checkButton();
   // put your main code here, to run repeatedly:
 }

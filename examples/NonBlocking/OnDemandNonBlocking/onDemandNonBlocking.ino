@@ -1,8 +1,8 @@
 /**
- * OnDemandWebPortal.ino
- * example of running the webportal or configportal manually and no blocking
+ * OnDemandNonBlocking.ino
+ * example of running the webportal or configportal manually and non blocking
  * trigger pin will start a webportal for 120 seconds then turn it off.
- * startCP = true will start the configportal AP and webportal
+ * startCP = true will start both the configportal AP and webportal
  */
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
@@ -46,11 +46,12 @@ void doWiFiManager(){
 
   // is configuration portal requested?
   if(digitalRead(TRIGGER_PIN) == LOW && (!portalRunning)) {
-    Serial.println("Button Pressed, Starting Portal");
     if(startCP){
+      Serial.println("Button Pressed, Starting Config Portal");
       wm.startConfigPortal();
     }  
     else{
+      Serial.println("Button Pressed, Starting Web Portal");
       wm.startWebPortal();
     }  
     portalRunning = true;
