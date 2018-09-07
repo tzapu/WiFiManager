@@ -9,8 +9,7 @@
 // select which pin will trigger the configuration portal when set to LOW
 #define TRIGGER_PIN 0
 
-int timeout           = 120; // seconds to run for
-bool webportalrunning = false;
+int timeout = 120; // seconds to run for
 
 void setup() {
   // put your setup code here, to run once:
