@@ -145,6 +145,9 @@ class WiFiManager
     //manually start the config portal, autoconnect does this automatically on connect failure
     boolean       startConfigPortal(); // auto generates apname
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
+
+    //manually stop the config portal if started manually
+    boolean       stopConfigPortal();
     
     //manually start the web portal, autoconnect does this automatically on connect failure    
     void          startWebPortal();
@@ -376,7 +379,6 @@ class WiFiManager
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
-    boolean       stopConfigPortal();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
 
