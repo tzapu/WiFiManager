@@ -13,12 +13,18 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
+#include <core_version.h>
 #include <vector>
 
 // #define WM_MDNS            // also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
+
+#ifdef ARDUINO_ESP8266_RELEASE_2_3_0
+#warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
+#define WM_NOASYNC         // esp8266 no async scan wifi
+#endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
 
