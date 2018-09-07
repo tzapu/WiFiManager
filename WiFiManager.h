@@ -162,7 +162,7 @@ class WiFiManager
 
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
-    //in seconds setConfigPortalTimeout is a new name for setTimeout
+    //in seconds setConfigPortalTimeout is a new name for setTimeout, ! not used if setConfigPortalBlocking
     void          setConfigPortalTimeout(unsigned long seconds);
     void          setTimeout(unsigned long seconds); // @deprecated, alias
 
@@ -188,7 +188,9 @@ class WiFiManager
     bool          addParameter(WiFiManagerParameter *p);
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
-    //if this is set, portal will be blocking and wait until save or exit, is false user must manually `process()` to handle config portal
+    // if this is set, portal will be blocking and wait until save or exit, 
+    // is false user must manually `process()` to handle config portal,
+    // setConfigPortalTimeout is ignored in this mode, user is responsible for closing configportal
     void          setConfigPortalBlocking(boolean shouldBlock);
     //if this is set, customise style
     void          setCustomHeadElement(const char* element);
