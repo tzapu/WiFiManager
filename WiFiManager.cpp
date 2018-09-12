@@ -1408,6 +1408,7 @@ void WiFiManager::handleInfo() {
       F("cpufreq"),
       F("freeheap"),
       F("lastreset"),
+      // F("temp"),
       F("wifihead"),
       F("apip"),
       F("apmac"),
@@ -1615,6 +1616,14 @@ String WiFiManager::getInfoData(String id){
   else if(id==F("autoconx")){
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace(FPSTR(T_1),WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
+  }
+  #endif
+  #ifdef ESP32
+  else if(id==F("temp")){
+    // temperature is not calibrated, varying large offsets are present, use for relative temp changes only
+    p = FPSTR(HTTP_INFO_temp);
+    p.replace(FPSTR(T_1),(String)temperatureRead());
+    p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
   }
   #endif
   return p;
