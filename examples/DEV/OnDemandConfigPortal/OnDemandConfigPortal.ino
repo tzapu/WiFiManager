@@ -54,7 +54,7 @@ void setup() {
   Serial.setDebugOutput(true);  
   // delay(3000);
   Serial.println("\n Starting");
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  // WiFi.setSleepMode(WIFI_NONE_SLEEP);
   
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
