@@ -13,7 +13,10 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
+#ifdef ESP8266
 #include <core_version.h>
+#endif
+
 #include <vector>
 
 // #define WM_MDNS            // also set MDNS with sethostname
