@@ -13,7 +13,7 @@ before_install:
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
   - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
-  - arduino --install-library "ArduinoJson"
+  - arduino --install-library "ArduinoJson:5.13.2"
   - arduino --install-boards esp8266:esp8266
   - arduino --pref "compiler.warning_level=all" --save-prefs
 # install esp32
