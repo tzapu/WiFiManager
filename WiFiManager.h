@@ -17,6 +17,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <memory>
+#include <ESP8266WiFiMulti.h>
 
 extern "C" {
   #include "user_interface.h"
@@ -75,7 +76,9 @@ class WiFiManager
     ~WiFiManager();
 
     boolean       autoConnect();
+    boolean       autoConnect(ESP8266WiFiMulti wifiMulti);
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
+    boolean       autoConnect(ESP8266WiFiMulti wifiMulti, char const *apName, char const *apPassword = NULL);
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();
