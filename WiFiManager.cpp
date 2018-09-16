@@ -11,6 +11,7 @@
  **************************************************************/
 
 #include "WiFiManager.h"
+#include <ESP8266WiFiMulti.h>
 
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id = NULL;
@@ -182,6 +183,33 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   return startConfigPortal(apName, apPassword);
 }
+
+boolean WiFiManager::autoConnect(ESP8266WiFiMulti wifiMulti) {
+  String ssid = "ESP" + String(ESP.getChipId());
+  return autoConnect(wifiMulti, ssid.c_str(), NULL);
+}
+
+boolean WiFiManager::autoConnect(ESP8266WiFiMulti wifiMulti, char const *apName, char const *apPassword) {
+  DEBUG_WM(F(""));
+  DEBUG_WM(F("AutoConnect"));
+
+  // read eeprom for ssid and pass
+  //String ssid = getSSID();
+  //String pass = getPassword();
+
+  // attempt to connect; should it fail, fall back to AP
+  WiFi.mode(WIFI_STA);
+
+  if (wifiMulti.run() == WL_CONNECTED)   {
+    DEBUG_WM(F("IP Address:"));
+    DEBUG_WM(WiFi.localIP());
+    //connected
+    return true;
+  }
+
+  return startConfigPortal(apName, apPassword);
+}
+
 
 boolean WiFiManager::configPortalHasTimeout(){
     if(_configPortalTimeout == 0 || wifi_softap_get_station_num() > 0){
