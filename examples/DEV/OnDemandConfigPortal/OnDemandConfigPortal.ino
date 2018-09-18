@@ -92,6 +92,7 @@ void setup() {
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0);
+  WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 19,"pattern='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'");
 
   // callbacks
   wm.setSaveConfigCallback(saveCallback);
@@ -102,6 +103,7 @@ void setup() {
   wm.addParameter(&custom_mqtt_port);
   wm.addParameter(&custom_token);
   wm.addParameter(&custom_tokenb);
+  wm.addParameter(&custom_ipaddress);
 
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
