@@ -31,7 +31,7 @@ void checkButton(){
 
   // is configuration portal requested?
   if(digitalRead(TRIGGER_PIN) == LOW) {
-    delay(50)
+    delay(50);
     if(digitalRead(TRIGGER_PIN) == LOW) {
       if(!portalRunning){
         Serial.println("Button Pressed, Starting Portal");
