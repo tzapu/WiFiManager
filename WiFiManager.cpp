@@ -71,7 +71,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   int deflength = strlen(defaultValue); // length actual
   // use the defult length if it's longer, 
   // @todo consider it might be useful to fail, so user knows they were wrong
-  if(_length < length){
+  if(_length < deflength){
     // Serial.println("defaultValue length mismatch");
     _length = deflength;
   }
