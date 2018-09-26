@@ -48,6 +48,7 @@ void doWiFiManager(){
   if(digitalRead(TRIGGER_PIN) == LOW && (!portalRunning)) {
     if(startCP){
       Serial.println("Button Pressed, Starting Config Portal");
+      wm.setConfigPortalBlocking(false);
       wm.startConfigPortal();
     }  
     else{
