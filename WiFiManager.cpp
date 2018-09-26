@@ -68,20 +68,11 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
     return;
   }
   _length       = length;
-  int deflength = strlen(defaultValue); // length actual
-  // use the defult length if it's longer, 
-  // @todo consider it might be useful to fail, so user knows they were wrong
-  if(_length < length){
-    // Serial.println("defaultValue length mismatch");
-    _length = deflength;
-  }
-  _value = new char[_length + 1];
-  for (int i = 0; i < _length + 1; i++) {
-    _value[i] = 0;
-  }
+  _value = new char[_length + 1]; 
+  memset(_value, 0, _length + 1); // explicit null
+  
   if (defaultValue != NULL) {
     strncpy(_value, defaultValue, _length);
-    _value[_length] = '\0'; // explicit null
   }
 }
 const char* WiFiManagerParameter::getValue() {
