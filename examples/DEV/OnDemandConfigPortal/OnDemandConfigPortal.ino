@@ -92,7 +92,7 @@ void setup() {
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
-  WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'");
+  WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
 
   // callbacks
   wm.setSaveConfigCallback(saveCallback);
