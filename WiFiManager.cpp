@@ -62,13 +62,20 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
+// @note debug is not available in wmparameter class
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(!_id){
     // Serial.println("cannot set value of this parameter");
     return;
   }
-  _length       = length;
-  _value = new char[_length + 1]; 
+  
+  // if(strlen(defaultValue) > length){
+  //   // Serial.println("defaultValue length mismatch");
+  //   // return false; //@todo bail 
+  // }
+
+  _length = length;
+  _value  = new char[_length + 1]; 
   memset(_value, 0, _length + 1); // explicit null
   
   if (defaultValue != NULL) {
