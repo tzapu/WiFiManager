@@ -1,4 +1,6 @@
-
+/**
+ * WiFiManagerParameter child class example
+ */
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <Arduino.h>
 #include <EEPROM.h>
