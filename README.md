@@ -28,8 +28,9 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
  - [Wishlist](#wishlist)
  - [Quick start](#quick-start)
    - Installing
-     - [Through Library Manager](#install-through-library-manager)
-     - [From Github](#checkout-from-github)
+     - [Arduino - Through Library Manager](#install-through-library-manager)
+     - [Arduino - From Github](#checkout-from-github)
+     - [PlatformIO]
    - [Using](#using)
  - [Documentation](#documentation)
    - [Access Point Password](#password-protect-the-configuration-access-point)
@@ -46,12 +47,13 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 
 ## How It Works
-- when your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
+- When your ESP starts up, it sets it up in Station mode and tries to connect to a previously saved Access Point
 - if this is unsuccessful (or no previous network saved) it moves the ESP into Access Point mode and spins up a DNS and WebServer (default ip 192.168.4.1)
 - using any wifi enabled device with a browser (computer, phone, tablet) connect to the newly created Access Point
 - because of the Captive Portal and the DNS server you will either get a 'Join to network' type of popup or get any domain you try to access redirected to the configuration portal
 - choose one of the access points scanned, enter password, click save
 - ESP will try to connect. If successful, it relinquishes control back to your app. If not, reconnect to AP and reconfigure.
+- There are options to change this behavior or manually start the configportal and webportal independantly as well as run them in non blocking mode.
 
 ## How It Looks
 ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
@@ -67,9 +69,35 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 - [x] add to PlatformIO
 - [ ] add multiple sets of network credentials
 - [x] allow users to customize CSS
-- [ ] ESP32 support or instructions
 - [ ] rewrite documentation for simplicity, based on scenarios/goals
-- [ ] rely on the SDK's built in auto connect more than forcing a connect
+
+### Development
+- [x] ESP32 support
+- [x] rely on the SDK's built in auto connect more than forcing a connect
+- [x] add non blocking mode
+- [x] easy customization of strings
+- [x] hostname support
+- [x] fix various bugs and workarounds for esp SDK issues
+- [x] additional info page items
+- [x] last status display / faiilure reason
+- [x] customizeable menu
+- [x] seperate custom params page
+- [x] ondemand webportal
+- [x] complete refactor of code to segment functions
+- [x] wiif scan icons or percentage display
+- [x] invert class for dark mode
+- [x] more template tokens
+- [x] progmem for all strings
+- [ ] new callbacks
+- [ ] new callouts / filters
+- [ ] shared web server instance
+- [x] latest esp idf/sdk support
+- [x] wm is now non persistent, will not erase or change stored esp config on esp8266
+- [x] tons of debugging output / levels
+- [ ] disable captiveportal
+- [ ] preload wiifscans, faster page loads
+- [ ] softap stability fixes when sta is not connected
+
 
 ## Quick Start
 
@@ -93,14 +121,10 @@ __Github version works with release 2.4.0 or newer of the [ESP8266 core for Ardu
 ### Using
 - Include in your sketch
 ```cpp
-#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library (you most likely already have this in your sketch)
-
-#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
-#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 ```
 
-- Initialize library, in your setup function add
+- Initialize library, in your setup function add, NOTEif you are using non blocking you will make sure you create this in global scope or handle appropriatly , it will not work if in setup and using non blocking mode.
 ```cpp
 WiFiManager wifiManager;
 ```
@@ -284,6 +308,14 @@ Debug is enabled by default on Serial. To disable add before autoConnect
 wifiManager.setDebugOutput(false);
 ```
 
+You can customize the debug level by changing `_debugLevel` in source
+options are:
+* DEBUG_ERROR
+* DEBUG_NOTIFY
+* DEBUG_VERBOSE
+* DEBUG_DEV
+* DEBUG_MAX
+
 ## Troubleshooting
 If you get compilation errors, more often than not, you may need to install a newer version of the ESP8266 core for Arduino.
 
@@ -296,6 +328,8 @@ If you connect to the created configuration Access Point but the configuration p
 If trying to connect ends up in an endless loop, try to add `setConnectTimeout(60)` before `autoConnect();`. The parameter is timeout to try connecting in seconds.
 
 ## Releases
+#### 1.0.1
+
 #### 0.12
 - removed 204 header response
 - fixed incompatibility with other libs using isnan and other std:: functions without namespace
@@ -360,7 +394,7 @@ The support and help I got from the community has been nothing short of phenomen
 
 __THANK YOU__
 
-[Shawn A](https://github.com/tablatronix)
+[Shawn A aka tablatronix](https://github.com/tablatronix)
 
 [bbx10](https://github.com/bbx10)
 
