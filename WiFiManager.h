@@ -196,6 +196,8 @@ class WiFiManager
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns);
     //called when AP mode and config portal is started
     void          setAPCallback( std::function<void(WiFiManager*)> func );
+    //called when settings reset have been triggered
+    void          setConfigResetCallback(void(*func)(void));
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( std::function<void()> func );
     //called when settings before have been changed and connection was successful
@@ -462,7 +464,8 @@ class WiFiManager
     
     template <typename Generic>
     void        DEBUG_WM(Generic text);
-    template <typename Generic>
+
+  template <typename Generic>
     void        DEBUG_WM(wm_debuglevel_t level,Generic text);
     template <typename Generic, typename Genericb>
     void        DEBUG_WM(Generic text,Genericb textb);
@@ -473,6 +476,7 @@ class WiFiManager
     std::function<void(WiFiManager*)> _apcallback;
     std::function<void()> _savecallback;
     std::function<void()> _presavecallback;
+    void (*_resetcallback)(void) = NULL; // @todo change to std func
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {

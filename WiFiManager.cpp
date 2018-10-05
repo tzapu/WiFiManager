@@ -1887,6 +1887,9 @@ void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
   
+  if (_resetcallback != NULL)
+      _resetcallback();
+  
   #ifdef ESP32
     WiFi.disconnect(true,true);
   #else
@@ -2020,6 +2023,12 @@ void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
   _savecallback = func;
 }
 
+//start up reset config callback
+void WiFiManager::setConfigResetCallback(void(*func)(void)) {
+    _resetcallback = func;
+}
+
+//sets a custom element to add to head, like a new style tag
 /**
  * setPreSaveConfigCallback, set a pre save config callback after closing configportal
  * @todo only calls if configportal stopped
