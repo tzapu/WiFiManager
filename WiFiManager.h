@@ -31,8 +31,8 @@
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
 
-// #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge
-// autoreconnect status WORKING https://github.com/espressif/arduino-esp32/issues/653#issuecomment-405604766
+// #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge, deprecated
+// autoreconnect is WORKING https://github.com/espressif/arduino-esp32/issues/653#issuecomment-405604766
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
@@ -174,6 +174,24 @@ class WiFiManager
     bool          erase();
     bool          erase(bool opt);
 
+    //adds a custom parameter, returns false on failure
+    bool          addParameter(WiFiManagerParameter *p);
+    //returns the list of Parameters
+    WiFiManagerParameter** getParameters();
+    // returns the Parameters Count
+    int           getParametersCount();
+
+
+    //called when AP mode and config portal is started
+    void          setAPCallback( std::function<void(WiFiManager*)> func );
+    //called when settings reset have been triggered
+    void          setConfigResetCallback(void(*func)(void));
+    //called when settings have been changed and connection was successful
+    void          setSaveConfigCallback( std::function<void()> func );
+    //called when settings before have been changed and connection was successful
+    void          setPreSaveConfigCallback( std::function<void()> func );
+
+
     //sets timeout before AP,webserver loop ends and exits even if there has been no setup.
     //useful for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds setConfigPortalTimeout is a new name for setTimeout, ! not used if setConfigPortalBlocking
@@ -194,20 +212,6 @@ class WiFiManager
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
     //sets config for a static IP with DNS
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns);
-    //called when AP mode and config portal is started
-    void          setAPCallback( std::function<void(WiFiManager*)> func );
-    //called when settings reset have been triggered
-    void          setConfigResetCallback(void(*func)(void));
-    //called when settings have been changed and connection was successful
-    void          setSaveConfigCallback( std::function<void()> func );
-    //called when settings before have been changed and connection was successful
-    void          setPreSaveConfigCallback( std::function<void()> func );
-    //adds a custom parameter, returns false on failure
-    bool          addParameter(WiFiManagerParameter *p);
-    //returns the list of Parameters
-    WiFiManagerParameter** getParameters();
-    // returns the Parameters Count
-    int           getParametersCount();
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
     // if this is set, portal will be blocking and wait until save or exit, 
@@ -465,7 +469,7 @@ class WiFiManager
     template <typename Generic>
     void        DEBUG_WM(Generic text);
 
-  template <typename Generic>
+    template <typename Generic>
     void        DEBUG_WM(wm_debuglevel_t level,Generic text);
     template <typename Generic, typename Genericb>
     void        DEBUG_WM(Generic text,Genericb textb);

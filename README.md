@@ -431,3 +431,112 @@ And countless others
  * https://github.com/chriscook8/esp-arduino-apboot
  * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
  * Built by AlexT https://github.com/tzapu
+
+#### THIS BRANCH - Development
+## Development Overview
+
+### Added Public Methods
+`setConfigPortalBlocking`
+
+`setShowStaticFields`
+
+`setCaptivePortalEnable`
+
+`setRestorePersistent`
+
+`setCaptivePortalClientCheck`
+
+`setWebPortalClientCheck`
+
+`startWebPortal`
+
+`stopWebPortal`
+
+`process`
+
+`disconnect`
+
+`erase`
+
+` debugSoftAPConfig`
+
+` debugPlatformInfo`
+
+`setScanDispPerc`
+
+`setHostname`
+
+`setMenu(menu_page_t[])`
+
+`setWiFiAutoReconnect`
+
+` setSTAStaticIPConfig(..,dns)`
+
+`setShowDnsFields`
+
+`getLastConxResult`
+
+`getWLStatusString`
+
+`getModeString`
+
+`getWiFiIsSaved`
+
+`setShowInfoErase`
+
+`setEnableConfigPortal`
+
+`setCountry`
+
+`setClass`
+
+`htmleEtities`
+
+
+### WiFiManagerParameter
+`WiFiManagerParameter(id,label)`
+
+`WiFiManagerParameter.setValue(value,length)`
+
+`getParameters`
+
+`getParametersCount`
+
+
+### Constructors
+`WiFiManager(Stream& consolePort)`
+
+## define flags
+❗️  **Defines cannot be set in user sketches**
+`#define WM_MDNS       // use MDNS`
+`#define WM_FIXERASECONFIG // use erase flash fix, esp8266 2.4.0`
+`#define WM_ERASE_NVS // esp32 erase(true) will erase NVS`
+`#include <rom/rtc.h> // esp32 info page will show last reset reasons if this file is included`
+
+## Changes
+- ESP32 support ( fairly stable )
+- complete refactor of strings `strings_en.h`
+- adds new tokens for wifiscan, and some classes (left , invert icons, MSG color)
+- adds status callout panel default, primary, special colors
+-  adds tons of info on info page, and erase capability
+- adds signal icons, replaces percentage ( has hover titles )
+- adds labels to all inputs (replaces placeholders)
+- all html ( and eventually all strings except debug) moved to `strings_en.h`
+- added additional debugging, compressed debug lines, debuglevels
+- persistent disabled, and restored via de/con-stuctor (uses `setRestorePersistent`)
+- should retain all user modes including AP, should not overwrite or persist user modes or configs,even STA (`storeSTAmode`) (BUGGY)
+- ⚠️ return values may have changed depending on portal abort, or timeout ( `portalTimeoutResult`,`portalAbortResult`)
+- params memory is auto allocated by increment of `WIFI_MANAGER_MAX_PARAMS(5)` when exceeded, user no longer needs to specify this at all.
+- addparameter now returns bool, and it returns false if param ID is not alphanum [0-9,A-Z,a-z,_]
+- param field ids allow {I} token to use param_n instead of string in case someones wants to change this due to i18n or character issues
+- provides `#DEFINE FIXERASECONFIG` to help deal with https://github.com/esp8266/Arduino/pull/3635
+- failure reason reporting on portal
+- set esp8266 sta hostname, esp32 sta+ap hostname ( DHCP client id)
+- pass in debug stream in constructor WiFiManager(Stream& consolePort)
+- you can force ip fields off with showxfields(false) if you set _disableIpFields=true
+- param menu/page (setup) added to separate params from wifi page, handled automatically by setMenu
+- set custom root menu
+- disable configportal on autoconnect
+- wm parameters init is now protected, allowing child classes, example included
+- wifiscans are precached and async for faster page loads, refresh forces rescan
+- adds esp32 gettemperature ( currently commented out, useful for relative measurement only )
