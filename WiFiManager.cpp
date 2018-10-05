@@ -1278,6 +1278,11 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
 
+ // @todo use new callback for before paramsaves
+  if ( _presavecallback != NULL) {
+    _presavecallback();
+  }
+
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
@@ -1324,6 +1329,12 @@ void WiFiManager::handleParamSave() {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
+
+  // @todo use new callback for before paramsaves
+  if ( _presavecallback != NULL) {
+    _presavecallback();
+  }
+
   doParamSave();
 
   // @todo use new callback for paramsaves
@@ -2007,6 +2018,16 @@ void WiFiManager::setAPCallback( std::function<void(WiFiManager*)> func ) {
  */
 void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
   _savecallback = func;
+}
+
+/**
+ * setPreSaveConfigCallback, set a pre save config callback after closing configportal
+ * @todo only calls if configportal stopped
+ * @access public
+ * @param {[type]} void (*func)(void) [description]
+ */
+void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
+  _presavecallback = func;
 }
 
 /**

@@ -198,6 +198,8 @@ class WiFiManager
     void          setAPCallback( std::function<void(WiFiManager*)> func );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( std::function<void()> func );
+    //called when settings before have been changed and connection was successful
+    void          setPreSaveConfigCallback( std::function<void()> func );
     //adds a custom parameter, returns false on failure
     bool          addParameter(WiFiManagerParameter *p);
     //returns the list of Parameters
@@ -470,6 +472,7 @@ class WiFiManager
     // callbacks
     std::function<void(WiFiManager*)> _apcallback;
     std::function<void()> _savecallback;
+    std::function<void()> _presavecallback;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {
