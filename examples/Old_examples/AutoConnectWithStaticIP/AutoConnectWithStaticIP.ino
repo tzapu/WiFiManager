@@ -1,12 +1,5 @@
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
-
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-//needed for library
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-
+#include <FS.h>          // this needs to be first, or it all crashes and burns...
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 /**************************************************************************************
  * this example shows how to set a static IP configuration for the ESP
@@ -15,9 +8,7 @@
  * if you want the ability to configure and persist the new IP configuration
  * look at the FS examples, which save the config to file
  *************************************************************************************/
-
-
-
+ 
 //default custom static IP
 //char static_ip[16] = "10.0.1.59";
 //char static_gw[16] = "10.0.1.1";
@@ -61,7 +52,7 @@ void setup() {
   if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
-    ESP.reset();
+    ESP.restart();
     delay(5000);
   }
 

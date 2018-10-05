@@ -1,13 +1,29 @@
 {
   "name": "WifiManager",
-  "keywords": "wifi, wi-fi",
-  "description": "ESP8266 WiFi Connection manager with fallback web configuration portal",
-  "repository":
+  "keywords": "wifi,wi-fi,esp,esp8266,esp32,espressif8266,espressif32,nodemcu,wemos,arduino",
+  "description": "WiFi Configuration manager with web configuration portal for ESP boards",
+"authors":
+[
+    {
+        "name": "tzapu",
+        "url": "https://github.com/tzapu"
+    },
+    {
+        "name": "tablatronix",
+        "url": "https://github.com/tablatronix",
+        "maintainer": true
+    }
+],
+"repository":
   {
     "type": "git",
     "url": "https://github.com/tzapu/WiFiManager.git"
   },
   "frameworks": "arduino",
-  "platforms": "espressif8266",
-  "version": "0.14"
+  "platforms": 
+  [
+    "espressif8266",
+    "espressif32"
+  ],
+  "version": "1.0.0"
 }

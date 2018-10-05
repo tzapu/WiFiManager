@@ -1,16 +1,4 @@
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-//needed for library
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include "WiFiManager.h"          //https://github.com/tzapu/WiFiManager
-
-void configModeCallback (WiFiManager *myWiFiManager) {
-  Serial.println("Entered config mode");
-  Serial.println(WiFi.softAPIP());
-  //if you used auto generated SSID, print it
-  Serial.println(myWiFiManager->getConfigPortalSSID());
-}
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
 void setup() {
   // put your setup code here, to run once:
@@ -22,18 +10,21 @@ void setup() {
   //reset settings - for testing
   //wifiManager.resetSettings();
 
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback(configModeCallback);
-
+  //sets timeout until configuration portal gets turned off
+  //useful to make it all retry or go to sleep
+  //in seconds
+  wifiManager.setConfigPortalTimeout(180);
+  
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if(!wifiManager.autoConnect()) {
+  if(!wifiManager.autoConnect("AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
+    delay(3000);
     //reset and try again, or maybe put it to deep sleep
-    ESP.reset();
-    delay(1000);
+    ESP.restart();
+    delay(5000);
   } 
 
   //if you get here you have connected to the WiFi
