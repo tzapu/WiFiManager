@@ -264,7 +264,7 @@ wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddr
 ##### Custom Station (client) Static IP Configuration
 This will make use the specified IP configuration instead of using DHCP in station mode.
 ```cpp
-wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
+wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0)); // optional DNS 4th argument
 ```
 There are a couple of examples in the examples folder that show you how to set a static IP and even how to configure it through the web configuration portal.
 
@@ -276,7 +276,7 @@ You can use this to any html bit to the head of the configuration portal. If you
 ```cpp
 wifiManager.setCustomHeadElement("<style>html{filter: invert(100%); -webkit-filter: invert(100%);}</style>");
 ```
-- inject a custom bit of html in the configuration form
+- inject a custom bit of html in the configuration/param form
 ```cpp
 WiFiManagerParameter custom_text("<p>This is just a text paragraph</p>");
 wifiManager.addParameter(&custom_text);
@@ -286,6 +286,14 @@ Just add the bit you want added as the last parameter to the custom parameter co
 ```cpp
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "iot.eclipse", 40, " readonly");
 ```
+
+#### Theming
+You can customize certain elements of the default template with some builtin classes
+```CPP
+wifiManager.setClass("invert"); // dark theme
+wifiManager.setScanDispPerc(true); // display percentages instead of graphs for RSSI
+```
+There are additional classes in the css you can use in your custom html , see the example template.
 
 #### Filter Networks
 You can filter networks based on signal quality and show/hide duplicate networks.
@@ -303,9 +311,14 @@ wifiManager.setRemoveDuplicateAPs(false);
 ```
 
 #### Debug
-Debug is enabled by default on Serial. To disable add before autoConnect
+Debug is enabled by default on `Serial` in non-stable releases. To disable add before autoConnect/startConfigPortal
 ```cpp
 wifiManager.setDebugOutput(false);
+```
+
+You can pass in a custom stream via constructor 
+```CPP
+WiFiManager wifiManager(Serial1);
 ```
 
 You can customize the debug level by changing `_debugLevel` in source
@@ -327,115 +340,14 @@ If you connect to the created configuration Access Point but the configuration p
 
 If trying to connect ends up in an endless loop, try to add `setConnectTimeout(60)` before `autoConnect();`. The parameter is timeout to try connecting in seconds.
 
+I get stuck in ap mode when the power goes out or modem resets, try a setConfigPortalTimeout(seconds). This will cause the configportal to close after no activity, and you can reboot or attempt reconnection in your code.
+
 ## Releases
-#### 1.0.1
+### 1.0.1
 
-#### 0.12
-- removed 204 header response
-- fixed incompatibility with other libs using isnan and other std:: functions without namespace
+### Development Overview
 
-##### 0.11
-- a lot more reliable reconnecting to networks
-- custom html in custom parameters (for read only params)
-- custom html in custom parameter form (like labels)
-- custom head element (like custom css)
-- sort networks based on signal quality
-- remove duplicate networks
-
-##### 0.10
-- some css changes
-- bug fixes and speed improvements
-- added an alternative to waitForConnectResult() for debugging
-- changed `setTimeout(seconds)` to `setConfigPortalTimeout(seconds)`
-
-##### 0.9
- - fixed support for encoded characters in ssid/pass
-
-##### 0.8
- - made it compile on older versions of ESP8266 core as well, tested down to 2.0.0
- - added simple example for Custom IP
-
-##### 0.7
- - added static IP in station mode
- - added example of persisting custom IP to FS config.json
- - more option on portal homepage
- - added on PlatformIO
-
-##### 0.6
- - custom parameters
- - prettier
- - on demand config portal
- - commit #100 :D
-
-##### 0.5
- - Added to Arduino Boards Manager - Thanks Max
- - moved most stuff to PROGMEM
- - added signal quality and a nice little padlock to show which networks are encrypted
-
-##### v0.4 - all of it user contributed changes - Thank you
- - added ability to password protect the configuration Access Point
- - callback for enter configuration mode
- - memory allocation improvements
-
-##### v0.3
- - removed the need for EEPROM and works with the 2.0.0 and above stable release of the ESP8266 for Arduino IDE package
- - removed restart on save of credentials
- - updated examples
-
-##### v0.2
-needs the latest staging version (or at least a recent release of the staging version) to work
-
-##### v0.1
-works with the staging release ver. 1.6.5-1044-g170995a, built on Aug 10, 2015 of the ESP8266 Arduino library.
-
-
-### Contributions and thanks
-The support and help I got from the community has been nothing short of phenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
-
-__THANK YOU__
-
-[Shawn A aka tablatronix](https://github.com/tablatronix)
-
-[bbx10](https://github.com/bbx10)
-
-[kentaylor](https://github.com/kentaylor)
-
-[Maximiliano Duarte](https://github.com/domonetic)
-
-[alltheblinkythings](https://github.com/alltheblinkythings)
-
-[Niklas Wall](https://github.com/niklaswall)
-
-[Jakub Piasecki](https://github.com/zaporylie)
-
-[Peter Allan](https://github.com/alwynallan)
-
-[John Little](https://github.com/j0hnlittle)
-
-[markaswift](https://github.com/markaswift)
-
-[franklinvv](https://github.com/franklinvv)
-
-[Alberto Ricci Bitti](https://github.com/riccibitti)
-
-[SebiPanther](https://github.com/SebiPanther)
-
-[jonathanendersby](https://github.com/jonathanendersby)
-
-[walthercarsten](https://github.com/walthercarsten)
-
-And countless others
-
-#### Inspiration
- * http://www.esp8266.com/viewtopic.php?f=29&t=2520
- * https://github.com/chriscook8/esp-arduino-apboot
- * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
- * Built by AlexT https://github.com/tzapu
-
-#### THIS BRANCH - Development
-## Development Overview
-
-### Added Public Methods
+#### Added Public Methods
 `setConfigPortalBlocking`
 
 `setShowStaticFields`
@@ -493,7 +405,7 @@ And countless others
 `htmleEtities`
 
 
-### WiFiManagerParameter
+#### WiFiManagerParameter
 `WiFiManagerParameter(id,label)`
 
 `WiFiManagerParameter.setValue(value,length)`
@@ -503,17 +415,20 @@ And countless others
 `getParametersCount`
 
 
-### Constructors
+#### Constructors
 `WiFiManager(Stream& consolePort)`
 
-## define flags
+#### define flags
 ❗️  **Defines cannot be set in user sketches**
 `#define WM_MDNS       // use MDNS`
+
 `#define WM_FIXERASECONFIG // use erase flash fix, esp8266 2.4.0`
+
 `#define WM_ERASE_NVS // esp32 erase(true) will erase NVS`
+
 `#include <rom/rtc.h> // esp32 info page will show last reset reasons if this file is included`
 
-## Changes
+#### Changes Overview
 - ESP32 support ( fairly stable )
 - complete refactor of strings `strings_en.h`
 - adds new tokens for wifiscan, and some classes (left , invert icons, MSG color)
@@ -540,3 +455,73 @@ And countless others
 - wm parameters init is now protected, allowing child classes, example included
 - wifiscans are precached and async for faster page loads, refresh forces rescan
 - adds esp32 gettemperature ( currently commented out, useful for relative measurement only )
+
+#### 0.12
+- removed 204 header response
+- fixed incompatibility with other libs using isnan and other std:: functions without namespace
+
+##### 0.11
+- a lot more reliable reconnecting to networks
+- custom html in custom parameters (for read only params)
+- custom html in custom parameter form (like labels)
+- custom head element (like custom css)
+- sort networks based on signal quality
+- remove duplicate networks
+
+##### 0.10
+- some css changes
+- bug fixes and speed improvements
+- added an alternative to waitForConnectResult() for debugging
+- changed `setTimeout(seconds)` to `setConfigPortalTimeout(seconds)`
+
+### Contributions and thanks
+The support and help I got from the community has been nothing short of phenomenal. I can't thank you guys enough. This is my first real attept in developing open source stuff and I must say, now I understand why people are so dedicated to it, it is because of all the wonderful people involved.
+
+__THANK YOU__
+
+The esp8266 and esp32 arduino and idf maintainers!
+
+[Shawn A aka tablatronix](https://github.com/tablatronix)
+
+[liebman](https://github.com/liebman)
+
+[Evgeny Dontsov](https://github.com/dontsovcmc)
+
+[Chris Marrin](https://github.com/cmarrin)
+
+[bbx10](https://github.com/bbx10)
+
+[kentaylor](https://github.com/kentaylor)
+
+[Maximiliano Duarte](https://github.com/domonetic)
+
+[alltheblinkythings](https://github.com/alltheblinkythings)
+
+[Niklas Wall](https://github.com/niklaswall)
+
+[Jakub Piasecki](https://github.com/zaporylie)
+
+[Peter Allan](https://github.com/alwynallan)
+
+[John Little](https://github.com/j0hnlittle)
+
+[markaswift](https://github.com/markaswift)
+
+[franklinvv](https://github.com/franklinvv)
+
+[Alberto Ricci Bitti](https://github.com/riccibitti)
+
+[SebiPanther](https://github.com/SebiPanther)
+
+[jonathanendersby](https://github.com/jonathanendersby)
+
+[walthercarsten](https://github.com/walthercarsten)
+
+And countless others
+
+#### Inspiration
+ * http://www.esp8266.com/viewtopic.php?f=29&t=2520
+ * https://github.com/chriscook8/esp-arduino-apboot
+ * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
+ * Built by AlexT https://github.com/tzapu
+
