@@ -62,26 +62,24 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
+// @note debug is not available in wmparameter class
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(!_id){
     // Serial.println("cannot set value of this parameter");
     return;
   }
-  _length       = length;
-  int deflength = strlen(defaultValue); // length actual
-  // use the defult length if it's longer, 
-  // @todo consider it might be useful to fail, so user knows they were wrong
-  if(_length < length){
-    // Serial.println("defaultValue length mismatch");
-    _length = deflength;
-  }
-  _value = new char[_length + 1];
-  for (int i = 0; i < _length + 1; i++) {
-    _value[i] = 0;
-  }
+  
+  // if(strlen(defaultValue) > length){
+  //   // Serial.println("defaultValue length mismatch");
+  //   // return false; //@todo bail 
+  // }
+
+  _length = length;
+  _value  = new char[_length + 1]; 
+  memset(_value, 0, _length + 1); // explicit null
+  
   if (defaultValue != NULL) {
     strncpy(_value, defaultValue, _length);
-    _value[_length] = '\0'; // explicit null
   }
 }
 const char* WiFiManagerParameter::getValue() {
@@ -148,6 +146,22 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   
   DEBUG_WM(DEBUG_VERBOSE,"Added Parameter:",p->getID());
   return true;
+}
+
+/**
+ * [getParameters description]
+ * @access public
+ */
+WiFiManagerParameter** WiFiManager::getParameters() {
+  return _params;
+}
+
+/**
+ * [getParametersCount description]
+ * @access public
+ */
+int WiFiManager::getParametersCount() {
+  return _paramsCount;
 }
 
 /**
@@ -317,14 +331,6 @@ bool WiFiManager::startAP(){
     _apcallback(this);
   }
 
-  // setup optional soft AP static ip config
-  if (_ap_static_ip) {
-    DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
-    if(!WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn)){
-      DEBUG_WM(DEBUG_ERROR,"[ERROR] softAPConfig failed!");
-    }
-  }
-
   #ifdef ESP8266
     // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
     if(!WiFi.enableAP(true)) {
@@ -333,6 +339,15 @@ bool WiFiManager::startAP(){
     }
     delay(500); // workaround delay
   #endif
+
+  // setup optional soft AP static ip config
+  if (_ap_static_ip) {
+    DEBUG_WM(F("Custom AP IP/GW/Subnet:"));
+    if(!WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn)){
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] softAPConfig failed!");
+    }
+  }
+
 
   if(_channelSync){
     DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
@@ -1263,6 +1278,11 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
 
+ // @todo use new callback for before paramsaves
+  if ( _presavecallback != NULL) {
+    _presavecallback();
+  }
+
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
@@ -1309,6 +1329,12 @@ void WiFiManager::handleParamSave() {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
+
+  // @todo use new callback for before paramsaves
+  if ( _presavecallback != NULL) {
+    _presavecallback();
+  }
+
   doParamSave();
 
   // @todo use new callback for paramsaves
@@ -1408,6 +1434,7 @@ void WiFiManager::handleInfo() {
       F("cpufreq"),
       F("freeheap"),
       F("lastreset"),
+      // F("temp"),
       F("wifihead"),
       F("apip"),
       F("apmac"),
@@ -1615,6 +1642,14 @@ String WiFiManager::getInfoData(String id){
   else if(id==F("autoconx")){
     p = FPSTR(HTTP_INFO_autoconx);
     p.replace(FPSTR(T_1),WiFi.getAutoConnect() ? FPSTR(S_enable) : FPSTR(S_disable));
+  }
+  #endif
+  #ifdef ESP32
+  else if(id==F("temp")){
+    // temperature is not calibrated, varying large offsets are present, use for relative temp changes only
+    p = FPSTR(HTTP_INFO_temp);
+    p.replace(FPSTR(T_1),(String)temperatureRead());
+    p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
   }
   #endif
   return p;
@@ -1852,6 +1887,9 @@ void WiFiManager::resetSettings() {
   DEBUG_WM(F("SETTINGS ERASED"));
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
   
+  if (_resetcallback != NULL)
+      _resetcallback();
+  
   #ifdef ESP32
     WiFi.disconnect(true,true);
   #else
@@ -1983,6 +2021,22 @@ void WiFiManager::setAPCallback( std::function<void(WiFiManager*)> func ) {
  */
 void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
   _savecallback = func;
+}
+
+//start up reset config callback
+void WiFiManager::setConfigResetCallback(void(*func)(void)) {
+    _resetcallback = func;
+}
+
+//sets a custom element to add to head, like a new style tag
+/**
+ * setPreSaveConfigCallback, set a pre save config callback after closing configportal
+ * @todo only calls if configportal stopped
+ * @access public
+ * @param {[type]} void (*func)(void) [description]
+ */
+void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
+  _presavecallback = func;
 }
 
 /**
