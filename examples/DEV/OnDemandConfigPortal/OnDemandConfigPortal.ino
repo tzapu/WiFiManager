@@ -7,6 +7,7 @@
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
 WiFiManager wm;
+bool TEST_CP = true; // always start the configportal
 
 char ssid[] = "*************";  //  your network SSID (name)
 char pass[] = "********";       // your network password
@@ -34,18 +35,22 @@ void debugchipid(){
   // ESP32 Chip ID = 507726A4AE30
 }
 
-void saveCallback(){
-  Serial.println("saveCallback fired");
+void saveWifiCallback(){
+  Serial.println("[CALLBACK] saveCallback fired");
 }
 
 
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
-  Serial.println("configModeCallback fired");
+  Serial.println("[CALLBACK] configModeCallback fired");
   // myWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
+}
+
+void saveParamCallback(){
+  Serial.println("[CALLBACK] saveParamCallback fired");
 }
 
 void setup() {
@@ -68,7 +73,6 @@ void setup() {
   // wm.erase();
   
   wm.setClass("invert");
-  wm.setAPCallback(configModeCallback);
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
@@ -76,16 +80,6 @@ void setup() {
   // wm.setConfigPortalTimeout(600);
   // wm.setConnectTimeout(5);
   // wm.setShowStaticFields(true);
-
-  // uint8_t menu[] = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE};
-  // wm.setMenu(menu);
-
-  // std::vector<WiFiManager::menu_page_t> menu = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE,wm.MENU_SEP,wm.MENU_ERASE,wm.MENU_EXIT};
-  // wm.setMenu(menu);
-
-// std::vector<WiFiManager::menu_page_t> menu = {wm.MENU_WIFI,wm.MENU_INFO,wm.MENU_PARAM,wm.MENU_CLOSE,wm.MENU_SEP,wm.MENU_ERASE,wm.MENU_EXIT};
-  // wm.setMenu(menu);
-
 
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>");
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
@@ -95,7 +89,9 @@ void setup() {
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'");
 
   // callbacks
-  wm.setSaveConfigCallback(saveCallback);
+  wm.setAPCallback(configModeCallback);
+  wm.setSaveConfigCallback(saveWifiCallback);
+  wm.setSaveParamsCallback(saveParamCallback);
 
   //add all your parameters here
   wm.addParameter(&custom_html);
@@ -108,21 +104,11 @@ void setup() {
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
 
-        // MENU_WIFI       = 0,
-        // MENU_WIFINOSCAN = 1,
-        // MENU_INFO       = 2,
-        // MENU_PARAM      = 3,
-        // MENU_CLOSE      = 4,
-        // MENU_RESTART    = 5,
-        // MENU_EXIT       = 6,
-        // MENU_ERASE      = 7,
-        // MENU_SEP        = 8
-
   // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   // wm.setMenu(menu,9);
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  wm.setMenu(menu);
+  // wm.setMenu(menu);
   
   // set static sta ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
@@ -152,10 +138,10 @@ void setup() {
   if(!wm.autoConnect("AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
   }
-  else {
+  else if(TEST_CP) {
     // start configportal always
-    // wm.setConfigPortalTimeout(60);
-    // wm.startConfigPortal();
+    wm.setConfigPortalTimeout(60);
+    wm.startConfigPortal();
   }
 
   pinMode(TRIGGER_PIN, INPUT);

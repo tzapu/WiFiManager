@@ -182,12 +182,16 @@ class WiFiManager
     int           getParametersCount();
 
 
+    // SET CALLBACKS
+
     //called when AP mode and config portal is started
     void          setAPCallback( std::function<void(WiFiManager*)> func );
     //called when settings reset have been triggered
-    void          setConfigResetCallback(void(*func)(void));
-    //called when settings have been changed and connection was successful
+    void          setConfigResetCallback( std::function<void()> func );
+    //called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
     void          setSaveConfigCallback( std::function<void()> func );
+    //called when settings have been changed and connection was successful
+    void          setSaveParamsCallback( std::function<void()> func );
     //called when settings before have been changed and connection was successful
     void          setPreSaveConfigCallback( std::function<void()> func );
 
@@ -277,7 +281,8 @@ class WiFiManager
     #else
         using WM_WebServer = ESP8266WebServer;
     #endif
-        std::unique_ptr<WM_WebServer> server;
+    
+    std::unique_ptr<WM_WebServer> server;
 
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
@@ -477,10 +482,12 @@ class WiFiManager
     void        DEBUG_WM(wm_debuglevel_t level, Generic text,Genericb textb);
 
     // callbacks
+    // @todo use cb list (vector) maybe event ids, allow no return value
     std::function<void(WiFiManager*)> _apcallback;
-    std::function<void()> _savecallback;
+    std::function<void()> _savewificallback;
     std::function<void()> _presavecallback;
-    void (*_resetcallback)(void) = NULL; // @todo change to std func
+    std::function<void()> _saveparamscallback;
+    std::function<void()> _resetcallback;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {

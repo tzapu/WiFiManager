@@ -601,8 +601,8 @@ uint8_t WiFiManager::processConfigPortal(){
           DEBUG_WM(F("Got IP Address:"));
           DEBUG_WM(WiFi.localIP());
 
-          if ( _savecallback != NULL) {
-            _savecallback();
+          if ( _savewificallback != NULL) {
+            _savewificallback();
           }
           stopConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
@@ -614,8 +614,8 @@ uint8_t WiFiManager::processConfigPortal(){
         // do save callback
         // @todo this is more of an exiting callback than a save, clarify when this should actually occur
         // confirm or verify data was saved to make this more accurate callback
-        if ( _savecallback != NULL) {
-          _savecallback();
+        if ( _savewificallback != NULL) {
+          _savewificallback();
         }
         stopConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
@@ -1330,17 +1330,7 @@ void WiFiManager::handleParamSave() {
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   handleRequest();
 
-  // @todo use new callback for before paramsaves
-  if ( _presavecallback != NULL) {
-    _presavecallback();
-  }
-
   doParamSave();
-
-  // @todo use new callback for paramsaves
-  if ( _savecallback != NULL) {
-    _savecallback();
-  }
 
   String page = getHTTPHead(FPSTR(S_titleparamsaved)); // @token titleparamsaved
   page += FPSTR(HTTP_PARAMSAVED);
@@ -1353,13 +1343,18 @@ void WiFiManager::handleParamSave() {
 }
 
 void WiFiManager::doParamSave(){
+   // @todo use new callback for before paramsaves, is this really needed?
+  if ( _presavecallback != NULL) {
+    _presavecallback();
+  }
+
   //parameters
   if(_paramsCount > 0){
     DEBUG_WM(DEBUG_VERBOSE,F("Parameters"));
     DEBUG_WM(DEBUG_VERBOSE,FPSTR(D_HR));
     for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL) {
-        break;
+        break; // @todo might not be needed anymore
       }
       //read parameter from server
       String name = (String)FPSTR(S_parampre)+(String)i;
@@ -1376,6 +1371,11 @@ void WiFiManager::doParamSave(){
     }
     DEBUG_WM(DEBUG_VERBOSE,FPSTR(D_HR));
   }
+
+   if ( _saveparamscallback != NULL) {
+    _saveparamscallback();
+  }
+   
 }
 
 /** 
@@ -2007,33 +2007,44 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
 /**
  * setAPCallback, set a callback when softap is started
  * @access public 
- * @param {[type]} void (*func)(WiFiManager* myWiFiManager) [description]
+ * @param {[type]} void (*func)(WiFiManager* wminstance)
  */
 void WiFiManager::setAPCallback( std::function<void(WiFiManager*)> func ) {
   _apcallback = func;
 }
-	
+
 /**
  * setSaveConfigCallback, set a save config callback after closing configportal
- * @todo only calls if configportal stopped
+ * @note calls only if wifi is saved or changed, or setBreakAfterConfig(true)
  * @access public
- * @param {[type]} void (*func)(void) [description]
+ * @param {[type]} void (*func)(void)
  */
 void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
-  _savecallback = func;
+  _savewificallback = func;
 }
 
-//start up reset config callback
-void WiFiManager::setConfigResetCallback(void(*func)(void)) {
+/**
+ * setConfigResetCallback, set a callback to occur when a resetSettings() occurs
+ * @access public
+ * @param {[type]} void(*func)(void)
+ */
+void WiFiManager::setConfigResetCallback( std::function<void()> func ) {
     _resetcallback = func;
 }
 
-//sets a custom element to add to head, like a new style tag
 /**
- * setPreSaveConfigCallback, set a pre save config callback after closing configportal
- * @todo only calls if configportal stopped
+ * setSaveParamsCallback, set a save params callback on params save in wifi or params pages
  * @access public
- * @param {[type]} void (*func)(void) [description]
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setSaveParamsCallback( std::function<void()> func ) {
+  _saveparamscallback = func;
+}
+
+/**
+ * setPreSaveConfigCallback, set a callback to fire before saving wifi or params
+ * @access public
+ * @param {[type]} void (*func)(void)
  */
 void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
   _presavecallback = func;
@@ -2049,10 +2060,9 @@ void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
 
-//if this is true, remove duplicated Access Points - defaut true
 /**
  * toggle wifiscan hiding of duplicate ssid names
- * if enabled, then the webportal wifiscan page will show all aps
+ * if this is false, wifiscan will remove duplicat Access Points - defaut true
  * @access public
  * @param boolean removeDuplicates [true]
  */
