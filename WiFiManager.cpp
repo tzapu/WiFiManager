@@ -370,11 +370,6 @@ bool WiFiManager::startAP(){
 
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] There was a problem starting the AP");
   // @todo add softAP retry here
-
-  // do AP callback if set
-  if ( _apcallback != NULL) {
-    _apcallback(this);
-  }
   
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
@@ -389,6 +384,10 @@ bool WiFiManager::startAP(){
    }
   #endif
 
+  // do AP callback if set
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
   return ret;
 }
 
