@@ -343,6 +343,8 @@ bool WiFiManager::startAP(){
     }
   }
 
+  //@todo add callback here if needed to modify ap but cannot use setAPStaticIPConfig
+
   if(_channelSync){
     DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
   }
