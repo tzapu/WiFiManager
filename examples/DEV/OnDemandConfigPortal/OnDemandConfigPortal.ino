@@ -39,7 +39,6 @@ void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
 }
 
-
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("[CALLBACK] configModeCallback fired");
@@ -51,6 +50,16 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void saveParamCallback(){
   Serial.println("[CALLBACK] saveParamCallback fired");
+}
+
+void bindServerCallback(){
+  wm.server->on("/custom",handleRoute);
+  // wm.server->on("/info",handleRoute); // can override wm!
+}
+
+void handleRoute(){
+  Serial.println("[HTTP] handle route");
+  wm.server->send(200, "text/plain", "hello from user code");
 }
 
 void setup() {
@@ -90,6 +99,7 @@ void setup() {
 
   // callbacks
   wm.setAPCallback(configModeCallback);
+  wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveWifiCallback);
   wm.setSaveParamsCallback(saveParamCallback);
 

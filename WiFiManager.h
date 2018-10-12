@@ -184,8 +184,10 @@ class WiFiManager
 
     // SET CALLBACKS
 
-    //called when AP mode and config portal is started
+    //called after AP mode and config portal has started
     void          setAPCallback( std::function<void(WiFiManager*)> func );
+    //called after webserver has started
+    void          setWebServerCallback( std::function<void()> func );
     //called when settings reset have been triggered
     void          setConfigResetCallback( std::function<void()> func );
     //called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
@@ -273,7 +275,6 @@ class WiFiManager
     // set body class (invert)
     void          setClass(String str);
 
-  private:
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -284,6 +285,7 @@ class WiFiManager
     
     std::unique_ptr<WM_WebServer> server;
 
+  private:
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
 
@@ -484,6 +486,7 @@ class WiFiManager
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value
     std::function<void(WiFiManager*)> _apcallback;
+    std::function<void()> _webservercallback;
     std::function<void()> _savewificallback;
     std::function<void()> _presavecallback;
     std::function<void()> _saveparamscallback;

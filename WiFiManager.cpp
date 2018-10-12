@@ -453,6 +453,12 @@ void WiFiManager::setupConfigPortal() {
   DEBUG_WM(DEBUG_DEV,"dns server started with ip: ",WiFi.softAPIP());
   dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
 
+  // @todo new callback, webserver started, callback cannot override handlers, but can grab them first
+
+  if ( _webservercallback != NULL) {
+    _webservercallback();
+  }
+
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this));
   server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, true));
@@ -521,15 +527,15 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   startAP();
   WiFiSetCountry();
 
-  // init configportal
-  DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
-  setupConfigPortal();
-
   // do AP callback if set
   if ( _apcallback != NULL) {
     _apcallback(this);
   }
-  
+
+  // init configportal
+  DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
+  setupConfigPortal();
+
   if(!_configPortalIsBlocking){
     DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
     return result;
@@ -2010,6 +2016,17 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
  */
 void WiFiManager::setAPCallback( std::function<void(WiFiManager*)> func ) {
   _apcallback = func;
+}
+
+/**
+ * setWebServerCallback, set a callback after webserver is reset, and before routes are setup
+ * if we set webserver handlers before wm, they are used and wm is not by esp webserver
+ * on events cannot be overrided once set, and are not mutiples
+ * @access public 
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setWebServerCallback( std::function<void()> func ) {
+  _webservercallback = func;
 }
 
 /**
