@@ -326,11 +326,6 @@ bool WiFiManager::startAP(){
   bool ret = true;
   DEBUG_WM(F("StartAP with SSID: "),_apName);
 
-  // do AP callback if set
-  if ( _apcallback != NULL) {
-    _apcallback(this);
-  }
-
   #ifdef ESP8266
     // @bug workaround for bug #4372 https://github.com/esp8266/Arduino/issues/4372
     if(!WiFi.enableAP(true)) {
@@ -375,6 +370,11 @@ bool WiFiManager::startAP(){
 
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] There was a problem starting the AP");
   // @todo add softAP retry here
+
+  // do AP callback if set
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
   
   delay(500); // slight delay to make sure we get an AP IP
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
