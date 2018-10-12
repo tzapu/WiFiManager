@@ -343,10 +343,9 @@ bool WiFiManager::startAP(){
     }
   }
 
-
   if(_channelSync){
     DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
-  } 
+  }
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
@@ -384,10 +383,6 @@ bool WiFiManager::startAP(){
    }
   #endif
 
-  // do AP callback if set
-  if ( _apcallback != NULL) {
-    _apcallback(this);
-  }
   return ret;
 }
 
@@ -530,6 +525,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   DEBUG_WM(DEBUG_DEV,F("setupConfigPortal"));
   setupConfigPortal();
 
+  // do AP callback if set
+  if ( _apcallback != NULL) {
+    _apcallback(this);
+  }
+  
   if(!_configPortalIsBlocking){
     DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
     return result;
