@@ -31,7 +31,7 @@
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
 
-// #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge, deprecated
+// #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge, @DEPRECATED
 // autoreconnect is WORKING https://github.com/espressif/arduino-esp32/issues/653#issuecomment-405604766
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib

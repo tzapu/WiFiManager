@@ -69,11 +69,11 @@ void setup() {
 void checkButton(){
   // check for button press
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
-    // poor mans debounce/press-hold, not recommended for production code
+    // poor mans debounce/press-hold, code not ideal for production
     delay(50);
     if( digitalRead(TRIGGER_PIN) == LOW ){
     
-      // holding button 3000 ms, reset settings
+      // still holding button for 3000 ms, reset settings, code not ideaa for production
       delay(3000); // reset delay hold
       if( digitalRead(TRIGGER_PIN) == LOW ){
         Serial.println("Erasing Config");
