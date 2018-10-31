@@ -1221,7 +1221,7 @@ String WiFiManager::getParamOut(){
     bool tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
     bool tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
 
-    char parLength[5];
+    char valLength[5];
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL || _params[i]->_length == 0) {
@@ -1229,7 +1229,7 @@ String WiFiManager::getParamOut(){
         break;
       }
 
-     // label before or after, this could probably be done via floats however
+     // label before or after, @todo this could be done via floats or CSS and eliminated
      String pitem;
       switch (_params[i]->getLabelPlacement()) {
         case WFM_LABEL_BEFORE:
@@ -1246,17 +1246,19 @@ String WiFiManager::getParamOut(){
           break;
       }
 
+      // Input templating
+      // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
-        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i);
-        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID());
-        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID());
-        if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t));
-        if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getPlaceholder());
-        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-        if(tok_l)pitem.replace(FPSTR(T_l), parLength);
-        if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue());
-        if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // meant for additional attributes, not html
+        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
+        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
+        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
+        if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
+        if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
+        snprintf(valLength, 5, "%d", _params[i]->getValueLength());
+        if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
+        if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
+        if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
       } else {
         pitem = _params[i]->getCustomHTML();
       }
