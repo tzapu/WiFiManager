@@ -237,8 +237,8 @@ class WiFiManager
     void          setShowDnsFields(boolean alwaysShow);
     //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
-    //if false, timeout captive portal even if a STA client connected (false), suggest disabling if captiveportal is open
-    void          setCaptivePortalClientCheck(boolean enabled);
+    //if false, timeout captive portal even if a STA client connected to softAP (false), suggest disabling if captiveportal is open
+    void          setAPClientCheck(boolean enabled);
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
     // if true, enable autoreconnecting
@@ -344,7 +344,7 @@ class WiFiManager
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
     boolean       _wifiAutoReconnect      = true;  // there is no platform getter for this, we must assume its true and make it so
-    boolean       _cpClientCheck          = false; // keep cp alive if cp have station
+    boolean       _apClientCheck          = false; // keep cp alive if ap have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page

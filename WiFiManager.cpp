@@ -416,7 +416,7 @@ void WiFiManager::stopWebPortal() {
 
 boolean WiFiManager::configPortalHasTimeout(){
 
-    if(_configPortalTimeout == 0 || (_cpClientCheck && (WiFi_softap_num_stations() > 0))){
+    if(_configPortalTimeout == 0 || (_apClientCheck && (WiFi_softap_num_stations() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
         DEBUG_WM(DEBUG_VERBOSE,"NUM CLIENTS: " + (String)WiFi_softap_num_stations());
@@ -2175,8 +2175,8 @@ void WiFiManager::setWiFiAutoReconnect(boolean enabled){
  * @access public
  * @param boolean enabled [false]
  */
-void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
-  _cpClientCheck = enabled;
+void WiFiManager::setAPClientCheck(boolean enabled){
+  _apClientCheck = enabled;
 }
 
 /**
