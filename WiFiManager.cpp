@@ -149,6 +149,8 @@ void WiFiManager::setupConfigPortal() {
   server->on(String(F("/wifisave")), std::bind(&WiFiManager::handleWifiSave, this));
   server->on(String(F("/i")), std::bind(&WiFiManager::handleInfo, this));
   server->on(String(F("/r")), std::bind(&WiFiManager::handleReset, this));
+  // extension for mobile app.
+  server->on(String(F("/info")), std::bind(&WiFiManager::handleInfoJson, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on(String(F("/fwlink")), std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
@@ -692,6 +694,33 @@ void WiFiManager::handleInfo() {
   server->send(200, "text/html", page);
 
   DEBUG_WM(F("Sent info page"));
+}
+
+/** Handle the info page via api */
+void WiFiManager::handleInfoJson() {
+  DEBUG_WM(F("Info"));
+
+  String page = "{";
+  page += "\"chip_id\":\"";
+  page += ESP.getChipId();
+  page += "\",\"flash_chip_id\":\"";
+  page += ESP.getFlashChipId();
+  page += "\",\"ide_flash_size\":\"";
+  page += ESP.getFlashChipSize();
+  page += "\",\"real_flash_size\":\"";
+  page += ESP.getFlashChipRealSize();
+  page += "\",\"soft_ap_ip\":\"";
+  page += WiFi.softAPIP().toString();
+  page += "\",\"soft_ap_mac\":\"";
+  page += WiFi.softAPmacAddress();
+  page += "\",\"station_mac\":\"";
+  page += WiFi.macAddress();
+  page += "\"}";
+
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "application/json", page);
+
+  DEBUG_WM(F("Sent info page"));  
 }
 
 /** Handle the reset page */

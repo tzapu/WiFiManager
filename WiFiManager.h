@@ -164,6 +164,7 @@ class WiFiManager
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleInfo();
+    void          handleInfoJson(); // api for mobile app
     void          handleReset();
     void          handleNotFound();
     void          handle204();
