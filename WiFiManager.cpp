@@ -22,6 +22,10 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
  * --------------------------------------------------------------------------------
 **/
 
+WiFiManagerParameter::WiFiManagerParameter() {
+  WiFiManagerParameter("");
+}
+
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
   _label          = NULL;

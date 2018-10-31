@@ -104,6 +104,7 @@ class WiFiManagerParameter {
         Create custom parameters that can be added to the WiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
+    WiFiManagerParameter();
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *label);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);

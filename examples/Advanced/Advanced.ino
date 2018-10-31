@@ -7,7 +7,7 @@
 #define TRIGGER_PIN 0
 
 WiFiManager wm; // global wm instance
-WiFiManagerParameter custom_field(""); // global param ( for non blocking w params )
+WiFiManagerParameter custom_field; // global param ( for non blocking w params )
 
 void setup() {
   Serial.begin(115200);
