@@ -105,27 +105,28 @@ class WiFiManagerParameter {
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
     WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *placeholder);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    WiFiManagerParameter(const char *id, const char *label);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
 
     const char *getID();
     const char *getValue();
-    const char *getPlaceholder();
+    const char *getLabel();
+    const char *getPlaceholder(); // @deprecated, use getLabel
     int         getValueLength();
     int         getLabelPlacement();
     const char *getCustomHTML();
     void        setValue(const char *defaultValue, int length);
 
   protected:
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
     const char *_id;
-    const char *_placeholder;
+    const char *_label;
     char       *_value;
     int         _length;
     int         _labelPlacement;

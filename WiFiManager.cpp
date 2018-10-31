@@ -24,32 +24,32 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
 
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
-  _placeholder    = NULL;
+  _label          = NULL;
   _length         = 1;
   _value          = NULL;
   _labelPlacement = WFM_LABEL_BEFORE;
   _customHTML     = custom;
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder) {
-  init(id, placeholder, "", 0, "", WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
+  init(id, label, "", 0, "", WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length) {
+  init(id, label, defaultValue, length, "", WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom, WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom) {
+  init(id, label, defaultValue, length, custom, WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  init(id, placeholder, defaultValue, length, custom, labelPlacement);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+  init(id, label, defaultValue, length, custom, labelPlacement);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
   _id             = id;
-  _placeholder    = placeholder;
+  _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
   setValue(defaultValue,length);
@@ -89,7 +89,10 @@ const char* WiFiManagerParameter::getID() {
   return _id;
 }
 const char* WiFiManagerParameter::getPlaceholder() {
-  return _placeholder;
+  return _label;
+}
+const char* WiFiManagerParameter::getLabel() {
+  return _label;
 }
 int WiFiManagerParameter::getValueLength() {
   return _length;
