@@ -728,7 +728,7 @@ void WiFiManager::handleReset() {
   DEBUG_WM(F("Reset"));
 
   String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
+  page.replace("{v}", "Reset");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
