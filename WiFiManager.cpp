@@ -752,7 +752,7 @@ void WiFiManager::handleNotFound() {
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server->uri();
-  message += "\nMethod: ";
+  message += "\nRequest Method: ";
   message += ( server->method() == HTTP_GET ) ? "GET" : "POST";
   message += "\nArguments: ";
   message += server->args();
