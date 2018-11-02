@@ -408,7 +408,7 @@ void WiFiManager::stopWebPortal() {
   if(!configPortalActive && !webPortalActive) return;
   DEBUG_WM(DEBUG_VERBOSE,F("Stopping Web Portal"));  
   webPortalActive = false;
-  stopConfigPortal();
+  shutdownConfigPortal();
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
@@ -550,7 +550,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
       DEBUG_WM(DEBUG_DEV,F("configportal abort"));
-      stopConfigPortal();
+      shutdownConfigPortal();
       result = abort ? portalAbortResult : portalTimeoutResult; // false, false
       break;
     }
@@ -611,7 +611,7 @@ uint8_t WiFiManager::processConfigPortal(){
           if ( _savewificallback != NULL) {
             _savewificallback();
           }
-          stopConfigPortal();
+          shutdownConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
@@ -624,7 +624,7 @@ uint8_t WiFiManager::processConfigPortal(){
         if ( _savewificallback != NULL) {
           _savewificallback();
         }
-        stopConfigPortal();
+        shutdownConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
       }
       else{
@@ -642,11 +642,11 @@ uint8_t WiFiManager::processConfigPortal(){
 }
 
 /**
- * [stopConfigPortal description]
+ * [shutdownConfigPortal description]
  * @access public
- * @return {[type]} [description]
+ * @return bool success (softapdisconnect)
  */
-boolean WiFiManager::stopConfigPortal(){
+bool WiFiManager::shutdownConfigPortal(){
   if(webPortalActive) return false;
 
   //DNS handler
@@ -1830,6 +1830,18 @@ void WiFiManager::reportStatus(String &page){
 /**
  * reset wifi settings, clean stored ap password
  */
+
+/**
+ * [stopConfigPortal description]
+ * @return {[type]} [description]
+ */
+bool WiFiManager::stopConfigPortal(){
+  if(_configPortalIsBlocking){
+    abort = true;
+    return true;
+  }
+  return shutdownConfigPortal();  
+}
 
 /**
  * disconnect

@@ -151,8 +151,8 @@ class WiFiManager
     boolean       startConfigPortal(); // auto generates apname
     boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
 
-    //manually stop the config portal if started manually
-    boolean       stopConfigPortal();
+    //manually stop the config portal if started manually, stop immediatly if non blocking, flag abort if blocking
+    bool          stopConfigPortal();
     
     //manually start the web portal, autoconnect does this automatically on connect failure    
     void          startWebPortal();
@@ -367,6 +367,7 @@ class WiFiManager
     void          _end();
 
     void          setupConfigPortal();
+    bool          shutdownConfigPortal();
 
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported

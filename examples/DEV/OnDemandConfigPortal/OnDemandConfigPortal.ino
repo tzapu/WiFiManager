@@ -28,6 +28,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void saveParamCallback(){
   Serial.println("[CALLBACK] saveParamCallback fired");
+  // wm.stopConfigPortal();
 }
 
 void bindServerCallback(){
@@ -93,7 +94,7 @@ void setup() {
   // wm.setMenu(menu,9); // custom menu array must provide length
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wm.setMenu(menu); // custom menu, pass vector
+  wm.setMenu(menu); // custom menu, pass vector
   
   // set static sta ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
