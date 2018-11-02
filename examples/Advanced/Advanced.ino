@@ -6,7 +6,8 @@
 
 #define TRIGGER_PIN 0
 
-WiFiManager wm;
+WiFiManager wm; // global wm instance
+WiFiManagerParameter custom_field; // global param ( for non blocking w params )
 
 void setup() {
   Serial.begin(115200);
@@ -15,13 +16,14 @@ void setup() {
   Serial.println("\n Starting");
 
   pinMode(TRIGGER_PIN, INPUT);
-   
+  
   // wm.resetSettings(); // wipe settings
 
   // add a custom input field
   int customFieldLength = 40;
-  WiFiManagerParameter custom_field("customfield", "Custom Field", "Default Value", customFieldLength);
+  new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field Value", customFieldLength,"placeholder=\"Custom Field Placeholder\""); // reconstruct (hmm)
   wm.addParameter(&custom_field);
+  wm.setSaveParamsCallback(saveParamCallback);
 
   // custom menu via array or vector
   // 
@@ -33,15 +35,17 @@ void setup() {
 
   // set dark theme
   // wm.setClass("invert");
-  
+
+
   //set static ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); // set static ip,gw,sn
   // wm.setShowStaticFields(true); // force show static ip fields
   // wm.setShowDnsFields(true);    // force show dns field always
 
   // wm.setConnectTimeout(20); // how long to try to connect for before continuing
-  // wm.setConfigPortalTimeout(60); // auto close configportal after n seconds
-  // wifiManager.setCaptivePortalEnable(false); // disable captive portal redirection
+  wm.setConfigPortalTimeout(30); // auto close configportal after n seconds
+  // wm.setCaptivePortalEnable(false); // disable captive portal redirection
+  // wm.setAPClientCheck(true); // avoid timeout if client connected to softap
 
   // wifi scan settings
   // wm.setRemoveDuplicateAPs(false); // do not remove duplicate ap names (true)
@@ -72,11 +76,12 @@ void checkButton(){
     // poor mans debounce/press-hold, code not ideal for production
     delay(50);
     if( digitalRead(TRIGGER_PIN) == LOW ){
-    
+      Serial.println("Button Pressed");
       // still holding button for 3000 ms, reset settings, code not ideaa for production
       delay(3000); // reset delay hold
       if( digitalRead(TRIGGER_PIN) == LOW ){
-        Serial.println("Erasing Config");
+        Serial.println("Button Held");
+        Serial.println("Erasing Config, restarting");
         wm.resetSettings();
         ESP.restart();
       }
@@ -85,7 +90,7 @@ void checkButton(){
       Serial.println("Starting config portal");
       wm.setConfigPortalTimeout(120);
       
-      if (!wm.startConfigPortal("OnDemandAP")) {
+      if (!wm.startConfigPortal("OnDemandAP","password")) {
         Serial.println("failed to connect or hit timeout");
         delay(3000);
         // ESP.restart();
@@ -95,6 +100,10 @@ void checkButton(){
       }
     }
   }
+}
+
+void saveParamCallback(){
+  Serial.println("[CALLBACK] saveParamCallback fired");
 }
 
 void loop() {

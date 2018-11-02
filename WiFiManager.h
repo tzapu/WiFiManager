@@ -104,28 +104,30 @@ class WiFiManagerParameter {
         Create custom parameters that can be added to the WiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
+    WiFiManagerParameter();
     WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *placeholder);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-    WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    WiFiManagerParameter(const char *id, const char *label);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
 
     const char *getID();
     const char *getValue();
-    const char *getPlaceholder();
+    const char *getLabel();
+    const char *getPlaceholder(); // @deprecated, use getLabel
     int         getValueLength();
     int         getLabelPlacement();
     const char *getCustomHTML();
     void        setValue(const char *defaultValue, int length);
 
   protected:
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
     const char *_id;
-    const char *_placeholder;
+    const char *_label;
     char       *_value;
     int         _length;
     int         _labelPlacement;
@@ -236,8 +238,8 @@ class WiFiManager
     void          setShowDnsFields(boolean alwaysShow);
     //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
-    //if false, timeout captive portal even if a STA client connected (false), suggest disabling if captiveportal is open
-    void          setCaptivePortalClientCheck(boolean enabled);
+    //if false, timeout captive portal even if a STA client connected to softAP (false), suggest disabling if captiveportal is open
+    void          setAPClientCheck(boolean enabled);
     //if true, reset timeout when webclient connects (true), suggest disabling if captiveportal is open    
     void          setWebPortalClientCheck(boolean enabled);
     // if true, enable autoreconnecting
@@ -343,7 +345,7 @@ class WiFiManager
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
     boolean       _wifiAutoReconnect      = true;  // there is no platform getter for this, we must assume its true and make it so
-    boolean       _cpClientCheck          = false; // keep cp alive if cp have station
+    boolean       _apClientCheck          = false; // keep cp alive if ap have station
     boolean       _webClientCheck         = true;  // keep cp alive if web have client
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page

@@ -22,34 +22,38 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
  * --------------------------------------------------------------------------------
 **/
 
+WiFiManagerParameter::WiFiManagerParameter() {
+  WiFiManagerParameter("");
+}
+
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
-  _placeholder    = NULL;
+  _label          = NULL;
   _length         = 1;
   _value          = NULL;
   _labelPlacement = WFM_LABEL_BEFORE;
   _customHTML     = custom;
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder) {
-  init(id, placeholder, "", 0, "", WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
+  init(id, label, "", 0, "", WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length) {
-  init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length) {
+  init(id, label, defaultValue, length, "", WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom) {
-  init(id, placeholder, defaultValue, length, custom, WFM_LABEL_BEFORE);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom) {
+  init(id, label, defaultValue, length, custom, WFM_LABEL_BEFORE);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  init(id, placeholder, defaultValue, length, custom, labelPlacement);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+  init(id, label, defaultValue, length, custom, labelPlacement);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
   _id             = id;
-  _placeholder    = placeholder;
+  _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
   setValue(defaultValue,length);
@@ -89,7 +93,10 @@ const char* WiFiManagerParameter::getID() {
   return _id;
 }
 const char* WiFiManagerParameter::getPlaceholder() {
-  return _placeholder;
+  return _label;
+}
+const char* WiFiManagerParameter::getLabel() {
+  return _label;
 }
 int WiFiManagerParameter::getValueLength() {
   return _length;
@@ -413,7 +420,7 @@ void WiFiManager::stopWebPortal() {
 
 boolean WiFiManager::configPortalHasTimeout(){
 
-    if(_configPortalTimeout == 0 || (_cpClientCheck && (WiFi_softap_num_stations() > 0))){
+    if(_configPortalTimeout == 0 || (_apClientCheck && (WiFi_softap_num_stations() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
         DEBUG_WM(DEBUG_VERBOSE,"NUM CLIENTS: " + (String)WiFi_softap_num_stations());
@@ -1218,7 +1225,7 @@ String WiFiManager::getParamOut(){
     bool tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
     bool tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
 
-    char parLength[5];
+    char valLength[5];
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL || _params[i]->_length == 0) {
@@ -1226,7 +1233,7 @@ String WiFiManager::getParamOut(){
         break;
       }
 
-     // label before or after, this could probably be done via floats however
+     // label before or after, @todo this could be done via floats or CSS and eliminated
      String pitem;
       switch (_params[i]->getLabelPlacement()) {
         case WFM_LABEL_BEFORE:
@@ -1243,17 +1250,19 @@ String WiFiManager::getParamOut(){
           break;
       }
 
+      // Input templating
+      // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
       if (_params[i]->getID() != NULL) {
-        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i);
-        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID());
-        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID());
-        if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t));
-        if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getPlaceholder());
-        snprintf(parLength, 5, "%d", _params[i]->getValueLength());
-        if(tok_l)pitem.replace(FPSTR(T_l), parLength);
-        if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue());
-        if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // meant for additional attributes, not html
+        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
+        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
+        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
+        if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
+        if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
+        snprintf(valLength, 5, "%d", _params[i]->getValueLength());
+        if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
+        if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
+        if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
       } else {
         pitem = _params[i]->getCustomHTML();
       }
@@ -2182,8 +2191,8 @@ void WiFiManager::setWiFiAutoReconnect(boolean enabled){
  * @access public
  * @param boolean enabled [false]
  */
-void WiFiManager::setCaptivePortalClientCheck(boolean enabled){
-  _cpClientCheck = enabled;
+void WiFiManager::setAPClientCheck(boolean enabled){
+  _apClientCheck = enabled;
 }
 
 /**
