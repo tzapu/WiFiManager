@@ -21,7 +21,17 @@ void setup() {
 
   // add a custom input field
   int customFieldLength = 40;
-  new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field Value", customFieldLength,"placeholder=\"Custom Field Placeholder\""); // reconstruct (hmm)
+
+
+  // new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field Value", customFieldLength,"placeholder=\"Custom Field Placeholder\"");
+  
+  // test custom html input type(checkbox)
+  // new (&custom_field) WiFiManagerParameter("customfieldid", "Custom Field Label", "Custom Field Value", customFieldLength,"placeholder=\"Custom Field Placeholder\" type=\"checkbox\""); // custom html type
+  
+  // test custom html(radio)
+  const char* custom_radio_str = "<br/><label for='customfieldid'>Custom Field Label</label><input type='radio' name='customfieldid' value='1' checked> One<br><input type='radio' name='customfieldid' value='2'> Two<br><input type='radio' name='customfieldid' value='3'> Three";
+  new (&custom_field) WiFiManagerParameter(custom_radio_str); // custom html input
+  
   wm.addParameter(&custom_field);
   wm.setSaveParamsCallback(saveParamCallback);
 
@@ -34,7 +44,7 @@ void setup() {
   wm.setMenu(menu);
 
   // set dark theme
-  // wm.setClass("invert");
+  wm.setClass("invert");
 
 
   //set static ip
@@ -102,8 +112,19 @@ void checkButton(){
   }
 }
 
+
+String getParam(String name){
+  //read parameter from server, for customhmtl input
+  String value;
+  if(wm.server->hasArg(name)) {
+    value = wm.server->arg(name);
+  }
+  return value;
+}
+
 void saveParamCallback(){
   Serial.println("[CALLBACK] saveParamCallback fired");
+  Serial.println("PARAM customfieldid = " + getParam("customfieldid"));
 }
 
 void loop() {
