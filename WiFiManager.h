@@ -55,6 +55,7 @@
 
     #include <WiFi.h>
     #include <esp_wifi.h>  
+    #include <Update.h>
     
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
@@ -408,6 +409,11 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
+	// OTA Update handler
+	void          handleUpdate();
+	void          handleUpdating();
+	void          handleUpdateDone();
+
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);

@@ -469,6 +469,7 @@ void WiFiManager::setupConfigPortal() {
   }
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
+
   server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this));
   server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, true));
   server->on(String(FPSTR(R_wifinoscan)).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
@@ -482,6 +483,9 @@ void WiFiManager::setupConfigPortal() {
   server->on(String(FPSTR(R_erase)).c_str(),      std::bind(&WiFiManager::handleErase, this, false));
   server->on(String(FPSTR(R_status)).c_str(),     std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
+  
+  server->on((String)FPSTR(R_update), std::bind(&WiFiManager::handleUpdate, this));
+  server->on((String)FPSTR(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
   
   server->begin(); // Web server start
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
@@ -2692,4 +2696,93 @@ void WiFiManager::WiFi_autoReconnect(){
       WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
+}
+
+// Called when /u is requested
+void WiFiManager::handleUpdate() {
+	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	String page = getHTTPHead(FPSTR(S_options)); // @token options
+	String str = FPSTR(HTTP_ROOT_MAIN);
+	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+	page += str;
+
+	page += FPSTR(HTTP_UPDATE);
+	page += FPSTR(HTTP_END);
+
+	server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+}
+
+void WiFiManager::handleUpdating(){
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+								 // handler for the file upload, get's the sketch bytes, and writes
+	// them through the Update object
+	HTTPUpload& upload = server->upload();
+	if (upload.status == UPLOAD_FILE_START) {
+		Serial.setDebugOutput(true);
+
+#ifdef ESP8266
+		WiFiUDP::stopAll();
+#elif defined(ESP32)
+			// Think we do not need to stop WiFIUDP because we haven't started a listener
+#endif
+		Serial.printf("Update: %s\r\n", upload.filename.c_str());
+#ifdef ESP8266
+		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+#elif defined(ESP32)
+		uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+
+#endif
+
+		if (!Update.begin(maxSketchSpace)) { // start with max available size
+			Update.printError(Serial);
+		}
+	} else if (upload.status == UPLOAD_FILE_WRITE) {
+		Serial.print(".");
+		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+			Update.printError(Serial);
+		}
+	} else if (upload.status == UPLOAD_FILE_END) {
+		if (Update.end(true)) { // true to set the size to the current progress
+			Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
+		} else {
+			Update.printError(Serial);
+		}
+		Serial.setDebugOutput(false);
+	} else if (upload.status == UPLOAD_FILE_ABORTED) {
+		Update.end();
+		DEBUG_WM(F("<- Update was aborted"));
+	}
+	delay(0);
+} // handleUpdating
+
+void WiFiManager::handleUpdateDone() {
+	DEBUG_WM(DEBUG_VERBOSE, F("<- Handle update done"));
+	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+
+	String page = getHTTPHead(FPSTR(S_options)); // @token options
+	String str = FPSTR(HTTP_ROOT_MAIN);
+	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+	page += str;
+
+	if (Update.hasError()) {
+		page += FPSTR(HTTP_UPDATE_FAIL);
+		DEBUG_WM(F("update failed"));
+	}
+	else {
+		page += FPSTR(HTTP_UPDATE_OK);
+		DEBUG_WM(F("update ok"));
+
+	}
+	page += FPSTR(HTTP_END);
+
+	server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+
+	delay(1000); // send page
+	if (!Update.hasError()) {
+		ESP.restart();
+	}
 }

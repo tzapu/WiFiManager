@@ -24,6 +24,7 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/info'    method='get'><button>Info</button></form><br/>\n", // MENU_INFO
 "<form action='/param'   method='get'><button>Setup</button></form><br/>\n",//MENU_PARAM
 "<form action='/close'   method='get'><button>Close</button></form><br/>\n", // MENU_CLOSE
+"<form action='/update'  method='get'><button>Update</button></form><br/>\n",// MENU_UPDATE
 "<form action='/restart' method='get'><button>Restart</button></form><br/>\n",// MENU_RESTART
 "<form action='/exit'    method='get'><button>Exit</button></form><br/>\n",  // MENU_EXIT
 "<form action='/erase'   method='get'><button class='D'>Erase</button></form><br/>\n", // MENU_ERASE
@@ -99,6 +100,8 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Parameter page</td></tr>"
  "<tr><td><a href='/info'>/info</a></td>"
  "<td>Information page</td></tr>"
+ "<tr><td><a href='/u'>/u</a></td>"
+ "<td>OTA Update</td></tr>"
  "<tr><td><a href='/close'>/close</a></td>"
  "<td>Close the captiveportal popup,configportal will remain active</td></tr>"
  "<tr><td><a href='/exit'>/exit</a></td>"
@@ -109,6 +112,10 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+
+const char HTTP_UPDATE[] PROGMEM = "<form method='POST' action='update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+const char HTTP_UPDATE_FAIL[] PROGMEM = "Update Failed!";
+const char HTTP_UPDATE_OK[] PROGMEM = "Update OK! Rebooting now...";
 
 #ifdef JSTEST
 const char HTTP_JS[] PROGMEM = 
@@ -236,6 +243,8 @@ const char R_exit[]               PROGMEM = "/exit";
 const char R_close[]              PROGMEM = "/close";
 const char R_erase[]              PROGMEM = "/erase"; 
 const char R_status[]             PROGMEM = "/status";
+const char R_update[]             PROGMEM = "/u";
+const char R_updatedone[]         PROGMEM = "/update";
 
 
 //Strings
