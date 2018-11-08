@@ -7,3 +7,6 @@ Please test against development branch before submitting issues, issues against 
 PRs against master may be kept open if provides something useful to other members.
 
 Please open issues before sumbitting PRs against development, as commits might be occuring very frequently.
+
+### Documentation is in progress
+https://github.com/tzapu/WiFiManager/issues/500
