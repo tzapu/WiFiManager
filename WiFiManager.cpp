@@ -2723,6 +2723,7 @@ void WiFiManager::handleUpdating(){
   // abort upload if error detected ?
   // supress cp timeout on upload
   // add progress handler for debugging
+  // combine route handlers into one and use argument or post checking instead of mutiple functions
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 								 // handler for the file upload, get's the sketch bytes, and writes
 	// them through the Update object
