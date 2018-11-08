@@ -113,7 +113,7 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
-const char HTTP_UPDATE[] PROGMEM = "<form method='POST' action='update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+const char HTTP_UPDATE[] PROGMEM = "<form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 const char HTTP_UPDATE_FAIL[] PROGMEM = "Update Failed!";
 const char HTTP_UPDATE_OK[] PROGMEM = "Update OK! Rebooting now...";
 
@@ -243,8 +243,8 @@ const char R_exit[]               PROGMEM = "/exit";
 const char R_close[]              PROGMEM = "/close";
 const char R_erase[]              PROGMEM = "/erase"; 
 const char R_status[]             PROGMEM = "/status";
-const char R_update[]             PROGMEM = "/u";
-const char R_updatedone[]         PROGMEM = "/update";
+const char R_update[]             PROGMEM = "/update";
+const char R_updatedone[]         PROGMEM = "/u";
 
 
 //Strings

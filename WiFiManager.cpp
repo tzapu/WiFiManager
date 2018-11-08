@@ -2716,6 +2716,13 @@ void WiFiManager::handleUpdate() {
 }
 
 void WiFiManager::handleUpdating(){
+  // @todo
+  // cannot upload files in captive portal, file select is not allowed, show message with link or hide
+  // cannot upload if softreset after upload, maybe check for hard reset at least for dev, ERROR[11]: Invalid bootstrapping state, reset ESP8266 before updating
+  // add upload status to webpage somehow
+  // abort upload if error detected ?
+  // supress cp timeout on upload
+  // add progress handler for debugging
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 								 // handler for the file upload, get's the sketch bytes, and writes
 	// them through the Update object
