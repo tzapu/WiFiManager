@@ -8,6 +8,12 @@
 <!-- HTTP_STYLE -->
 <style>
 
+:root{
+	 /* CSS VARIABLE THEME COLOR */
+	/*--primarycolor:#9933CC;*/
+	--primarycolor:#1fa3ec;
+}
+
 body.invert,
 body.invert a,
 body.invert h1 {
@@ -50,13 +56,13 @@ input,button,.msg{
 }
 button,input[type="button"],input[type="submit"] {
     border: 0;
-    background-color: #9933CC;
+    background-color: var(--primarycolor);
     color: #fff;
     line-height: 2.4rem;
     font-size: 1.2rem;
 }
 input[type="file"]{
-	border: 1px solid #9933CC;
+	border: 1px solid var(--primarycolor);
 }
 a {
     color: #000;
@@ -64,7 +70,7 @@ a {
     text-decoration: none;
 }
 a:hover {
-    color: #9933CC;
+    color: var(--primarycolor);
     text-decoration: underline;
 }
 .h {
@@ -128,10 +134,10 @@ a:hover {
 	margin-bottom: 5px;
 }
 .msg.P {
-    border-left-color: #9933CC;
+    border-left-color: var(--primarycolor);
 }
 .msg.P h4 {
-    color: #9933CC;
+    color: var(--primarycolor);
 }
 /*.msg.S {
     border-left-color: #5cb85c;
@@ -297,7 +303,7 @@ button.D{
 		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
 			<!-- FORM_UPLOAD -->
-			<Br/><br/>Form UPLOAD<br/><form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update' accept='.bin,application/octet-stream'><input type='submit' value='Submit'></form>
+			<Br/><br/>Form UPLOAD<br/><form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update' accept='.bin,application/octet-stream'><button type='submit' value='Submit'>Submit</button></form>
 			<!-- /FORM_UPLOAD -->	
 
 <!-- HTTP_END -->
