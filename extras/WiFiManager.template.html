@@ -25,7 +25,6 @@ body.invert .q[role=img] {
     -webkit-filter: invert(1);
     filter: invert(1);
 }
-
 .c,
 body {
     text-align: center;
@@ -35,24 +34,27 @@ body {
 	text-align:left;
 	display:inline-block;
 	min-width:260px;
+	max-width:500px;
 }
 div,
 input {
     padding: 5px;
     font-size: 1em;
-}
-input {
-    width: 95%;
+    width: 100%;
     margin:5px 0;
+	box-sizing: border-box;
+	border-radius:.3rem;
 }
-button {
+button,input[type="button"],input[type="submit"] {
     border: 0;
-    border-radius: .3rem;
     background-color: #9933CC;
     color: #fff;
     line-height: 2.4rem;
     font-size: 1.2rem;
     width: 100%;
+}
+input[type="file"]{
+	border: 1px solid #9933CC;
 }
 a {
     color: #000;
@@ -293,6 +295,10 @@ button.D{
 		 		</table>
 		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
+			<!-- FORM_UPLOAD -->
+			<Br/><br/>Form UPLOAD<br/><form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update' accept='.bin,application/octet-stream'><input type='submit' value='Submit'></form>
+			<!-- /FORM_UPLOAD -->	
+
 <!-- HTTP_END -->
     </div>
 	</body>
