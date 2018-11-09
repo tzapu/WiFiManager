@@ -113,7 +113,7 @@ void setup() {
 
   // wm.setCountry("US");
   
-  wm.setConfigPortalTimeout(120);
+  // wm.setConfigPortalTimeout(120);
   // wm.startConfigPortal("AutoConnectAP", "password");
 
   //fetches ssid and pass and tries to connect

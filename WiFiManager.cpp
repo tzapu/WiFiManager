@@ -2722,10 +2722,10 @@ void WiFiManager::handleUpdating(){
   // cannot upload if softreset after upload, maybe check for hard reset at least for dev, ERROR[11]: Invalid bootstrapping state, reset ESP8266 before updating
   // add upload status to webpage somehow
   // abort upload if error detected ?
-  // supress cp timeout on upload, so it doesnt keep uploading?
+  // [x] supress cp timeout on upload, so it doesnt keep uploading?
   // add progress handler for debugging
   // combine route handlers into one callback and use argument or post checking instead of mutiple functions maybe, if POST process else server upload page?
-  // add upload checking, do we need too check file?
+  // [x] add upload checking, do we need too check file?
   // convert output to debugger if not moving to example
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   bool error = false;
