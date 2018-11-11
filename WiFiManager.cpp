@@ -642,7 +642,7 @@ void WiFiManager::handleWifiSave() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += FPSTR(HTTP_SAVED);
+  page += _customSavedElement;
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
@@ -765,6 +765,10 @@ void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
 //sets a custom element to add to head, like a new style tag
 void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
+}
+
+void WiFiManager::setCustomSavedElement(const char* element) {
+  _customSavedElement = element;
 }
 
 //if this is true, remove duplicated Access Points - defaut true
