@@ -46,7 +46,7 @@ div,
 input {
     padding: 5px;
     font-size: 1em;
-    width: 100%;
+    /*width: 100%;*/
     margin:5px 0;
 	box-sizing: border-box;
 }
@@ -308,6 +308,7 @@ button.D{
 				<input type='file' name='update' accept='.bin,application/octet-stream' onchange="(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)">
 				<button id='uploadbin' class="h">Submit</button>
 			</form>
+			<a href='http://192.168.4.1' target='_blank'><small>* Upload may not function inside captive portal, Open in browser - http://192.168.4.1</a></small>
 			<!-- /FORM_UPLOAD -->	
 
 <!-- HTTP_END -->

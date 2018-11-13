@@ -93,7 +93,7 @@ void setup() {
   // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   // wm.setMenu(menu,9); // custom menu array must provide length
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
+  std::vector<const char *> menu = {"wifi","info","param","update","close","sep","erase","restart","exit"};
   wm.setMenu(menu); // custom menu, pass vector
   
   // set static sta ip
