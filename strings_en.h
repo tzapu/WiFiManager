@@ -24,10 +24,10 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/info'    method='get'><button>Info</button></form><br/>\n", // MENU_INFO
 "<form action='/param'   method='get'><button>Setup</button></form><br/>\n",//MENU_PARAM
 "<form action='/close'   method='get'><button>Close</button></form><br/>\n", // MENU_CLOSE
-"<form action='/update'  method='get'><button>Update</button></form><br/>\n",// MENU_UPDATE
 "<form action='/restart' method='get'><button>Restart</button></form><br/>\n",// MENU_RESTART
 "<form action='/exit'    method='get'><button>Exit</button></form><br/>\n",  // MENU_EXIT
 "<form action='/erase'   method='get'><button class='D'>Erase</button></form><br/>\n", // MENU_ERASE
+"<form action='/update'  method='get'><button>Update</button></form><br/>\n",// MENU_UPDATE
 "<hr><br/>" // MENU_SEP
 };
 
@@ -116,7 +116,7 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
-const char HTTP_UPDATE[] PROGMEM = "Upload New Firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Update</button></form><small><a href='http://192.168.4.1' target='_blank'>* May not function inside captive portal, Open in browser http://192.168.4.1</a><small>";
+const char HTTP_UPDATE[] PROGMEM = "Upload New Firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Update</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* May not function inside captive portal, Open in browser http://192.168.4.1</a><small>";
 const char HTTP_UPDATE_FAIL[] PROGMEM = "<div class='msg D'><strong>Update Failed!</strong><Br/>Reboot device and try again</div>";
 const char HTTP_UPDATE_OK[] PROGMEM = "<div class='msg P'><strong>Update OK!</strong> Device Rebooting now...</div>";
 
@@ -221,8 +221,8 @@ const char D_HR[]                 PROGMEM = "--------------------";
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
 
-const uint8_t _nummenutokens = 9;
-const char * const _menutokens[9] PROGMEM = {
+const uint8_t _nummenutokens = 10;
+const char * const _menutokens[10] PROGMEM = {
     "wifi",
     "wifinoscan",
     "info",
@@ -231,6 +231,7 @@ const char * const _menutokens[9] PROGMEM = {
     "restart",
     "exit",
     "erase",
+    "update",
     "sep"
 };
 
