@@ -202,6 +202,11 @@ WiFiManager::~WiFiManager() {
     _params = NULL;
   }
 
+  // @todo remove event
+  // #ifdef ESP32
+  // WiFi.removeEvent(std::bind(&WiFiManager::WiFiEvent,this));
+  // #endif
+
   DEBUG_WM(DEBUG_DEV,F("unloading"));
 }
 
@@ -215,6 +220,7 @@ void WiFiManager::_begin(){
 }
 
 void WiFiManager::_end(){
+  _hasBegun = false;
   if(_userpersistent) WiFi.persistent(true); // reenable persistent, there is no getter we rely on _userpersistent
   // if(_usermode != WIFI_OFF) WiFi.mode(_usermode);
 }
@@ -2667,6 +2673,7 @@ String WiFiManager::WiFi_SSID(){
 
 #ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
+    if(!_hasBegun) return;
     DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON:",info.disconnected.reason);
