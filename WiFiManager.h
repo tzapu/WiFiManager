@@ -74,6 +74,8 @@ class WiFiManager
     WiFiManager();
     ~WiFiManager();
 
+    int           connectWifi(String ssid, String pass);
+
     boolean       autoConnect();
     boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 
@@ -157,7 +159,6 @@ class WiFiManager
     //void          setEEPROMString(int start, int len, String string);
 
     int           status = WL_IDLE_STATUS;
-    int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
 
     void          handleRoot();
