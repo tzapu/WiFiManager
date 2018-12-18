@@ -267,13 +267,7 @@ class WiFiManager
 
     std::unique_ptr<DNSServer>        dnsServer;
 
-    #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
-        using WM_WebServer = WebServer;
-    #else
-        using WM_WebServer = ESP8266WebServer;
-    #endif
-    
-    std::unique_ptr<WM_WebServer> server;
+    std::unique_ptr<AsyncWebServer> server;
 
   private:
     std::vector<uint8_t> _menuIds;
