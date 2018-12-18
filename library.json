@@ -12,12 +12,18 @@
         "name": "tablatronix",
         "url": "https://github.com/tablatronix",
         "maintainer": true
+    },
+    {
+        "name": "bwssytems",
+        "url": "https://github.com/bwssytems",
+        "maintainer": false
     }
+
 ],
 "repository":
   {
     "type": "git",
-    "url": "https://github.com/tzapu/WiFiManager.git"
+    "url": "https://github.com/bwssytems/WiFiManager.git"
   },
   "frameworks": "arduino",
   "platforms": 
