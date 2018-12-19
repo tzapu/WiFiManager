@@ -50,7 +50,7 @@
     #define WM_WIFIOPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
-
+    #include <esp_wifi.h>
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
@@ -373,7 +373,7 @@ class WiFiManager
     void          handleRoot(AsyncWebServerRequest *request);
     void          handleWifi(AsyncWebServerRequest *request);
     void          handleWifiNoscan(AsyncWebServerRequest *request);
-    void          handleWifiSWitch(AsyncWebServerRequest *request, boolean scan);
+    void          handleWifiSwitch(AsyncWebServerRequest *request, boolean scan);
     void          handleWifiSave(AsyncWebServerRequest *request);
     void          handleInfo(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
@@ -386,9 +386,9 @@ class WiFiManager
     void          handleWiFiStatus(AsyncWebServerRequest *request);
     void          handleRequest();
     void          handleParamSave(AsyncWebServerRequest *request);
-    void          doParamSave();
+    void          doParamSave(AsyncWebServerRequest *request);
 
-    boolean       captivePortal();
+    boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
