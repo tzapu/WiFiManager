@@ -460,8 +460,12 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  server->reset();
+  DEBUG_WM(F("DNS Reset, reset web server"));
+  AsyncWebserver::AsyncWebServer newServer;
+  newServer = new AsyncWebserver(80);
+  server = &newServer;
 
+  DEBUG_WM(F("web server reset"));
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   // DEBUG_WM("dns server started port: ",DNS_PORT);
@@ -474,6 +478,7 @@ void WiFiManager::setupConfigPortal() {
     _webservercallback();
   }
 
+  DEBUG_WM(F("Setup handlers"));
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this, std::placeholders::_1));
   server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, std::placeholders::_1));
