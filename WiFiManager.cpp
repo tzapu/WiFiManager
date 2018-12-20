@@ -460,10 +460,8 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  DEBUG_WM(F("DNS Reset, reset web server"));
-  AsyncWebserver::AsyncWebServer newServer;
-  newServer = new AsyncWebserver(80);
-  server = &newServer;
+  DEBUG_WM(F("DNS Reset"));
+  server.reset(new AsyncWebServer(80));
 
   DEBUG_WM(F("web server reset"));
   /* Setup the DNS server redirecting all the domains to the apIP */
@@ -1780,14 +1778,16 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
-  DEBUG_WM(DEBUG_DEV,"-> " + request->host());
+  String hostHeader = ""; // This is set to a default as the new async web server does not provide this information
+  DEBUG_WM(DEBUG_DEV,"-> " + hostHeader);
   
   if(!_enableCaptivePortal) return false; // skip redirections
 
-  if (!isIp(request->host())) {
+  if (!isIp(hostHeader)) {
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
     // request->sendHeader(F("Location"), (String)F("http://") + toStringIp(request->client().localIP()), true);
-    request->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    // request->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    request->redirect("/");
     request->client()->stop(); // Stop is needed because we sent no content length
     return true;
   }
