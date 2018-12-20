@@ -62,7 +62,7 @@ const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 const char HTTP_BR[]               PROGMEM = "<br/>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
-".c,body{text-align:center;font-family:verdana}div,input{padding:5px;font-size:1em;width:100%;margin:5px 0;box-sizing:border-box;}"
+".c,body{text-align:center;font-family:verdana}div,input{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box;}"
 "input,button,.msg{border-radius:.3rem;width: 100%}"
 "button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
 "input[type='file']{border:1px solid #1fa3ec}"
