@@ -1778,7 +1778,7 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
-  String hostHeader = ""; // This is set to a default as the new async web server does not provide this information
+  String hostHeader = request->getHeader("Host")->value();
   DEBUG_WM(DEBUG_DEV,"-> " + hostHeader);
   
   if(!_enableCaptivePortal) return false; // skip redirections
@@ -1787,8 +1787,8 @@ boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
     // request->sendHeader(F("Location"), (String)F("http://") + toStringIp(request->client().localIP()), true);
     // request->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    request->redirect("/");
-    request->client()->stop(); // Stop is needed because we sent no content length
+    request->redirect("http://" + toStringIp(request->client()->localIP()));
+//    request->client()->stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;
