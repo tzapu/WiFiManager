@@ -440,7 +440,8 @@ class WiFiManager
     // output helpers
     String        getParamOut();
     String        getIpForm(String id, String title, String value);
-    String        getScanItemOut();
+	String        getPasswordForm(String id, String title, String value);
+	String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title);
     String        getMenuOut();

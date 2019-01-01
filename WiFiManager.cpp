@@ -962,6 +962,8 @@ void WiFiManager::handleWifi(boolean scan) {
   pitem.replace(FPSTR(T_v), WiFi_SSID());
   page += pitem;
 
+  page += FPSTR(HTTP_FORM_DPASSWORD);
+
   page += getStaticOut();
   page += FPSTR(HTTP_FORM_WIFI_END);
   if(_paramsInWifi && _paramsCount>0){
@@ -1195,6 +1197,7 @@ String WiFiManager::getIpForm(String id, String title, String value){
     item.replace(FPSTR(T_c), "");
     return item;  
 }
+
 
 String WiFiManager::getStaticOut(){
   String page;
@@ -2709,6 +2712,12 @@ void WiFiManager::WiFi_autoReconnect(){
 void WiFiManager::handleUpdate() {
 	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	const char* www_username = "admin"; 
+	const char* www_password = "esp8266"; //Todo save the password somewhere and load it later
+	if (!server->authenticate(www_username, www_password)) {
+		return server->requestAuthentication();
+	}
+
 	String page = getHTTPHead(FPSTR(S_options)); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
 	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
