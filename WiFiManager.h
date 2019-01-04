@@ -165,6 +165,7 @@ class WiFiManager
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
+    int           getRSSIasQuality(int RSSI);
 
     // erase wifi credentials
     void          resetSettings();
@@ -439,7 +440,6 @@ class WiFiManager
     String        getHTTPHead(String title);
     String        getMenuOut();
     //helpers
-    int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
     boolean       validApPassword();
