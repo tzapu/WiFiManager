@@ -7,47 +7,52 @@
 #define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
-#define OLED
+// // #define MYOLED
 
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#ifdef OLED 
+// #include <Wire.h>
+// #include <Adafruit_GFX.h>
+// #include <Adafruit_SSD1306.h>
+// #ifdef MYOLED 
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+// #define SCREEN_WIDTH 128 // OLED display width, in pixels
+// #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+// // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+// #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-void init_oled(){
-  Wire.begin(SCL,SDA);  // begin(sda, scl) SWAP!
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-  }
+// void init_oled(){
+//   Wire.begin(SCL,SDA);  // begin(sda, scl) SWAP!
+//   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+//   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+//     Serial.println(F("SSD1306 allocation failed"));
+//   }
 
-  display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixepl scale
-  display.setTextColor(WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
-  display.display();
-}
-#endif
+//   display.clearDisplay();
+//   display.setTextSize(1);             // Normal 1:1 pixepl scale
+//   display.setTextColor(WHITE);        // Draw white text
+//   display.setCursor(0,0);             // Start at top-left corner
+//   display.display();
+// }
+
+// void print_oled(String str,uint8_t size){
+//   display.clearDisplay();
+//   display.setTextSize(size);
+//   display.setTextColor(WHITE);
+//   display.setCursor(0,0);
+//   display.println(str);
+//   display.display();
+// }
+// #else
+//   void print_oled(String str,uint8_t size){
+//     (void)str;
+//     (void)size;
+//   }
+// #endif
 
 void print_oled(String str,uint8_t size){
-  #ifdef OLED
-  display.clearDisplay();
-  display.setTextSize(size);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println(str);
-  display.display();
-  #else
   (void)str;
   (void)size;
-  #endif
 }
 
 WiFiManager wm;
