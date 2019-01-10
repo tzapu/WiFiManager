@@ -766,6 +766,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
 bool WiFiManager::wifiConnectNew(String ssid, String pass){
   bool ret = false;
   DEBUG_WM(F("Connecting to new AP:"),ssid);
+  DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
   ret = WiFi.begin(ssid.c_str(), pass.c_str());
@@ -782,6 +783,7 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
   DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
+  DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi.psk());
   ret = WiFi_enableSTA(true,storeSTAmode);
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
