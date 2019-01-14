@@ -26,8 +26,10 @@ install:
   - cd tools
   - python2 get.py
   - popd
-# esp32 needs WebServer_tng for now
-  - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
+# esp32/8266 needs ESPAsyncWebServer for now
+  - git clone https://github.com/me-no-dev/ESPAsyncWebServer.git /usr/local/share/arduino/libraries/ESPAsyncWebServer
+  - git clone https://github.com/me-no-dev/AsyncTCP.git /usr/local/share/arduino/libraries/AsyncTCP
+  - git clone https://github.com/me-no-dev/ESPAsyncTCP.git /usr/local/share/arduino/libraries/ESPAsyncTCP
 
 script:
   - "echo $PWD"

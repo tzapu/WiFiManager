@@ -71,6 +71,9 @@
 #else
 #endif
 
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#include <esp_log.h>
+
 // Switch to using Asynch based webserver which works for ESP32/8266
 #include <ESPAsyncWebServer.h>
 
@@ -198,8 +201,6 @@ class WiFiManager
     void          setConnectTimeout(unsigned long seconds);
     //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
     void          setSaveConnectTimeout(unsigned long seconds);
-    // toggle debug output
-    void          setDebugOutput(boolean debug);
     //set min quality percentage to include in scan, defaults to 8% if not specified
     void          setMinimumSignalQuality(int quality = 8);
     //sets a custom ip /gateway /subnet configuration
@@ -264,6 +265,10 @@ class WiFiManager
     void          setCountry(String cc);
     // set body class (invert)
     void          setClass(String str);
+
+    // Logging Helpers
+    // set level in esp logging utils
+    void          setEspLogLevel(esp_log_level_t a_level);
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -446,29 +451,6 @@ class WiFiManager
     int         _paramsCount          = 0;
     int         _max_params;
     WiFiManagerParameter** _params    = NULL;
-
-    // debugging
-    typedef enum {
-        DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default
-        DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3,
-        DEBUG_MAX       = 4
-    } wm_debuglevel_t;
-
-    boolean       _debug              = true;
-    uint8_t       _debugLevel         = DEBUG_DEV;
-    Stream&     _debugPort; // debug output stream ref
-    
-    template <typename Generic>
-    void        DEBUG_WM(Generic text);
-
-    template <typename Generic>
-    void        DEBUG_WM(wm_debuglevel_t level,Generic text);
-    template <typename Generic, typename Genericb>
-    void        DEBUG_WM(Generic text,Genericb textb);
-    template <typename Generic, typename Genericb>
-    void        DEBUG_WM(wm_debuglevel_t level, Generic text,Genericb textb);
 
     // callbacks
     // @todo use cb list (vector) maybe event ids, allow no return value

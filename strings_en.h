@@ -205,9 +205,6 @@ const char S_method[]             PROGMEM = "\nMethod: ";
 const char S_args[]               PROGMEM = "\nArguments: ";
 const char S_parampre[]           PROGMEM = "param_";
 
-// debug strings
-const char D_HR[]                 PROGMEM = "--------------------";
-
 // END WIFI_MANAGER_OVERRIDE_STRINGS
 #endif
 
