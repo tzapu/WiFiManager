@@ -403,7 +403,7 @@ class WiFiManager
     void          handleWiFiStatus();
     void          handleRequest();
     void          handleParamSave();
-    void          doParamSave();
+	void          doParamSave();
 
     boolean       captivePortal();
     boolean       configPortalHasTimeout();
@@ -500,6 +500,7 @@ class WiFiManager
     std::function<void()> _presavecallback;
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
+	std::function<void()> _saveconfigscallback;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {
