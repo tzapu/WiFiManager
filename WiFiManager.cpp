@@ -203,7 +203,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     WiFi.disconnect(); //  this alone is not enough to stop the autoconnecter
     WiFi.mode(WIFI_AP);
     WiFi.persistent(true);
-  } 
+  }
   else {
     //setup AP
     WiFi.mode(WIFI_AP_STA);
@@ -232,26 +232,33 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     //HTTP
     server->handleClient();
 
-
     if (connect) {
+      delay(1000);
       connect = false;
-      delay(2000);
-      DEBUG_WM(F("Connecting to new AP"));
 
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
-      } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
+      // if saving with no ssid filled in, reconnect to ssid
+      // will not exit cp 
+      if(_ssid == ""){
+        DEBUG_WM(F("No ssid, skipping wifi"));
       }
-
+      else{
+        DEBUG_WM(F("Connecting to new AP"));
+        if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+          delay(2000);
+          // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+          DEBUG_WM(F("Failed to connect."));
+        }
+        else {
+          //connected
+          WiFi.mode(WIFI_STA);
+          //notify that configuration has changed and any optional parameters should be saved
+          if ( _savecallback != NULL) {
+            //todo: check if any custom parameters actually exist, and check if they really changed maybe
+            _savecallback();
+          }
+          break;
+        }
+      }
       if (_shouldBreakAfterConfig) {
         //flag set to exit after config after trying to connect
         //notify that configuration has changed and any optional parameters should be saved
@@ -259,6 +266,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
         }
+        WiFi.mode(WIFI_STA); // turn off ap
+        // reconnect to ssid
+        // int res = WiFi.begin();
+        // attempt connect for 10 seconds
+        DEBUG_WM(F("Waiting for sta (10 secs) ......."));
+        for(size_t i = 0 ; i<100;i++){
+          if(WiFi.status() == WL_CONNECTED) break;
+          DEBUG_WM(".");
+          // Serial.println(WiFi.status());
+          delay(100);
+        }        
+        delay(1000);
         break;
       }
     }
