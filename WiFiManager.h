@@ -10,8 +10,11 @@
  * @license MIT
  */
 
+
 #ifndef WiFiManager_h
 #define WiFiManager_h
+
+#if defined(ESP8266) || defined(ESP32)
 
 #ifdef ESP8266
 #include <core_version.h>
@@ -504,5 +507,7 @@ class WiFiManager
       return false;
     }
 };
+
+#endif
 
 #endif
