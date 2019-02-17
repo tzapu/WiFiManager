@@ -666,7 +666,7 @@ void WiFiManager::handleWpsPushButton() {
   page += FPSTR(HTTP_HEAD_END);
   page += F("Module will start WPS in one second.");
   page += FPSTR(HTTP_END);
-  server-> send(200, "text / html", page);
+  server-> send(200, "text/html", page);
 
   // delay needed, so that the page is rendered completely, before switching
   // to STA (station mode)
