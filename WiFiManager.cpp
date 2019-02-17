@@ -146,6 +146,7 @@ void WiFiManager::setupConfigPortal() {
   server->on(String(F("/")), std::bind(&WiFiManager::handleRoot, this));
   server->on(String(F("/wifi")), std::bind(&WiFiManager::handleWifi, this, true));
   server->on(String(F("/0wifi")), std::bind(&WiFiManager::handleWifi, this, false));
+  server->on(String(F("/wps_pbc")), std::bind(&WiFiManager::handleWpsPushButton, this));
   server->on(String(F("/wifisave")), std::bind(&WiFiManager::handleWifiSave, this));
   server->on(String(F("/i")), std::bind(&WiFiManager::handleInfo, this));
   server->on(String(F("/r")), std::bind(&WiFiManager::handleReset, this));
@@ -651,6 +652,42 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
+}
+
+/** Handle the WPS push button page */
+void WiFiManager::handleWpsPushButton() {
+  DEBUG_WM(F("handleWpsPushButton"));
+
+  String page = FPSTR(HTTP_HEAD);
+  page.replace("{v}", "Info");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEAD_END);
+  page += F("Module will start WPS in one second.");
+  page += FPSTR(HTTP_END);
+  server-> send(200, "text / html", page);
+
+  // delay needed, so that the page is rendered completely, before switching
+  // to STA (station mode)
+  delay(1000);
+
+  // switch to station mode for WPS
+  WiFi.mode(WIFI_STA);
+  startWPS();
+
+  // save SSID and password
+  _ssid = WiFi.SSID();
+  _pass = WiFi.psk();
+
+  //signal ready to connect/reset
+  connect = true;
+
+  // enter access point mode again
+  // necessary, if WPS fails
+  // for example: did not press WPS button on router in time
+  // otherwise, you will not see your device again ;-)
+  WiFi.mode(WIFI_AP);
 }
 
 /** Handle the info page */
