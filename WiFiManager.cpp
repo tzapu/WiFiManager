@@ -664,13 +664,14 @@ void WiFiManager::handleWpsPushButton() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += F("Module will start WPS in one second.");
+  page += F("Module will start WPS in <span id=\"time\">30</span> seconds. Please prepare and press the WPS button on the router when the counter reaches 0. If you are too slow, please connect to the AP again and repeat.");
   page += FPSTR(HTTP_END);
   server-> send(200, "text/html", page);
 
-  // delay needed, so that the page is rendered completely, before switching
-  // to STA (station mode)
-  delay(1000);
+  // at least around one second delay needed,
+  // so that the page is rendered completely, before switching to STA (station mode)
+  // now: also give the user time to press the button on the router
+  delay(30000);
 
   // switch to station mode for WPS
   WiFi.mode(WIFI_STA);
