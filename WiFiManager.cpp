@@ -798,10 +798,12 @@ bool WiFiManager::wifiConnectDefault(){
  * @return bool success
  */
 bool WiFiManager::setSTAConfig(){
+  DEBUG_WM(F("STA static IP:"),_sta_static_ip);  
   bool ret = true;
   if (_sta_static_ip) {
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom static IP/GW/Subnet/DNS"));
     if(_sta_static_dns) {
-      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet/DNS"));
+      DEBUG_WM(DEBUG_VERBOSE,F("Custom static DNS"));
       ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
     }
     else {
