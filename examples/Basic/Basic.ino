@@ -3,10 +3,12 @@
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
+    
+    // WiFi.mode(WiFi_STA); // it is a good practice to make sure your code sets wifi mode how you want it.
 
     //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wm;
-    
+
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
 
