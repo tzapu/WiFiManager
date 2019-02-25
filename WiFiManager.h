@@ -125,7 +125,6 @@ class WiFiManagerParameter {
     void        setValue(const char *defaultValue, int length);
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
