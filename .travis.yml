@@ -34,7 +34,7 @@ script:
   - "echo $HOME"
   - "ls $PWD"
   - source $TRAVIS_BUILD_DIR/travis/common.sh
-  - arduino --board esp8266:esp8266:generic:CpuFrequency=80,CrystalFreq=26,FlashFreq=40,FlashMode=qio,FlashSize=4M1M,led=2,LwIPVariant=v2mss536,Debug=Serial,DebugLevel=CORE --save-prefs
+  - arduino --board esp8266:esp8266:generic:xtal=80,CrystalFreq=26,eesz=40,FlashMode=qio,FlashSize=4M1M,led=2,LwIPVariant=v2mss536,Debug=Serial,DebugLevel=CORE --save-prefs
   - build_examples
   - arduino --board espressif:esp32:esp32doit-devkit-v1:FlashFreq=80,DebugLevel=info --save-prefs
 # some examples fail (SPIFFS defines differ esp32 vs esp8266) so we exclude them
