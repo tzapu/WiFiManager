@@ -424,12 +424,9 @@ void WiFiManager::handleRoot() {
   page.replace("{v}", "Options");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
+  page += FPSTR(HTTP_TEXT);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEAD_END);
-  page += String(F("<h1>"));
-  page += _apName;
-  page += String(F("</h1>"));
-  page += String(F("<h3>WiFiManager</h3>"));
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += FPSTR(HTTP_END);
 
