@@ -197,7 +197,7 @@ void WiFiManager::WiFiManagerInit(){
 WiFiManager::~WiFiManager() {
   _end();
   // parameters
-  // @todo belongs to wifimanagerparameter
+  // @todo below belongs to wifimanagerparameter
   if (_params != NULL){
     DEBUG_WM(DEBUG_DEV,F("freeing allocated params!"));
     free(_params);
@@ -214,6 +214,7 @@ WiFiManager::~WiFiManager() {
 
 void WiFiManager::_begin(){
   if(_hasBegun) return;
+  _hasBegun = true;
   _usermode = WiFi.getMode();
 
   #ifndef ESP32
@@ -1049,16 +1050,17 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       int8_t res;
       _startscan = millis();
       if(async){
-        DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
         #ifdef ESP8266
-        #ifndef WM_NOASYNC // no async available < 2.4.0
-        using namespace std::placeholders; // for `_1`
-        WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
+          #ifndef WM_NOASYNC // no async available < 2.4.0
+          DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
+          using namespace std::placeholders; // for `_1`
+          WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
+          #else
+          res = WiFi.scanNetworks();
+          #endif
         #else
-        res = WiFi.scanNetworks();
-        #endif
-        #else
-        res = WiFi.scanNetworks(true);
+          DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
+          res = WiFi.scanNetworks(true);
         #endif
         return false;
       }
@@ -1984,6 +1986,7 @@ void WiFiManager::setSaveConnectTimeout(unsigned long seconds) {
  */
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
+  if(_debug && _debugLevel == DEBUG_DEV) debugPlatformInfo();
 }
 
 /**
@@ -2675,8 +2678,11 @@ String WiFiManager::WiFi_SSID(){
 
 #ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
-    if(!_hasBegun) return;
     DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
+    if(!_hasBegun){
+      // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+      return;
+    } 
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON:",info.disconnected.reason);
       if(info.disconnected.reason == WIFI_REASON_AUTH_EXPIRE || info.disconnected.reason == WIFI_REASON_AUTH_FAIL){
@@ -2700,6 +2706,7 @@ void WiFiManager::WiFi_autoReconnect(){
     WiFi.setAutoReconnect(_wifiAutoReconnect);
   #elif defined(ESP32)
     // if(_wifiAutoReconnect){
+      // @todo move to seperate method, used for event listener now
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       using namespace std::placeholders;
       WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
