@@ -2606,7 +2606,7 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
 
       if((isEnabled != enable) || persistent) {
           if(enable) {
-          	if(persistent) DEBUG_WM(DEBUG_DEV,F("enableSTA PERSISTENT ON"));
+          	if(persistent) DEBUG_WM(DEBUG_DEV,F("enable STA PERSISTENT ON"));
               return WiFi_Mode(newMode,persistent);
           } else {
               return WiFi_Mode(newMode,persistent);
