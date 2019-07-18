@@ -149,7 +149,7 @@ a:hover {
         <form id="wmform" method='get' action='wifisave'>
             <input id='s' name='s' length=32 placeholder='SSID'>
             <br/>
-            <input id='p' name='p' length=64 type='password' placeholder='password'>
+            <input id='p' name='p' length=64 type='password' placeholder='password' onmousedown="this.type='text'" onfocus="this.type='text'" onfocusout="this.type='password'" onmouseup="this.type='password'" onmousemove="this.type='password'">
             <br/>
             <br/>
             <input id='server' name='server' length=4 placeholder='mqtt server' value=''>
