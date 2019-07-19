@@ -18,16 +18,16 @@ install:
   - arduino --pref "compiler.warning_level=all" --save-prefs
 # install esp32
 # @todo install via boards now since it has been released?
-  - arduino --install-boards espressif:esp32
-  # - pushd .
-  # - mkdir -p ~/Arduino/hardware/espressif
-  # - cd ~/Arduino/hardware/espressif
-  # - git clone https://github.com/espressif/arduino-esp32.git esp32
-  # - cd esp32
-  # - git submodule update --init --recursive
-  # - cd tools
-  # - python2 get.py
-  # - popd
+  # - arduino --install-boards espressif:esp32
+  - pushd .
+  - mkdir -p ~/Arduino/hardware/espressif
+  - cd ~/Arduino/hardware/espressif
+  - git clone https://github.com/espressif/arduino-esp32.git esp32
+  - cd esp32
+  - git submodule update --init --recursive
+  - cd tools
+  - python2 get.py
+  - popd
 # esp32 needs WebServer_tng for now
   # - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
 
