@@ -29,6 +29,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 }
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // put your setup code here, to run once:
   Serial.begin(115200);
   

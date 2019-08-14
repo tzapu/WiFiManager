@@ -93,6 +93,7 @@ void handleRoute(){
 }
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // put your setup code here, to run once:
   Serial.begin(115200);
   // Serial.setDebugOutput(true);  
@@ -127,6 +128,9 @@ void setup() {
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
 
+  const char _customHtml_checkbox[] = "type=\"checkbox\""; 
+  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+
   // callbacks
   wm.setAPCallback(configModeCallback);
   wm.setWebServerCallback(bindServerCallback);
@@ -140,6 +144,7 @@ void setup() {
   wm.addParameter(&custom_token);
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
+  wm.addParameter(&custom_checkbox);
 
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);

@@ -10,6 +10,7 @@ WiFiManager wm; // global wm instance
 WiFiManagerParameter custom_field; // global param ( for non blocking w params )
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
   Serial.begin(115200);
   Serial.setDebugOutput(true);  
   delay(3000);

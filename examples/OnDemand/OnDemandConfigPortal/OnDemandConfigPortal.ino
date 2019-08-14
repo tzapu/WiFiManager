@@ -12,6 +12,7 @@
 int timeout = 120; // seconds to run for
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("\n Starting");
