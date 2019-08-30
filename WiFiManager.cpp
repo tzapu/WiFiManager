@@ -290,7 +290,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
   } else {
-    if (WiFi.SSID()) {
+    if (WiFi.SSID() != "") {
       DEBUG_WM(F("Using last saved values, should be faster"));
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
