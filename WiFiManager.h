@@ -340,8 +340,8 @@ class WiFiManager
 
     // parameter options
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
-    int            _staShowStaticFields   = 0;     // ternary always show static ip fields, only if not set in code, never(cannot change ips via web!)
-    int            _staShowDns            = 0;     // ternary always show dns, only if not set in code, never(cannot change dns via web!)
+    int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
+    int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
@@ -361,7 +361,7 @@ class WiFiManager
 
     // internal options
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
-    boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
+    boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
 
