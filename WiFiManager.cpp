@@ -785,8 +785,8 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
  */
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
-  DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID());
-  DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi.psk());
+  DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID(true));
+  DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   ret = WiFi_enableSTA(true,storeSTAmode);
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
@@ -2682,7 +2682,7 @@ uint8_t WiFiManager::WiFi_softap_num_stations(){
 }
 
 bool WiFiManager::WiFi_hasAutoConnect(){
-  return WiFi_SSID() != "";
+  return WiFi_SSID(true) != "";
 }
 
 String WiFiManager::WiFi_SSID(bool persistent) const{
@@ -2730,8 +2730,8 @@ String WiFiManager::WiFi_psk(bool persistent) const {
     
     #elif defined(ESP32)
     // only if wifi is init
-        if(WiFiGenericClass::getMode() == WIFI_MODE_NULL){
-        return String();
+    if(WiFiGenericClass::getMode() == WIFI_MODE_NULL){
+      return String();
     }
     wifi_config_t conf;
     esp_wifi_get_config(WIFI_IF_STA, &conf);
