@@ -269,6 +269,11 @@ class WiFiManager
     // check if the module has a saved ap to connect to
     bool          getWiFiIsSaved();
 
+    // helper to get saved ssid, if persistent get stored, else get current if connected
+    String        getWiFiPass(bool persistent = false);
+    // helper to get saved password, if persistent get stored, else get current if connected
+    String        getWiFiSSID(bool persistent = false);
+
     // debug output the softap config
     void          debugSoftAPConfig();
     // debug output platform info and versioning
@@ -422,7 +427,8 @@ class WiFiManager
     uint8_t       WiFi_softap_num_stations();
     bool          WiFi_hasAutoConnect();
     void          WiFi_autoReconnect();
-    String        WiFi_SSID();
+    String        WiFi_SSID(bool persistent = false) const;
+    String        WiFi_psk(bool persistent = false) const;
     bool          WiFi_scanNetworks();
     bool          WiFi_scanNetworks(bool force,bool async);
     bool          WiFi_scanNetworks(unsigned int cachetime,bool async);
