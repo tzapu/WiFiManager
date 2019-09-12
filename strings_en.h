@@ -14,7 +14,13 @@
 // !!! THIS DOES NOT WORK, you cannot define in a sketch, if anyone one knows how to order includes to be able to do this help!
 
 const char HTTP_HEAD_START[]       PROGMEM = "<!DOCTYPE html><html lang='en'><head><meta name='format-detection' content='telephone=no'><meta charset='UTF-8'><meta  name='viewport' content='width=device-width,initial-scale=1,user-scalable=no'/><title>{v}</title>";
-const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
+const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){"
+"document.getElementById('s').value=l.innerText||l.textContent;"
+"p = l.nextElementSibling.classList.contains('l');"
+"alert(p);"
+"document.getElementById('p').disabled = !p;"
+"if(p)document.getElementById('p').focus();}</script>";
+
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div class='wrap'>";
 
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{v}</h1><h3>WiFiManager</h3>";
@@ -86,6 +92,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "body.invert,body.invert a,body.invert h1 {background-color:#060606;color:#fff;}"
 "body.invert .msg{color:#fff;background-color:#282828;border-top:1px solid #555;border-right:1px solid #555;border-bottom:1px solid #555;}"
 "body.invert .q[role=img]{-webkit-filter:invert(1);filter:invert(1);}"
+"input:disabled {opacity: 0.5;}"
 "</style>";
 
 const char HTTP_HELP[]             PROGMEM =
