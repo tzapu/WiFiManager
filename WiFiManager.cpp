@@ -360,30 +360,35 @@ bool WiFiManager::startAP(){
   }
 
   //@todo add callback here if needed to modify ap but cannot use setAPStaticIPConfig
+  //@todo rework wifi channelsync as it will work unpredictably when not connected in sta
+ 
+  int32_t channel = 0;
+  if(_channelSync) channel = WiFi.channel();
+  else channel = _apChannel;
 
-  if(_channelSync){
-    DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",WiFi.channel());
+  if(channel>0){
+    DEBUG_WM(DEBUG_VERBOSE,"Starting AP on channel:",channel);
   }
 
   // start soft AP with password or anonymous
   if (_apPassword != "") {
-    if(_channelSync){
-      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),WiFi.channel());
+    if(channel>0){
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),channel);
     }  
     else{
       ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
     }
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
-    if(_channelSync){
-      ret = WiFi.softAP(_apName.c_str(),"",WiFi.channel());
+    if(channel>0){
+      ret = WiFi.softAP(_apName.c_str(),"",channel);
     }  
     else{
       ret = WiFi.softAP(_apName.c_str());
     }  
   }
 
-  if(_debugLevel > DEBUG_DEV) debugSoftAPConfig();
+  if(_debugLevel >= DEBUG_DEV) debugSoftAPConfig();
 
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] There was a problem starting the AP");
   // @todo add softAP retry here
@@ -2255,6 +2260,14 @@ bool  WiFiManager::setHostname(const char * hostname){
   //@todo max length 32
   _hostname = hostname;
   return true;
+}
+
+/**
+ * set the soft ao channel, ignored if channelsync is true and connected
+ * @param int32_t   wifi channel, 0 to disable
+ */
+void WiFiManager::setWiFiAPChannel(int32_t channel){
+  _apChannel = channel;
 }
 
 /**

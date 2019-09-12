@@ -255,6 +255,9 @@ class WiFiManager
     bool          setHostname(const char * hostname);
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
+    // set ap channel
+    void          setWiFiAPChannel(int32_t channel);
+
     // set custom menu
 
     // set custom menu items and order
@@ -334,6 +337,7 @@ class WiFiManager
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use wifi channel when starting ap
+    int32_t       _apChannel              = 0; // channel to use for ap
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
