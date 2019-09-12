@@ -7,6 +7,8 @@
 #define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
+unsigned long mtime = 0;
+
 // // #define MYOLED
 
 // #include <Wire.h>
@@ -203,12 +205,13 @@ void loop() {
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
     Serial.println("BUTTON PRESSED");
-    wm.setConfigPortalTimeout(120);
+    wm.setConfigPortalTimeout(140);
+    wm.setWiFiAPChannel(13);
 
     // disable captive portal redirection
     // wm.setCaptivePortalEnable(false);
     
-    if (!wm.startConfigPortal("OnDemandAP")) {
+    if (!wm.startConfigPortal("OnDemandAP","12345678")) {
       Serial.println("failed to connect and hit timeout");
       delay(3000);
     } else {
@@ -219,9 +222,12 @@ void loop() {
     }
   }
 
-  if(WiFi.status() == WL_CONNECTED)  getTime();
+  if(WiFi.status() == WL_CONNECTED && millis()-mtime > 10000 ){
+    getTime();
+    mtime = millis();
+  }
   // put your main code here, to run repeatedly:
-  delay(5000);
+  delay(100);
 }
 
 void getTime() {
