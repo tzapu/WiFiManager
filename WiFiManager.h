@@ -336,7 +336,7 @@ class WiFiManager
    
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
-    bool          _channelSync            = false; // use wifi channel when starting ap
+    bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
 
     #ifdef ESP32
