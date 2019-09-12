@@ -773,7 +773,8 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
  */
 bool WiFiManager::wifiConnectNew(String ssid, String pass){
   bool ret = false;
-  DEBUG_WM(F("Connecting to new AP:"),ssid);
+  DEBUG_WM(F("CONNECTED:"),WiFi.status() == WL_CONNECTED);
+  DEBUG_WM(F("Connecting to NEW AP:"),ssid);
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
@@ -790,7 +791,7 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
  */
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
-  DEBUG_WM(F("Connecting to saved AP:"),WiFi_SSID(true));
+  DEBUG_WM(F("Connecting to SAVED AP:"),WiFi_SSID(true));
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   ret = WiFi_enableSTA(true,storeSTAmode);
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
@@ -942,7 +943,7 @@ void WiFiManager::handleRoot() {
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
-  if(_preloadwifiscan) WiFi_scanNetworks((unsigned)20000,true); // preload wifiscan throttled, async
+  if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
   // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
   // if we can detect these and ignore them that would be great, since they come from the captive portal redirect maybe there is a refferer
@@ -1054,7 +1055,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
       int8_t res;
       _startscan = millis();
-      if(async){
+      if(async && _asyncScan){
         #ifdef ESP8266
           #ifndef WM_NOASYNC // no async available < 2.4.0
           DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
@@ -2641,7 +2642,8 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
           if(enable) {
           	if(persistent) DEBUG_WM(DEBUG_DEV,F("enableSTA PERSISTENT ON"));
               return WiFi_Mode(newMode,persistent);
-          } else {
+          }
+          else {
               return WiFi_Mode(newMode,persistent);
           }
       } else {

@@ -370,6 +370,8 @@ class WiFiManager
 
     // internal options
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _asyncScan              = false;
+    unsigned int  _scancachetime          = 30000; // ms cache time for background scans
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
