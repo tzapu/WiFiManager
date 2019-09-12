@@ -287,7 +287,8 @@ class WiFiManager
     void          setCountry(String cc);
     // set body class (invert)
     void          setClass(String str);
-
+    String        getDefaultAPName();
+    
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)

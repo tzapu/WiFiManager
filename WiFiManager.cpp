@@ -231,7 +231,7 @@ void WiFiManager::_end(){
 // AUTOCONNECT
 
 boolean WiFiManager::autoConnect() {
-  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);
+  String ssid = getDefaultAPName();
   return autoConnect(ssid.c_str(), NULL);
 }
 
@@ -504,7 +504,7 @@ void WiFiManager::setupConfigPortal() {
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);  
+  String ssid = getDefaultAPName();
   return startConfigPortal(ssid.c_str(), NULL);
 }
 
@@ -522,7 +522,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   _apName     = apName; // @todo check valid apname ?
   _apPassword = apPassword;
   
-  if(_apName == "") _apName = _wifissidprefix + "_" + String(WIFI_getChipId(),HEX);
+  DEBUG_WM(DEBUG_VERBOSE,F("Starting Config Portal"));
+
+  if(_apName == "") _apName = getDefaultAPName();
+
   if(!validApPassword()) return false;
   
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
@@ -2358,6 +2361,14 @@ uint8_t WiFiManager::getLastConxResult(){
  */
 bool WiFiManager::getWiFiIsSaved(){
   return WiFi_hasAutoConnect();
+}
+
+String WiFiManager::getDefaultAPName(){
+  String hostString = String(WIFI_getChipId(),HEX);
+  hostString.toUpperCase();
+  // char hostString[16] = {0};
+  // sprintf(hostString, "%06X", ESP.getChipId());  
+  return _wifissidprefix + "_" + hostString;
 }
 
 /**
