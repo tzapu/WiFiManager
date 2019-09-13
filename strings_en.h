@@ -10,6 +10,9 @@
  * @license MIT
  */
 
+#ifndef _WM_STRINGS_H_
+#define _WM_STRINGS_H_
+
 #ifndef WIFI_MANAGER_OVERRIDE_STRINGS
 // !!! THIS DOES NOT WORK, you cannot define in a sketch, if anyone one knows how to order includes to be able to do this help!
 
@@ -353,4 +356,6 @@ const wifi_country_t WM_COUNTRY_JP{"JP",1,14,CONFIG_ESP32_PHY_MAX_TX_POWER,WIFI_
 static wifi_country_t WM_COUNTRY_US{"US",1,11,WIFI_COUNTRY_POLICY_AUTO};
 static wifi_country_t WM_COUNTRY_CN{"CN",1,13,WIFI_COUNTRY_POLICY_AUTO};
 static wifi_country_t WM_COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
+#endif
+
 #endif
