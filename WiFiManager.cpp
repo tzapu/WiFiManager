@@ -2451,13 +2451,17 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
  * @return {[type]} [description]
  */
 void WiFiManager::debugSoftAPConfig(){
+    wifi_country_t country;
+    
     #ifdef ESP8266
       softap_config config;
       wifi_softap_get_config(&config);
+      wifi_get_country(&country);
     #elif defined(ESP32)
       wifi_config_t conf_config;
       esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
       wifi_ap_config_t config = conf_config.ap;
+      esp_wifi_get_country(&country);
     #endif
 
     DEBUG_WM(F("SoftAP Configuration"));
@@ -2469,6 +2473,7 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("authmode:        "),config.authmode);
     DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "),config.max_connection);
+    DEBUG_WM(F("country:         "),(String)country.cc);
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
     DEBUG_WM(FPSTR(D_HR));
 }
@@ -2581,22 +2586,28 @@ String WiFiManager::getModeString(uint8_t mode){
 }
 
 bool WiFiManager::WiFiSetCountry(){
+  if(_wificountry == "") return false; // skip not set
   bool ret = false;
   #ifdef ESP32
-  // @todo check if wifi is init, no idea how, doesnt seem to be exposed
-  if(_wificountry == "") return ret; // skip not set
-  else if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
+  // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
+       if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
   else if(_wificountry == "US") ret = esp_wifi_set_country(&WM_COUNTRY_US) == ESP_OK;
   else if(_wificountry == "JP") ret = esp_wifi_set_country(&WM_COUNTRY_JP) == ESP_OK;
   else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
   else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
   
-  if(ret) DEBUG_WM(DEBUG_VERBOSE,"esp_wifi_set_country: " + _wificountry);
-  else DEBUG_WM(DEBUG_ERROR,"[ERROR] esp_wifi_set_country failed");
+  #elif defined(ESP8266)
+       // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
+       if(_wificountry == "US") ret = wifi_set_country(&WM_COUNTRY_US);
+  else if(_wificountry == "JP") ret = wifi_set_country(&WM_COUNTRY_JP);
+  else if(_wificountry == "CN") ret = wifi_set_country(&WM_COUNTRY_CN);
+  else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
   #endif
+  
+  if(ret) DEBUG_WM(DEBUG_VERBOSE,"esp_wifi_set_country: " + _wificountry);
+  else DEBUG_WM(DEBUG_ERROR,"[ERROR] esp_wifi_set_country failed");  
   return ret;
 }
-
 
 // set mode ignores WiFi.persistent 
 bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
