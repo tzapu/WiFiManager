@@ -19,7 +19,7 @@ bool shouldSaveConfig = false;
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
-  Serial.println("Should save config");
+  Serial.println(F("Should save config"));
   shouldSaveConfig = true;
 }
 
@@ -33,39 +33,42 @@ void setup() {
   //SPIFFS.format();
 
   //read configuration from FS json
-  Serial.println("mounting FS...");
+  Serial.println(F("mounting FS..."));
 
   if (SPIFFS.begin()) {
-    Serial.println("mounted file system");
+    Serial.println(F("mounted file system"));
     if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
-      Serial.println("reading config file");
+      Serial.println(F("reading config file"));
       File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
-        Serial.println("opened config file");
+        Serial.println(F("opened config file"));
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
-        if (json.success()) {
-          Serial.println("\nparsed json");
-
-          strcpy(mqtt_server, json["mqtt_server"]);
-          strcpy(mqtt_port, json["mqtt_port"]);
-          strcpy(blynk_token, json["blynk_token"]);
-
+        StaticJsonDocument<500> jsonBuffer;
+        auto error = deserializeJson(jsonBuffer, buf.get());
+        if (error) {
+          Serial.print(F("deserializeJson() failed with code "));
+          Serial.println(error.c_str());
+          return;
         } else {
-          Serial.println("failed to load json config");
+          Serial.println(F("deserializeJson() successful:"));
+
+          serializeJsonPretty(jsonBuffer, Serial);
+          Serial.println();
+          
+          strcpy(mqtt_server, jsonBuffer["mqtt_server"]);
+          strcpy(mqtt_port, jsonBuffer["mqtt_port"]);
+          strcpy(blynk_token, jsonBuffer["blynk_token"]);
         }
         configFile.close();
       }
     }
   } else {
-    Serial.println("failed to mount FS");
+    Serial.println(F("failed to mount FS"));
   }
   //end read
 
@@ -86,7 +89,7 @@ void setup() {
   wifiManager.setSaveConfigCallback(saveConfigCallback);
 
   //set static ip
-  wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
+//  wifiManager.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
   
   //add all your parameters here
   wifiManager.addParameter(&custom_mqtt_server);
@@ -110,7 +113,7 @@ void setup() {
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
-    Serial.println("failed to connect and hit timeout");
+    Serial.println(F("failed to connect and hit timeout"));
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
@@ -118,7 +121,7 @@ void setup() {
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
+  Serial.println(F("connected...yeey :)"));
 
   //read updated parameters
   strcpy(mqtt_server, custom_mqtt_server.getValue());
@@ -127,25 +130,25 @@ void setup() {
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
-    Serial.println("saving config");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
-    json["mqtt_server"] = mqtt_server;
-    json["mqtt_port"] = mqtt_port;
-    json["blynk_token"] = blynk_token;
+    Serial.println(F("saving config"));
+    StaticJsonDocument<500> jsonBuffer;
+    jsonBuffer["mqtt_server"] = mqtt_server;
+    jsonBuffer["mqtt_port"] = mqtt_port;
+    jsonBuffer["blynk_token"] = blynk_token;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
-      Serial.println("failed to open config file for writing");
+      Serial.println(F("failed to open config file for writing"));
     }
 
-    json.printTo(Serial);
-    json.printTo(configFile);
+    serializeJson(jsonBuffer, Serial);
+    Serial.println();
+    serializeJson(jsonBuffer, configFile);
     configFile.close();
     //end save
   }
 
-  Serial.println("local ip");
+  Serial.println(F("local ip:"));
   Serial.println(WiFi.localIP());
 
 }
