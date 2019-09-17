@@ -117,6 +117,8 @@ class WiFiManager
     void          setCustomHeadElement(const char* element);
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    //sets the method which can determine when can we exit configportal
+    void          setConfigPortalExitable(boolean (*func)(void));
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -183,6 +185,7 @@ class WiFiManager
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
+    boolean (*_isConfigPortalExitable)(void) = NULL;
 
     int                    _max_params;
     WiFiManagerParameter** _params;
