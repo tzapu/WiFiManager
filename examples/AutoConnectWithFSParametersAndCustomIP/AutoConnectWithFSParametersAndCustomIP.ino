@@ -52,10 +52,14 @@ void setup() {
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
-        if (json.success()) {
+        //DynamicJsonBuffer jsonBuffer;
+        //JsonObject& json = jsonBuffer.parseObject(buf.get());
+        DynamicJsonDocument json(1024);
+        auto deserializeError = deserializeJson(json, buf.get());
+        //json.printTo(Serial);
+        serializeJson(json, Serial);
+        //if (json.success()) {
+        if ( ! deserializeError )  {  
           Serial.println("\nparsed json");
 
           strcpy(mqtt_server, json["mqtt_server"]);
@@ -154,8 +158,9 @@ void setup() {
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
+    //DynamicJsonBuffer jsonBuffer;
+    //JsonObject& json = jsonBuffer.createObject();
+    DynamicJsonDocument json(1024);
     json["mqtt_server"] = mqtt_server;
     json["mqtt_port"] = mqtt_port;
     json["blynk_token"] = blynk_token;
@@ -169,8 +174,10 @@ void setup() {
       Serial.println("failed to open config file for writing");
     }
 
-    json.prettyPrintTo(Serial);
-    json.printTo(configFile);
+    //json.prettyPrintTo(Serial);
+    serializeJsonPretty(json, Serial);
+    //json.printTo(configFile);
+    serializeJson(json, configFile);
     configFile.close();
     //end save
   }
