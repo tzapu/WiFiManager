@@ -11,10 +11,11 @@
     	// preventDefault();
         document.getElementById('s').value = l.innerText || l.textContent;
         // document.location.href = document.location +"#wmform";
-        document.getElementById('p').focus();
+        p = l.nextElementSibling.classList.contains("l");
+        document.getElementById('p').disabled = !p;
+        if(p)document.getElementById('p').focus();
         return false;
     }
-
 
     </script>
 
@@ -124,6 +125,11 @@ a:hover {
         background-size: 95px 16px;
     }
 }
+
+input:disabled {
+    opacity: 0.5;
+}
+
 </style>
 
 </head>

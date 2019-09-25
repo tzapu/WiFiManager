@@ -52,8 +52,9 @@ struct Settings {
 
 
 void setup() {
+    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    
     pinMode(SETUP_PIN, INPUT_PULLUP);
-    Serial.begin(9600); 
+    Serial.begin(115200); 
 
     //Delay to push SETUP button
     Serial.println("Press setup button");

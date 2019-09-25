@@ -5,7 +5,12 @@
 //for LED status
 #include <Ticker.h>
 Ticker ticker;
-int LED = BUILTIN_LED;
+
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 13 // ESP32 DOES NOT DEFINE LED_BUILTIN
+#endif
+
+int LED = LED_BUILTIN;
 
 void tick()
 {
@@ -24,6 +29,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 }
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // put your setup code here, to run once:
   Serial.begin(115200);
   

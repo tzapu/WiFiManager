@@ -14,9 +14,10 @@ WiFiManager wm;
 unsigned int  timeout   = 120; // seconds to run for
 unsigned int  startTime = millis();
 bool portalRunning      = false;
-bool startCP            = false; // start AP and webserver if true, else start only webserver
+bool startAP            = false; // start AP and webserver if true, else start only webserver
 
 void setup() {
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
   // put your setup code here, to run once
   Serial.begin(115200);
   Serial.println("\n Starting");
@@ -35,7 +36,7 @@ void doWiFiManager(){
     if((millis()-startTime) > (timeout*1000)){
       Serial.println("portaltimeout");
       portalRunning = false;
-      if(startCP){
+      if(startAP){
         wm.stopConfigPortal();
       }  
       else{
@@ -46,7 +47,7 @@ void doWiFiManager(){
 
   // is configuration portal requested?
   if(digitalRead(TRIGGER_PIN) == LOW && (!portalRunning)) {
-    if(startCP){
+    if(startAP){
       Serial.println("Button Pressed, Starting Config Portal");
       wm.setConfigPortalBlocking(false);
       wm.startConfigPortal();

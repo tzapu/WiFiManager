@@ -10,8 +10,11 @@
  * @license MIT
  */
 
+
 #ifndef WiFiManager_h
 #define WiFiManager_h
+
+#if defined(ESP8266) || defined(ESP32)
 
 #ifdef ESP8266
 #include <core_version.h>
@@ -123,7 +126,6 @@ class WiFiManagerParameter {
     void        setValue(const char *defaultValue, int length);
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
@@ -166,6 +168,7 @@ class WiFiManager
 
     // get the AP name of the config portal, so it can be used in the callback
     String        getConfigPortalSSID();
+    int           getRSSIasQuality(int RSSI);
 
     // erase wifi credentials
     void          resetSettings();
@@ -253,6 +256,9 @@ class WiFiManager
     bool          setHostname(const char * hostname);
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
+    // set ap channel
+    void          setWiFiAPChannel(int32_t channel);
+
     // set custom menu
 
     // set custom menu items and order
@@ -267,6 +273,11 @@ class WiFiManager
     // check if the module has a saved ap to connect to
     bool          getWiFiIsSaved();
 
+    // helper to get saved ssid, if persistent get stored, else get current if connected
+    String        getWiFiPass(bool persistent = false);
+    // helper to get saved password, if persistent get stored, else get current if connected
+    String        getWiFiSSID(bool persistent = false);
+
     // debug output the softap config
     void          debugSoftAPConfig();
     // debug output platform info and versioning
@@ -277,7 +288,8 @@ class WiFiManager
     void          setCountry(String cc);
     // set body class (invert)
     void          setClass(String str);
-
+    String        getDefaultAPName();
+    
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -326,7 +338,8 @@ class WiFiManager
    
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
-    bool          _channelSync            = false; // use wifi channel when starting ap
+    bool          _channelSync            = false; // use same wifi sta channel when starting ap
+    int32_t       _apChannel              = 0; // channel to use for ap
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
@@ -338,8 +351,8 @@ class WiFiManager
 
     // parameter options
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
-    int            _staShowStaticFields   = 0;     // ternary always show static ip fields, only if not set in code, never(cannot change ips via web!)
-    int            _staShowDns            = 0;     // ternary always show dns, only if not set in code, never(cannot change dns via web!)
+    int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
+    int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
@@ -359,7 +372,9 @@ class WiFiManager
 
     // internal options
     boolean       _preloadwifiscan        = true;  // preload wifiscan if true
-    boolean       _disableIpFields        = false; // edge case, if true, showxFields(false) forces ip fields off instead of default show when set
+    boolean       _asyncScan              = false;
+    unsigned int  _scancachetime          = 30000; // ms cache time for background scans
+    boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
 
@@ -425,7 +440,8 @@ class WiFiManager
     uint8_t       WiFi_softap_num_stations();
     bool          WiFi_hasAutoConnect();
     void          WiFi_autoReconnect();
-    String        WiFi_SSID();
+    String        WiFi_SSID(bool persistent = false) const;
+    String        WiFi_psk(bool persistent = false) const;
     bool          WiFi_scanNetworks();
     bool          WiFi_scanNetworks(bool force,bool async);
     bool          WiFi_scanNetworks(unsigned int cachetime,bool async);
@@ -445,7 +461,6 @@ class WiFiManager
     String        getHTTPHead(String title);
     String        getMenuOut();
     //helpers
-    int           getRSSIasQuality(int RSSI);
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
     boolean       validApPassword();
@@ -510,5 +525,7 @@ class WiFiManager
       return false;
     }
 };
+
+#endif
 
 #endif

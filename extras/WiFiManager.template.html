@@ -166,11 +166,18 @@ button.D{
 	background-color:#dc3630;
 }
 
+input:disabled {
+	opacity: 0.5;
+}
+
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
 		<script>
-			function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}
+		function c(l){document.getElementById('s').value=l.innerText||l.textContent;
+		p = l.nextElementSibling.classList.contains('l');
+		document.getElementById('p').disabled = !p;
+		if(p)document.getElementById('p').focus()};
 		</script>
 <!-- /HTTP_SCRIPT -->
 <!-- HTTP_HEAD_END -->
@@ -253,7 +260,7 @@ button.D{
 			<!-- /HTTP_STATUS_OFFPW -->
 			<!-- HTTP_STATUS_OFFNOAP -->
 				<br/>AP not found
-			<!-- /HTTP_STATUS_OFFNOAP> -->	
+			<!-- /HTTP_STATUS_OFFNOAP -->	
 			<!-- HTTP_STATUS_OFFFAIL -->
 				<br/>Could not Connect
 			<!-- /HTTP_STATUS_OFFFAIL -->	
