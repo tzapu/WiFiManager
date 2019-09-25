@@ -1195,6 +1195,56 @@ String WiFiManager::WiFiManager::getScanItemOut(){
     return page;
 }
 
+
+int WiFiManager::getChannelDistribution(){
+
+    if(!_numNetworks) WiFi_scanNetworks(); // scan in case this gets called before any scans
+
+    int n = _numNetworks;
+    if (n == 0) {
+      DEBUG_WM(F("No networks found"));
+    }
+    else {
+      DEBUG_WM(n,F("networks found"));
+      //sort networks
+      int indices[n];
+      for (int i = 0; i < n; i++) {
+        indices[i] = i;
+      }
+
+      // RSSI SORT
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+            std::swap(indices[i], indices[j]);
+          }
+        }
+      }
+
+    // get num channels US 11
+    int numchannels   = 11;
+    // int numchannels   = 13;
+    int channelWidth  = 20;
+    int channelBuffer = 5;
+    int channelWide   = 3;
+    bool useoverlap   = false;
+
+    int channels[numchannels];
+
+    for (int i = 0; i < numchannels; i++) {
+      channels[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++) {
+      channels[WiFi.channel(i)-1]++; 
+    }
+
+    for (int i = 0; i < numchannels; i++) {
+      Serial.println("Channel: " + String(i+1) + " Count: " + (String)channels[i]);
+    }
+  }
+}
+
 String WiFiManager::getIpForm(String id, String title, String value){
     String item = FPSTR(HTTP_FORM_LABEL);
     item += FPSTR(HTTP_FORM_PARAM);

@@ -60,7 +60,7 @@ void print_oled(String str,uint8_t size){
 }
 
 WiFiManager wm;
-bool TEST_CP  = false; // always start the configportal
+bool TEST_CP  = true; // always start the configportal
 bool TEST_NET = true; // do a network test, get ntp time
 char ssid[] = "*************";  //  your network SSID (name)
 char pass[] = "********";       // your network password
@@ -108,14 +108,18 @@ void setup() {
   #ifdef OLED
   init_oled();
   #endif
+
   print_oled(F("Starting..."),2);
+  WiFi.mode(WIFI_STA);
+  delay(2000);
   wm.debugPlatformInfo();
 
   //Local intialization. Once its business is done, there is no need to keep it around
   //reset settings - for testing
   // wm.resetSettings();
   // wm.erase();
-  
+  wm.getChannelDistribution();
+
   wm.setClass("invert");
 
   //sets timeout until configuration portal gets turned off
@@ -173,7 +177,7 @@ void setup() {
   wm.setCountry("US"); // setting wifi country seems to improve OSX soft ap connectivity, may help others as well
   
   // set channel
-  wm.setWiFiAPChannel(13);
+  wm.setWiFiAPChannel(11);
   
   // set configrportal timeout
   wm.setConfigPortalTimeout(120);

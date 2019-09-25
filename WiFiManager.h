@@ -288,7 +288,9 @@ class WiFiManager
     // set body class (invert)
     void          setClass(String str);
     String        getDefaultAPName();
-    
+
+    int           getChannelDistribution();
+
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -335,7 +337,7 @@ class WiFiManager
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = true; // disconnect before connect in connectwifi, increases stability on connects
    
-    bool          _disableSTA             = false; // disable sta when starting ap, always
+    bool          _disableSTA             = true; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
@@ -370,8 +372,8 @@ class WiFiManager
     String        _bodyClass              = ""; // class to add to body
 
     // internal options
-    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
     boolean       _asyncScan              = false;
+    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
