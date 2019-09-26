@@ -1922,10 +1922,21 @@ bool WiFiManager::erase(bool opt){
       DEBUG_WM(DEBUG_VERBOSE,"nvs_flash_erase: ", err!=ESP_OK ? (String)err : "Success");
       return err == ESP_OK;
     }
+  #elif defined(ESP8266) && defined(spiffs_api_h)
+    if(opt){
+      bool ret = false;
+      if(SPIFFS.begin()){
+        DEBUG_WM("Erasing SPIFFS");
+        bool ret = SPIFFS.format();
+        DEBUG_WM(DEBUG_VERBOSE,"spiffs erase: ",ret ? "Success" : "ERROR");
+      } else DEBUG_WM("[ERROR] Could not start SPIFFS");
+      return ret;
+    }
   #else
     (void)opt;
   #endif
 
+  DEBUG_WM("Erasing WiFi Config");
   return WiFi_eraseConfig();
 }
 
