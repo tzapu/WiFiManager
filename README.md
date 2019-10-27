@@ -29,7 +29,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
    - Installing
      - [Arduino - Through Library Manager](#install-through-library-manager)
      - [Arduino - From Github](#checkout-from-github)
-     - [PlatformIO]
+     - [PlatformIO](#install-using-platformio)
    - [Using](#using)
  - [Documentation](#documentation)
    - [Access Point Password](#password-protect-the-configuration-access-point)
@@ -146,6 +146,31 @@ After you write your sketch and start the ESP, it will try to connect to WiFi. I
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
 Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
+
+#### Install Using PlatformIO
+
+[PlatformIO](https://platformio.org/) is an emerging ecosystem for IoT development, and 
+is an alternative to using the Arduino IDE. Install `WiFiManager`
+using the platformio [library manager](https://docs.platformio.org/en/latest/librarymanager/index.htm) in your editor, 
+or using the [PlatformIO Core CLI](https://docs.platformio.org/en/latest/userguide/demo.html#library-manager),
+or by adding it to your `platformio.ini` as shown below (recommended approach).
+
+The simplest way is to open the `platformio.ini` file at the root of your project, and `WifiManager` to the common top-level env
+`lib_deps` key like so:
+
+```
+[env]
+lib_deps =
+	WiFiManager
+```
+
+If you want to install the development branch, then you'll need to use the `repository#tag` format instead:
+
+```
+[env]
+lib_deps =
+	https://github.com/tzapu/WiFiManager.git#development
+```
 
 ## Documentation
 
