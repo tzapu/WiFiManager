@@ -371,20 +371,21 @@ bool WiFiManager::startAP(){
   }
 
   // start soft AP with password or anonymous
+  // default channel is 1 here and in esplib, @todo just change to default remove conditionals
   if (_apPassword != "") {
     if(channel>0){
-      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),channel);
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),channel,_apHidden);
     }  
     else{
-      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str());//password option
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),1,_apHidden);//password option
     }
   } else {
     DEBUG_WM(DEBUG_VERBOSE,F("AP has anonymous access!"));    
     if(channel>0){
-      ret = WiFi.softAP(_apName.c_str(),"",channel);
+      ret = WiFi.softAP(_apName.c_str(),"",channel,_apHidden);
     }  
     else{
-      ret = WiFi.softAP(_apName.c_str());
+      ret = WiFi.softAP(_apName.c_str(),"",1,_apHidden);
     }  
   }
 
@@ -2284,6 +2285,15 @@ bool  WiFiManager::setHostname(const char * hostname){
 void WiFiManager::setWiFiAPChannel(int32_t channel){
   _apChannel = channel;
 }
+
+/**
+ * set the soft ap hidden
+ * @param bool   wifi ap hidden, default is false
+ */
+void WiFiManager::setWiFiAPHidden(bool hidden){
+  _apHidden = hidden;
+}
+
 
 /**
  * toggle showing erase wifi config button on info page

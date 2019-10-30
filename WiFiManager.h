@@ -257,7 +257,8 @@ class WiFiManager
     void          setShowInfoErase(boolean enabled);
     // set ap channel
     void          setWiFiAPChannel(int32_t channel);
-
+    // set ap hidden
+    void          setWiFiAPHidden(bool hidden); // default false
     // set custom menu
 
     // set custom menu items and order
@@ -339,6 +340,7 @@ class WiFiManager
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
+    bool          _apHidden               = false; // store softap hidden value
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback

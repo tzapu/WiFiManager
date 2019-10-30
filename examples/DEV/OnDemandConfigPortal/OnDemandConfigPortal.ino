@@ -175,6 +175,9 @@ void setup() {
   // set channel
   wm.setWiFiAPChannel(13);
   
+  // set AP hidden
+  // wm.setAPHidden(true);
+
   // set configrportal timeout
   wm.setConfigPortalTimeout(120);
   // wm.startConfigPortal("AutoConnectAP", "password");
