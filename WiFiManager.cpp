@@ -2453,7 +2453,6 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(!_debug || _debugLevel < level) return;
 
   if(_debugLevel >= DEBUG_MAX){
-    _debugPort.println("MEM: ");
     uint32_t free;
     uint16_t max;
     uint8_t frag;
