@@ -2453,8 +2453,15 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(!_debug || _debugLevel < level) return;
 
   if(_debugLevel >= DEBUG_MAX){
-    _debugPort.print("MEM: ");
-    _debugPort.println((String)ESP.getFreeHeap());
+    _debugPort.println("MEM: ");
+    uint32_t free;
+    uint16_t max;
+    uint8_t frag;
+    ESP.getHeapStats(&free, &max, &frag);
+    _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);    
+    // _debugPort.print((String)ESP.getFreeHeap());
+    // _debugPort.print((String)ESP.getMaxFreeBlockSize());
+    // _debugPort.print((String)ESP.getHeapFragmentation());
   }
   _debugPort.print("*WM: ");
   if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
