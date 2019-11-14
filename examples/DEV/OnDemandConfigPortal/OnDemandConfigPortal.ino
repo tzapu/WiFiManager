@@ -11,7 +11,6 @@
 #ifdef USEOTA
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-bool otastarted = false;
 #endif
 
 #define TRIGGER_PIN 0
@@ -223,10 +222,6 @@ void setup() {
 
   #ifdef USEOTA
     ArduinoOTA.begin();
-    ArduinoOTA.onStart([]() {
-      otastarted = true;
-      Serial.println("\nOTA onStart");
-    });
   #endif
 }
 
@@ -234,7 +229,6 @@ void loop() {
 
   #ifdef USEOTA
   ArduinoOTA.handle();
-  if(otastarted)return;
   #endif
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
