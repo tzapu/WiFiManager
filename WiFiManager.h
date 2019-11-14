@@ -483,13 +483,13 @@ class WiFiManager
     // debugging
     typedef enum {
         DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default
+        DEBUG_NOTIFY    = 1, // default stable
         DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3,
+        DEBUG_DEV       = 3, // default dev
         DEBUG_MAX       = 4
     } wm_debuglevel_t;
 
-    boolean       _debug              = true;
+    boolean _debug  = true;
     
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
