@@ -2638,9 +2638,9 @@ bool WiFiManager::WiFiSetCountry(){
   
   #elif defined(ESP8266)
        // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
-       if(_wificountry == "US") ret = wifi_set_country(&WM_COUNTRY_US);
-  else if(_wificountry == "JP") ret = wifi_set_country(&WM_COUNTRY_JP);
-  else if(_wificountry == "CN") ret = wifi_set_country(&WM_COUNTRY_CN);
+       if(_wificountry == "US") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_US);
+  else if(_wificountry == "JP") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_JP);
+  else if(_wificountry == "CN") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_CN);
   else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
   #endif
   
