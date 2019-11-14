@@ -6,6 +6,14 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <time.h>
 
+#define USEOTA
+// enable OTA
+#ifdef USEOTA
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+bool otastarted = false;
+#endif
+
 #define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
@@ -60,10 +68,13 @@ void print_oled(String str,uint8_t size){
 }
 
 WiFiManager wm;
-bool TEST_CP  = false; // always start the configportal
-bool TEST_NET = true; // do a network test, get ntp time
-char ssid[] = "*************";  //  your network SSID (name)
-char pass[] = "********";       // your network password
+
+// OPTION FLAGS
+bool TEST_CP  = true; // always start the configportal, even if ap found
+bool TEST_NET = true; // do a network test after connect, (gets ntp time)
+
+// char ssid[] = "*************";  //  your network SSID (name)
+// char pass[] = "********";       // your network password
 
 void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
@@ -100,8 +111,12 @@ void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // put your setup code here, to run once:
   Serial.begin(115200);
+  Serial1.begin(115200);
+
   // Serial.setDebugOutput(true);  
-  // delay(3000);
+  delay(1000);
+  Serial1.println("TXD1 Enabled");
+
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
   
@@ -173,7 +188,7 @@ void setup() {
   wm.setCountry("US"); // setting wifi country seems to improve OSX soft ap connectivity, may help others as well
   
   // set channel
-  wm.setWiFiAPChannel(13);
+  // wm.setWiFiAPChannel(13);
   
   // set AP hidden
   // wm.setAPHidden(true);
@@ -205,9 +220,22 @@ void setup() {
       print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
   pinMode(TRIGGER_PIN, INPUT);
+
+  #ifdef USEOTA
+    ArduinoOTA.begin();
+    ArduinoOTA.onStart([]() {
+      otastarted = true;
+      Serial.println("\nOTA onStart");
+    });
+  #endif
 }
 
 void loop() {
+
+  #ifdef USEOTA
+  ArduinoOTA.handle();
+  if(otastarted)return;
+  #endif
   // is configuration portal requested?
   if ( digitalRead(TRIGGER_PIN) == LOW ) {
     delay(100);
