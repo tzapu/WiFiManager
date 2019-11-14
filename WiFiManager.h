@@ -490,9 +490,22 @@ class WiFiManager
     } wm_debuglevel_t;
 
     boolean       _debug              = true;
-    uint8_t       _debugLevel         = DEBUG_DEV;
-    Stream&     _debugPort; // debug output stream ref
     
+    // build debuglevel support
+    // @todo use DEBUG_ESP_x?
+    #ifdef WM_DEBUG_LEVEL
+    uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
+    #else 
+    uint8_t _debugLevel = DEBUG_DEV; // default debug level
+    #endif
+
+    // @todo use DEBUG_ESP_PORT ?
+    #ifdef WM_DEBUG_PORT
+    Stream& _debugPort = WM_DEBUG_PORT;
+    #else
+    Stream& _debugPort = Serial; // debug output stream ref
+    #endif
+
     template <typename Generic>
     void        DEBUG_WM(Generic text);
 
