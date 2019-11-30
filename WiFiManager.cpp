@@ -1335,6 +1335,8 @@ void WiFiManager::handleWifiSave() {
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
 
+  if(_paramsInWifi) doParamSave();
+
   if (server->arg(FPSTR(S_ip)) != "") {
     //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
     String ip = server->arg(FPSTR(S_ip));
@@ -1357,16 +1359,16 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(DEBUG_DEV,F("static DNS:"),dns);
   }
 
-  if(_paramsInWifi){
-    if(_ssid == ""){
-      handleParamSave(); // send param save result and not wifi connect if no wifi creds
-      return;
-    }  
-    else doParamSave();
-  }
+  String page;
 
-  String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
-  page += FPSTR(HTTP_SAVED);
+  if(_ssid == ""){
+    page = getHTTPHead(FPSTR(S_titlewifisettings)); // @token titleparamsaved
+    page += FPSTR(HTTP_PARAMSAVED);
+  }
+  else {
+    String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
+    page += FPSTR(HTTP_SAVED);
+  }
   page += FPSTR(HTTP_END);
 
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
