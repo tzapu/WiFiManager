@@ -1031,7 +1031,7 @@ String WiFiManager::getMenuOut(){
   String page;  
 
   for(auto menuId :_menuIds ){
-    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params
+    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params from menu, @todo this may be undesired by someone
     page += HTTP_PORTAL_MENU[menuId];
   }
 
@@ -2374,6 +2374,18 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   // DEBUG_WM(getMenuOut());
 }
 
+
+/**
+ * set params as sperate page not in wifi
+ * NOT COMPATIBLE WITH setMenu! @todo scan menuids and insert param after wifi or something
+ * @param bool enable 
+ * @since $dev
+ */
+void WiFiManager::setParamsPage(bool enable){
+  _paramsInWifi= false;
+  _menuIdsDefault = {"wifi","param","info","exit"};
+  setMenu(_menuIdsDefault);  
+}
 
 // GETTERS
 

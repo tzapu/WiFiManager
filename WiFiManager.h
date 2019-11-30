@@ -266,6 +266,9 @@ class WiFiManager
     // set custom menu items and order
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
+    
+    // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
+    void          setParamsPage(bool enable);
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
