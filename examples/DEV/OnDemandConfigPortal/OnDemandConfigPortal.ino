@@ -110,11 +110,11 @@ void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   // put your setup code here, to run once:
   Serial.begin(115200);
-  Serial1.begin(115200);
+  // Serial1.begin(115200);
 
   // Serial.setDebugOutput(true);  
   delay(1000);
-  Serial1.println("TXD1 Enabled");
+  // Serial1.println("TXD1 Enabled");
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
