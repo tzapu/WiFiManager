@@ -199,6 +199,8 @@ void setup() {
   wm.setConfigPortalTimeout(120);
   // wm.startConfigPortal("AutoConnectAP", "password");
 
+  // wm.setBreakAfterConfig(true);
+
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"

@@ -624,7 +624,7 @@ uint8_t WiFiManager::processConfigPortal(){
 
       // skip wifi if no ssid
       if(_ssid == ""){
-        DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi"));
+        DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi save"));
       }
       else{
         // attempt sta connection to submitted _ssid, _pass
@@ -1335,8 +1335,6 @@ void WiFiManager::handleWifiSave() {
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
 
-  if(_paramsInWifi) doParamSave();
-
   if (server->arg(FPSTR(S_ip)) != "") {
     //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
     String ip = server->arg(FPSTR(S_ip));
@@ -1357,6 +1355,14 @@ void WiFiManager::handleWifiSave() {
     String dns = server->arg(FPSTR(S_dns));
     optionalIPFromString(&_sta_static_dns, dns.c_str());
     DEBUG_WM(DEBUG_DEV,F("static DNS:"),dns);
+  }
+
+  if(_paramsInWifi){
+    if(_ssid == ""){
+      handleParamSave(); // send param save result and not wifi connect if no wifi creds
+      return;
+    }  
+    else doParamSave();
   }
 
   String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
