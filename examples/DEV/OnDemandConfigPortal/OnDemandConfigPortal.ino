@@ -192,6 +192,9 @@ void setup() {
   // set AP hidden
   // wm.setAPHidden(true);
 
+  // show password publicly!
+  // wm.setShowPassword(true);
+
   // set configrportal timeout
   wm.setConfigPortalTimeout(120);
   // wm.startConfigPortal("AutoConnectAP", "password");
@@ -202,7 +205,7 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
   
   print_oled(F("Connecting..."),2);  
-  if(!wm.autoConnect("AutoConnectAP")) {
+  if(!wm.autoConnect("WM_AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
     print_oled("Not Connected",2);
   }
@@ -211,7 +214,7 @@ void setup() {
     Serial.println("TEST_CP ENABLED");
     // start configportal always
     wm.setConfigPortalTimeout(60);
-    wm.startConfigPortal();
+    wm.startConfigPortal("WM_ConnectAP");
   }
   else {
     //if you get here you have connected to the WiFi

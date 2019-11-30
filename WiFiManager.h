@@ -239,6 +239,8 @@ class WiFiManager
     void          setShowStaticFields(boolean alwaysShow);
     //if true, always show static dns, esle only show if set via setSTAStaticIPConfig
     void          setShowDnsFields(boolean alwaysShow);
+    // toggle showing the saved wifi password in wifi form, could be a security issue.
+    void          setShowPassword(boolean show);
     //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
     //if false, timeout captive portal even if a STA client connected to softAP (false), suggest disabling if captiveportal is open
@@ -355,6 +357,7 @@ class WiFiManager
     int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
     int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
+    boolean       _showPassword           = false; // show or hide saved password on wifi form, might be a security issue!
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection

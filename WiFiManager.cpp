@@ -974,6 +974,13 @@ void WiFiManager::handleWifi(boolean scan) {
 
   pitem = FPSTR(HTTP_FORM_WIFI);
   pitem.replace(FPSTR(T_v), WiFi_SSID());
+
+  if(_showPassword){
+    pitem.replace(FPSTR(T_p), WiFi_psk());
+  }
+  else {
+    pitem.replace(FPSTR(T_p),FPSTR(S_passph));    
+  }
   page += pitem;
 
   page += getStaticOut();
@@ -2193,6 +2200,17 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
 void WiFiManager::setShowDnsFields(boolean alwaysShow){
   if(_disableIpFields) _staShowDns = alwaysShow ? 1 : -1;
   _staShowDns = alwaysShow ? 1 : 0;
+}
+
+/**
+ * toggle showing password in wifi password field
+ * if not enabled, placeholder will be S_passph
+ * @since $dev
+ * @access public
+ * @param boolean alwaysShow [false]
+ */
+void WiFiManager::setShowPassword(boolean show){
+  _showPassword = show;
 }
 
 /**
