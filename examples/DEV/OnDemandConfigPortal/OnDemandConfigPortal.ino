@@ -10,7 +10,6 @@
 #define USEOTA
 // enable OTA
 #ifdef USEOTA
-#include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #endif
