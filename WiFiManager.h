@@ -240,6 +240,8 @@ class WiFiManager
     void          setShowStaticFields(boolean alwaysShow);
     //if true, always show static dns, esle only show if set via setSTAStaticIPConfig
     void          setShowDnsFields(boolean alwaysShow);
+    // toggle showing the saved wifi password in wifi form, could be a security issue.
+    void          setShowPassword(boolean show);
     //if false, disable captive portal redirection
     void          setCaptivePortalEnable(boolean enabled);
     //if false, timeout captive portal even if a STA client connected to softAP (false), suggest disabling if captiveportal is open
@@ -258,12 +260,16 @@ class WiFiManager
     void          setShowInfoErase(boolean enabled);
     // set ap channel
     void          setWiFiAPChannel(int32_t channel);
-
+    // set ap hidden
+    void          setWiFiAPHidden(bool hidden); // default false
     // set custom menu
 
     // set custom menu items and order
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
+    
+    // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
+    void          setParamsPage(bool enable);
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
@@ -340,6 +346,7 @@ class WiFiManager
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
+    bool          _apHidden               = false; // store softap hidden value
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
@@ -354,6 +361,7 @@ class WiFiManager
     int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
     int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
+    boolean       _showPassword           = false; // show or hide saved password on wifi form, might be a security issue!
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
@@ -487,16 +495,29 @@ class WiFiManager
     // debugging
     typedef enum {
         DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default
+        DEBUG_NOTIFY    = 1, // default stable
         DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3,
+        DEBUG_DEV       = 3, // default dev
         DEBUG_MAX       = 4
     } wm_debuglevel_t;
 
-    boolean       _debug              = true;
-    uint8_t       _debugLevel         = DEBUG_DEV;
-    Stream&     _debugPort; // debug output stream ref
+    boolean _debug  = true;
     
+    // build debuglevel support
+    // @todo use DEBUG_ESP_x?
+    #ifdef WM_DEBUG_LEVEL
+    uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
+    #else 
+    uint8_t _debugLevel = DEBUG_DEV; // default debug level
+    #endif
+
+    // @todo use DEBUG_ESP_PORT ?
+    #ifdef WM_DEBUG_PORT
+    Stream& _debugPort = WM_DEBUG_PORT;
+    #else
+    Stream& _debugPort = Serial; // debug output stream ref
+    #endif
+
     template <typename Generic>
     void        DEBUG_WM(Generic text);
 
