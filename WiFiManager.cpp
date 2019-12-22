@@ -144,8 +144,8 @@ void WiFiManager::setupConfigPortal() {
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server->on(String(F("/")).c_str(), std::bind(&WiFiManager::handleRoot, this));
-  server->on(String(F("/wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, true));
-  server->on(String(F("/0wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
+  server->on(String(F("/wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this));
+  server->on(String(F("/ap")).c_str(), std::bind(&WiFiManager::handleAP, this));
   server->on(String(F("/wifisave")).c_str(), std::bind(&WiFiManager::handleWifiSave, this));
   server->on(String(F("/i")).c_str(), std::bind(&WiFiManager::handleInfo, this));
   server->on(String(F("/r")).c_str(), std::bind(&WiFiManager::handleReset, this));
@@ -196,14 +196,14 @@ boolean WiFiManager::startConfigPortal() {
 }
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
-  
+
   if(!WiFi.isConnected()){
     WiFi.persistent(false);
     // disconnect sta, start ap
     WiFi.disconnect(); //  this alone is not enough to stop the autoconnecter
     WiFi.mode(WIFI_AP);
     WiFi.persistent(true);
-  } 
+  }
   else {
     //setup AP
     WiFi.mode(WIFI_AP_STA);
@@ -236,30 +236,40 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     if (connect) {
       connect = false;
       delay(2000);
-      DEBUG_WM(F("Connecting to new AP"));
 
-      // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-        DEBUG_WM(F("Failed to connect."));
+      if (_isAP) {
+        DEBUG_WM(F("Creating new AP"));
+
+        // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+        if (!createWifi(_ssid, _pass)) {
+          DEBUG_WM(F("Failed to create."));
+        } else {
+          //created
+          WiFi.mode(WIFI_AP);
+          //notify that configuration has changed and any optional parameters should be saved
+          if ( _savecallback != NULL) {
+            //todo: check if any custom parameters actually exist, and check if they really changed maybe
+            _savecallback();
+          }
+          break;
+        }
+
       } else {
-        //connected
-        WiFi.mode(WIFI_STA);
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        break;
-      }
+        DEBUG_WM(F("Connecting to new AP"));
 
-      if (_shouldBreakAfterConfig) {
-        //flag set to exit after config after trying to connect
-        //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
+        // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+        if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+          DEBUG_WM(F("Failed to connect."));
+        } else {
+          //connected
+          WiFi.mode(WIFI_STA);
+          //notify that configuration has changed and any optional parameters should be saved
+          if ( _savecallback != NULL) {
+            //todo: check if any custom parameters actually exist, and check if they really changed maybe
+            _savecallback();
+          }
+          break;
         }
-        break;
       }
     }
     yield();
@@ -314,6 +324,27 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     connRes = waitForConnectResult();
   }
   #endif
+  return connRes;
+}
+
+int WiFiManager::createWifi(String ssid, String pass) {
+  DEBUG_WM(F("Creating WiFi AP..."));
+
+  // check if we've got static_ip settings, if we do, use those.
+  if (_sta_static_ip) {
+    DEBUG_WM(F("Custom STA IP/GW/Subnet"));
+    WiFi.softAPConfig(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    DEBUG_WM(WiFi.softAPIP());
+  }
+  //check if we have ssid and pass and force those, if not, try with last saved values
+  if (ssid == "") {
+    DEBUG_WM("Using default AP SSID");
+    ssid = "ESP" + String(ESP.getChipId());
+  }
+
+  int connRes = WiFi.softAP(ssid.c_str(), pass.c_str());
+  DEBUG_WM ("Connection result: ");
+  DEBUG_WM ( connRes );
   return connRes;
 }
 
@@ -438,7 +469,7 @@ void WiFiManager::handleRoot() {
 }
 
 /** Wifi config page handler */
-void WiFiManager::handleWifi(boolean scan) {
+void WiFiManager::handleWifi() {
 
   String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Config ESP");
@@ -447,82 +478,162 @@ void WiFiManager::handleWifi(boolean scan) {
   page += _customHeadElement;
   page += FPSTR(HTTP_HEADER_END);
 
-  if (scan) {
-    int n = WiFi.scanNetworks();
-    DEBUG_WM(F("Scan done"));
-    if (n == 0) {
-      DEBUG_WM(F("No networks found"));
-      page += F("No networks found. Refresh to scan again.");
-    } else {
+  int n = WiFi.scanNetworks();
+  DEBUG_WM(F("Scan done"));
+  if (n == 0) {
+    DEBUG_WM(F("No networks found"));
+    page += F("No networks found. Refresh to scan again.");
+  } else {
 
-      //sort networks
-      int indices[n];
-      for (int i = 0; i < n; i++) {
-        indices[i] = i;
-      }
-
-      // RSSI SORT
-
-      // old sort
-      for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-            std::swap(indices[i], indices[j]);
-          }
-        }
-      }
-
-      /*std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
-        {
-        return WiFi.RSSI(a) > WiFi.RSSI(b);
-        });*/
-
-      // remove duplicates ( must be RSSI sorted )
-      if (_removeDuplicateAPs) {
-        String cssid;
-        for (int i = 0; i < n; i++) {
-          if (indices[i] == -1) continue;
-          cssid = WiFi.SSID(indices[i]);
-          for (int j = i + 1; j < n; j++) {
-            if (cssid == WiFi.SSID(indices[j])) {
-              DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
-              indices[j] = -1; // set dup aps to index -1
-            }
-          }
-        }
-      }
-
-      //display networks in page
-      for (int i = 0; i < n; i++) {
-        if (indices[i] == -1) continue; // skip dups
-        DEBUG_WM(WiFi.SSID(indices[i]));
-        DEBUG_WM(WiFi.RSSI(indices[i]));
-        int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
-
-        if (_minimumQuality == -1 || _minimumQuality < quality) {
-          String item = FPSTR(HTTP_ITEM);
-          String rssiQ;
-          rssiQ += quality;
-          item.replace("{v}", WiFi.SSID(indices[i]));
-          item.replace("{r}", rssiQ);
-          if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
-            item.replace("{i}", "l");
-          } else {
-            item.replace("{i}", "");
-          }
-          //DEBUG_WM(item);
-          page += item;
-          delay(0);
-        } else {
-          DEBUG_WM(F("Skipping due to quality"));
-        }
-
-      }
-      page += "<br/>";
+    //sort networks
+    int indices[n];
+    for (int i = 0; i < n; i++) {
+      indices[i] = i;
     }
+
+    // RSSI SORT
+
+    // old sort
+    for (int i = 0; i < n; i++) {
+      for (int j = i + 1; j < n; j++) {
+        if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+          std::swap(indices[i], indices[j]);
+        }
+      }
+    }
+
+    /*std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
+      {
+      return WiFi.RSSI(a) > WiFi.RSSI(b);
+      });*/
+
+    // remove duplicates ( must be RSSI sorted )
+    if (_removeDuplicateAPs) {
+      String cssid;
+      for (int i = 0; i < n; i++) {
+        if (indices[i] == -1) continue;
+        cssid = WiFi.SSID(indices[i]);
+        for (int j = i + 1; j < n; j++) {
+          if (cssid == WiFi.SSID(indices[j])) {
+            DEBUG_WM("DUP AP: " + WiFi.SSID(indices[j]));
+            indices[j] = -1; // set dup aps to index -1
+          }
+        }
+      }
+    }
+
+    //display networks in page
+    for (int i = 0; i < n; i++) {
+      if (indices[i] == -1) continue; // skip dups
+      DEBUG_WM(WiFi.SSID(indices[i]));
+      DEBUG_WM(WiFi.RSSI(indices[i]));
+      int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
+
+      if (_minimumQuality == -1 || _minimumQuality < quality) {
+        String item = FPSTR(HTTP_ITEM);
+        String rssiQ;
+        rssiQ += quality;
+        item.replace("{v}", WiFi.SSID(indices[i]));
+        item.replace("{r}", rssiQ);
+        if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE) {
+          item.replace("{i}", "l");
+        } else {
+          item.replace("{i}", "");
+        }
+        //DEBUG_WM(item);
+        page += item;
+        delay(0);
+      } else {
+        DEBUG_WM(F("Skipping due to quality"));
+      }
+
+    }
+    page += "<br/>";
   }
 
   page += FPSTR(HTTP_FORM_START);
+  char parLength[5];
+  // add the extra parameters to the form
+  for (int i = 0; i < _paramsCount; i++) {
+    if (_params[i] == NULL) {
+      break;
+    }
+
+    String pitem = FPSTR(HTTP_FORM_PARAM);
+    if (_params[i]->getID() != NULL) {
+      pitem.replace("{i}", _params[i]->getID());
+      pitem.replace("{n}", _params[i]->getID());
+      pitem.replace("{p}", _params[i]->getPlaceholder());
+      snprintf(parLength, 5, "%d", _params[i]->getValueLength());
+      pitem.replace("{l}", parLength);
+      pitem.replace("{v}", _params[i]->getValue());
+      pitem.replace("{c}", _params[i]->getCustomHTML());
+    } else {
+      pitem = _params[i]->getCustomHTML();
+    }
+
+    page += pitem;
+  }
+  if (_params[0] != NULL) {
+    page += "<br/>";
+  }
+
+  if (_sta_static_ip) {
+
+    String item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "ip");
+    item.replace("{n}", "ip");
+    item.replace("{p}", "Static IP");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_ip.toString());
+
+    page += item;
+
+    item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "gw");
+    item.replace("{n}", "gw");
+    item.replace("{p}", "Static Gateway");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_gw.toString());
+
+    page += item;
+
+    item = FPSTR(HTTP_FORM_PARAM);
+    item.replace("{i}", "sn");
+    item.replace("{n}", "sn");
+    item.replace("{p}", "Subnet");
+    item.replace("{l}", "15");
+    item.replace("{v}", _sta_static_sn.toString());
+
+    page += item;
+
+    page += "<br/>";
+  }
+
+  page += FPSTR(HTTP_FORM_END);
+  page += FPSTR(HTTP_SCAN_LINK);
+
+  page += FPSTR(HTTP_END);
+
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "text/html", page);
+
+
+  DEBUG_WM(F("Sent config page"));
+}
+
+/** AP config page handler */
+void WiFiManager::handleAP() {
+
+  String page = FPSTR(HTTP_HEADER);
+  page.replace("{v}", "Config ESP");
+  page += FPSTR(HTTP_SCRIPT);
+  page += FPSTR(HTTP_STYLE);
+  page += _customHeadElement;
+  page += FPSTR(HTTP_HEADER_END);
+
+  page += FPSTR(HTTP_FORM_START);
+  page += FPSTR(HTTP_FORM_ISAP);
   char parLength[5];
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++) {
@@ -600,6 +711,7 @@ void WiFiManager::handleWifiSave() {
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
   _pass = server->arg("p").c_str();
+  _isAP = server->arg("a")=="on"?true:false;
 
   //parameters
   for (int i = 0; i < _paramsCount; i++) {
