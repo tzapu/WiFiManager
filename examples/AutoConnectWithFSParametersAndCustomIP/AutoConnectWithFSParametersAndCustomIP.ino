@@ -9,9 +9,6 @@
 
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
-//Comment out this line if you are still using ArduinoJsonV5
-#define UseJsonV6
-
 //define your default values here, if there are different values in config.json, they are overwritten.
 //length should be max size + 1
 char mqtt_server[40];
@@ -55,7 +52,7 @@ void setup() {
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
-#ifdef UseJsonV6
+#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
         DynamicJsonDocument json(1024);
         auto deserializeError = deserializeJson(json, buf.get());
         serializeJson(json, Serial);
@@ -157,7 +154,7 @@ void setup() {
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-#ifdef UseJsonV6
+#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
     DynamicJsonDocument json(1024);
 #else
     DynamicJsonBuffer jsonBuffer;
@@ -176,7 +173,7 @@ void setup() {
       Serial.println("failed to open config file for writing");
     }
 
-#ifdef UseJsonV6
+#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
     serializeJson(json, Serial);
     serializeJson(json, configFile);
 #else
