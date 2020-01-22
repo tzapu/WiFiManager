@@ -70,8 +70,9 @@ void print_oled(String str,uint8_t size){
 WiFiManager wm;
 
 // OPTION FLAGS
-bool TEST_CP  = true; // always start the configportal, even if ap found
+bool TEST_CP  = false; // always start the configportal, even if ap found
 bool TEST_NET = true; // do a network test after connect, (gets ntp time)
+bool AUTOSTARTCP = false; // automatically start config portal is no wifi found
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -199,7 +200,7 @@ void setup() {
   // wm.setShowPassword(true);
 
   // set configrportal timeout
-  wm.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(40);
   // wm.startConfigPortal("AutoConnectAP", "password");
 
   // wm.setBreakAfterConfig(true);
@@ -210,7 +211,7 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
   
   print_oled(F("Connecting..."),2);  
-  if(!wm.autoConnect("WM_AutoConnectAP")) {
+  if(!AUTOSTARTCP || !wm.autoConnect("WM_AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
     print_oled("Not Connected",2);
   }
@@ -234,6 +235,8 @@ void setup() {
 }
 
 void loop() {
+
+  Serial.println((String)analogRead(A0));
 
   #ifdef USEOTA
   ArduinoOTA.handle();
