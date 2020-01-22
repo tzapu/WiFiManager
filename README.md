@@ -309,6 +309,7 @@ wifiManager.addParameter(&custom_text);
 Just add the bit you want added as the last parameter to the custom parameter constructor.
 ```cpp
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "iot.eclipse", 40, " readonly");
+wifiManager.addParameter(&custom_mqtt_server);
 ```
 
 #### Theming
