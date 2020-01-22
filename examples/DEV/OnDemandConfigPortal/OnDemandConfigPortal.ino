@@ -173,9 +173,9 @@ void setup() {
   // wm.setMenu(menu,9); // custom menu array must provide length
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  wm.setMenu(menu); // custom menu, pass vector
+  // wm.setMenu(menu); // custom menu, pass vector
   
-  // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
+  wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
   // set static sta ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
@@ -244,6 +244,7 @@ void loop() {
     if ( digitalRead(TRIGGER_PIN) == LOW ){
       Serial.println("BUTTON PRESSED");
       wm.setConfigPortalTimeout(140);
+      wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 
       // disable captive portal redirection
       // wm.setCaptivePortalEnable(false);

@@ -2350,7 +2350,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());
+  DEBUG_WM(getMenuOut());
 }
 
 /**
@@ -2373,7 +2373,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());
+  DEBUG_WM(getMenuOut());
 }
 
 
@@ -2384,9 +2384,8 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
  * @since $dev
  */
 void WiFiManager::setParamsPage(bool enable){
-  _paramsInWifi= false;
-  _menuIdsDefault = {"wifi","param","info","exit"};
-  setMenu(_menuIdsDefault);  
+  _paramsInWifi  = !enable;
+  setMenu(enable ? _menuIdsParams : _menuIdsDefault);
 }
 
 // GETTERS
