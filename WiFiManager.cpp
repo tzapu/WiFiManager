@@ -301,7 +301,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(WiFi.localIP());
   }
   //fix for auto connect racing issue
-  if (WiFi.status() == WL_CONNECTED) {
+  if (WiFi.status() == WL_CONNECTED && (WiFi.SSID() == ssid)) {
     DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
@@ -322,7 +322,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
       DEBUG_WM(res);
     }
   } else {
-    if (WiFi.SSID()) {
+    if (WiFi.SSID() != "") {
       DEBUG_WM(F("Using last saved values, should be faster"));
       //trying to fix connection in progress hanging
       ETS_UART_INTR_DISABLE();
@@ -362,7 +362,7 @@ uint8_t WiFiManager::waitForConnectResult() {
         keepConnecting = false;
         DEBUG_WM (F("Connection timed out"));
       }
-      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED) {
+      if (status == WL_CONNECTED) {
         keepConnecting = false;
       }
       delay(100);
@@ -450,12 +450,12 @@ void WiFiManager::handleRoot() {
     return;
   }
 
-  String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Options");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_HEADER_END);
   page += String(F("<h1>"));
   page += _apName;
   page += String(F("</h1>"));
@@ -471,12 +471,12 @@ void WiFiManager::handleRoot() {
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
 
-  String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Config ESP");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_HEADER_END);
 
   if (scan) {
     int n = WiFi.scanNetworks();
@@ -666,12 +666,12 @@ void WiFiManager::handleWifiSave() {
     optionalIPFromString(&_sta_static_sn, sn.c_str());
   }
 
-  String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_HEADER_END);
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
@@ -687,12 +687,12 @@ void WiFiManager::handleWifiSave() {
 void WiFiManager::handleInfo() {
   DEBUG_WM(F("Info"));
 
-  String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_HEADER_END);
   page += F("<dl>");
   page += F("<dt>Chip ID</dt><dd>");
   page += ESP.getChipId();
@@ -728,12 +728,12 @@ void WiFiManager::handleInfo() {
 void WiFiManager::handleReset() {
   DEBUG_WM(F("Reset"));
 
-  String page = FPSTR(HTTP_HEAD);
+  String page = FPSTR(HTTP_HEADER);
   page.replace("{v}", "Info");
   page += FPSTR(HTTP_SCRIPT);
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
+  page += FPSTR(HTTP_HEADER_END);
   page += F("Module will reset in a few seconds.");
   page += FPSTR(HTTP_END);
 
