@@ -72,6 +72,7 @@ WiFiManager wm;
 // OPTION FLAGS
 bool TEST_CP  = true; // always start the configportal, even if ap found
 bool TEST_NET = true; // do a network test after connect, (gets ntp time)
+bool ALLOWONDEMAND = false;
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -208,7 +209,7 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+  wifiInfo();
   print_oled(F("Connecting..."),2);  
   if(!wm.autoConnect("WM_AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
@@ -226,11 +227,20 @@ void setup() {
      Serial.println("connected...yeey :)");
       print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
+  
+  wifiInfo();
   pinMode(TRIGGER_PIN, INPUT);
 
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+}
+
+void wifiInfo(){
+  WiFi.printDiag(Serial);
+  Serial.println("SAVED: " + (String)wm.getWiFiIsSaved() ? "YES" : "NO");
+  Serial.println("SSID: " + (String)wm.getWiFiSSID());
+  Serial.println("PASS: " + (String)wm.getWiFiPass());
 }
 
 void loop() {
@@ -239,7 +249,7 @@ void loop() {
   ArduinoOTA.handle();
   #endif
   // is configuration portal requested?
-  if ( digitalRead(TRIGGER_PIN) == LOW ) {
+  if (ALLOWONDEMAND && digitalRead(TRIGGER_PIN) == LOW ) {
     delay(100);
     if ( digitalRead(TRIGGER_PIN) == LOW ){
       Serial.println("BUTTON PRESSED");

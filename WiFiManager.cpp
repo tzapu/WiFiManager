@@ -1446,6 +1446,7 @@ void WiFiManager::handleInfo() {
   uint16_t infos = 0;
 
   //@todo convert to enum or refactor to strings
+  //@todo wrap in build flag to remove all info code for memory saving
   #ifdef ESP8266
     infos = 27;
     String infoids[] = {
@@ -1524,7 +1525,7 @@ void WiFiManager::handleInfo() {
 String WiFiManager::getInfoData(String id){
 
   String p;
-  // @todo add versioning
+  // @todo add WM versioning
   if(id==F("esphead"))p = FPSTR(HTTP_INFO_esphead);
   else if(id==F("wifihead"))p = FPSTR(HTTP_INFO_wifihead);
   else if(id==F("uptime")){
