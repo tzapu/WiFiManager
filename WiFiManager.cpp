@@ -1408,8 +1408,10 @@ void WiFiManager::doParamSave(){
   if(_paramsCount > 0){
     DEBUG_WM(DEBUG_VERBOSE,F("Parameters"));
     DEBUG_WM(DEBUG_VERBOSE,FPSTR(D_HR));
+
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL) {
+      if (_params[i] == NULL || _params[i]->_length == 0) {
+        DEBUG_WM(DEBUG_ERROR,"[ERROR] WiFiManagerParameter is out of scope");
         break; // @todo might not be needed anymore
       }
       //read parameter from server
