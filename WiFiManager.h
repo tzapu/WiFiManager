@@ -261,8 +261,10 @@ class WiFiManager
     void          setWiFiAPChannel(int32_t channel);
     // set ap hidden
     void          setWiFiAPHidden(bool hidden); // default false
-    // set custom menu
+    // clean connect, always disconnect before connecting
+    void          setCleanConnect(bool enable); // default false
 
+    // set custom menu
     // set custom menu items and order
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
@@ -340,7 +342,7 @@ class WiFiManager
     unsigned long _lastscan               = 0; // ms for timing wifi scans
     unsigned long _startscan              = 0; // ms for timing wifi scans
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
-    bool          _cleanConnect           = true; // disconnect before connect in connectwifi, increases stability on connects
+    bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
    
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
