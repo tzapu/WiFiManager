@@ -72,7 +72,7 @@ WiFiManager wm;
 // OPTION FLAGS
 bool TEST_CP  = true; // always start the configportal, even if ap found
 bool TEST_NET = true; // do a network test after connect, (gets ntp time)
-bool ALLOWONDEMAND = false;
+bool ALLOWONDEMAND = true;
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -134,13 +134,6 @@ void setup() {
   
   wm.setClass("invert");
 
-  //sets timeout until configuration portal gets turned off
-  //useful to make it all retry or go to sleep
-  //in seconds
-  // wm.setConfigPortalTimeout(600);
-  // wm.setConnectTimeout(5);
-  // wm.setShowStaticFields(true);
-
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
@@ -199,10 +192,17 @@ void setup() {
   // show password publicly!
   // wm.setShowPassword(true);
 
-  // set configrportal timeout
-  wm.setConfigPortalTimeout(120);
+  //sets timeout until configuration portal gets turned off
+  //useful to make it all retry or go to sleep in seconds
+    wm.setConfigPortalTimeout(120);
+  
+  // wm.setConnectTimeout(20);
+  // wm.setShowStaticFields(true);
+  
   // wm.startConfigPortal("AutoConnectAP", "password");
-
+  
+  // wm.setCleanConnect(true); // disconenct before connect, clean connect
+  
   // wm.setBreakAfterConfig(true);
 
   //fetches ssid and pass and tries to connect
@@ -229,7 +229,7 @@ void setup() {
   }
   
   wifiInfo();
-  pinMode(TRIGGER_PIN, INPUT);
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
 
   #ifdef USEOTA
     ArduinoOTA.begin();
