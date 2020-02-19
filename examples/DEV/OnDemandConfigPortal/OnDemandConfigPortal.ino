@@ -73,6 +73,7 @@ WiFiManager wm;
 bool TEST_CP  = false; // always start the configportal, even if ap found
 bool TEST_NET = true; // do a network test after connect, (gets ntp time)
 bool AUTOSTARTCP = false; // automatically start config portal is no wifi found
+bool ALLOWONDEMAND = true;
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -134,13 +135,6 @@ void setup() {
   
   wm.setClass("invert");
 
-  //sets timeout until configuration portal gets turned off
-  //useful to make it all retry or go to sleep
-  //in seconds
-  // wm.setConfigPortalTimeout(600);
-  // wm.setConnectTimeout(5);
-  // wm.setShowStaticFields(true);
-
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
@@ -173,10 +167,10 @@ void setup() {
   // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   // wm.setMenu(menu,9); // custom menu array must provide length
 
-  std::vector<const char *> menu = {"wifi","info","param","update","close","sep","erase","restart","exit"};
-  wm.setMenu(menu); // custom menu, pass vector
+  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
+  // wm.setMenu(menu); // custom menu, pass vector
   
-  // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
+  wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
   // set static sta ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
@@ -199,17 +193,24 @@ void setup() {
   // show password publicly!
   // wm.setShowPassword(true);
 
-  // set configrportal timeout
-  wm.setConfigPortalTimeout(40);
+  //sets timeout until configuration portal gets turned off
+  //useful to make it all retry or go to sleep in seconds
+    wm.setConfigPortalTimeout(120);
+  
+  // wm.setConnectTimeout(20);
+  // wm.setShowStaticFields(true);
+  
   // wm.startConfigPortal("AutoConnectAP", "password");
-
+  
+  // wm.setCleanConnect(true); // disconenct before connect, clean connect
+  
   // wm.setBreakAfterConfig(true);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+  wifiInfo();
   print_oled(F("Connecting..."),2);  
   if(!AUTOSTARTCP || !wm.autoConnect("WM_AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
@@ -227,11 +228,20 @@ void setup() {
      Serial.println("connected...yeey :)");
       print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
-  pinMode(TRIGGER_PIN, INPUT);
+  
+  wifiInfo();
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
 
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+}
+
+void wifiInfo(){
+  WiFi.printDiag(Serial);
+  Serial.println("SAVED: " + (String)wm.getWiFiIsSaved() ? "YES" : "NO");
+  Serial.println("SSID: " + (String)wm.getWiFiSSID());
+  Serial.println("PASS: " + (String)wm.getWiFiPass());
 }
 
 void loop() {
@@ -242,11 +252,12 @@ void loop() {
   ArduinoOTA.handle();
   #endif
   // is configuration portal requested?
-  if ( digitalRead(TRIGGER_PIN) == LOW ) {
+  if (ALLOWONDEMAND && digitalRead(TRIGGER_PIN) == LOW ) {
     delay(100);
     if ( digitalRead(TRIGGER_PIN) == LOW ){
       Serial.println("BUTTON PRESSED");
       wm.setConfigPortalTimeout(140);
+      wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 
       // disable captive portal redirection
       // wm.setCaptivePortalEnable(false);

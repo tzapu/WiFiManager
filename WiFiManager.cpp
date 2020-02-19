@@ -729,6 +729,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
+  
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
@@ -816,7 +817,7 @@ bool WiFiManager::wifiConnectDefault(){
  * @return bool success
  */
 bool WiFiManager::setSTAConfig(){
-  DEBUG_WM(F("STA static IP:"),_sta_static_ip);  
+  DEBUG_WM(DEBUG_DEV,F("STA static IP:"),_sta_static_ip);  
   bool ret = true;
   if (_sta_static_ip) {
       DEBUG_WM(DEBUG_VERBOSE,F("Custom static IP/GW/Subnet/DNS"));
@@ -832,7 +833,7 @@ bool WiFiManager::setSTAConfig(){
     if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi config failed");
     else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
   } else {
-      DEBUG_WM(DEBUG_VERBOSE,F("setSTAConfig static ip not set"));
+      DEBUG_WM(DEBUG_VERBOSE,F("setSTAConfig static ip not set, skipping"));
   }
   return ret;
 }
@@ -1370,7 +1371,7 @@ void WiFiManager::handleWifiSave() {
     page += FPSTR(HTTP_PARAMSAVED);
   }
   else {
-    String page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
+    page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
     page += FPSTR(HTTP_SAVED);
   }
   page += FPSTR(HTTP_END);
@@ -1412,8 +1413,10 @@ void WiFiManager::doParamSave(){
   if(_paramsCount > 0){
     DEBUG_WM(DEBUG_VERBOSE,F("Parameters"));
     DEBUG_WM(DEBUG_VERBOSE,FPSTR(D_HR));
+
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL) {
+      if (_params[i] == NULL || _params[i]->_length == 0) {
+        DEBUG_WM(DEBUG_ERROR,"[ERROR] WiFiManagerParameter is out of scope");
         break; // @todo might not be needed anymore
       }
       //read parameter from server
@@ -1450,6 +1453,7 @@ void WiFiManager::handleInfo() {
   uint16_t infos = 0;
 
   //@todo convert to enum or refactor to strings
+  //@todo wrap in build flag to remove all info code for memory saving
   #ifdef ESP8266
     infos = 27;
     String infoids[] = {
@@ -1528,7 +1532,7 @@ void WiFiManager::handleInfo() {
 String WiFiManager::getInfoData(String id){
 
   String p;
-  // @todo add versioning
+  // @todo add WM versioning
   if(id==F("esphead"))p = FPSTR(HTTP_INFO_esphead);
   else if(id==F("wifihead"))p = FPSTR(HTTP_INFO_wifihead);
   else if(id==F("uptime")){
@@ -2010,6 +2014,13 @@ void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
 void WiFiManager::setConnectTimeout(unsigned long seconds) {
   _connectTimeout = seconds * 1000;
 }
+/**
+ * toggle _cleanconnect, always disconnect before connecting
+ * @param {[type]} bool enable [description]
+ */
+void WiFiManager::setCleanConnect(bool enable){
+  _cleanConnect = enable;
+}
 
 /**
  * [setConnectTimeout description
@@ -2354,7 +2365,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());
+  DEBUG_WM(getMenuOut());
 }
 
 /**
@@ -2377,7 +2388,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  // DEBUG_WM(getMenuOut());
+  DEBUG_WM(getMenuOut());
 }
 
 
@@ -2388,9 +2399,8 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
  * @since $dev
  */
 void WiFiManager::setParamsPage(bool enable){
-  _paramsInWifi= false;
-  _menuIdsDefault = {"wifi","param","info","exit"};
-  setMenu(_menuIdsDefault);  
+  _paramsInWifi  = !enable;
+  setMenu(enable ? _menuIdsParams : _menuIdsDefault);
 }
 
 // GETTERS
