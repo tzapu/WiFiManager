@@ -36,7 +36,7 @@ void loop() {
     //wifiManager.setTimeout(120);
 
     //it starts an access point with the specified name
-    //here  "AutoConnectAP"
+    //here  "OnDemandAP"
     //and goes into a blocking loop awaiting configuration
 
     //WITHOUT THIS THE AP DOES NOT SEEM TO WORK PROPERLY WITH SDK 1.5 , update to at least 1.5.1
