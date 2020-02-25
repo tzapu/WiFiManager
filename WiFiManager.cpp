@@ -619,7 +619,7 @@ uint8_t WiFiManager::processConfigPortal(){
     // Waiting for save...
     if(connect) {
       connect = false;
-      DEBUG_WM(DEBUG_VERBOSE,F("process connect"));
+      DEBUG_WM(DEBUG_VERBOSE,F("processing save"));
       if(_enableCaptivePortal) delay(_cpclosedelay); // keeps the captiveportal from closing to fast.
 
       // skip wifi if no ssid
@@ -644,10 +644,12 @@ uint8_t WiFiManager::processConfigPortal(){
       }
  
       if (_shouldBreakAfterConfig) {
+
         // do save callback
         // @todo this is more of an exiting callback than a save, clarify when this should actually occur
         // confirm or verify data was saved to make this more accurate callback
         if ( _savewificallback != NULL) {
+          DEBUG_WM(DEBUG_VERBOSE,F("WiFi/Param save callback"));
           _savewificallback();
         }
         shutdownConfigPortal();
@@ -746,7 +748,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
       connRes = waitForConnectResult();
     }
     else {
-      DEBUG_WM(F("No saved credentials, skipping wifi"));
+      DEBUG_WM(F("No wifi save required, skipping"));
     }
   }
 
