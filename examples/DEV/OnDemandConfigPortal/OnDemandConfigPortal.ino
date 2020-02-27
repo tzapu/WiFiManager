@@ -169,7 +169,7 @@ void setup() {
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   // wm.setMenu(menu); // custom menu, pass vector
   
-  wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
+  // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
   // set static sta ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
@@ -203,7 +203,7 @@ void setup() {
   
   // wm.setCleanConnect(true); // disconenct before connect, clean connect
   
-  // wm.setBreakAfterConfig(true);
+  wm.setBreakAfterConfig(true);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -211,7 +211,7 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
   wifiInfo();
   print_oled(F("Connecting..."),2);  
-  if(!wm.autoConnect("WM_AutoConnectAP")) {
+  if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
     print_oled("Not Connected",2);
   }
