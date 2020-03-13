@@ -245,6 +245,8 @@ boolean WiFiManager::autoConnect() {
  */
 boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
+  if(getWiFiIsSaved()){
+
   _begin();
 
   // attempt to connect using saved settings, on fail fallback to AP config portal
@@ -333,6 +335,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   }
 
   DEBUG_WM(F("AutoConnect: FAILED"));
+  }
+  else DEBUG_WM(F("No Credentials are Saved, skipping connect"));
 
   // not connected start configportal
   return startConfigPortal(apName, apPassword);
@@ -1969,7 +1973,7 @@ bool WiFiManager::erase(bool opt){
  * @access public
  */
 void WiFiManager::resetSettings() {
-  DEBUG_WM(F("SETTINGS ERASED"));
+  DEBUG_WM(F("resetSettings"));
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
   
   if (_resetcallback != NULL)
@@ -1981,7 +1985,8 @@ void WiFiManager::resetSettings() {
     WiFi.persistent(true);
     WiFi.disconnect(true);
     WiFi.persistent(false);
-  #endif  
+  #endif
+  DEBUG_WM(F("SETTINGS ERASED"));
 }
 
 // SETTERS
