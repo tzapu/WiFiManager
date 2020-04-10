@@ -216,7 +216,7 @@ WiFiManager::~WiFiManager() {
 void WiFiManager::_begin(){
   if(_hasBegun) return;
   _hasBegun = true;
-  _usermode = WiFi.getMode();
+  // _usermode = WiFi.getMode();
 
   #ifndef ESP32
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
@@ -262,7 +262,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   if(esp32persistent) WiFi.persistent(false); // disable persistent for esp32 after esp_wifi_start or else saves wont work
   #endif
 
-  _usermode = WIFI_STA;
+  _usermode = WIFI_STA; // When using autoconnect , assume the user wants sta mode on permanently.
 
   // no getter for autoreconnectpolicy before this
   // https://github.com/esp8266/Arduino/pull/4359
