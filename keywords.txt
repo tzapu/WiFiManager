@@ -25,6 +25,8 @@ setMinimumSignalQuality KEYWORD2
 setAPStaticIPConfig	KEYWORD2
 setSTAStaticIPConfig KEYWORD2
 setAPCallback	KEYWORD2
+setAPClientConnectedCallback KEYWORD2
+setAPClientDisconnectedCallback KEYWORD2
 setSaveConfigCallback KEYWORD2
 addParameter KEYWORD2
 getID KEYWORD2
