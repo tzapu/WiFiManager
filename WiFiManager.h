@@ -396,7 +396,8 @@ class WiFiManager
 
     void          setupConfigPortal();
     bool          shutdownConfigPortal();
-
+    bool          setupHostname(bool restart);
+    
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
     void          startWPS();
