@@ -336,7 +336,7 @@ class WiFiManager
     unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
     unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
     unsigned long _webPortalAccessed      = 0; // ms last web access time
-    WiFiMode_t    _usermode               = WIFI_OFF;
+    WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     uint8_t       _lastconxresult         = WL_IDLE_STATUS;
     int           _numNetworks            = 0;
@@ -397,7 +397,8 @@ class WiFiManager
 
     void          setupConfigPortal();
     bool          shutdownConfigPortal();
-
+    bool          setupHostname(bool restart);
+    
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
     void          startWPS();
