@@ -297,6 +297,9 @@ class WiFiManager
     void          setClass(String str);
     String        getDefaultAPName();
     
+    // set port of webserver
+    void          setHttpPort(uint16_t port);
+
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -349,6 +352,7 @@ class WiFiManager
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
     bool          _apHidden               = false; // store softap hidden value
+    uint16_t       _httpPort              = 80; // port for webserver
 
     #ifdef ESP32
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback

@@ -486,7 +486,9 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  server.reset(new WM_WebServer(80));
+  server.reset(new WM_WebServer(_httpPort));
+
+  if(_httpPort != 80) DEBUG_WM(DEBUG_VERBOSE,"http server started with custom port: ",_httpPort); // @todo not showing ip
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -1828,11 +1830,16 @@ void WiFiManager::handleNotFound() {
 boolean WiFiManager::captivePortal() {
   DEBUG_WM(DEBUG_DEV,"-> " + server->hostHeader());
   
-  if(!_enableCaptivePortal) return false; // skip redirections
-
-  if (!isIp(server->hostHeader())) {
+  if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
+  
+  String serverLoc =  toStringIp(server->client().localIP());
+  if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
+  bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
+  // doredirect = !isIp(server->hostHeader()) // old check
+  
+  if (doredirect) {
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
-    server->sendHeader(F("Location"), (String)F("http://") + toStringIp(server->client().localIP()), true);
+    server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true);
     server->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server->client().stop(); // Stop is needed because we sent no content length
     return true;
@@ -2474,6 +2481,10 @@ void WiFiManager::setCountry(String cc){
  */
 void WiFiManager::setClass(String str){
   _bodyClass = str;
+}
+
+void WiFiManager::setHttpPort(uint16_t port){
+  _httpPort = port;
 }
 
 // HELPERS
