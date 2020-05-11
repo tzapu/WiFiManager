@@ -206,9 +206,10 @@ WiFiManager::~WiFiManager() {
   }
 
   // @todo remove event
-  // #ifdef ESP32
-  // WiFi.removeEvent(std::bind(&WiFiManager::WiFiEvent,this));
-  // #endif
+  // WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+  #ifdef ESP32
+    WiFi.removeEvent(wm_event_id);
+  #endif
 
   DEBUG_WM(DEBUG_DEV,F("unloading"));
 }
@@ -2898,8 +2899,9 @@ String WiFiManager::WiFi_psk(bool persistent) const {
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     if(!_hasBegun){
       // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+      Serial.println("[ERROR] wm not ready");
       return;
-    } 
+    }
     // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON:",info.disconnected.reason);
@@ -2927,7 +2929,7 @@ void WiFiManager::WiFi_autoReconnect(){
       // @todo move to seperate method, used for event listener now
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       using namespace std::placeholders;
-      WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
 }

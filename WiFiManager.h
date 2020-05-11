@@ -134,7 +134,6 @@ class WiFiManagerParameter {
     int         _length;
     int         _labelPlacement;
     const char *_customHTML;
-
     friend class WiFiManager;
 };
 
@@ -355,6 +354,7 @@ class WiFiManager
     uint16_t       _httpPort              = 80; // port for webserver
 
     #ifdef ESP32
+    wifi_event_id_t wm_event_id;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
