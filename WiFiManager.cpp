@@ -2387,7 +2387,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 /**
@@ -2410,7 +2410,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 
