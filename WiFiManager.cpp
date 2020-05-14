@@ -843,7 +843,7 @@ bool WiFiManager::setSTAConfig(){
       ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns);
     }
     else {
-      DEBUG_WM(DEBUG_VERBOSE,F("Custom STA IP/GW/Subnet"));
+      DEBUG_WM(DEBUG_NOTIFY,F("No DNS, requests without IP addresses won't work!"));
       ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     }
 
