@@ -68,6 +68,12 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
+// WiFiManagerParameter& WiFiManagerParameter::operator=(const WiFiManagerParameter& rhs){
+//   Serial.println("copy assignment op called");
+//   (*this->_value) = (*rhs._value);
+//   return *this;
+// }
+
 // @note debug is not available in wmparameter class
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(!_id){
@@ -89,6 +95,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   }
 }
 const char* WiFiManagerParameter::getValue() {
+  // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
 }
 const char* WiFiManagerParameter::getID() {
@@ -206,9 +213,10 @@ WiFiManager::~WiFiManager() {
   }
 
   // @todo remove event
-  // #ifdef ESP32
-  // WiFi.removeEvent(std::bind(&WiFiManager::WiFiEvent,this));
-  // #endif
+  // WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+  #ifdef ESP32
+    WiFi.removeEvent(wm_event_id);
+  #endif
 
   DEBUG_WM(DEBUG_DEV,F("unloading"));
 }
@@ -282,6 +290,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       connected = true;
       DEBUG_WM(F("AutoConnect: ESP Already Connected"));
       setSTAConfig();
+      // @todo not sure if this check makes sense, causes dup setSTAConfig in connectwifi, 
+      // and we have no idea WHAT we are connected to
     }
 
     if(connected || connectWifi("", "") == WL_CONNECTED){
@@ -297,12 +307,13 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
           DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
         #endif
       }
-      return true;
+
+      return true; // connected success
     }
 
     // possibly skip the config portal
     if (!_enableConfigPortal) {
-      return false;
+      return false; // not connected and not cp
     }
 
     DEBUG_WM(F("AutoConnect: FAILED"));
@@ -486,7 +497,9 @@ void WiFiManager::setupConfigPortal() {
 
   // setup dns and web servers
   dnsServer.reset(new DNSServer());
-  server.reset(new WM_WebServer(80));
+  server.reset(new WM_WebServer(_httpPort));
+
+  if(_httpPort != 80) DEBUG_WM(DEBUG_VERBOSE,"http server started with custom port: ",_httpPort); // @todo not showing ip
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -1832,11 +1845,16 @@ void WiFiManager::handleNotFound() {
 boolean WiFiManager::captivePortal() {
   DEBUG_WM(DEBUG_DEV,"-> " + server->hostHeader());
   
-  if(!_enableCaptivePortal) return false; // skip redirections
-
-  if (!isIp(server->hostHeader())) {
+  if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
+  
+  String serverLoc =  toStringIp(server->client().localIP());
+  if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
+  bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
+  // doredirect = !isIp(server->hostHeader()) // old check
+  
+  if (doredirect) {
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
-    server->sendHeader(F("Location"), (String)F("http://") + toStringIp(server->client().localIP()), true);
+    server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true);
     server->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server->client().stop(); // Stop is needed because we sent no content length
     return true;
@@ -2383,7 +2401,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 /**
@@ -2406,7 +2424,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
       }
     }
   }
-  DEBUG_WM(getMenuOut());
+  // DEBUG_WM(getMenuOut());
 }
 
 
@@ -2478,6 +2496,10 @@ void WiFiManager::setCountry(String cc){
  */
 void WiFiManager::setClass(String str){
   _bodyClass = str;
+}
+
+void WiFiManager::setHttpPort(uint16_t port){
+  _httpPort = port;
 }
 
 // HELPERS
@@ -2603,8 +2625,16 @@ void WiFiManager::debugPlatformInfo(){
     DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
   #elif defined(ESP32)
     size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
-    DEBUG_WM("Free heap:       ", freeHeap);
-    DEBUG_WM("ESP-IDF version: ", esp_get_idf_version());
+    DEBUG_WM("Free heap:       ", ESP.getFreeHeap());
+    DEBUG_WM("ESP SDK version: ", ESP.getSdkVersion());
+    // esp_chip_info_t chipInfo;
+    // esp_chip_info(&chipInfo);
+    // DEBUG_WM("Chip Info: Model: ",chipInfo.model);
+    // DEBUG_WM("Chip Info: Cores: ",chipInfo.cores);
+    // DEBUG_WM("Chip Info: Rev: ",chipInfo.revision);
+    // DEBUG_WM(printf("Chip Info: Model: %d, cores: %d, revision: %d", chipInfo.model.c_str(), chipInfo.cores, chipInfo.revision));
+    // DEBUG_WM("Chip Rev: ",(String)ESP.getChipRevision());
+    // core version is not avail
   #endif
 }
 
@@ -2891,8 +2921,9 @@ String WiFiManager::WiFi_psk(bool persistent) const {
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     if(!_hasBegun){
       // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+      Serial.println("[ERROR] wm not ready");
       return;
-    } 
+    }
     // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
       DEBUG_WM(DEBUG_VERBOSE,"[EVENT] WIFI_REASON:",info.disconnected.reason);
@@ -2920,7 +2951,7 @@ void WiFiManager::WiFi_autoReconnect(){
       // @todo move to seperate method, used for event listener now
       DEBUG_WM(DEBUG_VERBOSE,"ESP32 event handler enabled");
       using namespace std::placeholders;
-      WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
 }

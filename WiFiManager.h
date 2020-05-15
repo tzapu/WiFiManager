@@ -115,6 +115,7 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
+    // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getID();
     const char *getValue();
@@ -129,13 +130,13 @@ class WiFiManagerParameter {
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
+    WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
     char       *_value;
     int         _length;
     int         _labelPlacement;
     const char *_customHTML;
-
     friend class WiFiManager;
 };
 
@@ -298,6 +299,9 @@ class WiFiManager
     void          setClass(String str);
     String        getDefaultAPName();
     
+    // set port of webserver
+    void          setHttpPort(uint16_t port);
+
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -350,8 +354,10 @@ class WiFiManager
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
     bool          _apHidden               = false; // store softap hidden value
+    uint16_t       _httpPort              = 80; // port for webserver
 
     #ifdef ESP32
+    wifi_event_id_t wm_event_id;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 

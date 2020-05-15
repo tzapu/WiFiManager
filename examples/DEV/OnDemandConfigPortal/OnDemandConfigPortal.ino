@@ -14,11 +14,11 @@
 #include <ArduinoOTA.h>
 #endif
 
-#define TRIGGER_PIN 0
 const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
 unsigned long mtime = 0;
 
+// OLED TEST , untested
 // // #define MYOLED
 
 // #include <Wire.h>
@@ -69,11 +69,14 @@ void print_oled(String str,uint8_t size){
 
 WiFiManager wm;
 
-// OPTION FLAGS
-bool TEST_CP  = false; // always start the configportal, even if ap found
-bool TEST_NET = true; // do a network test after connect, (gets ntp time)
-bool AUTOSTARTCP = false; // automatically start config portal is no wifi found
-bool ALLOWONDEMAND = true;
+
+// TEST OPTION FLAGS
+bool TEST_CP         = true; // always start the configportal, even if ap found
+int  TESP_CP_TIMEOUT = 90; // test cp timeout
+
+bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
+bool ALLOWONDEMAND   = true; // enable on demand
+int  ONDDEMANDPIN    = 0; // gpio for button
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -195,7 +198,7 @@ void setup() {
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
-    wm.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(120);
   
   // wm.setConnectTimeout(20);
   // wm.setShowStaticFields(true);
@@ -205,6 +208,9 @@ void setup() {
   // wm.setCleanConnect(true); // disconenct before connect, clean connect
   
   wm.setBreakAfterConfig(true);
+
+  // set custom webserver port, automatic captive portal does not work with custom ports!
+  // wm.setHttpPort(8080);
 
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -220,7 +226,7 @@ void setup() {
     delay(1000);
     Serial.println("TEST_CP ENABLED");
     // start configportal always
-    wm.setConfigPortalTimeout(60);
+    wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
     wm.startConfigPortal("WM_ConnectAP");
   }
   else {
@@ -230,7 +236,7 @@ void setup() {
   }
   
   wifiInfo();
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  pinMode(ONDDEMANDPIN, INPUT_PULLUP);
 
   #ifdef USEOTA
     ArduinoOTA.begin();
@@ -252,9 +258,9 @@ void loop() {
   ArduinoOTA.handle();
   #endif
   // is configuration portal requested?
-  if (ALLOWONDEMAND && digitalRead(TRIGGER_PIN) == LOW ) {
+  if (ALLOWONDEMAND && digitalRead(ONDDEMANDPIN) == LOW ) {
     delay(100);
-    if ( digitalRead(TRIGGER_PIN) == LOW ){
+    if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
