@@ -114,6 +114,7 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
+    // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getID();
     const char *getValue();
@@ -128,6 +129,7 @@ class WiFiManagerParameter {
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
+    WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
     char       *_value;

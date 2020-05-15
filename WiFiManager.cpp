@@ -68,6 +68,12 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
+// WiFiManagerParameter& WiFiManagerParameter::operator=(const WiFiManagerParameter& rhs){
+//   Serial.println("copy assignment op called");
+//   (*this->_value) = (*rhs._value);
+//   return *this;
+// }
+
 // @note debug is not available in wmparameter class
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(!_id){
@@ -89,6 +95,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   }
 }
 const char* WiFiManagerParameter::getValue() {
+  // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
 }
 const char* WiFiManagerParameter::getID() {
