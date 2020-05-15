@@ -290,6 +290,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       connected = true;
       DEBUG_WM(F("AutoConnect: ESP Already Connected"));
       setSTAConfig();
+      // @todo not sure if this check makes sense, causes dup setSTAConfig in connectwifi, 
+      // and we have no idea WHAT we are connected to
     }
 
     if(connected || connectWifi("", "") == WL_CONNECTED){
@@ -305,12 +307,13 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
           DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
         #endif
       }
-      return true;
+
+      return true; // connected success
     }
 
     // possibly skip the config portal
     if (!_enableConfigPortal) {
-      return false;
+      return false; // not connected and not cp
     }
 
     DEBUG_WM(F("AutoConnect: FAILED"));
@@ -2618,8 +2621,16 @@ void WiFiManager::debugPlatformInfo(){
     DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
   #elif defined(ESP32)
     size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
-    DEBUG_WM("Free heap:       ", freeHeap);
-    DEBUG_WM("ESP-IDF version: ", esp_get_idf_version());
+    DEBUG_WM("Free heap:       ", ESP.getFreeHeap());
+    DEBUG_WM("ESP SDK version: ", ESP.getSdkVersion());
+    // esp_chip_info_t chipInfo;
+    // esp_chip_info(&chipInfo);
+    // DEBUG_WM("Chip Info: Model: ",chipInfo.model);
+    // DEBUG_WM("Chip Info: Cores: ",chipInfo.cores);
+    // DEBUG_WM("Chip Info: Rev: ",chipInfo.revision);
+    // DEBUG_WM(printf("Chip Info: Model: %d, cores: %d, revision: %d", chipInfo.model.c_str(), chipInfo.cores, chipInfo.revision));
+    // DEBUG_WM("Chip Rev: ",(String)ESP.getChipRevision());
+    // core version is not avail
   #endif
 }
 
