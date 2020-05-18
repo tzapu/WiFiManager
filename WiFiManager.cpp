@@ -2426,7 +2426,8 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
 
 /**
  * set params as sperate page not in wifi
- * NOT COMPATIBLE WITH setMenu! @todo scan menuids and insert param after wifi or something
+ * NOT COMPATIBLE WITH setMenu! 
+ * @todo scan menuids and insert param after wifi or something, same for ota
  * @param bool enable 
  * @since $dev
  */
