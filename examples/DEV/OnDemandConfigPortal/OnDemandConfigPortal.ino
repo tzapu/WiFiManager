@@ -252,8 +252,6 @@ void wifiInfo(){
 
 void loop() {
 
-  Serial.println((String)analogRead(A0));
-
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif

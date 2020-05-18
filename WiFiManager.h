@@ -315,7 +315,8 @@ class WiFiManager
   private:
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsParams  = {"wifi","param","info","exit"};
-    std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
+    std::vector<const char *> _menuIdsUpdate  = {"wifi","param","info","update","exit"};
+    std::vector<const char *> _menuIdsDefault = {"wifi","info","exit","sep","update"};
 
     // ip configs @todo struct ?
     IPAddress     _ap_static_ip;
