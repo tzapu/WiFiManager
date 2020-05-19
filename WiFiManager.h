@@ -22,10 +22,13 @@
 
 #include <vector>
 
-// #define WM_MDNS            // also set MDNS with sethostname
+// #define WM_MDNS            // includes MDNS, also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
+
+// #define WM_JSTEST                      // build flag for enabling js xhr tests
+// #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
 
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
 #warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
@@ -67,7 +70,7 @@
             #include <WebServer.h>
         #else
             #include <ESP8266WebServer.h>
-            // Forthcoming official ?
+            // Forthcoming official ? probably never happening
             // https://github.com/esp8266/ESPWebServer
         #endif
     #endif
@@ -84,7 +87,6 @@
     #ifdef WM_RTC
         #include <rom/rtc.h>
     #endif
-
 
 #else
 #endif

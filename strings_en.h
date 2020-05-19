@@ -124,7 +124,7 @@ const char HTTP_HELP[]             PROGMEM =
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
 
-#ifdef JSTEST
+#ifdef WM_JSTEST
 const char HTTP_JS[] PROGMEM = 
 "<script>function postAjax(url, data, success) {"
 "    var params = typeof data == 'string' ? data : Object.keys(data).map("

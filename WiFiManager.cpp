@@ -302,9 +302,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
       if((String)_hostname != ""){
         #ifdef ESP8266
-          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.hostname());
+          DEBUG_WM(DEBUG_DEV,"hostname: STA: ",WiFi.hostname());
         #elif defined(ESP32)
-          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
+          DEBUG_WM(DEBUG_DEV,"hostname: STA: ",WiFi.getHostname());
         #endif
       }
 
@@ -326,16 +326,17 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 }
 
 bool WiFiManager::setupHostname(bool restart){
-  DEBUG_WM(DEBUG_VERBOSE,"Setting hostname:",_hostname);
   if((String)_hostname == "") {
-    DEBUG_WM(DEBUG_VERBOSE,"No Hostname to set");
+    DEBUG_WM(DEBUG_DEV,"No Hostname to set");
     return false;
-  }
+  } else DEBUG_WM(DEBUG_DEV,"setupHostname: ",_hostname);
   bool res = true;
   #ifdef ESP8266
+    DEBUG_WM(DEBUG_VERBOSE,"Setting WiFi hostname");
     res = WiFi.hostname(_hostname);
-    #ifdef ESP8266MDNS_H
-      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+    // #ifdef ESP8266MDNS_H
+    #ifdef WM_MDNS
+      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname, tcp 80");
       if(MDNS.begin(_hostname)){
         MDNS.addService("http", "tcp", 80);
       }
@@ -344,8 +345,9 @@ bool WiFiManager::setupHostname(bool restart){
     // @note hostname must be set after STA_START
     delay(200); // do not remove, give time for STA_START
     res = WiFi.setHostname(_hostname);
-    #ifdef ESP32MDNS_H
-      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+    // #ifdef ESP32MDNS_H
+      #ifdef WM_MDNS
+      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname, tcp 80");
       if(MDNS.begin(_hostname)){
         MDNS.addService("http", "tcp", 80);
       }
@@ -431,7 +433,7 @@ bool WiFiManager::startAP(){
       DEBUG_WM(DEBUG_VERBOSE,"setting softAP Hostname:",_hostname);
       bool res =  WiFi.softAPsetHostname(_hostname);
       if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
-      DEBUG_WM(DEBUG_DEV,F("hostname: AP"),WiFi.softAPgetHostname());
+      DEBUG_WM(DEBUG_DEV,F("hostname: AP: "),WiFi.softAPgetHostname());
    }
   #endif
 
@@ -1343,7 +1345,7 @@ void WiFiManager::handleWiFiStatus(){
   handleRequest();
   String page;
   // String page = "{\"result\":true,\"count\":1}";
-  #ifdef JSTEST
+  #ifdef WM_JSTEST
     page = FPSTR(HTTP_JS);
   #endif
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
