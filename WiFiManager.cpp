@@ -633,6 +633,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
  * @return {[type]} [description]
  */
 boolean WiFiManager::process(){
+    // process mdns, esp32 not required
+    #if defined(WM_MDNS) && defined(ESP8266)
+    MDNS.update();
+    #endif
+
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
         uint8_t state = processConfigPortal();
         return state == WL_CONNECTED;
