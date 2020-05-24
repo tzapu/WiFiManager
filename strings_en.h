@@ -20,7 +20,7 @@ const char HTTP_HEAD_START[]       PROGMEM = "<!DOCTYPE html><html lang='en'><he
 const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){"
 "document.getElementById('s').value=l.innerText||l.textContent;"
 "p = l.nextElementSibling.classList.contains('l');"
-"alert(p);"
+"// alert(p);"
 "document.getElementById('p').disabled = !p;"
 "if(p)document.getElementById('p').focus();}</script>";
 
