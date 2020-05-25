@@ -74,8 +74,8 @@ class WiFiManager
     WiFiManager();
     ~WiFiManager();
 
-    boolean       autoConnect();
-    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
+    boolean       autoConnect(boolean showStaticIPFields = false);
+    boolean       autoConnect(char const *apName, char const *apPassword = NULL, boolean showStaticIPFields = false);
 
     //if you want to always start the config portal, without trying to connect first
     boolean       startConfigPortal();
@@ -144,6 +144,7 @@ class WiFiManager
     IPAddress     _sta_static_ip;
     IPAddress     _sta_static_gw;
     IPAddress     _sta_static_sn;
+    boolean       _sta_show_static_fields = false;
 
     int           _paramsCount            = 0;
     int           _minimumQuality         = -1;
