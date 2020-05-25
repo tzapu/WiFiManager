@@ -46,17 +46,18 @@ void setup() {
 
         configFile.readBytes(buf.get(), size);
 
-#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
+      #ifdef ARDUINOJSON_VERSION_MAJOR >= 6
         DynamicJsonDocument json(1024);
-        auto deserializeError = deserializeJson(json, buf.get());
-        serializeJson(json, Serial);
-        if ( ! deserializeError ) {
-#else
+        DeserializationError deserializeError = deserializeJson(json, buf.get());
+        serializeJsonPretty(json, Serial);
+        if (!deserializeError) {
+      #else
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.parseObject(buf.get());
         json.printTo(Serial);
         if (json.success()) {
-#endif
+      #endif
+
           Serial.println("\nparsed json");
           strcpy(mqtt_server, json["mqtt_server"]);
           strcpy(mqtt_port, json["mqtt_port"]);
@@ -133,12 +134,14 @@ void setup() {
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
+
+  #ifdef ARDUINOJSON_VERSION_MAJOR >= 6
     DynamicJsonDocument json(1024);
-#else
+  #else
     DynamicJsonBuffer jsonBuffer;
     JsonObject& json = jsonBuffer.createObject();
-#endif
+  #endif
+    
     json["mqtt_server"] = mqtt_server;
     json["mqtt_port"] = mqtt_port;
     json["blynk_token"] = blynk_token;
@@ -148,13 +151,15 @@ void setup() {
       Serial.println("failed to open config file for writing");
     }
 
-#ifdef ARDUINOJSON_VERSION_MAJOR >= 6
-    serializeJson(json, Serial);
-    serializeJson(json, configFile);
-#else
-    json.printTo(Serial);
-    json.printTo(configFile);
-#endif
+
+    #ifdef ARDUINOJSON_VERSION_MAJOR >= 6
+        serializeJsonPretty(json, Serial);
+        serializeJson(json, configFile);
+    #else
+        json.printTo(Serial);
+        json.printTo(configFile);
+    #endif
+
     configFile.close();
     //end save
   }
