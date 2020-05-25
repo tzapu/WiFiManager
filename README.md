@@ -106,6 +106,14 @@ or if you want to use and auto generated name from 'ESP' and the esp's Chip ID u
 ```cpp
 wifiManager.autoConnect();
 ```
+it is also possible to configure static IP/Gateway/Subnet addresses through the web page:
+```cpp
+wifiManager.autoConnect(true);
+```
+Or when specifying the AP name and password:
+```cpp
+wifiManager.autoConnect("AP-NAME", "AP-PASSWORD", true);
+```
 
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
