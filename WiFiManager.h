@@ -323,10 +323,10 @@ class WiFiManager
     // check if the module has a saved ap to connect to
     bool          getWiFiIsSaved();
 
-    // helper to get saved ssid, if persistent get stored, else get current if connected
+    // helper to get saved password, if persistent get stored, else get current if connected    
     String        getWiFiPass(bool persistent = false);
 
-    // helper to get saved password, if persistent get stored, else get current if connected
+    // helper to get saved ssid, if persistent get stored, else get current if connected
     String        getWiFiSSID(bool persistent = false);
 
     // debug output the softap config
