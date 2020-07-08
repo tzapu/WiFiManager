@@ -25,7 +25,7 @@
     "espressif8266",
     "espressif32"
   ],
-  "version": "2.0.3-alpha"
+  "version": "2.0.3-alpha",
   "dependencies":
   [
       {
@@ -38,6 +38,10 @@
       },
       {
           "name": "WiFi",
+          "version": "1.0"
+      },
+      {
+          "name": "FS",
           "version": "1.0"
       }
   ]
