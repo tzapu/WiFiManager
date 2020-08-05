@@ -356,7 +356,6 @@ bool WiFiManager::setupHostname(bool restart){
 
   if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: set failed!"));
 
-  // in sta mode restart , not sure about softap
   if(restart && (WiFi.status() == WL_CONNECTED)){
     DEBUG_WM(DEBUG_VERBOSE,F("reconnecting to set new hostname"));
     // WiFi.reconnect(); // This does not reset dhcp
@@ -838,6 +837,8 @@ bool WiFiManager::wifiConnectDefault(){
   DEBUG_WM(F("Connecting to SAVED AP:"),WiFi_SSID(true));
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   ret = WiFi_enableSTA(true,storeSTAmode);
+  delay(500); // THIS DELAY ?
+  DEBUG_WM(DEBUG_DEV,"Mode after delay: "+getModeString(WiFi.getMode()));
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
@@ -2785,14 +2786,14 @@ bool WiFiManager::WiFi_Disconnect() {
     #ifdef ESP8266
       if((WiFi.getMode() & WIFI_STA) != 0) {
           bool ret;
-          DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
+          DEBUG_WM(DEBUG_DEV,F("WiFi station disconnect"));
           ETS_UART_INTR_DISABLE(); // @todo probably not needed
           ret = wifi_station_disconnect();
           ETS_UART_INTR_ENABLE();        
           return ret;
       }
     #elif defined(ESP32)
-      DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
+      DEBUG_WM(DEBUG_DEV,F("WiFi station disconnect"));
       return WiFi.disconnect(); // not persistent atm
     #endif
     return false;
@@ -2800,7 +2801,7 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
-    DEBUG_WM(DEBUG_DEV,F("WiFi station enable"));
+    DEBUG_WM(DEBUG_DEV,F("WiFi_enableSTA"),(String) enable? "enable" : "disable");
     #ifdef ESP8266
       WiFiMode_t newMode;
       WiFiMode_t currentMode = WiFi.getMode();
