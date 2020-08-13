@@ -2632,7 +2632,6 @@ void WiFiManager::debugPlatformInfo(){
     DEBUG_WM(F("system_get_boot_version():"),system_get_boot_version());
     DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
   #elif defined(ESP32)
-    size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
     DEBUG_WM("Free heap:       ", ESP.getFreeHeap());
     DEBUG_WM("ESP SDK version: ", ESP.getSdkVersion());
     // esp_chip_info_t chipInfo;
