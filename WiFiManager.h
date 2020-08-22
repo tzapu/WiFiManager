@@ -307,6 +307,9 @@ class WiFiManager
     // see _menutokens for ids
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
+
+    // if true enable Fast connect mode
+    void          setFastConnectMode(bool enabled);
     
     // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
     void          setParamsPage(bool enable);
@@ -453,6 +456,10 @@ class WiFiManager
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
+	//fast mode to set mac address and channel during begin
+	boolean       _fastConnectMode        = false;
+	uint8_t*      _fastConnectBSSID;
+	uint32_t      _fastConnectChannel     = 0;
 
     // wrapper functions for handling setting and unsetting persistent for now.
     bool          esp32persistent         = false;
@@ -479,6 +486,7 @@ class WiFiManager
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint16_t timeout);
     void          updateConxResult(uint8_t status);
+	uint8_t       getFastConfig(String ssid);
 
     // webserver handlers
     void          handleRoot();

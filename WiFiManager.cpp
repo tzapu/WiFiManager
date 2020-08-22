@@ -821,7 +821,12 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
-  ret = WiFi.begin(ssid.c_str(), pass.c_str());
+  if(_fastConnectMode) {
+    getFastConfig(ssid);
+    ret = WiFi.begin(ssid.c_str(), pass.c_str(), _fastConnectChannel, _fastConnectBSSID, true);
+  } else {
+    ret = WiFi.begin(ssid.c_str(), pass.c_str());
+  }
   WiFi.persistent(false);
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
   return ret;
@@ -834,13 +839,22 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
  */
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
-  DEBUG_WM(F("Connecting to SAVED AP:"),WiFi_SSID(true));
-  DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
+  String ssid = WiFi_SSID(true);
+  String pass = WiFi_psk(true);
+  DEBUG_WM(F("Connecting to SAVED AP:"), ssid);
+  DEBUG_WM(DEBUG_DEV,F("Using Password:"), pass);
   ret = WiFi_enableSTA(true,storeSTAmode);
-  delay(500); // THIS DELAY ?
-  DEBUG_WM(DEBUG_DEV,"Mode after delay: "+getModeString(WiFi.getMode()));
+  if(!_fastConnectMode) {
+	  delay(500); // THIS DELAY ?
+      DEBUG_WM(DEBUG_DEV,"Mode after delay: "+getModeString(WiFi.getMode()));
+  }
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
+  if(!ret && _fastConnectMode) {
+	// have another go if using fast connect in case channel has changed
+    getFastConfig(ssid);
+    ret = WiFi.begin(ssid.c_str(), pass.c_str(), _fastConnectChannel, _fastConnectBSSID, true);
+  }
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
   return ret;
 }
@@ -2389,6 +2403,14 @@ void WiFiManager::setShowInfoErase(boolean enabled){
 }
 
 /**
+ * toggle fast connect mode
+ * @param boolean enabled
+ */
+void WiFiManager::setFastConnectMode(bool enabled){
+  _fastConnectMode = enabled;
+}
+
+/**
  * set menu items and order
  * if param is present in menu , params will be removed from wifi page automatically
  * eg.
@@ -2964,4 +2986,22 @@ void WiFiManager::WiFi_autoReconnect(){
   #endif
 }
 
+uint8_t WiFiManager::getFastConfig(String ssid){
+  DEBUG_WM(F("Get Fast config by scanning"));
+  int networksFound = WiFi.scanNetworks();
+  int i;
+  uint8_t ret = 0;
+  int32_t scan_rssi = -200;
+  for (i = 0; i < networksFound; i++) {
+	if(ssid == WiFi.SSID(i)) {
+	  if(WiFi.RSSI(i) > scan_rssi) {
+		_fastConnectChannel = WiFi.channel(i);
+		_fastConnectBSSID = WiFi.BSSID(i);
+		scan_rssi = WiFi.RSSI(i);
+		ret = 1;
+	  }
+	}
+  }
+  return ret;
+}
 #endif
