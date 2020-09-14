@@ -2558,8 +2558,8 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     uint16_t max;
     uint8_t frag;
     #ifdef ESP8266
-    ESP.getHeapStats(&free, &max, &frag);
-    _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
+    // ESP.getHeapStats(&free, &max, &frag);// @todo Does not exist in 2.3.0
+    // _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag); 
     #elif defined ESP32
     // total_free_bytes;      ///<  Total free bytes in the heap. Equivalent to multi_free_heap_size().
     // total_allocated_bytes; ///<  Total bytes allocated to data in the heap.
