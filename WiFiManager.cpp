@@ -2617,7 +2617,9 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("authmode:        "),config.authmode);
     DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "),config.max_connection);
-    DEBUG_WM(F("country:         "),(String)country.cc);
+    #if !defined(WM_NOCOUNTRY) 
+      DEBUG_WM(F("country:         "),(String)country.cc);
+    #endif
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
     DEBUG_WM(FPSTR(D_HR));
 }
