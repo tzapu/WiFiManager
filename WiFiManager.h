@@ -33,6 +33,7 @@
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
 #warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
 #define WM_NOASYNC         // esp8266 no async scan wifi
+#define WM_NOCOUNTRY       // esp8266 no country
 #endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.

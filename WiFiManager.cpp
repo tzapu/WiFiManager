@@ -2592,13 +2592,16 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
  * @return {[type]} [description]
  */
 void WiFiManager::debugSoftAPConfig(){
-    wifi_country_t country;
     
     #ifdef ESP8266
       softap_config config;
       wifi_softap_get_config(&config);
-      wifi_get_country(&country);
+      #if !defined(WM_NOCOUNTRY)
+        wifi_country_t country;
+        wifi_get_country(&country);
+      #endif
     #elif defined(ESP32)
+      wifi_country_t country;
       wifi_config_t conf_config;
       esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
       wifi_ap_config_t config = conf_config.ap;
@@ -2745,7 +2748,7 @@ bool WiFiManager::WiFiSetCountry(){
   else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
   else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
   
-  #elif defined(ESP8266)
+  #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
        // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
        if(_wificountry == "US") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_US);
   else if(_wificountry == "JP") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_JP);

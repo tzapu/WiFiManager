@@ -290,7 +290,7 @@ void getTime() {
   }
   Serial.println("");
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
+  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
   Serial.print("Current time: ");
   Serial.print(asctime(&timeinfo));
 }
