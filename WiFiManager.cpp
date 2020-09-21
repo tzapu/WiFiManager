@@ -3189,10 +3189,6 @@ bool WiFiManager::WiFiSetCountry(){
   err = ret != ESP_OK;
 
   #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
-=======
-
-  #elif defined(ESP8266)
->>>>>>> 3b85880... Fix some issues with ID-less Parameters, update Parameters
        // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
        if(_wificountry == "US") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_US);
   else if(_wificountry == "JP") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_JP);
