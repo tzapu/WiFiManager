@@ -19,7 +19,6 @@ const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 unsigned long mtime = 0;
 
 
-
 WiFiManager wm;
 
 // TEST OPTION FLAGS
@@ -34,20 +33,6 @@ int  ONDDEMANDPIN    = 0; // gpio for button
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
 
-// OLED TEST , ssd1306
-// #define WM_OLED
-#ifdef WM_OLED
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#endif
-
 void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
 }
@@ -55,9 +40,6 @@ void saveWifiCallback(){
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("[CALLBACK] configModeCallback fired");
-  #ifdef ESP8266
-    // print_oled("WiFiManager Waiting\nIP: " + WiFi.softAPIP().toString() + "\nSSID: " + WiFi.softAPSSID(),1); 
-  #endif  
   // myWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
@@ -91,12 +73,13 @@ void setup() {
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
-  
-  #ifdef WM_OLED
-    init_oled();
-  #endif
 
-  print_oled(F("Starting..."),2);
+  Serial.println("Error - TEST");
+  Serial.println("Information- - TEST");
+
+  Serial.println("[ERROR]  TEST");
+  Serial.println("[INFORMATION] TEST");  
+
   wm.debugPlatformInfo();
 
   //reset settings - for testing
@@ -201,10 +184,8 @@ void setup() {
   
   wifiInfo();
 
-  print_oled(F("Connecting..."),2);  
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
-    print_oled("Not Connected",2);
   }
   else if(TEST_CP) {
     // start configportal always
@@ -216,7 +197,6 @@ void setup() {
   else {
     //if you get here you have connected to the WiFi
      Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
   
   wifiInfo();
@@ -225,6 +205,7 @@ void setup() {
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+
 }
 
 void wifiInfo(){
@@ -258,7 +239,6 @@ void loop() {
     else {
       //if you get here you have connected to the WiFi
       Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
       getTime();
     }
   }
@@ -317,31 +297,3 @@ void debugchipid(){
   // 507726A4AE30
   // ESP32 Chip ID = 507726A4AE30
 }
-
-#ifdef WM_OLED
-void init_oled(){
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-  }
-
-  display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixepl scale
-  display.setTextColor(WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
-  display.display();
-}
-
-void print_oled(String str,uint8_t size){
-  display.clearDisplay();
-  display.setTextSize(size);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println(str);
-  display.display();
-}
-#else
-  void print_oled(String str,uint8_t size){
-    (void)str;
-    (void)size;
-  }
-#endif
