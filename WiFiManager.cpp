@@ -223,6 +223,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   setupConfigPortal();
 
   while(1){
+    
+    //notify portal activity
+    if ( _portalcallback != NULL) {
+      _portalcallback();
+    }
 
     // check if timeout
     if(configPortalHasTimeout()) break;
@@ -357,6 +362,10 @@ uint8_t WiFiManager::waitForConnectResult() {
     boolean keepConnecting = true;
     uint8_t status;
     while (keepConnecting) {
+       // notify connection pending
+       if (_connectcallback)
+        _connectcallback ();
+
       status = WiFi.status();
       if (millis() > start + _connectTimeout) {
         keepConnecting = false;
