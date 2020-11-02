@@ -792,6 +792,16 @@ void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
 
+// called when portal is active waiting config
+void WiFiManager::setPortalCallback( void (*func)(void) ) {
+  _portalcallback = func;
+}
+
+//called on wifi connection
+void WiFiManager::setConnectCallback( void (*func)(void) ){
+  _connectcallback = func;
+}
+
 //sets a custom element to add to head, like a new style tag
 void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
