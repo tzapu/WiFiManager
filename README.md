@@ -1,6 +1,10 @@
 
 # WiFiManager
+## DEVELOPMENT BRANCH
+
 ESP8266 WiFi Connection manager with fallback web configuration portal
+
+:warning: This Documentation is out of date for this branch, see notes below
 
 [![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=development)](https://travis-ci.org/tzapu/WiFiManager)
 
@@ -11,11 +15,11 @@ The configuration portal is of the captive variety, so on various devices it wil
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
-**This works with the ESP8266 Arduino platform with a recent stable release(2.0.0 or newer)**
+**This works with the ESP8266 Arduino platform**
 
 [https://github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
 
-**This works with the ESP32 Arduino platform with staging** 
+**This works with the ESP32 Arduino platform** 
 
 [https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
 
@@ -291,6 +295,8 @@ This will make use the specified IP configuration instead of using DHCP in stati
 wifiManager.setSTAStaticIPConfig(IPAddress(192,168,0,99), IPAddress(192,168,0,1), IPAddress(255,255,255,0)); // optional DNS 4th argument
 ```
 There are a couple of examples in the examples folder that show you how to set a static IP and even how to configure it through the web configuration portal.
+
+NOTE: You should fill DNS server if you have HTTP requests with hostnames or syncronize time (NTP). It's the same as gateway ip or a popular (Google DNS: 8.8.8.8).
 
 #### Custom HTML, CSS, Javascript
 There are various ways in which you can inject custom HTML, CSS or Javascript into the configuration portal.

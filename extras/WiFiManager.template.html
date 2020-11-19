@@ -139,12 +139,12 @@ a:hover {
 .msg.P h4 {
     color: var(--primarycolor);
 }
-/*.msg.S {
+.msg.S {
     border-left-color: #5cb85c;
 }
 .msg.S h4 {
     color: #5cb85c;
-}*/
+}
 .msg.D {
     border-left-color: #dc3630;
 }
@@ -201,6 +201,7 @@ input:disabled {
 			<form action='/erase' method='post'><button class='D'>Erase</button></form><br/>
 			<form action='/restart' method='post'><button>Restart</button></form><br/>
 			<form action='/exit' method='post'><button>Exit</button></form><br/>
+			<form action='/' method='post'><button>Back</button></form><br/>
 			<!-- /HTTP_PORTAL_MENU -->
 			<!-- SAMPLE -->
 			<h2>/wifi</h2><hr>
@@ -269,8 +270,11 @@ input:disabled {
 			<div class='msg'>No AP set</div>
 			<!-- /HTTP_STATUS_NONE -->
 			<!-- SAMPLE -->
-			<div class='msg P'><h4>H4 Color Header</h4>content</div>
+			<div class='msg P'><h4>H4 Color Header P</h4>content</div>
 			<!-- /SAMPLE -->
+			<!-- SAMPLE -->
+			<div class='msg S'><h4>H4 Color Header S</h4>content</div>
+			<!-- /SAMPLE -->	
 			<!-- SAMPLE -->
 			<h2>/info</h3><hr>
 			<dl>
