@@ -162,7 +162,10 @@ void setup() {
   
   // set connection timeout
   // wm.setConnectTimeout(20);
-  
+
+  // set wifi connect retries
+  // wm.setConnectRetries(2);
+
   // show static ip fields
   // wm.setShowStaticFields(true);
   
@@ -171,8 +174,7 @@ void setup() {
   // This is sometimes necessary, it is still unknown when and why this is needed but it may solve some race condition or bug in esp SDK/lib
   // wm.setCleanConnect(true); // disconnect before connect, clean connect
   
-  // 
-  wm.setBreakAfterConfig(true);
+  wm.setBreakAfterConfig(true); // needed to use saveWifiCallback
 
   // set custom webserver port, automatic captive portal does not work with custom ports!
   // wm.setHttpPort(8080);

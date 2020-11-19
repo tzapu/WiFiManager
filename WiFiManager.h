@@ -226,6 +226,9 @@ class WiFiManager
 
     //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
+
+    // sets number of retries for autoconnect, force retry after wait failure exit
+    void          setConnectRetries(uint8_t numRetries); // default 1
     
     //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
     void          setSaveConnectTimeout(unsigned long seconds);
@@ -403,7 +406,9 @@ class WiFiManager
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
     bool          _apHidden               = false; // store softap hidden value
-    uint16_t       _httpPort              = 80; // port for webserver
+    uint16_t      _httpPort               = 80; // port for webserver
+    // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
+    uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id;
