@@ -2070,8 +2070,7 @@ void WiFiManager::setConnectTimeout(unsigned long seconds) {
  * @param {[type]} uint8_t numRetries [description]
  */
 void WiFiManager::setConnectRetries(uint8_t numRetries){
-  _connectRetries = numRetries;
-  constrain(_connectRetries,1,10);
+  _connectRetries = constrain(numRetries,1,10);
 }
 
 /**
