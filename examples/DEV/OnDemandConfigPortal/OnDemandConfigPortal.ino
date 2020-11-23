@@ -18,54 +18,6 @@ const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 
 unsigned long mtime = 0;
 
-// OLED TEST , untested
-// // #define MYOLED
-
-// #include <Wire.h>
-// #include <Adafruit_GFX.h>
-// #include <Adafruit_SSD1306.h>
-// #ifdef MYOLED 
-
-// #define SCREEN_WIDTH 128 // OLED display width, in pixels
-// #define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
-// // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-// #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-// void init_oled(){
-//   Wire.begin(SCL,SDA);  // begin(sda, scl) SWAP!
-//   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-//   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-//     Serial.println(F("SSD1306 allocation failed"));
-//   }
-
-//   display.clearDisplay();
-//   display.setTextSize(1);             // Normal 1:1 pixepl scale
-//   display.setTextColor(WHITE);        // Draw white text
-//   display.setCursor(0,0);             // Start at top-left corner
-//   display.display();
-// }
-
-// void print_oled(String str,uint8_t size){
-//   display.clearDisplay();
-//   display.setTextSize(size);
-//   display.setTextColor(WHITE);
-//   display.setCursor(0,0);
-//   display.println(str);
-//   display.display();
-// }
-// #else
-//   void print_oled(String str,uint8_t size){
-//     (void)str;
-//     (void)size;
-//   }
-// #endif
-
-void print_oled(String str,uint8_t size){
-  (void)str;
-  (void)size;
-}
 
 WiFiManager wm;
 
@@ -88,9 +40,6 @@ void saveWifiCallback(){
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("[CALLBACK] configModeCallback fired");
-  #ifdef ESP8266
-    print_oled("WiFiManager Waiting\nIP: " + WiFi.softAPIP().toString() + "\nSSID: " + WiFi.softAPSSID(),1); 
-  #endif  
   // myWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
@@ -104,7 +53,7 @@ void saveParamCallback(){
 
 void bindServerCallback(){
   wm.server->on("/custom",handleRoute);
-  // wm.server->on("/info",handleRoute); // can override wm!
+  // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
 void handleRoute(){
@@ -114,30 +63,33 @@ void handleRoute(){
 
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  
   // put your setup code here, to run once:
   Serial.begin(115200);
   // Serial1.begin(115200);
 
   // Serial.setDebugOutput(true);  
   delay(1000);
-  // Serial1.println("TXD1 Enabled");
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
-  
-  #ifdef OLED
-  init_oled();
-  #endif
-  print_oled(F("Starting..."),2);
+
+  Serial.println("Error - TEST");
+  Serial.println("Information- - TEST");
+
+  Serial.println("[ERROR]  TEST");
+  Serial.println("[INFORMATION] TEST");  
+
   wm.debugPlatformInfo();
 
-  //Local intialization. Once its business is done, there is no need to keep it around
   //reset settings - for testing
   // wm.resetSettings();
   // wm.erase();
   
+  // invert theme, dark
   wm.setClass("invert");
 
+  // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
@@ -154,7 +106,7 @@ void setup() {
   wm.setSaveConfigCallback(saveWifiCallback);
   wm.setSaveParamsCallback(saveParamCallback);
 
-  //add all your parameters here
+  // add all your parameters here
   wm.addParameter(&custom_html);
   wm.addParameter(&custom_mqtt_server);
   wm.addParameter(&custom_mqtt_port);
@@ -163,51 +115,66 @@ void setup() {
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
 
+  // set values later if you want
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
 
-  // Set cutom menu via menu[] or vector
-  // const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wm.setMenu(menu,9); // custom menu array must provide length
+/*
+  Set cutom menu via menu[] or vector
+  const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
+  wm.setMenu(menu,9); // custom menu array must provide length
+*/
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   // wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
-  // set static sta ip
+  // set STA static ip
   // wm.setSTAStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
   // wm.setShowStaticFields(false);
   // wm.setShowDnsFields(false);
 
-  // set static ip
+  // set AP static ip
   // wm.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0));
   // wm.setAPStaticIPConfig(IPAddress(10,0,1,99), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
 
   // set country
-  wm.setCountry("US"); // setting wifi country seems to improve OSX soft ap connectivity, may help others as well
-  
-  // set channel
+  // setting wifi country seems to improve OSX soft ap connectivity, 
+  // may help others as well, default is CN which has different channels
+  wm.setCountry("US"); 
+
+  // set Hostname
+  wm.setHostname("WIFIMANAGERTESTING");
+
+  // set custom channel
   // wm.setWiFiAPChannel(13);
   
   // set AP hidden
   // wm.setAPHidden(true);
 
-  // show password publicly!
+  // show password publicly in form
   // wm.setShowPassword(true);
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(120);
   
+  // set connection timeout
   // wm.setConnectTimeout(20);
+
+  // set wifi connect retries
+  // wm.setConnectRetries(2);
+
+  // show static ip fields
   // wm.setShowStaticFields(true);
   
   // wm.startConfigPortal("AutoConnectAP", "password");
   
-  // wm.setCleanConnect(true); // disconenct before connect, clean connect
+  // This is sometimes necessary, it is still unknown when and why this is needed but it may solve some race condition or bug in esp SDK/lib
+  // wm.setCleanConnect(true); // disconnect before connect, clean connect
   
-  wm.setBreakAfterConfig(true);
+  wm.setBreakAfterConfig(true); // needed to use saveWifiCallback
 
   // set custom webserver port, automatic captive portal does not work with custom ports!
   // wm.setHttpPort(8080);
@@ -216,23 +183,22 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
+  
   wifiInfo();
-  print_oled(F("Connecting..."),2);  
+
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
-    print_oled("Not Connected",2);
   }
   else if(TEST_CP) {
+    // start configportal always
     delay(1000);
     Serial.println("TEST_CP ENABLED");
-    // start configportal always
     wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
     wm.startConfigPortal("WM_ConnectAP");
   }
   else {
     //if you get here you have connected to the WiFi
      Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
   
   wifiInfo();
@@ -241,6 +207,7 @@ void setup() {
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+
 }
 
 void wifiInfo(){
@@ -274,7 +241,6 @@ void loop() {
     else {
       //if you get here you have connected to the WiFi
       Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
       getTime();
     }
   }
@@ -300,13 +266,13 @@ void getTime() {
     Serial.print(".");
     now = time(nullptr);
     if((millis() - start) > timeout){
-      Serial.println("[ERROR] Failed to get NTP time.");
+      Serial.println("\n[ERROR] Failed to get NTP time.");
       return;
     }
   }
   Serial.println("");
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
+  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
   Serial.print("Current time: ");
   Serial.print(asctime(&timeinfo));
 }

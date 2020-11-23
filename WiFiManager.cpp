@@ -302,9 +302,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
       if((String)_hostname != ""){
         #ifdef ESP8266
-          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.hostname());
+          DEBUG_WM(DEBUG_DEV,"hostname: STA: ",WiFi.hostname());
         #elif defined(ESP32)
-          DEBUG_WM(DEBUG_DEV,"hostname: STA",WiFi.getHostname());
+          DEBUG_WM(DEBUG_DEV,"hostname: STA: ",WiFi.getHostname());
         #endif
       }
 
@@ -326,16 +326,17 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 }
 
 bool WiFiManager::setupHostname(bool restart){
-  DEBUG_WM(DEBUG_VERBOSE,"Setting hostname:",_hostname);
   if((String)_hostname == "") {
-    DEBUG_WM(DEBUG_VERBOSE,"No Hostname to set");
+    DEBUG_WM(DEBUG_DEV,"No Hostname to set");
     return false;
-  }
+  } else DEBUG_WM(DEBUG_DEV,"setupHostname: ",_hostname);
   bool res = true;
   #ifdef ESP8266
+    DEBUG_WM(DEBUG_VERBOSE,"Setting WiFi hostname");
     res = WiFi.hostname(_hostname);
-    #ifdef ESP8266MDNS_H
-      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+    // #ifdef ESP8266MDNS_H
+    #ifdef WM_MDNS
+      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname, tcp 80");
       if(MDNS.begin(_hostname)){
         MDNS.addService("http", "tcp", 80);
       }
@@ -344,8 +345,9 @@ bool WiFiManager::setupHostname(bool restart){
     // @note hostname must be set after STA_START
     delay(200); // do not remove, give time for STA_START
     res = WiFi.setHostname(_hostname);
-    #ifdef ESP32MDNS_H
-      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname");
+    // #ifdef ESP32MDNS_H
+      #ifdef WM_MDNS
+      DEBUG_WM(DEBUG_VERBOSE,"Setting MDNS hostname, tcp 80");
       if(MDNS.begin(_hostname)){
         MDNS.addService("http", "tcp", 80);
       }
@@ -354,7 +356,6 @@ bool WiFiManager::setupHostname(bool restart){
 
   if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: set failed!"));
 
-  // in sta mode restart , not sure about softap
   if(restart && (WiFi.status() == WL_CONNECTED)){
     DEBUG_WM(DEBUG_VERBOSE,F("reconnecting to set new hostname"));
     // WiFi.reconnect(); // This does not reset dhcp
@@ -431,7 +432,7 @@ bool WiFiManager::startAP(){
       DEBUG_WM(DEBUG_VERBOSE,"setting softAP Hostname:",_hostname);
       bool res =  WiFi.softAPsetHostname(_hostname);
       if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
-      DEBUG_WM(DEBUG_DEV,F("hostname: AP"),WiFi.softAPgetHostname());
+      DEBUG_WM(DEBUG_DEV,F("hostname: AP: "),WiFi.softAPgetHostname());
    }
   #endif
 
@@ -635,6 +636,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
  * @return {[type]} [description]
  */
 boolean WiFiManager::process(){
+    // process mdns, esp32 not required
+    #if defined(WM_MDNS) && defined(ESP8266)
+    MDNS.update();
+    #endif
+
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
         uint8_t state = processConfigPortal();
         return state == WL_CONNECTED;
@@ -753,7 +759,7 @@ bool WiFiManager::shutdownConfigPortal(){
 // clean up, flow is convoluted, and causes bugs
 uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   DEBUG_WM(DEBUG_VERBOSE,F("Connecting as wifi client..."));
-  
+  uint8_t retry = 1;
   uint8_t connRes = (uint8_t)WL_NO_SSID_AVAIL;
 
   setSTAConfig();
@@ -764,6 +770,10 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
+  while(retry <= _connectRetries){
+  if(_connectRetries > 1){
+      DEBUG_WM(F("Connect Wifi, ATTEMPT #"),(String)retry+" of "+(String)_connectRetries); 
+  }
   // if ssid argument provided connect to that
   if (ssid != "") {
     wifiConnectNew(ssid,pass);
@@ -781,11 +791,13 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
       connRes = waitForConnectResult();
     }
     else {
-      DEBUG_WM(F("No wifi save required, skipping"));
+      DEBUG_WM(F("No wifi saved, skipping"));
     }
   }
 
   DEBUG_WM(DEBUG_VERBOSE,F("Connection result:"),getWLStatusString(connRes));
+  retry++;
+}
 
 // WPS enabled? https://github.com/esp8266/Arduino/pull/4889
 #ifdef NO_EXTRA_4K_HEAP
@@ -835,6 +847,8 @@ bool WiFiManager::wifiConnectDefault(){
   DEBUG_WM(F("Connecting to SAVED AP:"),WiFi_SSID(true));
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   ret = WiFi_enableSTA(true,storeSTAmode);
+  delay(500); // THIS DELAY ?
+  DEBUG_WM(DEBUG_DEV,"Mode after delay: "+getModeString(WiFi.getMode()));
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi enableSta failed");
   ret = WiFi.begin();
   if(!ret) DEBUG_WM(DEBUG_ERROR,"[ERROR] wifi begin failed");
@@ -1027,6 +1041,7 @@ void WiFiManager::handleWifi(boolean scan) {
   }
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
+  if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
@@ -1053,6 +1068,7 @@ void WiFiManager::handleParam(){
 
   page += getParamOut();
   page += FPSTR(HTTP_FORM_END);
+  if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
@@ -1347,7 +1363,7 @@ void WiFiManager::handleWiFiStatus(){
   handleRequest();
   String page;
   // String page = "{\"result\":true,\"count\":1}";
-  #ifdef JSTEST
+  #ifdef WM_JSTEST
     page = FPSTR(HTTP_JS);
   #endif
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
@@ -1551,6 +1567,7 @@ void WiFiManager::handleInfo() {
   }
   page += F("</dl>");
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
+  if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
 
@@ -2050,6 +2067,16 @@ void WiFiManager::setConfigPortalTimeout(unsigned long seconds) {
 void WiFiManager::setConnectTimeout(unsigned long seconds) {
   _connectTimeout = seconds * 1000;
 }
+
+/**
+ * [setConnectRetries description]
+ * @access public
+ * @param {[type]} uint8_t numRetries [description]
+ */
+void WiFiManager::setConnectRetries(uint8_t numRetries){
+  _connectRetries = constrain(numRetries,1,10);
+}
+
 /**
  * toggle _cleanconnect, always disconnect before connecting
  * @param {[type]} bool enable [description]
@@ -2430,7 +2457,8 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
 
 /**
  * set params as sperate page not in wifi
- * NOT COMPATIBLE WITH setMenu! @todo scan menuids and insert param after wifi or something
+ * NOT COMPATIBLE WITH setMenu! 
+ * @todo scan menuids and insert param after wifi or something, same for ota
  * @param bool enable 
  * @since $dev
  */
@@ -2546,12 +2574,12 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(!_debug || _debugLevel < level) return;
 
   if(_debugLevel >= DEBUG_MAX){
-    uint32_t free;
-    uint16_t max;
-    uint8_t frag;
     #ifdef ESP8266
-    ESP.getHeapStats(&free, &max, &frag);
-    _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);
+    // uint32_t free;
+    // uint16_t max;
+    // uint8_t frag;
+    // ESP.getHeapStats(&free, &max, &frag);// @todo Does not exist in 2.3.0
+    // _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag); 
     #elif defined ESP32
     // total_free_bytes;      ///<  Total free bytes in the heap. Equivalent to multi_free_heap_size().
     // total_allocated_bytes; ///<  Total bytes allocated to data in the heap.
@@ -2562,9 +2590,9 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     // total_blocks;          ///<  Total number of (variable size) blocks in the heap.
     multi_heap_info_t info;
     heap_caps_get_info(&info, MALLOC_CAP_INTERNAL);
-    free = info.total_free_bytes;
-    max  = info.largest_free_block;
-    frag = 100 - (max * 100) / free;
+    uint32_t free = info.total_free_bytes;
+    uint16_t max  = info.largest_free_block;
+    uint8_t frag = 100 - (max * 100) / free;
     _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);    
     #endif
   }
@@ -2584,13 +2612,16 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
  * @return {[type]} [description]
  */
 void WiFiManager::debugSoftAPConfig(){
-    wifi_country_t country;
     
     #ifdef ESP8266
       softap_config config;
       wifi_softap_get_config(&config);
-      wifi_get_country(&country);
+      #if !defined(WM_NOCOUNTRY)
+        wifi_country_t country;
+        wifi_get_country(&country);
+      #endif
     #elif defined(ESP32)
+      wifi_country_t country;
       wifi_config_t conf_config;
       esp_wifi_get_config(WIFI_IF_AP, &conf_config); // == ESP_OK
       wifi_ap_config_t config = conf_config.ap;
@@ -2606,7 +2637,9 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("authmode:        "),config.authmode);
     DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "),config.max_connection);
-    DEBUG_WM(F("country:         "),(String)country.cc);
+    #if !defined(WM_NOCOUNTRY) 
+      DEBUG_WM(F("country:         "),(String)country.cc);
+    #endif
     DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
     DEBUG_WM(FPSTR(D_HR));
 }
@@ -2624,7 +2657,6 @@ void WiFiManager::debugPlatformInfo(){
     DEBUG_WM(F("system_get_boot_version():"),system_get_boot_version());
     DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
   #elif defined(ESP32)
-    size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
     DEBUG_WM("Free heap:       ", ESP.getFreeHeap());
     DEBUG_WM("ESP SDK version: ", ESP.getSdkVersion());
     // esp_chip_info_t chipInfo;
@@ -2737,7 +2769,7 @@ bool WiFiManager::WiFiSetCountry(){
   else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
   else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
   
-  #elif defined(ESP8266)
+  #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
        // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
        if(_wificountry == "US") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_US);
   else if(_wificountry == "JP") ret = wifi_set_country((wifi_country_t*)&WM_COUNTRY_JP);
@@ -2778,14 +2810,14 @@ bool WiFiManager::WiFi_Disconnect() {
     #ifdef ESP8266
       if((WiFi.getMode() & WIFI_STA) != 0) {
           bool ret;
-          DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
+          DEBUG_WM(DEBUG_DEV,F("WiFi station disconnect"));
           ETS_UART_INTR_DISABLE(); // @todo probably not needed
           ret = wifi_station_disconnect();
           ETS_UART_INTR_ENABLE();        
           return ret;
       }
     #elif defined(ESP32)
-      DEBUG_WM(DEBUG_DEV,F("WIFI station disconnect"));
+      DEBUG_WM(DEBUG_DEV,F("WiFi station disconnect"));
       return WiFi.disconnect(); // not persistent atm
     #endif
     return false;
@@ -2793,7 +2825,7 @@ bool WiFiManager::WiFi_Disconnect() {
 
 // toggle STA without persistent
 bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
-    DEBUG_WM(DEBUG_DEV,F("WiFi station enable"));
+    DEBUG_WM(DEBUG_DEV,F("WiFi_enableSTA"),(String) enable? "enable" : "disable");
     #ifdef ESP8266
       WiFiMode_t newMode;
       WiFiMode_t currentMode = WiFi.getMode();

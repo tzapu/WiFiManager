@@ -4,7 +4,7 @@ bool _enteredConfigMode = false;
 
 void setup(){
 	Serial.begin(115200);
-WiFiManager wifiManager;
+	WiFiManager wifiManager;
 
 	// wifiManager.setAPCallback([this](WiFiManager* wifiManager) {
 	wifiManager.setAPCallback([&](WiFiManager* wifiManager) {
@@ -16,9 +16,11 @@ WiFiManager wifiManager;
 	wifiManager.resetSettings();
 	if (!wifiManager.autoConnect()) {
 		Serial.printf("*** Failed to connect and hit timeout\n");
-		ESP.reset();
+		ESP.restart();
 		delay(1000);
 	}
 }
 
-void loop(){}
+void loop(){
+
+}

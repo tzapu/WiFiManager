@@ -41,7 +41,9 @@ void setup() {
 }
 
 void loop() {
+  #ifdef ESP8266
   MDNS.update();
+  #endif
   doWiFiManager();
   // put your main code here, to run repeatedly:
 }
