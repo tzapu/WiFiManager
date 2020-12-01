@@ -1140,7 +1140,9 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       else{
         res = WiFi.scanNetworks();
       }
-      if(res == WIFI_SCAN_FAILED) DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
+      if(res == WIFI_SCAN_FAILED){
+        DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
+      }  
       else if(res == WIFI_SCAN_RUNNING){
         DEBUG_WM(DEBUG_ERROR,"[ERROR] scan waiting");
         while(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
