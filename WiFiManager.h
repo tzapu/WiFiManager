@@ -298,7 +298,10 @@ class WiFiManager
 
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
-    
+
+    // show OTA upload button on info page
+    void          setShowInfoUpdate(boolean enabled);
+
     // set ap channel
     void          setWiFiAPChannel(int32_t channel);
     
@@ -437,6 +440,7 @@ class WiFiManager
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
     boolean       _showInfoErase          = true;  // info page erase button
+    boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
     boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
     const char *  _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
@@ -454,7 +458,7 @@ class WiFiManager
     // cache time helps throttle this
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
-    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
     boolean       _asyncScan              = false; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
 

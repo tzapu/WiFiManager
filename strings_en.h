@@ -61,6 +61,7 @@ const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credential
 const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg S'>Saved<br/></div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button class='D'>Erase WiFi Config</button></form>";
+const char HTTP_UPDATEBTN[]        PROGMEM = "<br/><form action='/update' method='get'><button>Update</button></form>";
 const char HTTP_BACKBTN[]          PROGMEM = "<hr><br/><form action='/' method='get'><button>Back</button></form>";
 
 const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg S'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
@@ -209,7 +210,7 @@ const char S_titlereset[]         PROGMEM = "Reset";
 const char S_titleerase[]         PROGMEM = "Erase";
 const char S_titleclose[]         PROGMEM = "Close";
 const char S_options[]            PROGMEM = "options";
-const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.";
+const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.\n";
 const char S_staticip[]           PROGMEM = "Static IP";
 const char S_staticgw[]           PROGMEM = "Static Gateway";
 const char S_staticdns[]          PROGMEM = "Static DNS";

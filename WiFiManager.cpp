@@ -1116,7 +1116,11 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,"scanNetworks async:",async == true);
     // DEBUG_WM(DEBUG_DEV,_numNetworks,(millis()-_lastscan ));
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
-    if(force || _numNetworks == 0 || (millis()-_lastscan > 60000)){
+    if(_numNetworks == 0){
+      DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
+      force = true;
+    }
+    if(force || (millis()-_lastscan > 60000)){
       int8_t res;
       _startscan = millis();
       if(async && _asyncScan){
@@ -1126,6 +1130,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
           using namespace std::placeholders; // for `_1`
           WiFi.scanNetworksAsync(std::bind(&WiFiManager::WiFi_scanComplete,this,_1));
           #else
+          DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan SYNC started"));
           res = WiFi.scanNetworks();
           #endif
         #else
@@ -1135,6 +1140,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         return false;
       }
       else{
+        DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan SYNC started"));
         res = WiFi.scanNetworks();
       }
       if(res == WIFI_SCAN_FAILED) DEBUG_WM(DEBUG_ERROR,"[ERROR] scan failed");
@@ -1566,6 +1572,10 @@ void WiFiManager::handleInfo() {
     if(infoids[i] != NULL) page += getInfoData(infoids[i]);
   }
   page += F("</dl>");
+  if(_showInfoUpdate){
+    page += HTTP_PORTAL_MENU[8];
+    page += HTTP_PORTAL_MENU[9];
+  }
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_HELP);
@@ -1768,7 +1778,7 @@ String WiFiManager::getInfoData(String id){
 }
 
 /** 
- * HTTPD CALLBACK root or redirect to captive portal
+ * HTTPD CALLBACK exit, closes configportal if blocking, if non blocking undefined
  */
 void WiFiManager::handleExit() {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Exit"));
@@ -1777,6 +1787,7 @@ void WiFiManager::handleExit() {
   page += FPSTR(S_exiting); // @token exiting
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  delay(2000);
   abort = true;
 }
 
@@ -1884,7 +1895,9 @@ void WiFiManager::stopCaptivePortal(){
   // @todo maybe disable configportaltimeout(optional), or just provide callback for user
 }
 
+// HTTPD CALLBACK, handle close,  stop captive portal, if not enabled undefined
 void WiFiManager::handleClose(){
+  DEBUG_WM(DEBUG_VERBOSE,F("Disabling Captive Portal"));
   stopCaptivePortal();
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP close"));
   handleRequest();
@@ -2406,6 +2419,14 @@ void WiFiManager::setWiFiAPHidden(bool hidden){
  */
 void WiFiManager::setShowInfoErase(boolean enabled){
   _showInfoErase = enabled;
+}
+
+/**
+ * toggle showing update upload web ota button on info page
+ * @param boolean enabled
+ */
+void WiFiManager::setShowInfoUpdate(boolean enabled){
+  _showInfoUpdate = enabled;
 }
 
 /**
