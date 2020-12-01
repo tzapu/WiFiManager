@@ -99,6 +99,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "input:disabled {opacity: 0.5;}"
 "</style>";
 
+#ifndef WM_NOHELP
 const char HTTP_HELP[]             PROGMEM =
  "<br/><h3>Available Pages</h3><hr>"
  "<table class='table'>"
@@ -123,6 +124,9 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+#else
+const char HTTP_HELP[]             PROGMEM = "";
+#endif
 
 #ifdef WM_JSTEST
 const char HTTP_JS[] PROGMEM = 

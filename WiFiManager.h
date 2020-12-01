@@ -575,6 +575,16 @@ class WiFiManager
     
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
+    
+    // Testing debug level memory
+    #ifndef WM_DEBUG_LEVEL
+    #define WM_DEBUG_LEVEL DEBUG_DEV
+    #endif
+
+    #ifdef WM_NODEBUG
+    #undef WM_DEBUG_LEVEL
+    #endif
+
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else 
