@@ -977,6 +977,23 @@ String WiFiManager::getHTTPHead(String title){
  */
 void WiFiManager::handleRequest() {
   _webPortalAccessed = millis();
+
+  // TESTING HTTPD AUTH RFC 2617
+  // BASIC_AUTH will hold onto creds, hard to "logout", but convienent
+  // DIGEST_AUTH will require new auth often, and nonce is random
+  // bool authenticate(const char * username, const char * password);
+  // bool authenticateDigest(const String& username, const String& H1);
+  // void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
+
+  bool testauth = false;
+  if(!testauth) return;
+  
+  DEBUG_WM(DEBUG_DEV,F("DOING AUTH"));
+  bool res = server->authenticate("admin","12345");
+  if(!res){
+    server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
+    DEBUG_WM(DEBUG_DEV,F("AUTH FAIL"));
+  }
 }
 
 /** 
@@ -1105,7 +1122,7 @@ void WiFiManager::WiFi_scanComplete(int networksFound){
 bool WiFiManager::WiFi_scanNetworks(){
   return WiFi_scanNetworks(false,false);
 }
-
+ 
 bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime,bool async){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime,async);
 }
@@ -1785,6 +1802,8 @@ void WiFiManager::handleExit() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
+  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+  // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
   server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   delay(2000);
