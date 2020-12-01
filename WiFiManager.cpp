@@ -331,7 +331,10 @@ bool WiFiManager::setupHostname(bool restart){
   if((String)_hostname == "") {
     DEBUG_WM(DEBUG_DEV,"No Hostname to set");
     return false;
-  } else DEBUG_WM(DEBUG_DEV,"setupHostname: ",_hostname);
+  } 
+  else {
+    DEBUG_WM(DEBUG_DEV,"setupHostname: ",_hostname);
+  }
   bool res = true;
   #ifdef ESP8266
     DEBUG_WM(DEBUG_VERBOSE,"Setting WiFi hostname");
