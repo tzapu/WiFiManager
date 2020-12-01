@@ -318,7 +318,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
     DEBUG_WM(F("AutoConnect: FAILED"));
   }
-  else DEBUG_WM(F("No Credentials are Saved, skipping connect"));
+  else {
+    DEBUG_WM(F("No Credentials are Saved, skipping connect"));
+  } 
 
   // not connected start configportal
   bool res = startConfigPortal(apName, apPassword);
@@ -500,7 +502,9 @@ void WiFiManager::setupConfigPortal() {
   dnsServer.reset(new DNSServer());
   server.reset(new WM_WebServer(_httpPort));
 
-  if(_httpPort != 80) DEBUG_WM(DEBUG_VERBOSE,"http server started with custom port: ",_httpPort); // @todo not showing ip
+  if(_httpPort != 80) {
+    DEBUG_WM(DEBUG_VERBOSE,"http server started with custom port: ",_httpPort); // @todo not showing ip
+  } 
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -1146,7 +1150,10 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       _lastscan = millis();
       DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");
       return true;
-    } else DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+" ms ago");
+    } 
+    else {
+      DEBUG_WM(DEBUG_VERBOSE,"Scan is cached",(String)(millis()-_lastscan )+" ms ago");
+    }
     return false;
 }
 
@@ -2002,7 +2009,9 @@ bool WiFiManager::erase(bool opt){
         DEBUG_WM("Erasing SPIFFS");
         bool ret = SPIFFS.format();
         DEBUG_WM(DEBUG_VERBOSE,"spiffs erase: ",ret ? "Success" : "ERROR");
-      } else DEBUG_WM("[ERROR] Could not start SPIFFS");
+      } else{
+        DEBUG_WM("[ERROR] Could not start SPIFFS");
+      }
       return ret;
     }
   #else
@@ -2257,7 +2266,9 @@ void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
  */
 void WiFiManager::setRestorePersistent(boolean persistent) {
   _userpersistent = persistent;
-  if(!persistent) DEBUG_WM(F("persistent is off"));
+  if(!persistent){
+    DEBUG_WM(F("persistent is off"));
+  }
 }
 
 /**
