@@ -48,10 +48,11 @@ void setup() {
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
-        if (json.success()) {
+        //ArduinoJson 6 support
+        DynamicJsonDocument json(500);
+        DeserializationError err = deserializeJson(json, buf.get());
+        serializeJsonPretty(json, Serial);
+        if (!err) {
           Serial.println("\nparsed json");
 
           strcpy(mqtt_server, json["mqtt_server"]);
@@ -128,8 +129,7 @@ void setup() {
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
+    DynamicJsonDocument json(500);
     json["mqtt_server"] = mqtt_server;
     json["mqtt_port"] = mqtt_port;
     json["blynk_token"] = blynk_token;
@@ -139,8 +139,8 @@ void setup() {
       Serial.println("failed to open config file for writing");
     }
 
-    json.printTo(Serial);
-    json.printTo(configFile);
+    serializeJsonPretty(json, Serial);
+    serializeJson(json,configFile);
     configFile.close();
     //end save
   }
