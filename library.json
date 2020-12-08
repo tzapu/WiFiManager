@@ -1,6 +1,6 @@
 {
   "name": "WiFiManager",
-  "keywords": "wifi, wi-fi",
+  "keywords": "wifi, wi-fi, esp8266",
   "description": "ESP8266 WiFi Connection manager with fallback web configuration portal",
   "repository":
   {
@@ -9,5 +9,5 @@
   },
   "frameworks": "arduino",
   "platforms": "espressif8266",
-  "version": "0.15.0"
+  "version": "0.16.0"
 }
