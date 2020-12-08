@@ -8,6 +8,10 @@ ESP8266 WiFi Connection manager with fallback web configuration portal
 
 [![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=development)](https://travis-ci.org/tzapu/WiFiManager)
 
+[![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
+
+[![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
+
 ![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)
 ![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)
 
