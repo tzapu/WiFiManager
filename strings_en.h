@@ -101,6 +101,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "input:disabled {opacity: 0.5;}"
 "</style>";
 
+#ifndef WM_NOHELP
 const char HTTP_HELP[]             PROGMEM =
  "<br/><h3>Available Pages</h3><hr>"
  "<table class='table'>"
@@ -127,6 +128,9 @@ const char HTTP_HELP[]             PROGMEM =
  "<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
  "<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+#else
+const char HTTP_HELP[]             PROGMEM = "";
+#endif
 
 const char HTTP_UPDATE[] PROGMEM = "Upload New Firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Update</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* May not function inside captive portal, Open in browser http://192.168.4.1</a><small>";
 const char HTTP_UPDATE_FAIL[] PROGMEM = "<div class='msg D'><strong>Update Failed!</strong><Br/>Reboot device and try again</div>";
