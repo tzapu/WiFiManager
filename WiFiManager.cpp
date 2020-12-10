@@ -1337,10 +1337,11 @@ bool WiFiManager::WiFi_scanNetworks(unsigned int cachetime){
     return WiFi_scanNetworks(millis()-_lastscan > cachetime,false);
 }
 bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
-  #ifdef WM_DEBUG_LEVEL
+    #ifdef WM_DEBUG_LEVEL
     // DEBUG_WM(DEBUG_DEV,"scanNetworks async:",async == true);
     // DEBUG_WM(DEBUG_DEV,_numNetworks,(millis()-_lastscan ));
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
+    #endif
     if(_numNetworks == 0){
       DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       force = true;
@@ -3520,5 +3521,5 @@ void WiFiManager::handleUpdateDone() {
 		ESP.restart();
 	}
 }
-#endif
 
+#endif
