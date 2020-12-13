@@ -3508,7 +3508,7 @@ void WiFiManager::handleUpdateDone() {
 		DEBUG_WM(F("[OTA] update failed"));
 	}
 	else {
-		page += FPSTR(HTTP_UPDATE_OK);
+		page += FPSTR(HTTP_UPDATE_SUCCESS);
 		DEBUG_WM(F("[OTA] update ok"));
 	}
 	page += FPSTR(HTTP_END);
