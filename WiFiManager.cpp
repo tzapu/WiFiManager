@@ -623,8 +623,8 @@ void WiFiManager::setupConfigPortal() {
   server->on(String(FPSTR(R_status)).c_str(),     std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
-  server->on((String)FPSTR(R_update), std::bind(&WiFiManager::handleUpdate, this));
-  server->on((String)FPSTR(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
+  server->on(String(FPSTR(R_update)).c_str(), std::bind(&WiFiManager::handleUpdate, this));
+  server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
   
   server->begin(); // Web server start
   #ifdef WM_DEBUG_LEVEL
