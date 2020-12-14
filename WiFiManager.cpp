@@ -1740,7 +1740,7 @@ void WiFiManager::handleParamSave(AsyncWebServerRequest *request) {
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
   #endif
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
+  DEBUG_WM(DEBUG_DEV,F("Method:"),request->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
   handleRequest();
 
@@ -2178,7 +2178,7 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
   handleRequest();
   String message = FPSTR(S_notfound); // @token notfound
   message += FPSTR(S_uri); // @token uri
-  message += request->uri();
+  message += request->url();
   message += FPSTR(S_method); // @token method
   message += ( request->method() == HTTP_GET ) ? FPSTR(S_GET) : FPSTR(S_POST);
   message += FPSTR(S_args); // @token args
@@ -2203,14 +2203,16 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
  */
 boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_DEV,"-> " + request->hostHeader());
+  DEBUG_WM(DEBUG_DEV,"-> " + request->host());
+  DEBUG_WM(DEBUG_DEV,"-> " + request->url());
   #endif
   
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
-  String serverLoc =  toStringIp(request.client().localIP());
+  // String serverLoc =  toStringIp(request.client().localIP());
+  String serverLoc =  "NA";
   if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
-  bool doredirect = serverLoc != request->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
+  bool doredirect = serverLoc != request->host(); // redirect if hostheader not server ip, prevent redirect loops
   // doredirect = !isIp(server->hostHeader()) // old check
   
   if (doredirect) {
@@ -2222,7 +2224,7 @@ boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
   response->addHeader(F("Location"), (String)F("http://") + serverLoc);
   request->send(response);
   // Empty content inhibits Content-length header so we have to close the socket ourselves.
-  request->client().stop(); // Stop is needed because we sent no content length
+  // request->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;
@@ -3468,55 +3470,55 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request){
   unsigned long _configPortalTimeoutSAV = _configPortalTimeout; // store cp timeout
   _configPortalTimeout = 0; // disable timeout
 
-  // handler for the file upload, get's the sketch bytes, and writes
-	// them through the Update object
-	HTTPUpload& upload = request->upload();
+ //  // handler for the file upload, get's the sketch bytes, and writes
+	// // them through the Update object
+	// HTTPUpload& upload = request->upload();
 
-  // UPLOAD START
-	if (upload.status == UPLOAD_FILE_START) {
-	  if(_debug) Serial.setDebugOutput(true);
+ //  // UPLOAD START
+	// if (upload.status == UPLOAD_FILE_START) {
+	//   if(_debug) Serial.setDebugOutput(true);
 
-    #ifdef ESP8266
-    		WiFiUDP::stopAll();
-    		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-    #elif defined(ESP32)
-          // Think we do not need to stop WiFIUDP because we haven't started a listener
-    		  uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
-    #endif
+ //    #ifdef ESP8266
+ //    		WiFiUDP::stopAll();
+ //    		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+ //    #elif defined(ESP32)
+ //          // Think we do not need to stop WiFIUDP because we haven't started a listener
+ //    		  uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+ //    #endif
 
-    Serial.printf("Update: %s\r\n", upload.filename.c_str());
+ //    Serial.printf("Update: %s\r\n", upload.filename.c_str());
 
-  	if (!Update.begin(maxSketchSpace)) { // start with max available size
-  			Update.printError(Serial); // size error
-        error = true;
-  	}
-	}
-  // UPLOAD WRITE
-  else if (upload.status == UPLOAD_FILE_WRITE) {
-		Serial.print(".");
-		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-			Update.printError(Serial); // write failure
-      error = true;
-		}
-	}
-  // UPLOAD FILE END
-  else if (upload.status == UPLOAD_FILE_END) {
-		if (Update.end(true)) { // true to set the size to the current progress
-			Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
-		}
-    else {
-			Update.printError(Serial);
-      error = true;
-		}
-	}
-  // UPLOAD ABORT
-  else if (upload.status == UPLOAD_FILE_ABORTED) {
-		Update.end();
-		DEBUG_WM(F("[OTA] Update was aborted"));
-    error = true;
-  }
-  if(error) _configPortalTimeout = _configPortalTimeoutSAV;
-	delay(0);
+ //  	if (!Update.begin(maxSketchSpace)) { // start with max available size
+ //  			Update.printError(Serial); // size error
+ //        error = true;
+ //  	}
+	// }
+ //  // UPLOAD WRITE
+ //  else if (upload.status == UPLOAD_FILE_WRITE) {
+	// 	Serial.print(".");
+	// 	if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+	// 		Update.printError(Serial); // write failure
+ //      error = true;
+	// 	}
+	// }
+ //  // UPLOAD FILE END
+ //  else if (upload.status == UPLOAD_FILE_END) {
+	// 	if (Update.end(true)) { // true to set the size to the current progress
+	// 		Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
+	// 	}
+ //    else {
+	// 		Update.printError(Serial);
+ //      error = true;
+	// 	}
+	// }
+ //  // UPLOAD ABORT
+ //  else if (upload.status == UPLOAD_FILE_ABORTED) {
+	// 	Update.end();
+	// 	DEBUG_WM(F("[OTA] Update was aborted"));
+ //    error = true;
+ //  }
+ //  if(error) _configPortalTimeout = _configPortalTimeoutSAV;
+	// delay(0);
 }
 
 // upload and ota done, show status
