@@ -507,31 +507,33 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
-    void          handleRoot(AsyncWebServerRequest *server);
-    void          handleWifi(AsyncWebServerRequest *server);
-    void          handleWifiSave(AsyncWebServerRequest *server);
-    void          handleInfo(AsyncWebServerRequest *server);
-    void          handleReset(AsyncWebServerRequest *server);
-    void          handleNotFound(AsyncWebServerRequest *server);
-    void          handleExit(AsyncWebServerRequest *server);
-    void          handleClose(AsyncWebServerRequest *server);
-    // void          handleErase(AsyncWebServerRequest *server);
-    void          handleErase(AsyncWebServerRequest *server);
-    void          handleParam(AsyncWebServerRequest *server);
-    void          handleWiFiStatus(AsyncWebServerRequest *server);
-    void          handleParamSave(AsyncWebServerRequest *server);
-    void          doParamSave(AsyncWebServerRequest *server);
+    void          handleRoot(AsyncWebServerRequest *request);
+    void          handleWifi(AsyncWebServerRequest *request);
+    void          handleWifiSave(AsyncWebServerRequest *request);
+    void          handleInfo(AsyncWebServerRequest *request);
+    void          handleReset(AsyncWebServerRequest *request);
+    void          handleNotFound(AsyncWebServerRequest *request);
+    void          handleExit(AsyncWebServerRequest *request);
+    void          handleClose(AsyncWebServerRequest *request);
+    // void          handleErase(AsyncWebServerRequest *request);
+    void          handleErase(AsyncWebServerRequest *request);
+    void          handleParam(AsyncWebServerRequest *request);
+    void          handleWiFiStatus(AsyncWebServerRequest *request);
+    void          handleParamSave(AsyncWebServerRequest *request);
+    void          doParamSave(AsyncWebServerRequest *request);
 
     void          handleRequest();
+    void          HTTPSend(AsyncWebServerRequest *request, String page);
 
-    boolean       captivePortal(AsyncWebServerRequest *server);
+
+    boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
 	// OTA Update handler
-	void          handleUpdate(AsyncWebServerRequest *server);
-	void          handleUpdating(AsyncWebServerRequest *server);
-	void          handleUpdateDone(AsyncWebServerRequest *server);
+	void          handleUpdate(AsyncWebServerRequest *request);
+	void          handleUpdating(AsyncWebServerRequest *request);
+	void          handleUpdateDone(AsyncWebServerRequest *request);
 
 
     // wifi platform abstractions
