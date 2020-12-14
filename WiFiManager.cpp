@@ -2206,11 +2206,10 @@ boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
   DEBUG_WM(DEBUG_DEV,"-> " + request->host());
   DEBUG_WM(DEBUG_DEV,"-> " + request->url());
   #endif
-  
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
   // String serverLoc =  toStringIp(request.client().localIP());
-  String serverLoc =  "NA";
+  String serverLoc =  "192.168.4.1";
   if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
   bool doredirect = serverLoc != request->host(); // redirect if hostheader not server ip, prevent redirect loops
   // doredirect = !isIp(server->hostHeader()) // old check
