@@ -1369,6 +1369,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       // DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       // force = true;
     }
+    async = true;
     if(force || (millis()-_lastscan > 60000)){
       int8_t res;
       _startscan = millis();
