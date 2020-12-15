@@ -271,6 +271,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("AutoConnect"));
   #endif
+
+  // no getter for autoreconnectpolicy before this
+  // https://github.com/esp8266/Arduino/pull/4359
+  // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
+  WiFi_autoReconnect();
+ 
   if(getWiFiIsSaved()){
 
     _begin();
@@ -291,11 +297,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #endif
 
     _usermode = WIFI_STA; // When using autoconnect , assume the user wants sta mode on permanently.
-
-    // no getter for autoreconnectpolicy before this
-    // https://github.com/esp8266/Arduino/pull/4359
-    // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
-    WiFi_autoReconnect();
 
     // set hostname before stating
     if((String)_hostname != ""){
@@ -1368,10 +1369,13 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       // DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       // force = true;
     }
+    // kludge for asn webserver, always be async
+    force = false;
     async = true;
     if(force || (millis()-_lastscan > 60000)){
       int8_t res;
       _startscan = millis();
+
       if(async && _asyncScan){
         #ifdef ESP8266
           #ifndef WM_NOASYNC // no async available < 2.4.0
@@ -1387,7 +1391,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         #else
         #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
-          #endif
+        #endif
           res = WiFi.scanNetworks(true);
         #endif
         return false;
@@ -1396,6 +1400,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan SYNC started"));
         res = WiFi.scanNetworks();
       }
+
       if(res == WIFI_SCAN_FAILED){
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] scan failed"));
@@ -3397,6 +3402,7 @@ void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     #ifdef WM_DEBUG_LEVEL
     // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     #endif
+
     if(event == SYSTEM_EVENT_STA_DISCONNECTED){
     #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: "),info.disconnected.reason);
@@ -3428,10 +3434,10 @@ void WiFiManager::WiFi_autoReconnect(){
     // if(_wifiAutoReconnect){
       // @todo move to seperate method, used for event listener now
       #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,F("ESP32 event handler enabled"));
+      DEBUG_WM(DEBUG_VERBOSE,F("[ESP32] event handler enabled"));
       #endif
       using namespace std::placeholders;
-      wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2)); // @todo move, needed for async esp32 scannetworks
     // }
   #endif
 }
