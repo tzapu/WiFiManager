@@ -74,16 +74,20 @@
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
-    #ifndef WEBSERVER_H
-        #ifdef WM_WEBSERVERSHIM
-            #include <WebServer.h>
-        #else
-            #include <ESP8266WebServer.h>
-            // Forthcoming official ? probably never happening
-            // https://github.com/esp8266/ESPWebServer
+    #ifdef WM_ASYNCWEBSERVER
+        #include <AsyncTCP.h>
+        #include <ESPAsyncWebServer.h>
+    #else
+        #ifndef WEBSERVER_H
+            #ifdef WM_WEBSERVERSHIM
+                #include <WebServer.h>
+            #else
+                #include <ESP8266WebServer.h>
+                // Forthcoming official ? probably never happening
+                // https://github.com/esp8266/ESPWebServer
+            #endif
         #endif
     #endif
-
     #ifdef WM_ERASE_NVS
        #include <nvs.h>
        #include <nvs_flash.h>
@@ -368,7 +372,11 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
+        #ifdef WM_ASYNCWEBSERVER
+        using WM_WebServer = AsyncWebServer;
+        #else
         using WM_WebServer = WebServer;
+        #endif
     #else
         #ifdef WM_ASYNCWEBSERVER
         using WM_WebServer = AsyncWebServer;
@@ -508,7 +516,7 @@ class WiFiManager
 
     // webserver handlers
     void          handleRoot(AsyncWebServerRequest *request);
-    void          handleWifi(AsyncWebServerRequest *request);
+    void          handleWifi(AsyncWebServerRequest *request,bool scan);
     void          handleWifiSave(AsyncWebServerRequest *request);
     void          handleInfo(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
@@ -516,7 +524,7 @@ class WiFiManager
     void          handleExit(AsyncWebServerRequest *request);
     void          handleClose(AsyncWebServerRequest *request);
     // void          handleErase(AsyncWebServerRequest *request);
-    void          handleErase(AsyncWebServerRequest *request);
+    void          handleErase(AsyncWebServerRequest *request, bool opt);
     void          handleParam(AsyncWebServerRequest *request);
     void          handleWiFiStatus(AsyncWebServerRequest *request);
     void          handleParamSave(AsyncWebServerRequest *request);
