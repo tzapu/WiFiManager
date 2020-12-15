@@ -540,7 +540,6 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
-
     if(_configPortalTimeout == 0 || (_apClientCheck && (WiFi_softap_num_stations() > 0))){
       if(millis() - timer > 30000){
         timer = millis();
@@ -2108,7 +2107,6 @@ void WiFiManager::handleExit(AsyncWebServerRequest *request) {
   request->send(response);
 
   // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
-  delay(2000);
   abort = true;
 }
 
@@ -2131,7 +2129,6 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("RESETTING ESP"));
   #endif
-  delay(1000);
   _rebootNeeded = true;
 }
 
@@ -2202,8 +2199,8 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
  */
 boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_DEV,"-> " + request->host());
-  DEBUG_WM(DEBUG_DEV,"-> " + request->url());
+  // DEBUG_WM(DEBUG_MAX,"-> " + request->host());
+  // DEBUG_WM(DEBUG_MAX,"-> " + request->url());
   #endif
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
@@ -3468,10 +3465,12 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
   // combine route handlers into one callback and use argument or post checking instead of mutiple functions maybe, if POST process else server upload page?
   // [x] add upload checking, do we need too check file?
   // convert output to debugger if not moving to example
-	if (captivePortal(request)) return; // If captive portal redirect instead of displaying the page
+	
+  // if (captivePortal(request)) return; skip check for speed
   bool error = false;
   unsigned long _configPortalTimeoutSAV = _configPortalTimeout; // store cp timeout
   _configPortalTimeout = 0; // disable timeout
+  bool otadebug = false;
 
   // UPLOAD START
 	if (!index) {
@@ -3480,18 +3479,26 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
     // WiFiUDP::stopAll();
     uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
 
-    Serial.printf("Update: %s\r\n", filename.c_str());
+    if(otadebug) Serial.printf("Update: %s\r\n", filename.c_str());
 
   	if(!Update.begin(maxSketchSpace)) { // start with max available size
   			Update.printError(Serial); // size error
         error = true;
   	}
+    #ifdef ESP8266
     Update.runAsync(true); // tell the updaterClass to run in async mode
+    #endif
 	}
   
   // UPLOAD WRITE
   // if (index<len) {
-		Serial.print(".");
+    if(otadebug){
+  		Serial.print(".");
+      Serial.print(index);
+      Serial.print("\t");
+      Serial.println(len);
+      if(len == 1) Serial.print("[OTA] Chunk?");
+    }
 		if (Update.write(data,len) != len) {
 			Update.printError(Serial); // write failure
       error = true;
@@ -3501,14 +3508,17 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
   // UPLOAD FILE END
   if (final) {
 		if (Update.end(true)) { // true to set the size to the current progress
-			Serial.printf("Updated Success: %u bytes\r\nRebooting...\r\n", index+len);
+			    if(otadebug){ Serial.printf("Updated Success: %u bytes\r\nRebooting...\r\n", index+len);}
 		}
     else {
 			Update.printError(Serial);
       error = true;
 		}
-    Serial.setDebugOutput(false);
+    // Serial.setDebugOutput(false);
 	}
+
+  // @todo detect aborts, and timeouts, there is no catch
+  // if length == 1 retries?
 
   // UPLOAD ABORT
   // if (abort) {
@@ -3517,7 +3527,6 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
   //   error = true;
   // }
   if(error) _configPortalTimeout = _configPortalTimeoutSAV;
-	delay(0);
 }
 
 // upload and ota done, show status
