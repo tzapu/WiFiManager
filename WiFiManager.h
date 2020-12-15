@@ -516,7 +516,7 @@ class WiFiManager
 
     // webserver handlers
     void          handleRoot(AsyncWebServerRequest *request);
-    void          handleWifi(AsyncWebServerRequest *request);
+    void          handleWifi(AsyncWebServerRequest *request,bool scan);
     void          handleWifiSave(AsyncWebServerRequest *request);
     void          handleInfo(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
@@ -524,7 +524,7 @@ class WiFiManager
     void          handleExit(AsyncWebServerRequest *request);
     void          handleClose(AsyncWebServerRequest *request);
     // void          handleErase(AsyncWebServerRequest *request);
-    void          handleErase(AsyncWebServerRequest *request);
+    void          handleErase(AsyncWebServerRequest *request, bool opt);
     void          handleParam(AsyncWebServerRequest *request);
     void          handleWiFiStatus(AsyncWebServerRequest *request);
     void          handleParamSave(AsyncWebServerRequest *request);

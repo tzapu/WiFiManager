@@ -580,10 +580,12 @@ void WiFiManager::setupHTTPServer(){
   server.reset(new WM_WebServer(_httpPort));
   
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
+  server->on(String(FPSTR(R_wifi)).c_str(),       HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,std::placeholders::_1,true));
+  server->on(String(FPSTR(R_wifinoscan)).c_str(), HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,std::placeholders::_1,false));
+  server->on(String(FPSTR(R_erase)).c_str(),      HTTP_ANY, std::bind(&WiFiManager::handleErase, this,std::placeholders::_1,false));
+  {
   using namespace std::placeholders;
   server->on(String(FPSTR(R_root)).c_str(),       HTTP_ANY, std::bind(&WiFiManager::handleRoot, this,_1));
-  server->on(String(FPSTR(R_wifi)).c_str(),       HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,_1));
-  server->on(String(FPSTR(R_wifinoscan)).c_str(), HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,_1));
   server->on(String(FPSTR(R_wifisave)).c_str(),   HTTP_ANY, std::bind(&WiFiManager::handleWifiSave, this,_1));
   server->on(String(FPSTR(R_info)).c_str(),       HTTP_ANY, std::bind(&WiFiManager::handleInfo, this,_1));
   server->on(String(FPSTR(R_param)).c_str(),      HTTP_ANY, std::bind(&WiFiManager::handleParam, this,_1));
@@ -591,13 +593,12 @@ void WiFiManager::setupHTTPServer(){
   server->on(String(FPSTR(R_restart)).c_str(),    HTTP_ANY, std::bind(&WiFiManager::handleReset, this,_1));
   server->on(String(FPSTR(R_exit)).c_str(),       HTTP_ANY, std::bind(&WiFiManager::handleExit, this,_1));
   server->on(String(FPSTR(R_close)).c_str(),      HTTP_ANY, std::bind(&WiFiManager::handleClose, this,_1));
-  server->on(String(FPSTR(R_erase)).c_str(),      HTTP_ANY, std::bind(&WiFiManager::handleErase, this,_1));
   server->on(String(FPSTR(R_status)).c_str(),     HTTP_ANY, std::bind(&WiFiManager::handleWiFiStatus, this,_1));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this, _1));
   
   server->on(String(FPSTR(R_update)).c_str(),     HTTP_ANY, std::bind(&WiFiManager::handleUpdate, this, _1));
   server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST,std::bind(&WiFiManager::handleUpdateDone, this, _1), std::bind(&WiFiManager::handleUpdating, this, _1));
-  
+  }
   server->begin(); // Web server start  
 }
 
@@ -1240,8 +1241,7 @@ void WiFiManager::handleRoot(AsyncWebServerRequest *request) {
 /**
  * HTTPD CALLBACK Wifi config page handler
  */
-void WiFiManager::handleWifi(AsyncWebServerRequest *request) {
-  bool scan = false;
+void WiFiManager::handleWifi(AsyncWebServerRequest *request,bool scan = true) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Wifi"));
   #endif
@@ -2138,9 +2138,9 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
 
 // void WiFiManager::handleErase() {
 //   handleErase(false);
+//   
 // }
-void WiFiManager::handleErase(AsyncWebServerRequest *request) {
-  bool opt = false;
+void WiFiManager::handleErase(AsyncWebServerRequest *request,bool opt = false) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Erase"));
   #endif
