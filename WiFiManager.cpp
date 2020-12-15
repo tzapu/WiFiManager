@@ -598,7 +598,7 @@ void WiFiManager::setupHTTPServer(){
   
   server->on(String(FPSTR(R_update)).c_str(),     HTTP_ANY, std::bind(&WiFiManager::handleUpdate, this, _1));
   server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST,std::bind(&WiFiManager::handleUpdateDone, this, _1), std::bind(&WiFiManager::handleUpdating, this, _1,_2,_3,_4,_5,_6));
-  
+  }
   server->begin(); // Web server start  
 }
 
