@@ -222,7 +222,8 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   connect = false;
   setupConfigPortal();
 
-  while(1){
+  bool TimedOut=true;
+  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout) {
 
     // check if timeout
     if(configPortalHasTimeout()) break;
@@ -247,16 +248,14 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           delay(2000);
           // using user-provided  _ssid, _pass in place of system-stored ssid and pass
           DEBUG_WM(F("Failed to connect."));
+          WiFi.mode(WIFI_AP);
         }
         else {
-          //connected
-          WiFi.mode(WIFI_STA);
           //notify that configuration has changed and any optional parameters should be saved
           if ( _savecallback != NULL) {
             //todo: check if any custom parameters actually exist, and check if they really changed maybe
             _savecallback();
           }
-          break;
         }
       }
       if (_shouldBreakAfterConfig) {
@@ -282,6 +281,13 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       }
     }
     yield();
+  }
+
+  WiFi.mode(WIFI_STA);
+  if (TimedOut & WiFi.status() != WL_CONNECTED) {
+    WiFi.begin();
+    int connRes = waitForConnectResult();
+    DEBUG_WM ("Timed out connection result: ");
   }
 
   server.reset();
@@ -443,6 +449,26 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
 
+void WiFiManager::reportStatus(String &page){
+  if (WiFi.SSID() != ""){
+    page += F("<br/>Access Point: ");
+    page += WiFi.SSID();
+    page += F("<br/> Status: ");
+    if (WiFi.status()==WL_CONNECTED){
+      page += F("<font color=\"green\">Connected</font>");
+      page += F("<br/> IP: <strong>");
+      page += WiFi.localIP().toString();
+      page += F("</strong>");
+    }
+    else {
+      page += F("<font color=\"red\">Not Connected</font>");
+    }
+  }
+  else {
+    page += F("<br/>No network currently configured.");
+  }
+}
+
 /** Handle root or redirect to captive portal */
 void WiFiManager::handleRoot() {
   DEBUG_WM(F("Handle root"));
@@ -461,6 +487,9 @@ void WiFiManager::handleRoot() {
   page += String(F("</h1>"));
   page += String(F("<h3>WiFiManager</h3>"));
   page += FPSTR(HTTP_PORTAL_OPTIONS);
+  page += F("<div>");
+  reportStatus(page);
+  page += F("</div>");
   page += FPSTR(HTTP_END);
 
   server->sendHeader("Content-Length", String(page.length()));
@@ -672,6 +701,8 @@ void WiFiManager::handleWifiSave() {
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(HTTP_HEADER_END);
+  page.replace("{v}", _apName);
+  page.replace("{x}", _ssid);
   page += FPSTR(HTTP_SAVED);
   page += FPSTR(HTTP_END);
 
