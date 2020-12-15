@@ -2121,7 +2121,7 @@ void WiFiManager::handleReset() {
 // }
 void WiFiManager::handleErase(boolean opt) {
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Erase"));
+  DEBUG_WM(DEBUG_NOTIFY,F("<- HTTP Erase"));
   #endif
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
@@ -3152,15 +3152,38 @@ String WiFiManager::getModeString(uint8_t mode){
 
 bool WiFiManager::WiFiSetCountry(){
   if(_wificountry == "") return false; // skip not set
-  bool ret = false;
+
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFiSetCountry to"),_wificountry);
+  #endif
+
+/*
+  * @return
+  *    - ESP_OK: succeed
+  *    - ESP_ERR_WIFI_NOT_INIT: WiFi is not initialized by eps_wifi_init
+  *    - ESP_ERR_WIFI_IF: invalid interface
+  *    - ESP_ERR_WIFI_ARG: invalid argument
+  *    - others: refer to error codes in esp_err.h
+  */
+
+
+  esp_err_t ret = false;
+  // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
   #ifdef ESP32
   // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
-       if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
+       if(WiFi.getMode() == WIFI_MODE_NULL){
+          DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
+       } // exception if wifi not init!
   else if(_wificountry == "US") ret = esp_wifi_set_country(&WM_COUNTRY_US) == ESP_OK;
   else if(_wificountry == "JP") ret = esp_wifi_set_country(&WM_COUNTRY_JP) == ESP_OK;
   else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
   #ifdef WM_DEBUG_LEVEL
-  else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+  else{
+    DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+  }
+  if(ret == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
+  else if(ret == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
+  else if (ret != ERR_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)ret);
   #endif
   
   #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
@@ -3174,7 +3197,7 @@ bool WiFiManager::WiFiSetCountry(){
   #endif
   
   #ifdef WM_DEBUG_LEVEL
-  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("esp_wifi_set_country: "),_wificountry);
+  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("[OK] esp_wifi_set_country: "),_wificountry);
   #endif
   #ifdef WM_DEBUG_LEVEL
   else DEBUG_WM(DEBUG_ERROR,F("[ERROR] esp_wifi_set_country failed"));  
