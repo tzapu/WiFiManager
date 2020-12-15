@@ -596,7 +596,7 @@ void WiFiManager::setupHTTPServer(){
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this, _1));
   
   server->on(String(FPSTR(R_update)).c_str(),     HTTP_ANY, std::bind(&WiFiManager::handleUpdate, this, _1));
-  server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST,std::bind(&WiFiManager::handleUpdateDone, this, _1), std::bind(&WiFiManager::handleUpdating, this, _1));
+  server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST,std::bind(&WiFiManager::handleUpdateDone, this, _1), std::bind(&WiFiManager::handleUpdating, this, _1,_2,_3,_4,_5,_6));
   
   server->begin(); // Web server start  
 }
@@ -3452,8 +3452,10 @@ void WiFiManager::handleUpdate(AsyncWebServerRequest *request) {
   HTTPSend(request,page);
 }
 
+// AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final
+
 // upload via /u POST
-void WiFiManager::handleUpdating(AsyncWebServerRequest *request){
+void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename, size_t index, uint8_t *data, size_t len, bool final){
   // @todo
   // cannot upload files in captive portal, file select is not allowed, show message with link or hide
   // cannot upload if softreset after upload, maybe check for hard reset at least for dev, ERROR[11]: Invalid bootstrapping state, reset ESP8266 before updating
@@ -3469,55 +3471,73 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request){
   unsigned long _configPortalTimeoutSAV = _configPortalTimeout; // store cp timeout
   _configPortalTimeout = 0; // disable timeout
 
- //  // handler for the file upload, get's the sketch bytes, and writes
-	// // them through the Update object
+  
+  enum HTTPUploadStatus { UPLOAD_FILE_START, UPLOAD_FILE_WRITE, UPLOAD_FILE_END, UPLOAD_FILE_ABORTED };  
+  HTTPUploadStatus status;
+
+  typedef struct {
+    HTTPUploadStatus status;
+    String  filename;
+    String  name;
+    String  type;
+    size_t  totalSize;    // total size of uploaded file so far
+    size_t  currentSize;  // size of data currently in buf
+    size_t  contentLength; // size of entire post request, file size + headers and other request data.
+    uint8_t *buf;
+  } HTTPUpload;
+
+  if(!index) status = UPLOAD_FILE_START;
+  else status       = UPLOAD_FILE_WRITE;
+  if(final) status  = UPLOAD_FILE_END;
+
+  const HTTPUpload upload{status,filename,filename,"",index,len,len,data};
+
+  // handler for the file upload, get's the sketch bytes, and writes
+	// them through the Update object
 	// HTTPUpload& upload = request->upload();
 
- //  // UPLOAD START
-	// if (upload.status == UPLOAD_FILE_START) {
-	//   if(_debug) Serial.setDebugOutput(true);
+  // UPLOAD START
+	if (upload.status == UPLOAD_FILE_START) {
+	  if(_debug) Serial.setDebugOutput(true);
 
- //    #ifdef ESP8266
- //    		WiFiUDP::stopAll();
- //    		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
- //    #elif defined(ESP32)
- //          // Think we do not need to stop WiFIUDP because we haven't started a listener
- //    		  uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
- //    #endif
+    // WiFiUDP::stopAll();
+    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
 
- //    Serial.printf("Update: %s\r\n", upload.filename.c_str());
+    Serial.printf("Update: %s\r\n", upload.filename.c_str());
 
- //  	if (!Update.begin(maxSketchSpace)) { // start with max available size
- //  			Update.printError(Serial); // size error
- //        error = true;
- //  	}
-	// }
- //  // UPLOAD WRITE
- //  else if (upload.status == UPLOAD_FILE_WRITE) {
-	// 	Serial.print(".");
-	// 	if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-	// 		Update.printError(Serial); // write failure
- //      error = true;
-	// 	}
-	// }
- //  // UPLOAD FILE END
- //  else if (upload.status == UPLOAD_FILE_END) {
-	// 	if (Update.end(true)) { // true to set the size to the current progress
-	// 		Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
-	// 	}
- //    else {
-	// 		Update.printError(Serial);
- //      error = true;
-	// 	}
-	// }
- //  // UPLOAD ABORT
- //  else if (upload.status == UPLOAD_FILE_ABORTED) {
-	// 	Update.end();
-	// 	DEBUG_WM(F("[OTA] Update was aborted"));
- //    error = true;
- //  }
- //  if(error) _configPortalTimeout = _configPortalTimeoutSAV;
-	// delay(0);
+  	if(!Update.begin(maxSketchSpace)) { // start with max available size
+  			Update.printError(Serial); // size error
+        error = true;
+  	}
+    Update.runAsync(true); // tell the updaterClass to run in async mode
+	}
+  // UPLOAD WRITE
+  else if (upload.status == UPLOAD_FILE_WRITE) {
+		Serial.print(".");
+		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+			Update.printError(Serial); // write failure
+      error = true;
+		}
+	}
+  // UPLOAD FILE END
+  else if (upload.status == UPLOAD_FILE_END) {
+		if (Update.end(true)) { // true to set the size to the current progress
+			Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
+		}
+    else {
+			Update.printError(Serial);
+      error = true;
+		}
+    Serial.setDebugOutput(false);
+	}
+  // UPLOAD ABORT
+  else if (upload.status == UPLOAD_FILE_ABORTED) {
+		Update.end();
+		DEBUG_WM(F("[OTA] Update was aborted"));
+    error = true;
+  }
+  if(error) _configPortalTimeout = _configPortalTimeoutSAV;
+	delay(0);
 }
 
 // upload and ota done, show status
@@ -3544,7 +3564,7 @@ void WiFiManager::handleUpdateDone(AsyncWebServerRequest *request) {
 
 	delay(1000); // send page
 	if (!Update.hasError()) {
-		ESP.restart();
+		ESP.restart(); // @todo @branch move out of async
 	}
 }
 

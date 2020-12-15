@@ -532,9 +532,8 @@ class WiFiManager
     void          stopCaptivePortal();
 	// OTA Update handler
 	void          handleUpdate(AsyncWebServerRequest *request);
-	void          handleUpdating(AsyncWebServerRequest *request);
+	void          handleUpdating(AsyncWebServerRequest *request,String filename, size_t index, uint8_t *data, size_t len, bool final);
 	void          handleUpdateDone(AsyncWebServerRequest *request);
-
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
