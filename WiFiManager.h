@@ -470,6 +470,8 @@ class WiFiManager
 
     // internal options
     
+    bool         _rebootNeeded            = false; // async reboot flag
+
     // wifiscan notes
     // The following are background wifi scanning optimizations
     // experimental to make scans faster, preload scans after starting cp, and visiting home page, so when you click wifi its already has your list
@@ -478,8 +480,8 @@ class WiFiManager
     // cache time helps throttle this
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
-    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
-    boolean       _asyncScan              = false; // perform wifi network scan async
+    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _asyncScan              = true; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
 
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1

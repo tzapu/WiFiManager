@@ -777,6 +777,8 @@ uint8_t WiFiManager::processConfigPortal(){
     server->handleClient();
     #endif
 
+    if(_rebootNeeded) reboot();
+
     // Waiting for save...
     if(connect) {
       connect = false;
@@ -1364,8 +1366,8 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     #endif
     if(_numNetworks == 0){
-      DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
-      force = true;
+      // DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
+      // force = true;
     }
     if(force || (millis()-_lastscan > 60000)){
       int8_t res;
@@ -2129,7 +2131,7 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
   DEBUG_WM(F("RESETTING ESP"));
   #endif
   delay(1000);
-  reboot();
+  _rebootNeeded = true;
 }
 
 /** 
@@ -2147,7 +2149,7 @@ void WiFiManager::handleErase(AsyncWebServerRequest *request,bool opt = false) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
 
-  bool ret = erase(opt);
+  bool ret = erase(opt); // @todo @branch move from async
 
   if(ret) page += FPSTR(S_resetting); // @token resetting
   else {
@@ -2162,11 +2164,7 @@ void WiFiManager::handleErase(AsyncWebServerRequest *request,bool opt = false) {
   HTTPSend(request,page);
 
   if(ret){
-    delay(2000);
-    #ifdef WM_DEBUG_LEVEL
-  	DEBUG_WM(F("RESETTING ESP"));
-    #endif
-  	reboot();
+    _rebootNeeded = true;
   }	
 }
 
@@ -2336,7 +2334,10 @@ bool WiFiManager::disconnect(){
 void WiFiManager::reboot(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("Restarting"));
+  _debugPort.flush();
   #endif
+  delay(2000); // time for serial and web flsuh
+  shutdownConfigPortal();
   ESP.restart();
 }
 
@@ -3540,9 +3541,10 @@ void WiFiManager::handleUpdateDone(AsyncWebServerRequest *request) {
 
   HTTPSend(request,page);
 
-	delay(1000); // send page
+	// delay(2000); // send page
 	if (!Update.hasError()) {
-		ESP.restart(); // @todo @branch move out of async
+		// ESP.restart();
+    _rebootNeeded = true; 
 	}
 }
 
