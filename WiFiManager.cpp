@@ -3167,7 +3167,7 @@ bool WiFiManager::WiFiSetCountry(){
   */
 
 
-  esp_err_t ret = false;
+  bool ret = false;
   // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
   #ifdef ESP32
   // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
