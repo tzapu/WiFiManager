@@ -3183,7 +3183,7 @@ bool WiFiManager::WiFiSetCountry(){
   }
   if(ret == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
   else if(ret == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
-  else if (ret != ERR_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)ret);
+  // else if (ret != ERR_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)ret);
   #endif
   
   #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
