@@ -31,6 +31,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ### Known Issues
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
+-------
 
 ## Contents
  - [How it works](#how-it-works)
