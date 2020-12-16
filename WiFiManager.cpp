@@ -3170,21 +3170,23 @@ bool WiFiManager::WiFiSetCountry(){
   bool ret = false;
   // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
   #ifdef ESP32
+  esp_err_t err;
   // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
-       if(WiFi.getMode() == WIFI_MODE_NULL){
-          DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
-       } // exception if wifi not init!
-  else if(_wificountry == "US") ret = esp_wifi_set_country(&WM_COUNTRY_US) == ESP_OK;
-  else if(_wificountry == "JP") ret = esp_wifi_set_country(&WM_COUNTRY_JP) == ESP_OK;
-  else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
-  #ifdef WM_DEBUG_LEVEL
-  else{
-    DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
-  }
-  if(ret == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
-  else if(ret == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
-  // else if (ret != ERR_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)ret);
-  #endif
+  if(WiFi.getMode() == WIFI_MODE_NULL){
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
+  } // exception if wifi not init!
+  else if(_wificountry == "US") err = esp_wifi_set_country(&WM_COUNTRY_US);
+  else if(_wificountry == "JP") err = esp_wifi_set_country(&WM_COUNTRY_JP);
+  else if(_wificountry == "CN") err = esp_wifi_set_country(&WM_COUNTRY_CN);
+    #ifdef WM_DEBUG_LEVEL
+    else{
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+    }
+         if(err == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
+    else if(err == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
+    else if (err != ESP_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)ret);
+    #endif
+  err = ret != ESP_OK;
   
   #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
        // if(WiFi.getMode() == WIFI_OFF); // exception if wifi not init!
