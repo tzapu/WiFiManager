@@ -1372,6 +1372,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // kludge for asn webserver, always be async
     force = false;
     async = true;
+    force = _lastscan == 0;
     if(force || (millis()-_lastscan > 60000)){
       int8_t res;
       _startscan = millis();
