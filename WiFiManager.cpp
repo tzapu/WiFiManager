@@ -3171,7 +3171,7 @@ bool WiFiManager::WiFiSetCountry(){
   *    - others: refer to error codes in esp_err.h
   */
 
-
+  // @todo move these definitions, and out of cpp `esp_wifi_set_country(&WM_COUNTRY_US)`
   bool ret = false;
   // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
   #ifdef ESP32
