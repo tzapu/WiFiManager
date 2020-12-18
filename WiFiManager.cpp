@@ -1833,18 +1833,21 @@ void WiFiManager::handleInfo() {
     };
 
   #elif defined(ESP32)
-    infos = 22;
+    // add esp_chip_info ?
+    infos = 25;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
       F("chipid"),
       F("chiprev"),
       F("idesize"),
+      F("flashsize"),      
       F("sdkver"),
       F("cpufreq"),
       F("freeheap"),
+      F("memsketch"),
+      F("memsmeter"),      
       F("lastreset"),
-      // F("temp"),
       F("wifihead"),
       F("apip"),
       F("apmac"),
@@ -1857,7 +1860,8 @@ void WiFiManager::handleInfo() {
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("conx")
+      F("conx"),
+      // F("temp")
     };
   #endif
 
@@ -1924,12 +1928,16 @@ String WiFiManager::getInfoData(String id){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_flashsize);
       p.replace(FPSTR(T_1),(String)ESP.getFlashChipRealSize());
+    #elif defined ESP32
+      p = FPSTR(HTTP_INFO_psrsize);
+      p.replace(FPSTR(T_1),(String)ESP.getPsramSize());      
     #endif
   }
   else if(id==F("sdkver")){
     p = FPSTR(HTTP_INFO_sdkver);
     #ifdef ESP32
       p.replace(FPSTR(T_1),(String)esp_get_idf_version());
+      // p.replace(FPSTR(T_1),(String)system_get_sdk_version()); // deprecated
     #else
     p.replace(FPSTR(T_1),(String)system_get_sdk_version());
     #endif
@@ -1954,20 +1962,16 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_freeheap);
     p.replace(FPSTR(T_1),(String)ESP.getFreeHeap());
   }
-  #ifdef ESP8266
   else if(id==F("memsketch")){
     p = FPSTR(HTTP_INFO_memsketch);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
-  #endif  
-  #ifdef ESP8266
   else if(id==F("memsmeter")){
     p = FPSTR(HTTP_INFO_memsmeter);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
-  #endif 
   else if(id==F("lastreset")){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_lastreset);
@@ -2067,6 +2071,7 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_temp);
     p.replace(FPSTR(T_1),(String)temperatureRead());
     p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
+    p.replace(FPSTR(T_3),(String)hallRead());
   }
   #endif
   return p;
