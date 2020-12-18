@@ -62,6 +62,10 @@
 
     #include <WiFi.h>
     #include <esp_wifi.h>
+<<<<<<< HEAD
+=======
+    #include <Update.h>
+>>>>>>> tzapu-development
 
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
@@ -228,6 +232,12 @@ class WiFiManager
     //sets timeout for which to attempt connecting, useful if you get a lot of failed connects
     void          setConnectTimeout(unsigned long seconds);
 
+<<<<<<< HEAD
+=======
+    // sets number of retries for autoconnect, force retry after wait failure exit
+    void          setConnectRetries(uint8_t numRetries); // default 1
+
+>>>>>>> tzapu-development
     //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
     void          setSaveConnectTimeout(unsigned long seconds);
 
@@ -296,6 +306,12 @@ class WiFiManager
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
 
+<<<<<<< HEAD
+=======
+    // show OTA upload button on info page
+    void          setShowInfoUpdate(boolean enabled);
+
+>>>>>>> tzapu-development
     // set ap channel
     void          setWiFiAPChannel(int32_t channel);
 
@@ -365,7 +381,8 @@ class WiFiManager
   private:
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsParams  = {"wifi","param","info","exit"};
-    std::vector<const char *> _menuIdsDefault = {"wifi","info","exit"};
+    std::vector<const char *> _menuIdsUpdate  = {"wifi","param","info","update","exit"};
+    std::vector<const char *> _menuIdsDefault = {"wifi","info","exit","sep","update"};
 
     // ip configs @todo struct ?
     IPAddress     _ap_static_ip;
@@ -404,7 +421,9 @@ class WiFiManager
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
     int32_t       _apChannel              = 0; // channel to use for ap
     bool          _apHidden               = false; // store softap hidden value
-    uint16_t       _httpPort              = 80; // port for webserver
+    uint16_t      _httpPort               = 80; // port for webserver
+    // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
+    uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id;
@@ -431,6 +450,7 @@ class WiFiManager
     boolean       _scanDispOptions        = false; // show percentage in scans not icons
     boolean       _paramsInWifi           = true;  // show custom parameters on wifi page
     boolean       _showInfoErase          = true;  // info page erase button
+    boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
     boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
     const char *  _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
@@ -448,7 +468,7 @@ class WiFiManager
     // cache time helps throttle this
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
-    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
     boolean       _asyncScan              = false; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
 
@@ -503,6 +523,11 @@ class WiFiManager
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
+	// OTA Update handler
+	void          handleUpdate();
+	void          handleUpdating();
+	void          handleUpdateDone();
+
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
@@ -571,6 +596,16 @@ class WiFiManager
 
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
+
+    // Testing debug level memory
+    #ifndef WM_DEBUG_LEVEL
+    #define WM_DEBUG_LEVEL DEBUG_DEV
+    #endif
+
+    #ifdef WM_NODEBUG
+    #undef WM_DEBUG_LEVEL
+    #endif
+
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else

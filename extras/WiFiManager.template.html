@@ -314,7 +314,12 @@ input:disabled {
 		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
 			<!-- FORM_UPLOAD -->
-			<Br/><br/>Form UPLOAD<br/><form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update' accept='.bin,application/octet-stream'><button type='submit' value='Submit'>Submit</button></form>
+			<Br/><br/>Form UPLOAD<br/>
+			<form method='POST' action='u' enctype='multipart/form-data'>
+				<input type='file' name='update' accept='.bin,application/octet-stream' onchange="(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)">
+				<button id='uploadbin' class="h">Submit</button>
+			</form>
+			<a href='http://192.168.4.1' target='_blank'><small>* Upload may not function inside captive portal, Open in browser - http://192.168.4.1</a></small>
 			<!-- /FORM_UPLOAD -->	
 
 <!-- HTTP_END -->

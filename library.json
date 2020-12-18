@@ -1,5 +1,5 @@
 {
-  "name": "WifiManager",
+  "name": "WiFiManager",
   "keywords": "wifi,wi-fi,esp,esp8266,esp32,espressif8266,espressif32,nodemcu,wemos,arduino",
   "description": "WiFi Configuration manager with web configuration portal for ESP boards",
 "authors":
@@ -25,5 +25,5 @@
     "espressif8266",
     "espressif32"
   ],
-  "version": "2.0.3-alpha"
+  "version": "2.0.4-beta"
 }
