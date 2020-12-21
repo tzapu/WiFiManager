@@ -135,7 +135,7 @@ class WiFiManager
     String        _ssid                   = "";
     String        _pass                   = "";
     unsigned long _configPortalTimeout    = 0;
-    unsigned long _connectTimeout         = 0;
+    unsigned long _connectTimeout         = 60000;
     unsigned long _configPortalStart      = 0;
 
     IPAddress     _ap_static_ip;

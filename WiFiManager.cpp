@@ -349,9 +349,6 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 }
 
 uint8_t WiFiManager::waitForConnectResult() {
-  if (_connectTimeout == 0) {
-    return WiFi.waitForConnectResult();
-  } else {
     DEBUG_WM (F("Waiting for connection result with time out"));
     unsigned long start = millis();
     boolean keepConnecting = true;
@@ -369,7 +366,6 @@ uint8_t WiFiManager::waitForConnectResult() {
     }
     return status;
   }
-}
 
 void WiFiManager::startWPS() {
   DEBUG_WM(F("START WPS"));
