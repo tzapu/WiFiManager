@@ -362,7 +362,7 @@ uint8_t WiFiManager::waitForConnectResult() {
       if (status == WL_CONNECTED) {
         keepConnecting = false;
       }
-      delay(100);
+    delayWithCallback(100, _connectionWaitCallback);
     }
     return status;
   }
@@ -788,7 +788,12 @@ void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
 
-//sets a custom element to add to head, like a new style tag
+// callback when waiting for connection
+void WiFiManager::setConnectionWaitCallback(void (*func)(void)) {
+  _connectionWaitCallback = func;
+}
+
+// sets a custom element to add to head, like a new style tag
 void WiFiManager::setCustomHeadElement(const char* element) {
   _customHeadElement = element;
 }
@@ -798,7 +803,28 @@ void WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates) {
   _removeDuplicateAPs = removeDuplicates;
 }
 
+void WiFiManager::delayWithCallback(unsigned long msDelay, void (*callback)(void)) {
+  if (callback) {
+    unsigned long startedAt = millis();
+    unsigned long currentTime = startedAt;
+    while (currentTime < startedAt + msDelay ) {
+      callback();
 
+      /* the delay here serves two purpose:
+           1. ensure that at least 1 millisecond has elapsed in each loop; and
+         more importantly,
+           2. The ESP8266 has the watchdog(WDT) turned on by default. If the watchdog
+         timer isn't periodically reset then it will automatically reset the board. Calling
+         delay would reset the watchdog timer. 
+      */
+      delay(1);
+
+      currentTime = millis();
+    }
+  } else {
+    delay(msDelay);
+  }
+}
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
