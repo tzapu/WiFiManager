@@ -196,7 +196,7 @@ boolean WiFiManager::startConfigPortal() {
 }
 
 boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPassword) {
-  
+
   if(!WiFi.isConnected()){
     WiFi.persistent(false);
     // disconnect sta, start ap
@@ -226,6 +226,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
     // check if timeout
     if(configPortalHasTimeout()) break;
+    _configWaitCallback();
 
     //DNS
     dnsServer->processNextRequest();
@@ -233,18 +234,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     server->handleClient();
 
     if (connect) {
-      delay(1000);
+      delayWithCallback(1000, _configWaitCallback);
       connect = false;
 
       // if saving with no ssid filled in, reconnect to ssid
-      // will not exit cp 
+      // will not exit cp
       if(_ssid == ""){
         DEBUG_WM(F("No ssid, skipping wifi"));
       }
       else{
         DEBUG_WM(F("Connecting to new AP"));
         if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
-          delay(2000);
+          delayWithCallback(2000, _configWaitCallback);
           // using user-provided  _ssid, _pass in place of system-stored ssid and pass
           DEBUG_WM(F("Failed to connect."));
         }
@@ -275,9 +276,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
           if(WiFi.status() == WL_CONNECTED) break;
           DEBUG_WM(".");
           // Serial.println(WiFi.status());
-          delay(100);
-        }        
-        delay(1000);
+          delayWithCallback(100, _connectionWaitCallback);
+        }
+        delayWithCallback(1000, _configWaitCallback);
         break;
       }
     }
@@ -305,7 +306,7 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM(F("Already connected. Bailing out."));
     return WL_CONNECTED;
   }
- 
+
   DEBUG_WM(F("Status:"));
   DEBUG_WM(WiFi.status());
 
@@ -349,23 +350,23 @@ int WiFiManager::connectWifi(String ssid, String pass) {
 }
 
 uint8_t WiFiManager::waitForConnectResult() {
-    DEBUG_WM (F("Waiting for connection result with time out"));
-    unsigned long start = millis();
-    boolean keepConnecting = true;
-    uint8_t status;
-    while (keepConnecting) {
-      status = WiFi.status();
-      if (millis() > start + _connectTimeout) {
-        keepConnecting = false;
-        DEBUG_WM (F("Connection timed out"));
-      }
-      if (status == WL_CONNECTED) {
-        keepConnecting = false;
-      }
-    delayWithCallback(100, _connectionWaitCallback);
+  DEBUG_WM (F("Waiting for connection result with time out"));
+  unsigned long start = millis();
+  boolean keepConnecting = true;
+  uint8_t status;
+  while (keepConnecting) {
+    status = WiFi.status();
+    if (millis() > start + _connectTimeout) {
+      keepConnecting = false;
+      DEBUG_WM (F("Connection timed out"));
     }
-    return status;
+    if (status == WL_CONNECTED) {
+      keepConnecting = false;
+    }
+    delayWithCallback(100, _connectionWaitCallback);
   }
+  return status;
+}
 
 void WiFiManager::startWPS() {
   DEBUG_WM(F("START WPS"));
@@ -788,6 +789,11 @@ void WiFiManager::setSaveConfigCallback( void (*func)(void) ) {
   _savecallback = func;
 }
 
+// callback when waiting for configuration
+void WiFiManager::setConfigWaitCallback(void (*func)(void)) {
+  _configWaitCallback = func;
+}
+
 // callback when waiting for connection
 void WiFiManager::setConnectionWaitCallback(void (*func)(void)) {
   _connectionWaitCallback = func;
@@ -815,7 +821,7 @@ void WiFiManager::delayWithCallback(unsigned long msDelay, void (*callback)(void
          more importantly,
            2. The ESP8266 has the watchdog(WDT) turned on by default. If the watchdog
          timer isn't periodically reset then it will automatically reset the board. Calling
-         delay would reset the watchdog timer. 
+         delay would reset the watchdog timer.
       */
       delay(1);
 

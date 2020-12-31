@@ -41,7 +41,7 @@ const char HTTP_END[] PROGMEM             = "</div></body></html>";
 
 class WiFiManagerParameter {
   public:
-    /** 
+    /**
         Create custom parameters that can be added to the WiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
@@ -107,6 +107,8 @@ class WiFiManager
     void          setAPCallback( void (*func)(WiFiManager*) );
     //called when settings have been changed and connection was successful
     void          setSaveConfigCallback( void (*func)(void) );
+    //called when waiting for WiFi configuration
+    void          setConfigWaitCallback( void (*func)(void) );
     //called when waiting for WiFi connection
     void          setConnectionWaitCallback( void (*func)(void) );
     //adds a custom parameter, returns false on failure
@@ -185,6 +187,7 @@ class WiFiManager
 
     void (*_apcallback)(WiFiManager*) = NULL;
     void (*_savecallback)(void) = NULL;
+    void (*_configWaitCallback)(void) = NULL;
     void (*_connectionWaitCallback)(void) = NULL;
 
     void delayWithCallback(unsigned long, void (*func)(void));
