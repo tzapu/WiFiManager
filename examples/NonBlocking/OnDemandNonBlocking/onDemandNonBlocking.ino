@@ -51,13 +51,15 @@ void loop() {
 void doWiFiManager(){
   // is auto timeout portal running
   if(portalRunning){
-    wm.process();
+    wm.process(); // do processing
+
+    // check for timeout
     if((millis()-startTime) > (timeout*1000)){
       Serial.println("portaltimeout");
       portalRunning = false;
       if(startAP){
         wm.stopConfigPortal();
-      }  
+      }
       else{
         wm.stopWebPortal();
       } 

@@ -2907,6 +2907,18 @@ void WiFiManager::setClass(String str){
   _bodyClass = str;
 }
 
+/**
+ * setDarkMode
+ * @param bool enable, enable dark mode via invert class
+ */
+void WiFiManager::setDarkMode(bool enable){
+  _bodyClass = enable ? "invert" : "";
+}
+
+/**
+ * setHttpPort
+ * @param uint16_t port webserver port number default 80
+ */
 void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
 }

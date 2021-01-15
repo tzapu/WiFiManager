@@ -84,10 +84,7 @@ void setup() {
 
   //reset settings - for testing
   // wm.resetSettings();
-  // wm.erase();
-  
-  // invert theme, dark
-  wm.setClass("invert");
+  // wm.erase();  
 
   // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
@@ -119,14 +116,20 @@ void setup() {
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
 
+  // invert theme, dark
+  wm.setDarkMode(true);
+
+  // show scan RSSI as percentage, instead of signal stength graphic
+  // wm.setScanDispPerc(true);
+
 /*
   Set cutom menu via menu[] or vector
   const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   wm.setMenu(menu,9); // custom menu array must provide length
 */
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wm.setMenu(menu); // custom menu, pass vector
+  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","update","restart","exit"};
+  wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
