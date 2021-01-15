@@ -3507,7 +3507,9 @@ void WiFiManager::handleUpdating(){
 
   	if (!Update.begin(maxSketchSpace)) { // start with max available size
   			Update.printError(Serial); // size error
+        DEBUG_WM(F("[OTA] Update ERROR"), "Not enough space");
         error = true;
+        Update.end(); // Not sure the best way to abort, I think client will keep sending..
   	}
 	}
   // UPLOAD WRITE
@@ -3550,6 +3552,7 @@ void WiFiManager::handleUpdateDone() {
 
 	if (Update.hasError()) {
 		page += FPSTR(HTTP_UPDATE_FAIL);
+    page += "OTA Error: " + (String)Update.getError();
 		DEBUG_WM(F("[OTA] update failed"));
 	}
 	else {
