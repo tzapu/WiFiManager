@@ -75,7 +75,29 @@ void setupSpiffs(){
   }
   //end read
 }
+void savingFunction()
+{   Serial.println("saving config");
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject& json = jsonBuffer.createObject();
+    json["mqtt_server"] = mqtt_server;
+    json["mqtt_port"]   = mqtt_port;
+    json["api_token"]   = api_token;
 
+    json["ip"]          = WiFi.localIP().toString();
+    json["gateway"]     = WiFi.gatewayIP().toString();
+    json["subnet"]      = WiFi.subnetMask().toString();
+
+    File configFile = SPIFFS.open("/config.json", "w");
+    if (!configFile) {
+      Serial.println("failed to open config file for writing");
+    }
+
+    json.prettyPrintTo(Serial);
+    json.printTo(configFile);
+    configFile.close();
+    //end save
+    shouldSaveConfig = false;
+}
 void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
   // put your setup code here, to run once:
@@ -113,13 +135,22 @@ void setup() {
 
   //reset settings - wipe credentials for testing
   //wm.resetSettings();
-
+  
+  //store current SSID to check if we got a new one later
+  String currentSSID=WiFi.SSID();
   //automatically connect using saved credentials if they exist
   //If connection fails it starts an access point with the specified name
   //here  "AutoConnectAP" if empty will auto generate basedcon chipid, if password is blank it will be anonymous
   //and goes into a blocking loop awaiting configuration
   if (!wm.autoConnect("AutoConnectAP", "password")) {
     Serial.println("failed to connect and hit timeout");
+      if (WiFi.SSID() != currentSSID) //if the esp got a new SSID data
+   { //save its parameters even if the connection isn't done
+  strcpy(mqtt_server, custom_mqtt_server.getValue());
+  strcpy(mqtt_port, custom_mqtt_port.getValue());
+  strcpy(api_token, custom_api_token.getValue());
+  savingFunction();
+  }
     delay(3000);
     // if we still have not connected restart and try all over again
     ESP.restart();
@@ -136,27 +167,7 @@ void setup() {
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
-    Serial.println("saving config");
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
-    json["mqtt_server"] = mqtt_server;
-    json["mqtt_port"]   = mqtt_port;
-    json["api_token"]   = api_token;
-
-    json["ip"]          = WiFi.localIP().toString();
-    json["gateway"]     = WiFi.gatewayIP().toString();
-    json["subnet"]      = WiFi.subnetMask().toString();
-
-    File configFile = SPIFFS.open("/config.json", "w");
-    if (!configFile) {
-      Serial.println("failed to open config file for writing");
-    }
-
-    json.prettyPrintTo(Serial);
-    json.printTo(configFile);
-    configFile.close();
-    //end save
-    shouldSaveConfig = false;
+ savingFunction();
   }
 
   Serial.println("local ip");
