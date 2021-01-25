@@ -1,12 +1,12 @@
 
 # WiFiManager
-## DEVELOPMENT BRANCH
+## DEVELOPMENT Version
 
 ESP8266 WiFi Connection manager with fallback web configuration portal
 
-:warning: This Documentation is out of date for this branch, see notes below
+:warning: This Documentation is out of date, see notes below
 
-[![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=development)](https://travis-ci.org/tzapu/WiFiManager)
+[![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=master)](https://travis-ci.org/tzapu/WiFiManager)
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
 
@@ -175,7 +175,6 @@ lib_deps =
 	WiFiManager
 ```
 
-If you want to install the development branch, then you'll need to use the `repository#tag` format instead:
 
 ```
 [env]
