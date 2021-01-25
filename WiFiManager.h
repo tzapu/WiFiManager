@@ -62,7 +62,7 @@
         #include <ESP8266mDNS.h>
     #endif
 
-    #define WIFI_getChipId() ESP.getChipId()
+    #define WIFI_getChipId() ESP.getChipId() 
     #define WM_WIFIOPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
@@ -360,8 +360,11 @@ class WiFiManager
     // set the country code for wifi settings, CN
     void          setCountry(String cc);
 
-    // set body class (invert), may be used for hacking in alt classes in the future
+    // set body class (invert), may be used for hacking in alt classes
     void          setClass(String str);
+
+    // set dark mode via invert class
+    void          setDarkMode(bool enable);
 
     // get default ap esp uses , esp_chipid etc
     String        getDefaultAPName();
@@ -613,11 +616,12 @@ class WiFiManager
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
     
-    // Testing debug level memory
+    // Set default debug level
     #ifndef WM_DEBUG_LEVEL
-    #define WM_DEBUG_LEVEL DEBUG_DEV
+    #define WM_DEBUG_LEVEL DEBUG_DEV // development default, not release
     #endif
 
+    // override debug level OFF
     #ifdef WM_NODEBUG
     #undef WM_DEBUG_LEVEL
     #endif

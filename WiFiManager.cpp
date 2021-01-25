@@ -1859,18 +1859,21 @@ void WiFiManager::handleInfo(AsyncWebServerRequest *request) {
     };
 
   #elif defined(ESP32)
-    infos = 22;
+    // add esp_chip_info ?
+    infos = 25;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
       F("chipid"),
       F("chiprev"),
       F("idesize"),
+      F("flashsize"),      
       F("sdkver"),
       F("cpufreq"),
       F("freeheap"),
+      F("memsketch"),
+      F("memsmeter"),      
       F("lastreset"),
-      // F("temp"),
       F("wifihead"),
       F("apip"),
       F("apmac"),
@@ -1883,7 +1886,8 @@ void WiFiManager::handleInfo(AsyncWebServerRequest *request) {
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("conx")
+      F("conx"),
+      // F("temp")
     };
   #endif
 
@@ -1949,12 +1953,16 @@ String WiFiManager::getInfoData(String id){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_flashsize);
       p.replace(FPSTR(T_1),(String)ESP.getFlashChipRealSize());
+    #elif defined ESP32
+      p = FPSTR(HTTP_INFO_psrsize);
+      p.replace(FPSTR(T_1),(String)ESP.getPsramSize());      
     #endif
   }
   else if(id==F("sdkver")){
     p = FPSTR(HTTP_INFO_sdkver);
     #ifdef ESP32
       p.replace(FPSTR(T_1),(String)esp_get_idf_version());
+      // p.replace(FPSTR(T_1),(String)system_get_sdk_version()); // deprecated
     #else
     p.replace(FPSTR(T_1),(String)system_get_sdk_version());
     #endif
@@ -1979,20 +1987,16 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_freeheap);
     p.replace(FPSTR(T_1),(String)ESP.getFreeHeap());
   }
-  #ifdef ESP8266
   else if(id==F("memsketch")){
     p = FPSTR(HTTP_INFO_memsketch);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
-  #endif  
-  #ifdef ESP8266
   else if(id==F("memsmeter")){
     p = FPSTR(HTTP_INFO_memsmeter);
     p.replace(FPSTR(T_1),(String)(ESP.getSketchSize()));
     p.replace(FPSTR(T_2),(String)(ESP.getSketchSize()+ESP.getFreeSketchSpace()));
   }
-  #endif 
   else if(id==F("lastreset")){
     #ifdef ESP8266
       p = FPSTR(HTTP_INFO_lastreset);
@@ -2092,6 +2096,7 @@ String WiFiManager::getInfoData(String id){
     p = FPSTR(HTTP_INFO_temp);
     p.replace(FPSTR(T_1),(String)temperatureRead());
     p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
+    p.replace(FPSTR(T_3),(String)hallRead());
   }
   #endif
   return p;
@@ -2148,7 +2153,7 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
 // }
 void WiFiManager::handleErase(AsyncWebServerRequest *request,bool opt = false) {
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Erase"));
+  DEBUG_WM(DEBUG_NOTIFY,F("<- HTTP Erase"));
   #endif
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
@@ -2936,6 +2941,18 @@ void WiFiManager::setClass(String str){
   _bodyClass = str;
 }
 
+/**
+ * setDarkMode
+ * @param bool enable, enable dark mode via invert class
+ */
+void WiFiManager::setDarkMode(bool enable){
+  _bodyClass = enable ? "invert" : "";
+}
+
+/**
+ * setHttpPort
+ * @param uint16_t port webserver port number default 80
+ */
 void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
 }
@@ -3186,15 +3203,43 @@ String WiFiManager::getModeString(uint8_t mode){
 
 bool WiFiManager::WiFiSetCountry(){
   if(_wificountry == "") return false; // skip not set
-  bool ret = false;
-  #ifdef ESP32
-  // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
-       if(WiFi.getMode() == WIFI_MODE_NULL); // exception if wifi not init!
-  else if(_wificountry == "US") ret = esp_wifi_set_country(&WM_COUNTRY_US) == ESP_OK;
-  else if(_wificountry == "JP") ret = esp_wifi_set_country(&WM_COUNTRY_JP) == ESP_OK;
-  else if(_wificountry == "CN") ret = esp_wifi_set_country(&WM_COUNTRY_CN) == ESP_OK;
+
   #ifdef WM_DEBUG_LEVEL
-  else DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+  DEBUG_WM(DEBUG_VERBOSE,F("WiFiSetCountry to"),_wificountry);
+  #endif
+
+/*
+  * @return
+  *    - ESP_OK: succeed
+  *    - ESP_ERR_WIFI_NOT_INIT: WiFi is not initialized by eps_wifi_init
+  *    - ESP_ERR_WIFI_IF: invalid interface
+  *    - ESP_ERR_WIFI_ARG: invalid argument
+  *    - others: refer to error codes in esp_err.h
+  */
+
+  // @todo move these definitions, and out of cpp `esp_wifi_set_country(&WM_COUNTRY_US)`
+  bool ret = false;
+  // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
+  #ifdef ESP32
+  esp_err_t err = ESP_OK;
+  // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
+  if(WiFi.getMode() == WIFI_MODE_NULL){
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
+  } // exception if wifi not init!
+  else if(_wificountry == "US") err = esp_wifi_set_country(&WM_COUNTRY_US);
+  else if(_wificountry == "JP") err = esp_wifi_set_country(&WM_COUNTRY_JP);
+  else if(_wificountry == "CN") err = esp_wifi_set_country(&WM_COUNTRY_CN);
+  
+  #ifdef WM_DEBUG_LEVEL
+    else{
+      DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
+    }
+    if(err){
+      if(err == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
+      else if(err == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
+      else if(err != ESP_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)err);
+      ret = err == ESP_OK;
+    }
   #endif
   
   #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
@@ -3208,7 +3253,7 @@ bool WiFiManager::WiFiSetCountry(){
   #endif
   
   #ifdef WM_DEBUG_LEVEL
-  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("esp_wifi_set_country: "),_wificountry);
+  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("[OK] esp_wifi_set_country: "),_wificountry);
   #endif
   #ifdef WM_DEBUG_LEVEL
   else DEBUG_WM(DEBUG_ERROR,F("[ERROR] esp_wifi_set_country failed"));  
@@ -3490,7 +3535,9 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
 
   	if(!Update.begin(maxSketchSpace)) { // start with max available size
   			Update.printError(Serial); // size error
+        DEBUG_WM(F("[OTA] Update ERROR"), "Not enough space");
         error = true;
+        Update.end(); // Not sure the best way to abort, I think client will keep sending..
   	}
     #ifdef ESP8266
     Update.runAsync(true); // tell the updaterClass to run in async mode
@@ -3548,10 +3595,11 @@ void WiFiManager::handleUpdateDone(AsyncWebServerRequest *request) {
 
 	if (Update.hasError()) {
 		page += FPSTR(HTTP_UPDATE_FAIL);
+    page += "OTA Error: " + (String)Update.getError();
 		DEBUG_WM(F("[OTA] update failed"));
 	}
 	else {
-		page += FPSTR(HTTP_UPDATE_OK);
+		page += FPSTR(HTTP_UPDATE_SUCCESS);
 		DEBUG_WM(F("[OTA] update ok"));
 	}
 	page += FPSTR(HTTP_END);

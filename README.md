@@ -31,6 +31,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ### Known Issues
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
+-------
 
 ## Contents
  - [How it works](#how-it-works)
@@ -211,6 +212,14 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 ##### Save settings
 This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
+
+
+IF YOU NEED TO SAVE PARAMETERS EVEN ON WIFI FAIL OR EMPTY, you must set `setBreakAfterConfig` to true, or else saveConfigCallback will not be called.
+
+```C++
+//if this is set, it will exit after config, even if connection is unsuccessful.
+    void          setBreakAfterConfig(boolean shouldBreak);
+```
 
 See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
 ```cpp
