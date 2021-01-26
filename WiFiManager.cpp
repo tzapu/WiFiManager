@@ -320,21 +320,17 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
-      #endif
-      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
       #endif
       _lastconxresult = WL_CONNECTED;
 
       if((String)_hostname != ""){
+        #ifdef WM_DEBUG_LEVEL
         #ifdef ESP8266
-        #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),WiFi.hostname());
-          #endif
         #elif defined(ESP32)
-        #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),WiFi.getHostname());
-          #endif
+        #endif
         #endif
       }
 
@@ -485,27 +481,21 @@ bool WiFiManager::startAP(){
 
   if(_debugLevel >= DEBUG_DEV) debugSoftAPConfig();
 
-  #ifdef WM_DEBUG_LEVEL
-  if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] There was a problem starting the AP"));
-  #endif
   // @todo add softAP retry here
   
   delay(500); // slight delay to make sure we get an AP IP
   #ifdef WM_DEBUG_LEVEL
+  if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] There was a problem starting the AP"));
   DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
   #endif
 
   // set ap hostname
   #ifdef ESP32
     if(ret && (String)_hostname != ""){
-      #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,F("setting softAP Hostname:"),_hostname);
-      #endif
       bool res =  WiFi.softAPsetHostname(_hostname);
       #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_VERBOSE,F("setting softAP Hostname:"),_hostname);
       if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
-      #endif
-      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_DEV,F("hostname: AP: "),WiFi.softAPgetHostname());
       #endif
    }
@@ -595,8 +585,6 @@ void WiFiManager::setupConfigPortal() {
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   #ifdef WM_DEBUG_LEVEL
   // DEBUG_WM("dns server started port: ",DNS_PORT);
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
   #endif
   dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
@@ -786,11 +774,7 @@ uint8_t WiFiManager::processConfigPortal(){
           
           #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(F("Connect to new AP [SUCCESS]"));
-          #endif
-          #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(F("Got IP Address:"));
-          #endif
-          #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(WiFi.localIP());
           #endif
 
@@ -866,15 +850,15 @@ bool WiFiManager::shutdownConfigPortal(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
   #endif
+
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
+  
   #ifdef WM_DEBUG_LEVEL
   if(!ret)DEBUG_WM(DEBUG_ERROR,F("[ERROR] disconnect configportal - softAPdisconnect FAILED"));
-  #endif
-  delay(1000);
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("restoring usermode"),getModeString(_usermode));
   #endif
+  delay(1000);
   WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
   if(WiFi.status()==WL_IDLE_STATUS){
     WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
@@ -884,8 +868,6 @@ bool WiFiManager::shutdownConfigPortal(){
   }
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("wifi status:"),getWLStatusString(WiFi.status()));
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("wifi mode:"),getModeString(WiFi.getMode()));
   #endif
   configPortalActive = false;
@@ -975,11 +957,7 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
   bool ret = false;
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("CONNECTED:"),WiFi.status() == WL_CONNECTED);
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("Connecting to NEW AP:"),ssid);
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   #endif
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
@@ -999,24 +977,26 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
  */
 bool WiFiManager::wifiConnectDefault(){
   bool ret = false;
+
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("Connecting to SAVED AP:"),WiFi_SSID(true));
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   #endif
+
   ret = WiFi_enableSTA(true,storeSTAmode);
   delay(500); // THIS DELAY ?
+
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Mode after delay: "),getModeString(WiFi.getMode()));
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi enableSta failed"));
   #endif
+
   ret = WiFi.begin();
+
   #ifdef WM_DEBUG_LEVEL
   if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi begin failed"));
   #endif
+
   return ret;
 }
 
@@ -1320,8 +1300,6 @@ void WiFiManager::WiFi_scanComplete(int networksFound){
   _numNetworks = networksFound;
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC completed"), "in "+(String)(_lastscan - _startscan)+" ms");  
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC found:"),_numNetworks);
   #endif
 }
@@ -1645,8 +1623,6 @@ void WiFiManager::handleWiFiStatus(){
 void WiFiManager::handleWifiSave() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
   handleRequest();
@@ -2623,7 +2599,7 @@ void WiFiManager::setConfigPortalBlocking(boolean shoudlBlock) {
 void WiFiManager::setRestorePersistent(boolean persistent) {
   _userpersistent = persistent;
   if(!persistent){
-  #ifdef WM_DEBUG_LEVEL
+    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("persistent is off"));
     #endif
   }
@@ -3220,8 +3196,6 @@ bool WiFiManager::WiFiSetCountry(){
   
   #ifdef WM_DEBUG_LEVEL
   if(ret) DEBUG_WM(DEBUG_VERBOSE,F("[OK] esp_wifi_set_country: "),_wificountry);
-  #endif
-  #ifdef WM_DEBUG_LEVEL
   else DEBUG_WM(DEBUG_ERROR,F("[ERROR] esp_wifi_set_country failed"));  
   #endif
   return ret;
