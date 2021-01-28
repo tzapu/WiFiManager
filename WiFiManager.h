@@ -361,6 +361,12 @@ class WiFiManager
     // set port of webserver, 80
     void          setHttpPort(uint16_t port);
 
+    // check if config portal is active (true)
+    bool          getConfigPortalActive();
+    
+    // check if web portal is active (true)
+    bool          getWebPortalActive();
+
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -640,10 +646,7 @@ class WiFiManager
       // DEBUG_WM("NO fromString METHOD ON IPAddress, you need ESP8266 core 2.1.0 or newer for Custom IP configuration to work.");
       return false;
     }
-	
-  public:
-    inline bool isConfigPortalActive() { return configPortalActive; }
-    inline bool isWebPortalActive() { return webPortalActive; }
+
 };
 
 #endif

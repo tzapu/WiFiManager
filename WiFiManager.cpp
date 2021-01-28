@@ -2758,6 +2758,22 @@ void WiFiManager::setShowInfoUpdate(boolean enabled){
 }
 
 /**
+ * check if the config portal is running
+ * @return bool true if active
+ */
+bool WiFiManager::getConfigPortalActive(){
+  return configPortalActive;
+}
+
+/**
+ * [getConfigPortalActive description]
+ * @return bool true if active
+ */
+bool WiFiManager::getWebPortalActive(){
+  return webPortalActive;
+}
+
+/**
  * set menu items and order
  * if param is present in menu , params will be removed from wifi page automatically
  * eg.
