@@ -1222,9 +1222,13 @@ void WiFiManager::handleWifi(boolean scan) {
   if(_showPassword){
     pitem.replace(FPSTR(T_p), WiFi_psk());
   }
-  else {
+  else if(WiFi_psk() != ""){
     pitem.replace(FPSTR(T_p),FPSTR(S_passph));    
   }
+  else {
+    pitem.replace(FPSTR(T_p),"");    
+  }
+
   page += pitem;
 
   page += getStaticOut();
