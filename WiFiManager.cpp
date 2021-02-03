@@ -333,7 +333,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
         #endif
         #endif
       }
-
       return true; // connected success
     }
 
@@ -2986,7 +2985,7 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     #endif
   }
   _debugPort.print("*WM: ");
-  if(_debugLevel == DEBUG_DEV) _debugPort.print("["+(String)level+"] ");
+  if(_debugLevel >= debugLvlShow) _debugPort.print("["+(String)level+"] ");
   _debugPort.print(text);
   if(textb){
     _debugPort.print(" ");
@@ -3116,7 +3115,7 @@ boolean WiFiManager::validApPassword(){
     }
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("AccessPoint set password is VALID"));
-    DEBUG_WM(_apPassword);
+    DEBUG_WM(DEBUG_DEV,"ap pass",_apPassword);
     #endif
   }
   return true;
