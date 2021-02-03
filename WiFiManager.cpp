@@ -3494,7 +3494,9 @@ void WiFiManager::handleUpdating(){
     		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
     #elif defined(ESP32)
           // Think we do not need to stop WiFIUDP because we haven't started a listener
-    		  uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+    		  // uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+          #define UPDATE_SIZE_UNKNOWN 0xFFFFFFFF // include update.h
+          maxSketchSpace = UPDATE_SIZE_UNKNOWN;
     #endif
 
     Serial.printf("Update: %s\r\n", upload.filename.c_str());
