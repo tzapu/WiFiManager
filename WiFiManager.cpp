@@ -3399,10 +3399,12 @@ String WiFiManager::WiFi_psk(bool persistent) const {
 #ifdef ESP32
 void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
     if(!_hasBegun){
-    #ifdef WM_DEBUG_LEVEL
-      // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+      #ifdef WM_DEBUG_LEVEL
+        // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
       #endif
-      Serial.println(F("[ERROR] wm not ready"));
+      // Serial.println(F("\n[EVENT] WiFiEvent logging (wm debug not available)"));
+      // Serial.print(F("[EVENT] ID: "));
+      // Serial.println(event);
       return;
     }
     #ifdef WM_DEBUG_LEVEL
