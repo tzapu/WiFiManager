@@ -3488,22 +3488,22 @@ void WiFiManager::handleUpdating(){
   // UPLOAD START
 	if (upload.status == UPLOAD_FILE_START) {
 	  if(_debug) Serial.setDebugOutput(true);
-
+    uint32_t maxSketchSpace;
+    
     #ifdef ESP8266
     		WiFiUDP::stopAll();
-    		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+    		maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
     #elif defined(ESP32)
           // Think we do not need to stop WiFIUDP because we haven't started a listener
-    		  // uint32_t maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
-          #define UPDATE_SIZE_UNKNOWN 0xFFFFFFFF // include update.h
+    		  // maxSketchSpace = (ESP.getFlashChipSize() - 0x1000) & 0xFFFFF000;
+          // #define UPDATE_SIZE_UNKNOWN 0xFFFFFFFF // include update.h
           maxSketchSpace = UPDATE_SIZE_UNKNOWN;
     #endif
 
     Serial.printf("Update: %s\r\n", upload.filename.c_str());
 
   	if (!Update.begin(maxSketchSpace)) { // start with max available size
-  			Update.printError(Serial); // size error
-        DEBUG_WM(F("[OTA] Update ERROR"), "Not enough space");
+        DEBUG_WM(F("[OTA] Update ERROR"), Update.getError());
         error = true;
         Update.end(); // Not sure the best way to abort, I think client will keep sending..
   	}
@@ -3548,7 +3548,11 @@ void WiFiManager::handleUpdateDone() {
 
 	if (Update.hasError()) {
 		page += FPSTR(HTTP_UPDATE_FAIL);
+    #ifdef ESP32
+    page += "OTA Error: " + (String)Update.errorString();
+    #else
     page += "OTA Error: " + (String)Update.getError();
+    #endif
 		DEBUG_WM(F("[OTA] update failed"));
 	}
 	else {

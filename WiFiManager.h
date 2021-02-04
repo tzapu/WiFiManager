@@ -593,14 +593,14 @@ class WiFiManager
 
     boolean _debug  = true;
     
-    wm_debuglevel_t debugLvlShow = DEBUG_DEV; // at which level start showing [n] level tags
+    wm_debuglevel_t debugLvlShow = DEBUG_VERBOSE; // at which level start showing [n] level tags
 
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
     
     // Set default debug level
     #ifndef WM_DEBUG_LEVEL
-    #define WM_DEBUG_LEVEL DEBUG_MAX // development default, not release
+    #define WM_DEBUG_LEVEL DEBUG_VERBOSE // development default, not release
     #endif
 
     // override debug level OFF
