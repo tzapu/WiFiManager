@@ -3449,7 +3449,9 @@ void WiFiManager::WiFi_autoReconnect(){
 
 // Called when /update is requested
 void WiFiManager::handleUpdate() {
+  #ifdef WM_DEBUG_LEVEL
 	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
+  #endif
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(FPSTR(S_options)); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
@@ -3500,10 +3502,14 @@ void WiFiManager::handleUpdating(){
           maxSketchSpace = UPDATE_SIZE_UNKNOWN;
     #endif
 
-    Serial.printf("Update: %s\r\n", upload.filename.c_str());
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,"Update file: ", upload.filename.c_str());
+    #endif
 
   	if (!Update.begin(maxSketchSpace)) { // start with max available size
-        DEBUG_WM(F("[OTA] Update ERROR"), Update.getError());
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update ERROR"), Update.getError());
+        #endif
         error = true;
         Update.end(); // Not sure the best way to abort, I think client will keep sending..
   	}
@@ -3512,14 +3518,20 @@ void WiFiManager::handleUpdating(){
   else if (upload.status == UPLOAD_FILE_WRITE) {
 		Serial.print(".");
 		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-			Update.printError(Serial); // write failure
+      #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
+			//Update.printError(Serial); // write failure
+      #endif
       error = true;
 		}
 	}
   // UPLOAD FILE END
   else if (upload.status == UPLOAD_FILE_END) {
 		if (Update.end(true)) { // true to set the size to the current progress
-			Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
+      #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_VERBOSE,F("[OTA] OTA FILE END bytes: "), upload.totalSize);
+			// Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
+      #endif
 		}
     else {
 			Update.printError(Serial);
