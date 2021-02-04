@@ -1697,7 +1697,7 @@ void WiFiManager::handleWifiSave() {
 void WiFiManager::handleParamSave() {
 
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
+  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Param save "));
   #endif
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
