@@ -316,7 +316,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       // and we have no idea WHAT we are connected to
     }
 
-    if(connected || connectWifi("", "") == WL_CONNECTED){
+    if(connected || connectWifi(_defaultssid, _defaultpass) == WL_CONNECTED){
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
@@ -2919,6 +2919,13 @@ void WiFiManager::setDarkMode(bool enable){
  */
 void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
+}
+
+
+bool WiFiManager::preloadWiFi(String ssid, String pass){
+  _defaultssid = ssid;
+  _defaultpass = pass;
+  return true;
 }
 
 // HELPERS

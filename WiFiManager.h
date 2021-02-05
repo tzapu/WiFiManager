@@ -367,6 +367,9 @@ class WiFiManager
     // check if web portal is active (true)
     bool          getWebPortalActive();
 
+    // to preload autoconnect for test fixtures or other uses that skip esp sta config
+    bool          preloadWiFi(String ssid, String pass);
+
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
@@ -397,9 +400,11 @@ class WiFiManager
     const byte    HTTP_PORT               = 80;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
-    String        _ssid                   = "";
-    String        _pass                   = "";
-    
+    String        _ssid                   = ""; // var temp ssid
+    String        _pass                   = ""; // var temp psk
+    String        _defaultssid            = ""; // preload ssid
+    String        _defaultpass            = ""; // preload pass
+
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
@@ -467,6 +472,7 @@ class WiFiManager
     // cache time helps throttle this
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
+    // no aps found is problematic as scans are always going to want to run, leading to page load delays
     boolean       _preloadwifiscan        = false;  // preload wifiscan if true
     boolean       _asyncScan              = false; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
