@@ -89,7 +89,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(_length != length){
     _length = length;
     if( _value != nullptr)
-      delete _value;
+      delete[] _value;
     _value  = new char[_length + 1];  
   }
   memset(_value, 0, _length + 1); // explicit null
