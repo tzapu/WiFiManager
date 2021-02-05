@@ -1397,7 +1397,8 @@ String WiFiManager::WiFiManager::getScanItemOut(){
       DEBUG_WM(F("No networks found"));
       #endif
       page += FPSTR(S_nonetworks); // @token nonetworks
-    } 
+      page += F("<br/><br/>");
+    }
     else {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(n,F("networks found"));
@@ -2207,7 +2208,9 @@ void WiFiManager::handleClose(){
 }
 
 void WiFiManager::reportStatus(String &page){
-  updateConxResult(WiFi.status());
+  updateConxResult(WiFi.status()); // @todo: this defeats the purpose of last result, update elsewhere or add logic here
+  DEBUG_WM(DEBUG_DEV,F("[WIFI] reportStatus prev:"),getWLStatusString(_lastconxresult));
+  DEBUG_WM(DEBUG_DEV,F("[WIFI] reportStatus current:"),getWLStatusString(WiFi.status()));
   String str;
   if (WiFi_SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){
