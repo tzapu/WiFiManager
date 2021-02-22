@@ -564,21 +564,8 @@ boolean WiFiManager::configPortalHasTimeout(){
     return false;
 }
 
-void WiFiManager::setupConfigPortal() {
-
-  #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(F("Starting Web Portal"));
-  #endif
-
-  // setup dns and web servers
+void WiFiManager::setupDNSD(){
   dnsServer.reset(new DNSServer());
-  server.reset(new WM_WebServer(_httpPort));
-
-  if(_httpPort != 80) {
-    #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,F("http server started with custom port: "),_httpPort); // @todo not showing ip
-    #endif
-  } 
 
   /* Setup the DNS server redirecting all the domains to the apIP */
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
@@ -587,12 +574,27 @@ void WiFiManager::setupConfigPortal() {
   DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
   #endif
   dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
+}
 
-  // @todo new callback, webserver started, callback cannot override handlers, but can grab them first
+void WiFiManager::setupConfigPortal() {
+
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("Starting Web Portal"));
+  #endif
+
+  // setup dns and web servers
+  server.reset(new WM_WebServer(_httpPort));
+
+  if(_httpPort != 80) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("http server started with custom port: "),_httpPort); // @todo not showing ip
+    #endif
+  } 
 
   if ( _webservercallback != NULL) {
     _webservercallback();
   }
+  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
@@ -688,6 +690,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   #endif
   setupConfigPortal();
 
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_DEV,F("setupDNSD"));
+  #endif  
+  setupDNSD();
+  
+
   if(!_configPortalIsBlocking){
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
@@ -748,8 +756,11 @@ boolean WiFiManager::process(){
 
 //using esp enums returns for now, should be fine
 uint8_t WiFiManager::processConfigPortal(){
-    //DNS handler
-    dnsServer->processNextRequest();
+    if(configPortalActive){
+      //DNS handler
+      dnsServer->processNextRequest();
+    }
+
     //HTTP handler
     server->handleClient();
 
@@ -826,20 +837,24 @@ uint8_t WiFiManager::processConfigPortal(){
 bool WiFiManager::shutdownConfigPortal(){
   if(webPortalActive) return false;
 
-  //DNS handler
-  dnsServer->processNextRequest();
+  if(configPortalActive){
+    //DNS handler
+    dnsServer->processNextRequest();
+  }
+
   //HTTP handler
   server->handleClient();
 
   // @todo what is the proper way to shutdown and free the server up
   server->stop();
   server.reset();
-  dnsServer->stop(); //  free heap ?
-  dnsServer.reset();
 
   WiFi.scanDelete(); // free wifi scan results
 
   if(!configPortalActive) return false;
+
+  dnsServer->stop(); //  free heap ?
+  dnsServer.reset();
 
   // turn off AP
   // @todo bug workaround
