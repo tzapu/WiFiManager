@@ -497,6 +497,7 @@ class WiFiManager
 #endif
 
     bool          startAP();
+    void          setupDNSD();
 
     uint8_t       connectWifi(String ssid, String pass);
     bool          setSTAConfig();
@@ -581,7 +582,7 @@ class WiFiManager
     boolean       portalTimeoutResult = false;
     boolean       portalAbortResult   = false;
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
-    int           timer               = 0;
+    int           timer               = 0;    // timer for debug throttle for numclients, and portal timeout messages
     
     // WiFiManagerParameter
     int         _paramsCount          = 0;

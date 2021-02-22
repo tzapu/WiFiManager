@@ -529,9 +529,12 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
+    uint16_t logintvl = 30000; // how often to emit timeing out counter logging
 
+    // handle timeout portal client check
     if(_configPortalTimeout == 0 || (_apClientCheck && (WiFi_softap_num_stations() > 0))){
-      if(millis() - timer > 30000){
+      // debug num clients every 30s
+      if(millis() - timer > logintvl){
         timer = millis();
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_VERBOSE,F("NUM CLIENTS: "),(String)WiFi_softap_num_stations());
@@ -540,24 +543,24 @@ boolean WiFiManager::configPortalHasTimeout(){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
-    // handle timeout
+
+    // handle timeout webclient check
     if(_webClientCheck && (_webPortalAccessed>_configPortalStart)>0) _configPortalStart = _webPortalAccessed;
 
+    // handle timed out
     if(millis() > _configPortalStart + _configPortalTimeout){
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("config portal has timed out"));
       #endif
-      return true;
-    } else if(_debugLevel > 0) {
-      // log timeout
-      if(_debug){
-        uint16_t logintvl = 30000; // how often to emit timeing out counter logging
-        if((millis() - timer) > logintvl){
-          timer = millis();
-          #ifdef WM_DEBUG_LEVEL
-          DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
-          #endif
-        }
+      return true; // timeout bail, else do debug logging
+    } 
+    else if(_debug && _debugLevel > 0) {
+      // log timeout time remaining every 30s
+      if((millis() - timer) > logintvl){
+        timer = millis();
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
+        #endif
       }
     }
 
@@ -698,14 +701,17 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   if(!_configPortalIsBlocking){
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
+      DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
+      if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
     #endif
     return result;
   }
 
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
+    DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
+    if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
   #endif
+
   // blocking loop waiting for config
   while(1){
 
