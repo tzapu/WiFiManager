@@ -236,7 +236,8 @@ class WiFiManager
     
     // toggle debug output
     void          setDebugOutput(boolean debug);
-    
+    void          setDebugOutput(boolean debug, String prefix); // log line prefix, default "*wm:"
+
     //set min quality percentage to include in scan, defaults to 8% if not specified
     void          setMinimumSignalQuality(int quality = 8);
     
@@ -599,7 +600,8 @@ class WiFiManager
     } wm_debuglevel_t;
 
     boolean _debug  = true;
-    
+    String _debugPrefix = "*wm:";
+
     wm_debuglevel_t debugLvlShow = DEBUG_VERBOSE; // at which level start showing [n] level tags
 
     // build debuglevel support

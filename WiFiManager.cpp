@@ -2468,6 +2468,11 @@ void WiFiManager::setDebugOutput(boolean debug) {
   if(_debug && _debugLevel == DEBUG_DEV) debugPlatformInfo();
 }
 
+void WiFiManager::setDebugOutput(boolean debug, String prefix) {
+  _debugPrefix = prefix;
+  setDebugOutput(debug);
+}
+
 /**
  * [setAPStaticIPConfig description]
  * @access public
@@ -3015,7 +3020,7 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     _debugPort.printf("[MEM] free: %5d | max: %5d | frag: %3d%% \n", free, max, frag);    
     #endif
   }
-  _debugPort.print("*WM: ");
+  _debugPort.print(_debugPrefix);
   if(_debugLevel >= debugLvlShow) _debugPort.print("["+(String)level+"] ");
   _debugPort.print(text);
   if(textb){
