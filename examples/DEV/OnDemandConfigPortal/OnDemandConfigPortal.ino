@@ -44,6 +44,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
+  esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 }
 
 void saveParamCallback(){
