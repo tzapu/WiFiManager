@@ -529,9 +529,12 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
+    uint16_t logintvl = 30000; // how often to emit timeing out counter logging
 
+    // handle timeout portal client check
     if(_configPortalTimeout == 0 || (_apClientCheck && (WiFi_softap_num_stations() > 0))){
-      if(millis() - timer > 30000){
+      // debug num clients every 30s
+      if(millis() - timer > logintvl){
         timer = millis();
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_VERBOSE,F("NUM CLIENTS: "),(String)WiFi_softap_num_stations());
@@ -540,28 +543,40 @@ boolean WiFiManager::configPortalHasTimeout(){
       _configPortalStart = millis(); // kludge, bump configportal start time to skew timeouts
       return false;
     }
-    // handle timeout
+
+    // handle timeout webclient check
     if(_webClientCheck && (_webPortalAccessed>_configPortalStart)>0) _configPortalStart = _webPortalAccessed;
 
+    // handle timed out
     if(millis() > _configPortalStart + _configPortalTimeout){
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("config portal has timed out"));
       #endif
-      return true;
-    } else if(_debugLevel > 0) {
-      // log timeout
-      if(_debug){
-        uint16_t logintvl = 30000; // how often to emit timeing out counter logging
-        if((millis() - timer) > logintvl){
-          timer = millis();
-          #ifdef WM_DEBUG_LEVEL
-          DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
-          #endif
-        }
+      return true; // timeout bail, else do debug logging
+    } 
+    else if(_debug && _debugLevel > 0) {
+      // log timeout time remaining every 30s
+      if((millis() - timer) > logintvl){
+        timer = millis();
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)((_configPortalStart + _configPortalTimeout-millis())/1000) + (String)F(" seconds"));
+        #endif
       }
     }
 
     return false;
+}
+
+void WiFiManager::setupDNSD(){
+  dnsServer.reset(new DNSServer());
+
+  /* Setup the DNS server redirecting all the domains to the apIP */
+  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  #ifdef WM_DEBUG_LEVEL
+  // DEBUG_WM("dns server started port: ",DNS_PORT);
+  DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
+  #endif
+  dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
 }
 
 void WiFiManager::setupConfigPortal() {
@@ -571,7 +586,6 @@ void WiFiManager::setupConfigPortal() {
   #endif
 
   // setup dns and web servers
-  dnsServer.reset(new DNSServer());
   server.reset(new WM_WebServer(_httpPort));
 
   if(_httpPort != 80) {
@@ -580,19 +594,10 @@ void WiFiManager::setupConfigPortal() {
     #endif
   } 
 
-  /* Setup the DNS server redirecting all the domains to the apIP */
-  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
-  #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM("dns server started port: ",DNS_PORT);
-  DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
-  #endif
-  dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
-
-  // @todo new callback, webserver started, callback cannot override handlers, but can grab them first
-
   if ( _webservercallback != NULL) {
     _webservercallback();
   }
+  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
@@ -688,16 +693,25 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   #endif
   setupConfigPortal();
 
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_DEV,F("setupDNSD"));
+  #endif  
+  setupDNSD();
+  
+
   if(!_configPortalIsBlocking){
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
+      DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
+      if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
     #endif
     return result;
   }
 
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
+    DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
+    if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
   #endif
+
   // blocking loop waiting for config
   while(1){
 
@@ -748,8 +762,11 @@ boolean WiFiManager::process(){
 
 //using esp enums returns for now, should be fine
 uint8_t WiFiManager::processConfigPortal(){
-    //DNS handler
-    dnsServer->processNextRequest();
+    if(configPortalActive){
+      //DNS handler
+      dnsServer->processNextRequest();
+    }
+
     //HTTP handler
     server->handleClient();
 
@@ -826,20 +843,24 @@ uint8_t WiFiManager::processConfigPortal(){
 bool WiFiManager::shutdownConfigPortal(){
   if(webPortalActive) return false;
 
-  //DNS handler
-  dnsServer->processNextRequest();
+  if(configPortalActive){
+    //DNS handler
+    dnsServer->processNextRequest();
+  }
+
   //HTTP handler
   server->handleClient();
 
   // @todo what is the proper way to shutdown and free the server up
   server->stop();
   server.reset();
-  dnsServer->stop(); //  free heap ?
-  dnsServer.reset();
 
   WiFi.scanDelete(); // free wifi scan results
 
   if(!configPortalActive) return false;
+
+  dnsServer->stop(); //  free heap ?
+  dnsServer.reset();
 
   // turn off AP
   // @todo bug workaround
