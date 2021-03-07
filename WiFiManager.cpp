@@ -3505,6 +3505,7 @@ void WiFiManager::handleUpdate() {
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(_title); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
+  str.replace(FPSTR(T_t), _title);
 	str.replace(FPSTR(T_v), configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading
 	page += str;
 
