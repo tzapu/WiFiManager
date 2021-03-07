@@ -326,11 +326,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
       if((String)_hostname != ""){
         #ifdef WM_DEBUG_LEVEL
-        #ifdef ESP8266
-          DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),WiFi.hostname());
-        #elif defined(ESP32)
-          DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),WiFi.getHostname());
-        #endif
+          DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),getWiFiHostname());
         #endif
       }
       return true; // connected success
@@ -1196,9 +1192,10 @@ void WiFiManager::handleRoot() {
   #endif
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
-  String page = getHTTPHead(FPSTR(S_options)); // @token options @todo replace options with title
-  String str  = FPSTR(HTTP_ROOT_MAIN);
-  str.replace(FPSTR(T_v),configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+  String page = getHTTPHead(_title); // @token options @todo replace options with title
+  String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
+  str.replace(FPSTR(T_t),_title);
+  str.replace(FPSTR(T_v),configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading @todo use hostname?
   page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
@@ -2805,6 +2802,23 @@ bool WiFiManager::getWebPortalActive(){
   return webPortalActive;
 }
 
+
+String WiFiManager::getWiFiHostname(){
+  #ifdef ESP32
+    return (String)WiFi.getHostname();
+  #else
+    return (String)WiFi.hostname();
+  #endif
+}
+
+/**
+ * [setTitle description]
+ * @param String title, set app title
+ */
+void WiFiManager::setTitle(String title){
+  _title = title;
+}
+
 /**
  * set menu items and order
  * if param is present in menu , params will be removed from wifi page automatically
@@ -3489,9 +3503,9 @@ void WiFiManager::handleUpdate() {
 	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
   #endif
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-	String page = getHTTPHead(FPSTR(S_options)); // @token options
+	String page = getHTTPHead(_title); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
-	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+	str.replace(FPSTR(T_v), configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading
 	page += str;
 
 	page += FPSTR(HTTP_UPDATE);
