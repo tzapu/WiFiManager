@@ -1304,7 +1304,7 @@ String WiFiManager::getMenuOut(){
   String page;  
 
   for(auto menuId :_menuIds ){
-    if(((String)menuId == "param") && (_paramsCount == 0)) continue; // no params set, omit params from menu, @todo this may be undesired by someone
+    if((String)_menutokens[menuId] == "param" && _paramsCount == 0) continue; // no params set, omit params from menu, @todo this may be undesired by someone, use only menu to force?
     page += HTTP_PORTAL_MENU[menuId];
   }
 
