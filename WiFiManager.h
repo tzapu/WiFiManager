@@ -236,7 +236,8 @@ class WiFiManager
     
     // toggle debug output
     void          setDebugOutput(boolean debug);
-    
+    void          setDebugOutput(boolean debug, String prefix); // log line prefix, default "*wm:"
+
     //set min quality percentage to include in scan, defaults to 8% if not specified
     void          setMinimumSignalQuality(int quality = 8);
     
@@ -316,6 +317,9 @@ class WiFiManager
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
     
+    // set the webapp title, default WiFiManager
+    void          setTitle(String title);
+
     // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
     void          setParamsPage(bool enable);
 
@@ -369,6 +373,10 @@ class WiFiManager
 
     // to preload autoconnect for test fixtures or other uses that skip esp sta config
     bool          preloadWiFi(String ssid, String pass);
+
+    // get hostname helper
+    String        getWiFiHostname();
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -461,6 +469,7 @@ class WiFiManager
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
     String        _bodyClass              = ""; // class to add to body
+    String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 
     // internal options
     
@@ -599,7 +608,8 @@ class WiFiManager
     } wm_debuglevel_t;
 
     boolean _debug  = true;
-    
+    String _debugPrefix = FPSTR(S_debugPrefix);
+
     wm_debuglevel_t debugLvlShow = DEBUG_VERBOSE; // at which level start showing [n] level tags
 
     // build debuglevel support
