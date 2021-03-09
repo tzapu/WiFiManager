@@ -1816,18 +1816,20 @@ void WiFiManager::handleInfo() {
       F("memsmeter"),
       F("lastreset"),
       F("wifihead"),
-      F("apip"),
-      F("apmac"),
-      F("apssid"),
-      F("apbssid"),
+      F("conx"),
+      F("stassid"),
       F("staip"),
       F("stagw"),
       F("stasub"),
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("conx"),
       F("autoconx")
+      F("wifiaphead"),
+      F("apssid"),
+      F("apip"),
+      F("apbssid"),
+      F("apmac"),
     };
 
   #elif defined(ESP32)
@@ -1847,18 +1849,20 @@ void WiFiManager::handleInfo() {
       F("memsmeter"),      
       F("lastreset"),
       F("wifihead"),
-      F("apip"),
-      F("apmac"),
-      F("aphost"),
-      F("apssid"),
-      F("apbssid"),
+      F("conx"),
+      F("stassid"),
       F("staip"),
       F("stagw"),
       F("stasub"),
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("conx"),
+      F("apssid"),
+      F("wifiaphead"),
+      F("apip"),
+      F("apmac"),
+      F("aphost"),
+      F("apbssid"),
       // F("temp")
     };
   #endif
@@ -2019,11 +2023,20 @@ String WiFiManager::getInfoData(String id){
   #endif
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
-    p.replace(FPSTR(T_1),htmlEntities((String)WiFi_SSID()));
+    p.replace(FPSTR(T_1),htmlEntities(WiFi.softAPSSID()));
   }
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
     p.replace(FPSTR(T_1),(String)WiFi.BSSIDstr());
+  }
+  // softAPgetHostname // esp32
+  // softAPSubnetCIDR
+  // softAPNetworkID
+  // softAPBroadcastIP
+  // 
+  else if(id==F("stassid")){
+    p = FPSTR(HTTP_INFO_stassid);
+    p.replace(FPSTR(T_1),htmlEntities((String)WiFi_SSID()));
   }
   else if(id==F("staip")){
     p = FPSTR(HTTP_INFO_staip);
