@@ -2021,10 +2021,12 @@ String WiFiManager::getInfoData(String id){
       p.replace(FPSTR(T_1),WiFi.softAPgetHostname());
   }
   #endif
+  #ifdef ESP8266
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
     p.replace(FPSTR(T_1),htmlEntities(WiFi.softAPSSID()));
   }
+  #endif
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
     p.replace(FPSTR(T_1),(String)WiFi.BSSIDstr());
