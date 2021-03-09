@@ -209,7 +209,7 @@ WiFiManager::WiFiManager() {
 
 void WiFiManager::WiFiManagerInit(){
   setMenu(_menuIdsDefault);
-  if(_debug && _debugLevel > DEBUG_DEV) debugPlatformInfo();
+  if(_debug && _debugLevel >= DEBUG_DEV) debugPlatformInfo();
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
 
