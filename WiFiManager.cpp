@@ -1824,7 +1824,7 @@ void WiFiManager::handleInfo() {
       F("dnss"),
       F("host"),
       F("stamac"),
-      F("autoconx")
+      F("autoconx"),
       F("wifiaphead"),
       F("apssid"),
       F("apip"),
@@ -2035,7 +2035,7 @@ String WiFiManager::getInfoData(String id){
   // softAPSubnetCIDR
   // softAPNetworkID
   // softAPBroadcastIP
-  // 
+
   else if(id==F("stassid")){
     p = FPSTR(HTTP_INFO_stassid);
     p.replace(FPSTR(T_1),htmlEntities((String)WiFi_SSID()));
@@ -2241,7 +2241,7 @@ void WiFiManager::handleClose(){
 }
 
 void WiFiManager::reportStatus(String &page){
-  updateConxResult(WiFi.status()); // @todo: this defeats the purpose of last result, update elsewhere or add logic here
+  // updateConxResult(WiFi.status()); // @todo: this defeats the purpose of last result, update elsewhere or add logic here
   DEBUG_WM(DEBUG_DEV,F("[WIFI] reportStatus prev:"),getWLStatusString(_lastconxresult));
   DEBUG_WM(DEBUG_DEV,F("[WIFI] reportStatus current:"),getWLStatusString(WiFi.status()));
   String str;
