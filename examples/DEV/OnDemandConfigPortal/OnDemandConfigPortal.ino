@@ -23,7 +23,7 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -44,7 +44,8 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
-  esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
+  // 
+  // esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 }
 
 void saveParamCallback(){
@@ -249,8 +250,12 @@ void loop() {
     }
   }
 
-  if(WiFi.status() == WL_CONNECTED && millis()-mtime > 10000 ){
-    getTime();
+  // every 10 seconds
+  if(millis()-mtime > 10000 ){
+    if(WiFi.status() == WL_CONNECTED){
+      getTime();
+    }
+    else Serial.println("No Wifi");  
     mtime = millis();
   }
   // put your main code here, to run repeatedly:
@@ -261,11 +266,11 @@ void getTime() {
   int tz           = -5;
   int dst          = 0;
   time_t now       = time(nullptr);
-  unsigned timeout = 5000;
-  unsigned start   = millis();  
+  unsigned timeout = 5000; // try for timeout
+  unsigned start   = millis();
   configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
   Serial.print("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) {
+  while (now < 8 * 3600 * 2 ) { // what is this ?
     delay(100);
     Serial.print(".");
     now = time(nullptr);
