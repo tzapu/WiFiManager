@@ -1799,7 +1799,7 @@ void WiFiManager::handleInfo() {
   //@todo convert to enum or refactor to strings
   //@todo wrap in build flag to remove all info code for memory saving
   #ifdef ESP8266
-    infos = 27;
+    infos = 29;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1829,12 +1829,12 @@ void WiFiManager::handleInfo() {
       F("apssid"),
       F("apip"),
       F("apbssid"),
-      F("apmac"),
+      F("apmac")
     };
 
   #elif defined(ESP32)
     // add esp_chip_info ?
-    infos = 25;
+    infos = 27;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1862,7 +1862,7 @@ void WiFiManager::handleInfo() {
       F("apip"),
       F("apmac"),
       F("aphost"),
-      F("apbssid"),
+      F("apbssid")
       // F("temp")
     };
   #endif
