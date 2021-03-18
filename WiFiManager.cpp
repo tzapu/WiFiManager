@@ -86,12 +86,8 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   //   // return false; //@todo bail 
   // }
 
-  if(_length != length){
-    _length = length;
-    if( _value != nullptr)
-      delete[] _value;
-    _value  = new char[_length + 1];  
-  }
+  _length = length;
+  _value  = new char[_length + 1]; 
   memset(_value, 0, _length + 1); // explicit null
   
   if (defaultValue != NULL) {
@@ -913,7 +909,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
-  while(retry <= _connectRetries){
+  while(retry <= _connectRetries && (connRes!=WL_CONNECTED)){
   if(_connectRetries > 1){
     #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("Connect Wifi, ATTEMPT #"),(String)retry+" of "+(String)_connectRetries); 
@@ -1088,7 +1084,7 @@ void WiFiManager::updateConxResult(uint8_t status){
  
 uint8_t WiFiManager::waitForConnectResult() {
   #ifdef WM_DEBUG_LEVEL
-  if(_connectTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,_connectTimeout,F("ms connectTimeout set")); 
+  if(_connectTimeout > 0) DEBUG_WM(DEBUG_DEV,_connectTimeout,F("ms connectTimeout set")); 
   #endif
   return waitForConnectResult(_connectTimeout);
 }
@@ -1098,7 +1094,7 @@ uint8_t WiFiManager::waitForConnectResult() {
  * @param  uint16_t timeout  in seconds
  * @return uint8_t  WL Status
  */
-uint8_t WiFiManager::waitForConnectResult(uint16_t timeout) {
+uint8_t WiFiManager::waitForConnectResult(uint32_t timeout) {
   if (timeout == 0){
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("connectTimeout not set, ESP waitForConnectResult..."));
@@ -1803,7 +1799,7 @@ void WiFiManager::handleInfo() {
   //@todo convert to enum or refactor to strings
   //@todo wrap in build flag to remove all info code for memory saving
   #ifdef ESP8266
-    infos = 27;
+    infos = 29;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1833,12 +1829,12 @@ void WiFiManager::handleInfo() {
       F("apssid"),
       F("apip"),
       F("apbssid"),
-      F("apmac"),
+      F("apmac")
     };
 
   #elif defined(ESP32)
     // add esp_chip_info ?
-    infos = 25;
+    infos = 27;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1866,7 +1862,7 @@ void WiFiManager::handleInfo() {
       F("apip"),
       F("apmac"),
       F("aphost"),
-      F("apbssid"),
+      F("apbssid")
       // F("temp")
     };
   #endif

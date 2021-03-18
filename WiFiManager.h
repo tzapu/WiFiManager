@@ -514,7 +514,7 @@ class WiFiManager
     bool          wifiConnectNew(String ssid, String pass);
 
     uint8_t       waitForConnectResult();
-    uint8_t       waitForConnectResult(uint16_t timeout);
+    uint8_t       waitForConnectResult(uint32_t timeout);
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
