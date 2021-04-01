@@ -179,7 +179,7 @@ lib_deps =
 ```
 [env]
 lib_deps =
-	https://github.com/tzapu/WiFiManager.git#development
+	https://github.com/tzapu/WiFiManager.git
 ```
 
 ## Documentation
