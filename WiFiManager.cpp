@@ -1028,7 +1028,7 @@ bool WiFiManager::setSTAConfig(){
   #endif
   bool ret = true;
   if (_sta_static_ip) {
-    #ifdef WM_DEBUG_LEVEL
+      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("Custom static IP/GW/Subnet/DNS"));
       #endif
     if(_sta_static_dns) {
@@ -1044,12 +1044,13 @@ bool WiFiManager::setSTAConfig(){
       ret = WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
     }
 
-    #ifdef WM_DEBUG_LEVEL
-    if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi config failed"));
-    else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
-    #endif
-  } else {
-    #ifdef WM_DEBUG_LEVEL
+      #ifdef WM_DEBUG_LEVEL
+      if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi config failed"));
+      else DEBUG_WM(F("STA IP set:"),WiFi.localIP());
+      #endif
+  } 
+  else {
+      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("setSTAConfig static ip not set, skipping"));
       #endif
   }
