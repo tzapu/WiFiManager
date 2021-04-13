@@ -1173,13 +1173,16 @@ void WiFiManager::handleRequest() {
   // bool authenticateDigest(const String& username, const String& H1);
   // void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
 
+  // 2.3 NO AUTH available
   bool testauth = false;
   if(!testauth) return;
   
   DEBUG_WM(DEBUG_DEV,F("DOING AUTH"));
   bool res = server->authenticate("admin","12345");
   if(!res){
+    #ifndef WM_NOAUTH
     server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
+    #endif
     DEBUG_WM(DEBUG_DEV,F("AUTH FAIL"));
   }
 }
@@ -2024,10 +2027,12 @@ String WiFiManager::getInfoData(String id){
   }
   #endif
   #ifdef ESP8266
+  #ifndef WM_NOSOFTAPSSID
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
     p.replace(FPSTR(T_1),htmlEntities(WiFi.softAPSSID()));
   }
+  #endif
   #endif
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
