@@ -236,7 +236,7 @@ class WiFiManager
     //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
     void          setSaveConnectTimeout(unsigned long seconds);
     
-    //sets timeout for which to attempt connecting on saves, useful if there are bugs in esp waitforconnectloop
+    // lets you disable automatically connecting after save from webportal
     void          setSaveConnect(bool connect = true);
     
     // toggle debug output
@@ -432,7 +432,7 @@ class WiFiManager
     unsigned long _startscan              = 0; // ms for timing wifi scans
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
-    bool          _connectonsave          = true; // connect to wifi when saving creds
+    bool          _connectOnsave          = true; // connect to wifi when saving creds
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
