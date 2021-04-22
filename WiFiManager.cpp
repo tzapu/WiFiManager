@@ -785,7 +785,7 @@ uint8_t WiFiManager::processConfigPortal(){
         if (connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED) {
           
           #ifdef WM_DEBUG_LEVEL
-          if(_connectonsave){
+          if(!_connectonsave){
             DEBUG_WM(F("SAVED with no connect to new AP"));
           } else {
             DEBUG_WM(F("Connect to new AP [SUCCESS]"));
@@ -798,7 +798,7 @@ uint8_t WiFiManager::processConfigPortal(){
             _savewificallback();
           }
           shutdownConfigPortal();
-          if(_connectonsave) return WL_IDLE_STATUS;
+          if(!_connectonsave) return WL_IDLE_STATUS;
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
