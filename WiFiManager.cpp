@@ -782,7 +782,7 @@ uint8_t WiFiManager::processConfigPortal(){
       }
       else{
         // attempt sta connection to submitted _ssid, _pass
-        if (connectWifi(_ssid, _pass) == WL_CONNECTED) {
+        if (connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED) {
           
           #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(F("Connect to new AP [SUCCESS]"));
@@ -894,7 +894,7 @@ bool WiFiManager::shutdownConfigPortal(){
 // @todo refactor this up into seperate functions
 // one for connecting to flash , one for new client
 // clean up, flow is convoluted, and causes bugs
-uint8_t WiFiManager::connectWifi(String ssid, String pass) {
+uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("Connecting as wifi client..."));
   #endif
@@ -917,7 +917,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
   }
   // if ssid argument provided connect to that
   if (ssid != "") {
-    wifiConnectNew(ssid,pass);
+    wifiConnectNew(ssid,pass,connect);
     if(_saveTimeout > 0){
       connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
     }  
@@ -968,8 +968,9 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass) {
  * @param  String ssid 
  * @param  String pass 
  * @return bool success
+ * @return connect only save if false
  */
-bool WiFiManager::wifiConnectNew(String ssid, String pass){
+bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
   bool ret = false;
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("CONNECTED:"),WiFi.status() == WL_CONNECTED);
@@ -978,7 +979,7 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass){
   #endif
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
-  ret = WiFi.begin(ssid.c_str(), pass.c_str());
+  ret = WiFi.begin(ssid.c_str(), pass.c_str(), 0, NULL, connect);
   WiFi.persistent(false);
   #ifdef WM_DEBUG_LEVEL
   if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi begin failed"));
@@ -2475,6 +2476,16 @@ void WiFiManager::setCleanConnect(bool enable){
  */
 void WiFiManager::setSaveConnectTimeout(unsigned long seconds) {
   _saveTimeout = seconds * 1000;
+}
+
+/**
+ * Set save portal connect on save option, 
+ * if false, will only save credentials not connect
+ * @access public
+ * @param {[type]} bool connect [description]
+ */
+void WiFiManager::setSaveConnect(bool connect) {
+  _connectonsave = connect;
 }
 
 /**
