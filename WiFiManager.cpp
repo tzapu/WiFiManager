@@ -785,15 +785,20 @@ uint8_t WiFiManager::processConfigPortal(){
         if (connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED) {
           
           #ifdef WM_DEBUG_LEVEL
-          DEBUG_WM(F("Connect to new AP [SUCCESS]"));
-          DEBUG_WM(F("Got IP Address:"));
-          DEBUG_WM(WiFi.localIP());
+          if(_connectonsave){
+            DEBUG_WM(F("SAVED with no connect to new AP"));
+          } else {
+            DEBUG_WM(F("Connect to new AP [SUCCESS]"));
+            DEBUG_WM(F("Got IP Address:"));
+            DEBUG_WM(WiFi.localIP());
+          }
           #endif
 
           if ( _savewificallback != NULL) {
             _savewificallback();
           }
           shutdownConfigPortal();
+          if(_connectonsave) return WL_IDLE_STATUS;
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -920,7 +925,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
     wifiConnectNew(ssid,pass,connect);
     if(_saveTimeout > 0){
       connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
-    }  
+    }
     else {
        connRes = waitForConnectResult(0);
     }
