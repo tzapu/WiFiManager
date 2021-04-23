@@ -214,6 +214,9 @@ class WiFiManager
     //called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
     void          setSaveConfigCallback( std::function<void()> func );
 
+    //called when new wifi settings didnt work
+    void          setNewSettingsFailedCallback( std::function<void()> func );
+
     //called when saving either params-in-wifi or params page
     void          setSaveParamsCallback( std::function<void()> func );
 
@@ -661,6 +664,7 @@ class WiFiManager
     std::function<void()> _presavecallback;
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
+    std::function<void()> _badSettingsCallback;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {

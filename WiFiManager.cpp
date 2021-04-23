@@ -804,6 +804,10 @@ uint8_t WiFiManager::processConfigPortal(){
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
         #endif
+
+        if ( _badSettingsCallback != NULL) {
+          _badSettingsCallback();
+        }
       }
  
       if (_shouldBreakAfterConfig) {
@@ -2481,6 +2485,10 @@ void WiFiManager::setCleanConnect(bool enable){
  */
 void WiFiManager::setSaveConnectTimeout(unsigned long seconds) {
   _saveTimeout = seconds * 1000;
+}
+
+void WiFiManager::setNewSettingsFailedCallback(std::function<void()> func ){
+  _badSettingsCallback = func;
 }
 
 /**
