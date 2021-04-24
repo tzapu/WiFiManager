@@ -525,6 +525,7 @@ void WiFiManager::stopWebPortal() {
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
+    if(!configPortalActive) return false;
     uint16_t logintvl = 30000; // how often to emit timeing out counter logging
 
     // handle timeout portal client check
@@ -714,7 +715,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
       #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_DEV,F("configportal abort"));
+      DEBUG_WM(DEBUG_DEV,F("configportal loop abort"));
       #endif
       shutdownConfigPortal();
       result = abort ? portalAbortResult : portalTimeoutResult; // false, false
@@ -722,13 +723,15 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     }
 
     state = processConfigPortal();
-
+    
     // status change, break
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
-        DEBUG_WM(DEBUG_DEV,F("configportal break"),result);
+        DEBUG_WM(DEBUG_DEV,F("configportal loop break"));
         break;
     }
+
+    if(!configPortalActive) break;
 
     yield(); // watchdog
   }
@@ -788,7 +791,6 @@ uint8_t WiFiManager::processConfigPortal(){
           #ifdef WM_DEBUG_LEVEL
           if(!_connectonsave){
             DEBUG_WM(F("SAVED with no connect to new AP"));
-            abort=true;
           } else {
             DEBUG_WM(F("Connect to new AP [SUCCESS]"));
             DEBUG_WM(F("Got IP Address:"));
@@ -800,7 +802,7 @@ uint8_t WiFiManager::processConfigPortal(){
             _savewificallback();
           }
           shutdownConfigPortal();
-          // if(!_connectonsave) return WL_IDLE_STATUS;
+          if(!_connectonsave) return WL_IDLE_STATUS;
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -844,6 +846,10 @@ uint8_t WiFiManager::processConfigPortal(){
  * @return bool success (softapdisconnect)
  */
 bool WiFiManager::shutdownConfigPortal(){
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE,F("shutdownConfigPortal"));
+  #endif
+
   if(webPortalActive) return false;
 
   if(configPortalActive){
@@ -870,9 +876,6 @@ bool WiFiManager::shutdownConfigPortal(){
   // https://github.com/esp8266/Arduino/issues/3793
   // [APdisconnect] set_config failed! *WM: disconnect configportal - softAPdisconnect failed
   // still no way to reproduce reliably
-  #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("shutdownConfigPortal"));
-  #endif
 
   bool ret = false;
   ret = WiFi.softAPdisconnect(false);
