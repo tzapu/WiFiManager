@@ -726,6 +726,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // status change, break
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
+        DEBUG_WM(DEBUG_DEV,F("configportal break"),result);
         break;
     }
 
@@ -782,11 +783,12 @@ uint8_t WiFiManager::processConfigPortal(){
       }
       else{
         // attempt sta connection to submitted _ssid, _pass
-        if (connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED) {
-          
+        uint8_t res = connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED;
+        if (res || (!_connectonsave)) {
           #ifdef WM_DEBUG_LEVEL
           if(!_connectonsave){
             DEBUG_WM(F("SAVED with no connect to new AP"));
+            abort=true;
           } else {
             DEBUG_WM(F("Connect to new AP [SUCCESS]"));
             DEBUG_WM(F("Got IP Address:"));
@@ -798,7 +800,7 @@ uint8_t WiFiManager::processConfigPortal(){
             _savewificallback();
           }
           shutdownConfigPortal();
-          if(!_connectonsave) return WL_IDLE_STATUS;
+          // if(!_connectonsave) return WL_IDLE_STATUS;
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -869,7 +871,7 @@ bool WiFiManager::shutdownConfigPortal(){
   // [APdisconnect] set_config failed! *WM: disconnect configportal - softAPdisconnect failed
   // still no way to reproduce reliably
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_VERBOSE,F("disconnect configportal"));
+  DEBUG_WM(DEBUG_VERBOSE,F("shutdownConfigPortal"));
   #endif
 
   bool ret = false;
@@ -892,6 +894,7 @@ bool WiFiManager::shutdownConfigPortal(){
   DEBUG_WM(DEBUG_VERBOSE,F("wifi mode:"),getModeString(WiFi.getMode()));
   #endif
   configPortalActive = false;
+  DEBUG_WM(DEBUG_VERBOSE,F("configportal closed"));
   _end();
   return ret;
 }
@@ -978,7 +981,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
 bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
   bool ret = false;
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(F("CONNECTED:"),WiFi.status() == WL_CONNECTED);
+  // DEBUG_WM(DEBUG_DEV,F("CONNECTED: "),WiFi.status() == WL_CONNECTED ? "Y" : "NO");
   DEBUG_WM(F("Connecting to NEW AP:"),ssid);
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   #endif
