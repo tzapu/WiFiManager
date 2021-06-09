@@ -53,8 +53,7 @@ jobs:
         pio lib -g install \
         https://github.com/tzapu/WiFiManager \
         https://github.com/bblanchon/ArduinoJson \
-        https://github.com/knolleary/pubsubclient \
-        https://github.com/sstaub/Ticker
+        https://github.com/knolleary/pubsubclient
         
     - name: Run PlatformIO Examples
       run: pio ci --board=nodemcuv2
