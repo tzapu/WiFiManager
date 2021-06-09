@@ -54,7 +54,7 @@ jobs:
         https://github.com/tzapu/WiFiManager \
         https://github.com/bblanchon/ArduinoJson \
         https://github.com/knolleary/pubsubclient \
-        https://github.com/knolleary/sstaub/Ticker
+        https://github.com/sstaub/Ticker
         
     - name: Run PlatformIO Examples
       run: pio ci --board=nodemcuv2
