@@ -51,7 +51,7 @@ jobs:
     - name: Install 3rd party dependecies
       run: | 
         pio lib -g install \
-        https://github.com/tzapu/WiFiManager
+        https://github.com/tzapu/WiFiManager \
         https://github.com/bblanchon/ArduinoJson \
         https://github.com/knolleary/pubsubclient \
         https://github.com/knolleary/sstaub/Ticker
