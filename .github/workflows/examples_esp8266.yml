@@ -52,7 +52,7 @@ jobs:
       run: | 
         pio lib -g install \
         https://github.com/tzapu/WiFiManager \
-        https://github.com/bblanchon/ArduinoJson@^5.13.5 \
+        https://github.com/bblanchon/ArduinoJson@5.13.5 \
         https://github.com/knolleary/pubsubclient \
         https://github.com/sstaub/Ticker
         
