@@ -633,7 +633,7 @@ class WiFiManager
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else 
-    uint8_t _debugLevel = DEBUG_DEV; // default debug level
+    uint8_t _debugLevel = DEBUG_VERBOSE; // default debug level
     #endif
 
     // @todo use DEBUG_ESP_PORT ?
