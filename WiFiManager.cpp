@@ -94,26 +94,26 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
     strncpy(_value, defaultValue, _length);
   }
 }
-const char* WiFiManagerParameter::getValue() {
+const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
 }
-const char* WiFiManagerParameter::getID() {
+const char* WiFiManagerParameter::getID() const {
   return _id;
 }
-const char* WiFiManagerParameter::getPlaceholder() {
+const char* WiFiManagerParameter::getPlaceholder() const {
   return _label;
 }
-const char* WiFiManagerParameter::getLabel() {
+const char* WiFiManagerParameter::getLabel() const {
   return _label;
 }
-int WiFiManagerParameter::getValueLength() {
+int WiFiManagerParameter::getValueLength() const {
   return _length;
 }
-int WiFiManagerParameter::getLabelPlacement() {
+int WiFiManagerParameter::getLabelPlacement() const {
   return _labelPlacement;
 }
-const char* WiFiManagerParameter::getCustomHTML() {
+const char* WiFiManagerParameter::getCustomHTML() const {
   return _customHTML;
 }
 

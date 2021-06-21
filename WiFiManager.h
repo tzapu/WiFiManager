@@ -122,13 +122,13 @@ class WiFiManagerParameter {
     ~WiFiManagerParameter();
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
-    const char *getID();
-    const char *getValue();
-    const char *getLabel();
-    const char *getPlaceholder(); // @deprecated, use getLabel
-    int         getValueLength();
-    int         getLabelPlacement();
-    const char *getCustomHTML();
+    const char *getID() const;
+    const char *getValue() const;
+    const char *getLabel() const;
+    const char *getPlaceholder() const; // @deprecated, use getLabel
+    int         getValueLength() const;
+    int         getLabelPlacement() const;
+    const char *getCustomHTML() const;
     void        setValue(const char *defaultValue, int length);
 
   protected:
