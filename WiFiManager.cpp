@@ -1667,7 +1667,7 @@ void WiFiManager::handleWifiSave() {
   handleRequest();
 
  // @todo use new callback for before paramsaves
-  if ( _presavecallback != NULL) {
+  if (!_paramsInWifi && _presavecallback != NULL) {
     _presavecallback();
   }
 
