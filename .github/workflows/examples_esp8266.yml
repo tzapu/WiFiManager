@@ -9,8 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         example: 
-        - "examples/Tests/AnonymousCB.ino"
-        - "examples/Tests/wificountry/wificountry.ino"
         - "examples/AutoConnect/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
         - "examples/AutoConnect/AutoConnect.ino"
         - "examples/AutoConnect/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
@@ -19,7 +17,7 @@ jobs:
         - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
         - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
         - "examples/Basic/Basic.ino"
-        - "examples/DEV/OnDemandConfigPortal/OnDemandConfigPortal.ino"
+        - "examples/Super/OnDemandConfigPortal/OnDemandConfigPortal.ino"
         - "examples/Advanced/Advanced.ino"
         - "examples/Old_examples/AutoConnectWithStaticIP/AutoConnectWithStaticIP.ino"
         - "examples/Old_examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino"
