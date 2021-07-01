@@ -45,9 +45,9 @@ jobs:
 
     - name: Create main file
       run: |
-        echo "#include <Arduino.h>" >> src/main.ino
-        echo "void setup() {}" >> src/main.ino
-        echo "void loop() {}" >> src/main.ino
+        echo "#include <Arduino.h>" >> main.ino
+        echo "void setup() {}" >> main.ino
+        echo "void loop() {}" >> main.ino
 
     - name: Run PlatformIO
-      run: pio ci --board=${{ matrix.board }} src
+      run: pio ci --board=${{ matrix.board }}
