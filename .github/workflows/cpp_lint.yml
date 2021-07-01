@@ -18,6 +18,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
           flags: --linelength=100
+          target: .
           filter: "-whitespace/tab\
            ,-readability/braces\
            ,-whitespace/braces\
