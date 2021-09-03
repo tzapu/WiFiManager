@@ -2630,6 +2630,15 @@ void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
 }
 
 /**
+ * setPreOtaUpdateCallback, set a callback to fire before OTA update
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setPreOtaUpdateCallback( std::function<void()> func ) {
+  _preotaupdatecallback = func;
+}
+
+/**
  * set custom head html
  * custom element will be added to head, eg. new style tag etc.
  * @access public
@@ -3587,6 +3596,10 @@ void WiFiManager::handleUpdating(){
 	  if(_debug) Serial.setDebugOutput(true);
     uint32_t maxSketchSpace;
     
+    // Use new callback for before OTA update
+    if (_preotaupdatecallback != NULL) {
+      _preotaupdatecallback();
+    }
     #ifdef ESP8266
     		WiFiUDP::stopAll();
     		maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
