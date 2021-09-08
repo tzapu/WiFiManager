@@ -3499,7 +3499,14 @@ String WiFiManager::WiFi_psk(bool persistent) const {
 }
 
 #ifdef ESP32
-void WiFiManager::WiFiEvent(WiFiEvent_t event,arduino_event_info_t info){
+  #ifdef ESP_ARDUINO_VERSION
+  void WiFiManager::WiFiEvent(WiFiEvent_t event,arduino_event_info_t info){
+  #else
+  void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){
+    #define wifi_sta_disconnected disconnected
+    #define ARDUINO_EVENT_WIFI_STA_DISCONNECTED SYSTEM_EVENT_STA_DISCONNECTED
+    #define ARDUINO_EVENT_WIFI_SCAN_DONE SYSTEM_EVENT_SCAN_DONE
+  #endif
     if(!_hasBegun){
       #ifdef WM_DEBUG_LEVEL
         // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");

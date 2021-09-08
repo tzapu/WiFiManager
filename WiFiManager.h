@@ -62,6 +62,19 @@
 
 #elif defined(ESP32)
 
+    #define STRING2(x) #x
+    #define STRING(x) STRING2(x)    
+    #ifdef ESP_IDF_VERSION
+    #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
+    #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
+    #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
+    #endif
+    #ifdef ESP_ARDUINO_VERSION
+    #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
+    #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
+    #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
+    #endif
+
     #include <WiFi.h>
     #include <esp_wifi.h>  
     #include <Update.h>
@@ -571,7 +584,11 @@ class WiFiManager
     bool          WiFiSetCountry();
 
     #ifdef ESP32
+    #ifdef ESP_ARDUINO_VERSION
     void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);
+    #else
+    void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+    #endif
     #endif
 
     // output helpers
