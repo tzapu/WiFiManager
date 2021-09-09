@@ -3499,7 +3499,7 @@ String WiFiManager::WiFi_psk(bool persistent) const {
 }
 
 #ifdef ESP32
-  #ifdef ESP_ARDUINO_VERSION
+  #ifdef WM_ARDUINOEVENTS
   void WiFiManager::WiFiEvent(WiFiEvent_t event,arduino_event_info_t info){
   #else
   void WiFiManager::WiFiEvent(WiFiEvent_t event,system_event_info_t info){

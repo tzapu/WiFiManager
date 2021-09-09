@@ -62,18 +62,18 @@
 
 #elif defined(ESP32)
 
-    #define STRING2(x) #x
-    #define STRING(x) STRING2(x)    
-    #ifdef ESP_IDF_VERSION
-    #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
-    #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
-    #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
-    #endif
-    #ifdef ESP_ARDUINO_VERSION
-    #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
-    #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
-    #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
-    #endif
+    // #define STRING2(x) #x
+    // #define STRING(x) STRING2(x)    
+    // #ifdef ESP_IDF_VERSION
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
+    // #endif
+    // #ifdef ESP_ARDUINO_VERSION
+    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
+    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
+    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
+    // #endif
 
     #include <WiFi.h>
     #include <esp_wifi.h>  
@@ -584,10 +584,19 @@ class WiFiManager
     bool          WiFiSetCountry();
 
     #ifdef ESP32
-    #ifdef ESP_ARDUINO_VERSION
-    void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);
+
+    // check for arduino or system event system, handle esp32 arduino v2 and IDF
+    #if defined(ESP_ARDUINO_VERSION) && defined(ESP_ARDUINO_VERSION_VAL)
+    #define WM_ARDUINOVERCHECK ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
+    #ifdef WM_ARDUINOVERCHECK
+    #define WM_ARDUINOEVENTS
+    #endif
+    #endif
+
+    #ifdef WM_ARDUINOEVENTS
+        void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);
     #else
-    void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+        void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
     #endif
     #endif
 
