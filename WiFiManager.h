@@ -141,7 +141,7 @@ class WiFiManagerParameter {
     const char *getPlaceholder() const; // @deprecated, use getLabel
     int         getValueLength() const;
     int         getLabelPlacement() const;
-    const char *getCustomHTML() const;
+    virtual const char *getCustomHTML() const;
     void        setValue(const char *defaultValue, int length);
 
   protected:
@@ -154,6 +154,7 @@ class WiFiManagerParameter {
     char       *_value;
     int         _length;
     int         _labelPlacement;
+  protected:
     const char *_customHTML;
     friend class WiFiManager;
 };
