@@ -19,7 +19,6 @@ jobs:
         example: 
         - "examples/parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
         - "examples/parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
-        - "examples/AutoConnect/AutoConnectWithFeedbackLED/AutoConnectWithFeedbackLED.ino"
         - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
         - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
         - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
