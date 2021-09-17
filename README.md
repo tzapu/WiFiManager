@@ -6,17 +6,24 @@ ESP8266 WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-[![Build Status](https://travis-ci.com/tzapu/WiFiManager.svg?branch=master)](https://travis-ci.com/tzapu/WiFiManager)
+![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)
+
+![Build CI Status Examples](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
 
 [![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
 
 ![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)
+
 ![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)
+
+Member to Member Support / Chat
 
  [![Join the chat at https://gitter.im/tablatronix/WiFiManager](https://badges.gitter.im/tablatronix/WiFiManager.svg)](https://gitter.im/tablatronix/WiFiManager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
  
+[![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/dkjJbHwC)
+
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
 First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
