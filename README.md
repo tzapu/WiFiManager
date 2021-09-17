@@ -6,7 +6,8 @@ ESP8266 WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-[![Build Status](https://travis-ci.com/tzapu/WiFiManager.svg?branch=master)](https://travis-ci.com/tzapu/WiFiManager)
+![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)
+![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
 
