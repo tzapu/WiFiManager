@@ -1,0 +1,30 @@
+name: cpplint
+
+on:
+   push:
+      paths-ignore:
+       - '.github/workflows/compile_*.yml'
+   pull_request:
+      paths-ignore:
+       - '.github/workflows/compile_*.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cpplint
+        uses: reviewdog/action-cpplint@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+          flags: --linelength=100
+          target: .
+          filter: "-whitespace/tab\
+           ,-readability/braces\
+           ,-whitespace/braces\
+           ,-whitespace/comments\
+           ,-whitespace/indent\
+           ,-whitespace/newline\
+           ,-whitespace/operators\
+           ,-whitespace/parens\
+           "

@@ -1,0 +1,53 @@
+name: Compile Library
+
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/cpp_lint.yml'
+      - '.github/workflows/compile_examples.yml'
+      - 'examples/**'
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/cpp_lint.yml'
+      - '.github/workflows/compile_examples.yml'
+      - 'examples/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board: 
+          - "nodemcuv2"
+          - "lolin32"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+
+    - name: Create main file
+      run: |
+        echo "#include <Arduino.h>" >> main.ino
+        echo "void setup() {}" >> main.ino
+        echo "void loop() {}" >> main.ino
+
+    - name: Run PlatformIO
+      run: pio ci --board=${{ matrix.board }} .
