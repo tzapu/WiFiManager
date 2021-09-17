@@ -1,8 +1,5 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
-// wifimanager can run in a blocking mode or a non blocking mode
-// Be sure to know how to process loops with no delay() if using non blocking
-bool wm_nonblocking = false;
 
 void setup() {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
@@ -13,7 +10,6 @@ void setup() {
     
     //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wm;
-    if(wm_nonblocking) wm.setConfigPortalBlocking(false);
 
     // reset settings - wipe stored credentials for testing
     // these are stored by the esp library
@@ -41,6 +37,5 @@ void setup() {
 }
 
 void loop() {
-    if(wm_nonblocking) wm.process(); // avoid delays() in loop when non-blocking and other long running code
     // put your main code here, to run repeatedly:   
 }
