@@ -70,8 +70,8 @@ jobs:
       fail-fast: false
       matrix:
         example:
-          - "examples/parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
-          - "examples/parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
+          - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
+          - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
           - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
           - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
           - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
