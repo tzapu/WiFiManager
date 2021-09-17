@@ -56,7 +56,7 @@ jobs:
       run: | 
         pio lib -g install \
         https://github.com/tzapu/WiFiManager \
-        https://github.com/bblanchon/ArduinoJson#v5.13.5 \
+        https://github.com/bblanchon/ArduinoJson \
         https://github.com/knolleary/pubsubclient
         
     - name: Run PlatformIO Examples
