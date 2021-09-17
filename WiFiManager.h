@@ -32,6 +32,7 @@
 
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
 #warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
+// @todo check failing on platform = espressif8266@1.7.3
 #define WM_NOASYNC         // esp8266 no async scan wifi
 #define WM_NOCOUNTRY       // esp8266 no country
 #define WM_NOAUTH          // no httpauth
