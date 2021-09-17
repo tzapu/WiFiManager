@@ -2,7 +2,7 @@
 # WiFiManager
 ## DEVELOPMENT Version
 
-ESP8266 WiFi Connection manager with fallback web configuration portal
+Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
@@ -25,8 +25,6 @@ Member to Member Support / Chat
 [![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/dkjJbHwC)
 
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
-
-First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
 
 **This works with the ESP8266 Arduino platform**
 
