@@ -60,7 +60,7 @@ jobs:
         https://github.com/knolleary/pubsubclient
         
     - name: Run PlatformIO Examples
-      run: pio ci --board=esp32dev
+      run: pio ci --board=nodemcuv2
       env:
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
 
@@ -113,6 +113,6 @@ jobs:
           https://github.com/knolleary/pubsubclient
 
       - name: Run PlatformIO Examples
-        run: pio ci --board=nodemcuv2
+        run: pio ci --board=esp32dev
         env:
           PLATFORMIO_CI_SRC: ${{ matrix.example }}
