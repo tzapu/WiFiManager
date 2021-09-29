@@ -332,11 +332,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       return true; // connected success
     }
 
-    // possibly skip the config portal
-    if (!_enableConfigPortal) {
-      return false; // not connected and not cp
-    }
-
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("AutoConnect: FAILED"));
     #endif
@@ -346,6 +341,15 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     DEBUG_WM(F("No Credentials are Saved, skipping connect"));
     #endif
   } 
+
+  // possibly skip the config portal
+  if (!_enableConfigPortal) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("enableConfigPortal: FALSE, skipping "));
+    #endif
+
+    return false; // not connected and not cp
+  }
 
   // not connected start configportal
   bool res = startConfigPortal(apName, apPassword);

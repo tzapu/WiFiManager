@@ -191,7 +191,10 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+
+  // use autoconnect, but prevent configportal from auto starting
+  wm.setEnableConfigPortal(false);
+
   wifiInfo();
 
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
