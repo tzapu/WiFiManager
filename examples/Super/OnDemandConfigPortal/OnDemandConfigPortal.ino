@@ -193,7 +193,7 @@ void setup() {
   //and goes into a blocking loop awaiting configuration
 
   // use autoconnect, but prevent configportal from auto starting
-  wm.setEnableConfigPortal(false);
+  // wm.setEnableConfigPortal(false);
 
   wifiInfo();
 
