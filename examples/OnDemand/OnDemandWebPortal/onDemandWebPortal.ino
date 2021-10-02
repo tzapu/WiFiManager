@@ -41,7 +41,7 @@ void checkButton(){
       }
       else{
         Serial.println("Button Pressed, Stopping Portal");
-        wm.startWebPortal();
+        wm.stopWebPortal();
         portalRunning = false;
       }
     }
