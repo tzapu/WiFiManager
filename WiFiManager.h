@@ -164,7 +164,7 @@ class WiFiManagerParameter {
 class WiFiManager
 {
   public:
-    WiFiManager(Stream& consolePort);
+    WiFiManager(Print& consolePort);
     WiFiManager();
     ~WiFiManager();
     void WiFiManagerInit();
@@ -668,9 +668,9 @@ class WiFiManager
 
     // @todo use DEBUG_ESP_PORT ?
     #ifdef WM_DEBUG_PORT
-    Stream& _debugPort = WM_DEBUG_PORT;
+    Print& _debugPort = WM_DEBUG_PORT;
     #else
-    Stream& _debugPort = Serial; // debug output stream ref
+    Print& _debugPort = Serial; // debug output stream ref
     #endif
 
     template <typename Generic>
