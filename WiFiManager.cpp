@@ -994,7 +994,10 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
   #endif
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
-  if(_fastConnectMode) {
+    if(_fastConnectMode) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT"));
+    #endif
     getFastConfig(ssid);
     ret = WiFi.begin(ssid.c_str(), pass.c_str(), _fastConnectChannel, _fastConnectBSSID, true);
   } else {
@@ -1002,7 +1005,7 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
   }
   WiFi.persistent(false);
   #ifdef WM_DEBUG_LEVEL
-  if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi begin failed"));
+  if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFi Begin Failed"));
   #endif
   return ret;
 }
@@ -1030,6 +1033,9 @@ bool WiFiManager::wifiConnectDefault(){
   ret = WiFi.begin();
 
   if(!ret && _fastConnectMode) {
+    #ifdef WM_DEBUG_LEVEL    
+    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT"));
+    #endif
     // have another go if using fast connect in case channel has changed
     getFastConfig(WiFi_SSID(true));
     ret = WiFi.begin(WiFi_SSID(true).c_str(), WiFi_psk(true).c_str(), _fastConnectChannel, _fastConnectBSSID, true);
@@ -3582,11 +3588,17 @@ void WiFiManager::WiFi_autoReconnect(){
   #endif
 }
 
-uint8_t WiFiManager::getFastConfig(String ssid){
+/**
+ * getFastConfig
+ * do wifi scan, and store the best channel and bssid
+ * @param  {[type]} String ssid [description]
+ * @return {[type]}        [description]
+ */
+bool WiFiManager::getFastConfig(String ssid){
   DEBUG_WM(F("Get Fast config by scanning"));
   int networksFound = WiFi.scanNetworks();
   int i;
-  uint8_t ret = 0;
+  bool ret = false;
   int32_t scan_rssi = -200;
   for (i = 0; i < networksFound; i++) {
     if(ssid == WiFi.SSID(i)) {
@@ -3594,9 +3606,19 @@ uint8_t WiFiManager::getFastConfig(String ssid){
         _fastConnectChannel = WiFi.channel(i);
         _fastConnectBSSID = WiFi.BSSID(i);
         scan_rssi = WiFi.RSSI(i);
-        ret = 1;
+        ret = true;
       }
     }
+  }
+
+  if(ret){
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config RSSI: "),(String)scan_rssi);
+    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config CHAN: "),(String)_fastConnectChannel);
+    char mac[18] = { 0 };
+    sprintf(mac,"%02X:%02X:%02X:%02X:%02X:%02X", _fastConnectBSSID[0], _fastConnectBSSID[1], _fastConnectBSSID[2], _fastConnectBSSID[3], _fastConnectBSSID[4], _fastConnectBSSID[5]);
+    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config BSSID: "),(String)mac);
+    #endif
   }
   return ret;
 }

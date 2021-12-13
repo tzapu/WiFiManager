@@ -514,7 +514,8 @@ class WiFiManager
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
-	//fast mode to set mac address and channel during begin
+	
+    //fast mode to set mac address and channel during begin
 	boolean       _fastConnectMode        = false;
 	uint8_t*      _fastConnectBSSID;
 	uint32_t      _fastConnectChannel     = 0;
@@ -545,7 +546,7 @@ class WiFiManager
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint32_t timeout);
     void          updateConxResult(uint8_t status);
-	uint8_t       getFastConfig(String ssid);
+	bool          getFastConfig(String ssid);
 
     // webserver handlers
     void          handleRoot();
@@ -645,6 +646,7 @@ class WiFiManager
     typedef enum {
         DEBUG_ERROR     = 0,
         DEBUG_NOTIFY    = 1, // default stable
+        DEBUG_INFO      = 1, // default stable
         DEBUG_VERBOSE   = 2,
         DEBUG_DEV       = 3, // default dev
         DEBUG_MAX       = 4

@@ -195,6 +195,9 @@ void setup() {
   // use autoconnect, but prevent configportal from auto starting
   // wm.setEnableConfigPortal(false);
 
+  // force esp to store channel and bssid for faster connections (theoretically)
+  // wm.setFastConnectMode(true);
+
   wifiInfo();
 
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
@@ -222,10 +225,13 @@ void setup() {
 }
 
 void wifiInfo(){
+  Serial.println("\nWIFI INFO\n**************");
   WiFi.printDiag(Serial);
-  Serial.println("SAVED: " + (String)wm.getWiFiIsSaved() ? "YES" : "NO");
+  Serial.print("\nSAVED: ");
+  Serial.println((String)wm.getWiFiIsSaved() ? "YES" : "NO");
   Serial.println("SSID: " + (String)wm.getWiFiSSID());
   Serial.println("PASS: " + (String)wm.getWiFiPass());
+  Serial.println("**************\n");
 }
 
 void loop() {
@@ -257,7 +263,7 @@ void loop() {
   }
 
   // every 10 seconds
-  if(millis()-mtime > 10000 ){
+  if(millis()-mtime > 30000 ){
     if(WiFi.status() == WL_CONNECTED){
       getTime();
     }
