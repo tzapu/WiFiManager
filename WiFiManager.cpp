@@ -1030,9 +1030,9 @@ bool WiFiManager::wifiConnectDefault(){
   ret = WiFi.begin();
 
   if(!ret && _fastConnectMode) {
-  // have another go if using fast connect in case channel has changed
-    getFastConfig(ssid);
-    ret = WiFi.begin(ssid.c_str(), pass.c_str(), _fastConnectChannel, _fastConnectBSSID, true);
+    // have another go if using fast connect in case channel has changed
+    getFastConfig(WiFi_SSID(true));
+    ret = WiFi.begin(WiFi_SSID(true).c_str(), WiFi_psk(true).c_str(), _fastConnectChannel, _fastConnectBSSID, true);
   }
 
   #ifdef WM_DEBUG_LEVEL
