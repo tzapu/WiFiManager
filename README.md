@@ -1,19 +1,30 @@
 
 # WiFiManager
-## DEVELOPMENT BRANCH
+## DEVELOPMENT Version
 
-ESP8266 WiFi Connection manager with fallback web configuration portal
+Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
-:warning: This Documentation is out of date for this branch, see notes below
+:warning: This Documentation is out of date, see notes below
 
-[![Build Status](https://travis-ci.org/tzapu/WiFiManager.svg?branch=development)](https://travis-ci.org/tzapu/WiFiManager)
+![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)
+
+![Build CI Status Examples](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)
+
+[![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
+
+[![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
 
 ![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)
+
 ![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)
 
-The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
+Member to Member Support / Chat
 
-First attempt at a library. Lots more changes and fixes to do. Contributions are welcome.
+ [![Join the chat at https://gitter.im/tablatronix/WiFiManager](https://badges.gitter.im/tablatronix/WiFiManager.svg)](https://gitter.im/tablatronix/WiFiManager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+ 
+[![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/dkjJbHwC)
+
+The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
 **This works with the ESP8266 Arduino platform**
 
@@ -25,6 +36,7 @@ First attempt at a library. Lots more changes and fixes to do. Contributions are
 
 ### Known Issues
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
+-------
 
 ## Contents
  - [How it works](#how-it-works)
@@ -168,12 +180,11 @@ lib_deps =
 	WiFiManager
 ```
 
-If you want to install the development branch, then you'll need to use the `repository#tag` format instead:
 
 ```
 [env]
 lib_deps =
-	https://github.com/tzapu/WiFiManager.git#development
+	https://github.com/tzapu/WiFiManager.git
 ```
 
 ## Documentation
@@ -205,6 +216,14 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 ##### Save settings
 This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
+
+
+IF YOU NEED TO SAVE PARAMETERS EVEN ON WIFI FAIL OR EMPTY, you must set `setBreakAfterConfig` to true, or else saveConfigCallback will not be called.
+
+```C++
+//if this is set, it will exit after config, even if connection is unsuccessful.
+    void          setBreakAfterConfig(boolean shouldBreak);
+```
 
 See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
 ```cpp

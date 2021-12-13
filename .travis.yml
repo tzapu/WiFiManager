@@ -13,22 +13,11 @@ before_install:
 install:
   - ln -s $PWD /usr/local/share/arduino/libraries/WiFiManager
   - arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json,http://dl.espressif.com/dl/package_esp32_index.json" --save-prefs
-  - arduino --install-library "ArduinoJson:5.13.2"
+  - arduino --install-library "ArduinoJson:6.18.0"
   - arduino --install-boards esp8266:esp8266
   - arduino --pref "compiler.warning_level=all" --save-prefs
 # install esp32
   - arduino --install-boards esp32:esp32
-  # - pushd .
-  # - mkdir -p ~/Arduino/hardware/espressif
-  # - cd ~/Arduino/hardware/espressif
-  # - git clone https://github.com/espressif/arduino-esp32.git esp32
-  # - cd esp32
-  # - git submodule update --init --recursive
-  # - cd tools
-  # - python2 get.py
-  # - popd
-# esp32 needs WebServer_tng for now
-  # - git clone https://github.com/bbx10/WebServer_tng.git /usr/local/share/arduino/libraries/WebServer_tng
 
 script:
   - "echo $PWD"

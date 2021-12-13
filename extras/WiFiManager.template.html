@@ -54,6 +54,9 @@ input,button,.msg{
 	border-radius:.3rem;
     width: 100%;
 }
+input[type=radio]{
+    width: auto;
+}
 button,input[type="button"],input[type="submit"] {
     border: 0;
     background-color: var(--primarycolor);
@@ -314,8 +317,25 @@ input:disabled {
 		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
 			<!-- FORM_UPLOAD -->
-			<Br/><br/>Form UPLOAD<br/><form method='POST' action='u' enctype='multipart/form-data'><input type='file' name='update' accept='.bin,application/octet-stream'><button type='submit' value='Submit'>Submit</button></form>
+			<Br/><br/>Form UPLOAD<br/>
+			<form method='POST' action='u' enctype='multipart/form-data'>
+				<input type='file' name='update' accept='.bin,application/octet-stream' onchange="(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)">
+				<button id='uploadbin' class="h">Submit</button>
+			</form>
+			<a href='http://192.168.4.1' target='_blank'><small>* Upload may not function inside captive portal, Open in browser - http://192.168.4.1</a></small>
 			<!-- /FORM_UPLOAD -->	
+
+
+			<!-- FORM_EXTRAS -->
+			<br/><br/><br/><hr>
+			<br/><label for='custom'>Label for Custom Param</label>
+			<br/><input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
+			<br/><input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+  			<label for='choice1'>Choice1</label><br>
+  			<input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
+  			<label for='choice2'>Choice2</label><br>
+
+			<!-- /FORM_EXTRAS -->
 
 <!-- HTTP_END -->
     </div>

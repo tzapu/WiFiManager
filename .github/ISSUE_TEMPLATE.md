@@ -15,7 +15,7 @@ https://github.com/esp8266/Arduino/blob/master/doc/Troubleshooting/debugging.rst
 ### Basic Infos
 
 #### Hardware
-WiFimanager Branch/Release:  Development
+WiFimanager Branch/Release:  Master
 
 Esp8266/Esp32: 
 
@@ -36,7 +36,7 @@ Additional libraries:
 ### Sketch
 
 ```cpp
-
+#BEGIN
 #include <Arduino.h>
 
 void setup() {
@@ -46,6 +46,7 @@ void setup() {
 void loop() {
 
 }
+#END
 ```
 
 ### Debug Messages

@@ -1,17 +1,18 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
+
 void setup() {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+    // it is a good practice to make sure your code sets wifi mode how you want it.
 
     // put your setup code here, to run once:
     Serial.begin(115200);
     
-    // WiFi.mode(WiFi_STA); // it is a good practice to make sure your code sets wifi mode how you want it.
-
     //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wm;
 
-    //reset settings - wipe credentials for testing
+    // reset settings - wipe stored credentials for testing
+    // these are stored by the esp library
     //wm.resetSettings();
 
     // Automatically connect using saved credentials,
@@ -36,6 +37,5 @@ void setup() {
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    
+    // put your main code here, to run repeatedly:   
 }

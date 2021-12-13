@@ -2,7 +2,7 @@
  * OnDemandNonBlocking.ino
  * example of running the webportal or configportal manually and non blocking
  * trigger pin will start a webportal for 120 seconds then turn it off.
- * startCP = true will start both the configportal AP and webportal
+ * startAP = true will start both the configportal AP and webportal
  */
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
@@ -51,13 +51,15 @@ void loop() {
 void doWiFiManager(){
   // is auto timeout portal running
   if(portalRunning){
-    wm.process();
+    wm.process(); // do processing
+
+    // check for timeout
     if((millis()-startTime) > (timeout*1000)){
       Serial.println("portaltimeout");
       portalRunning = false;
       if(startAP){
         wm.stopConfigPortal();
-      }  
+      }
       else{
         wm.stopWebPortal();
       } 

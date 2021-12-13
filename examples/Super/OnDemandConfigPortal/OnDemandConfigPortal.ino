@@ -19,34 +19,19 @@ const char* modes[] = { "NULL", "STA", "AP", "STA+AP" };
 unsigned long mtime = 0;
 
 
-
 WiFiManager wm;
 
+
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
 
-
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
-
-// OLED TEST , ssd1306
-// #define WM_OLED
-#ifdef WM_OLED
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-#endif
 
 void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
@@ -55,13 +40,12 @@ void saveWifiCallback(){
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("[CALLBACK] configModeCallback fired");
-  #ifdef ESP8266
-    print_oled("WiFiManager Waiting\nIP: " + WiFi.softAPIP().toString() + "\nSSID: " + WiFi.softAPSSID(),1); 
-  #endif  
   // myWiFiManager->setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); 
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
+  // 
+  // esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 }
 
 void saveParamCallback(){
@@ -91,20 +75,18 @@ void setup() {
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
-  
-  #ifdef WM_OLED
-    init_oled();
-  #endif
 
-  print_oled(F("Starting..."),2);
+  Serial.println("Error - TEST");
+  Serial.println("Information- - TEST");
+
+  Serial.println("[ERROR]  TEST");
+  Serial.println("[INFORMATION] TEST");  
+
   wm.debugPlatformInfo();
 
   //reset settings - for testing
   // wm.resetSettings();
-  // wm.erase();
-  
-  // invert theme, dark
-  wm.setClass("invert");
+  // wm.erase();  
 
   // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
@@ -136,14 +118,20 @@ void setup() {
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
 
+  // invert theme, dark
+  wm.setDarkMode(true);
+
+  // show scan RSSI as percentage, instead of signal stength graphic
+  // wm.setScanDispPerc(true);
+
 /*
   Set cutom menu via menu[] or vector
   const char* menu[] = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
   wm.setMenu(menu,9); // custom menu array must provide length
 */
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","restart","exit"};
-  // wm.setMenu(menu); // custom menu, pass vector
+  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","update","restart","exit"};
+  wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
@@ -179,7 +167,13 @@ void setup() {
   
   // set connection timeout
   // wm.setConnectTimeout(20);
-  
+
+  // set wifi connect retries
+  // wm.setConnectRetries(2);
+
+  // connect after portal save toggle
+  wm.setSaveConnect(false); // do not connect, only save
+
   // show static ip fields
   // wm.setShowStaticFields(true);
   
@@ -188,8 +182,7 @@ void setup() {
   // This is sometimes necessary, it is still unknown when and why this is needed but it may solve some race condition or bug in esp SDK/lib
   // wm.setCleanConnect(true); // disconnect before connect, clean connect
   
-  // 
-  wm.setBreakAfterConfig(true);
+  wm.setBreakAfterConfig(true); // needed to use saveWifiCallback
 
   // set custom webserver port, automatic captive portal does not work with custom ports!
   // wm.setHttpPort(8080);
@@ -198,13 +191,14 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+
+  // use autoconnect, but prevent configportal from auto starting
+  // wm.setEnableConfigPortal(false);
+
   wifiInfo();
 
-  print_oled(F("Connecting..."),2);  
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
-    print_oled("Not Connected",2);
   }
   else if(TEST_CP) {
     // start configportal always
@@ -216,7 +210,6 @@ void setup() {
   else {
     //if you get here you have connected to the WiFi
      Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
   }
   
   wifiInfo();
@@ -225,6 +218,7 @@ void setup() {
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+
 }
 
 void wifiInfo(){
@@ -258,13 +252,16 @@ void loop() {
     else {
       //if you get here you have connected to the WiFi
       Serial.println("connected...yeey :)");
-      print_oled("Connected\nIP: " + WiFi.localIP().toString() + "\nSSID: " + WiFi.SSID(),1);    
       getTime();
     }
   }
 
-  if(WiFi.status() == WL_CONNECTED && millis()-mtime > 10000 ){
-    getTime();
+  // every 10 seconds
+  if(millis()-mtime > 10000 ){
+    if(WiFi.status() == WL_CONNECTED){
+      getTime();
+    }
+    else Serial.println("No Wifi");  
     mtime = millis();
   }
   // put your main code here, to run repeatedly:
@@ -275,11 +272,11 @@ void getTime() {
   int tz           = -5;
   int dst          = 0;
   time_t now       = time(nullptr);
-  unsigned timeout = 5000;
-  unsigned start   = millis();  
+  unsigned timeout = 5000; // try for timeout
+  unsigned start   = millis();
   configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
   Serial.print("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) {
+  while (now < 8 * 3600 * 2 ) { // what is this ?
     delay(100);
     Serial.print(".");
     now = time(nullptr);
@@ -290,7 +287,7 @@ void getTime() {
   }
   Serial.println("");
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
+  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
   Serial.print("Current time: ");
   Serial.print(asctime(&timeinfo));
 }
@@ -317,31 +314,3 @@ void debugchipid(){
   // 507726A4AE30
   // ESP32 Chip ID = 507726A4AE30
 }
-
-#ifdef WM_OLED
-void init_oled(){
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
-    Serial.println(F("SSD1306 allocation failed"));
-  }
-
-  display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixepl scale
-  display.setTextColor(WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
-  display.display();
-}
-
-void print_oled(String str,uint8_t size){
-  display.clearDisplay();
-  display.setTextSize(size);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println(str);
-  display.display();
-}
-#else
-  void print_oled(String str,uint8_t size){
-    (void)str;
-    (void)size;
-  }
-#endif
