@@ -1248,6 +1248,11 @@ void WiFiManager::handleWifi(boolean scan) {
     WiFi_scanNetworks(server->hasArg(F("refresh")),false); //wifiscan, force if arg refresh
     page += getScanItemOut();
   }
+
+  server->chunkedResponseModeStart(200, FPSTR(HTTP_HEAD_CT));
+  server->sendContent(page);
+  page = ""; //clear for next send
+
   String pitem = "";
 
   pitem = FPSTR(HTTP_FORM_START);
@@ -1272,6 +1277,8 @@ void WiFiManager::handleWifi(boolean scan) {
   page += getStaticOut();
   page += FPSTR(HTTP_FORM_WIFI_END);
   if(_paramsInWifi && _paramsCount>0){
+    server->sendContent(page);
+    page = ""; //clear for next send
     page += FPSTR(HTTP_FORM_PARAM_HEAD);
     page += getParamOut();
   }
@@ -1282,8 +1289,10 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  //server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
+  server->sendContent(page);
+  server->chunkedResponseFinalize();
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent config page"));
