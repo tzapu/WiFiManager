@@ -1277,10 +1277,10 @@ void WiFiManager::handleWifi(boolean scan) {
   page += getStaticOut();
   page += FPSTR(HTTP_FORM_WIFI_END);
   if(_paramsInWifi && _paramsCount>0){
+    page += FPSTR(HTTP_FORM_PARAM_HEAD);
     server->sendContent(page);
     page = ""; //clear for next send
-    page += FPSTR(HTTP_FORM_PARAM_HEAD);
-    page += getParamOut();
+    server->sendContent(getParamOut());
   }
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
