@@ -329,7 +329,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
           DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),getWiFiHostname());
         #endif
       }
-      return true; // connected success
+      if (_configPortalIsBlocking || !_shouldRunNonblockingAfterConnection) {
+        return true; // connected success
+      }
     }
 
     #ifdef WM_DEBUG_LEVEL
@@ -805,7 +807,9 @@ uint8_t WiFiManager::processConfigPortal(){
           if ( _savewificallback != NULL) {
             _savewificallback();
           }
-          shutdownConfigPortal();
+          if (_configPortalIsBlocking || !_shouldRunNonblockingAfterConnection) {
+            shutdownConfigPortal();
+          }
           if(!_connectonsave) return WL_IDLE_STATUS;
           return WL_CONNECTED; // CONNECT SUCCESS
         }
@@ -2575,6 +2579,17 @@ void WiFiManager::setMinimumSignalQuality(int quality) {
  */
 void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
+}
+
+/**
+ * If this is set and the the portal is non-blocking, the portals will
+ * start up even on successful autoconnect and won't shutdown after new
+ * successful connection.
+ * @access public
+ * @param boolean keepRunning
+ */
+void WiFiManager::setRunNonblockingAfterConnection(boolean keepRunning) {
+  _shouldRunNonblockingAfterConnection = keepRunning;
 }
 
 /**

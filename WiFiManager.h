@@ -274,6 +274,11 @@ class WiFiManager
     
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);
+
+    // if this is set and the the portal is non-blocking, the portals will
+    // start up even on successful autoconnect and won't shutdown after new
+    // successful connection.
+    void          setRunNonblockingAfterConnection(boolean keepRunning); // default false
     
     // if this is set, portal will be blocking and wait until save or exit, 
     // is false user must manually `process()` to handle config portal,
@@ -475,6 +480,7 @@ class WiFiManager
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _showPassword           = false; // show or hide saved password on wifi form, might be a security issue!
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
+    boolean       _shouldRunNonblockingAfterConnection = false; // keeping running the portal if its non-blocking after connections.
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
     boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
