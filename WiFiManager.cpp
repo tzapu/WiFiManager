@@ -790,6 +790,13 @@ uint8_t WiFiManager::processConfigPortal(){
         DEBUG_WM(DEBUG_VERBOSE,F("No ssid, skipping wifi save"));
         #endif
       }
+      // skip if selected ssid is already active
+      else if (WiFi.SSID().equals(_ssid) && WiFi.isConnected()) {
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Already connected to ssid"));
+        #endif
+        return WL_CONNECTED; // CONNECT SUCCESS
+      }
       else{
         // attempt sta connection to submitted _ssid, _pass
         uint8_t res = connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED;
@@ -1680,8 +1687,14 @@ void WiFiManager::handleWifiSave() {
   }
 
   //SAVE/connect here
-  _ssid = server->arg(F("s")).c_str();
-  _pass = server->arg(F("p")).c_str();
+  // Only override WiFi with non-empty values
+  if (!server->arg(F("s")).isEmpty()) {
+    _ssid = server->arg(F("s")).c_str();
+    _pass = server->arg(F("p")).c_str();
+  } else {
+    _ssid = getWiFiSSID();
+    _pass = getWiFiPass();
+  }
 
   if(_paramsInWifi) doParamSave();
 
