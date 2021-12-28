@@ -127,14 +127,12 @@ class WiFiManagerParameter {
         Create custom parameters that can be added to the WiFiManager setup web page
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
-    WiFiManagerParameter();
+    WiFiManagerParameter() = default;
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *label);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
-    ~WiFiManagerParameter();
-    // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getID() const;
     const char *getValue() const;
@@ -149,14 +147,13 @@ class WiFiManagerParameter {
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
   private:
-    WiFiManagerParameter& operator=(const WiFiManagerParameter&);
-    const char *_id;
-    const char *_label;
-    char       *_value;
-    int         _length;
-    int         _labelPlacement;
+    const char *_id = nullptr;
+    const char *_label = nullptr;
+    std::unique_ptr<char[]> _value;
+    int         _length = 1;
+    int         _labelPlacement = WFM_LABEL_BEFORE;
   protected:
-    const char *_customHTML;
+    const char *_customHTML = "";
     friend class WiFiManager;
 };
 

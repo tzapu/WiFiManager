@@ -24,16 +24,7 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
  * --------------------------------------------------------------------------------
 **/
 
-WiFiManagerParameter::WiFiManagerParameter() {
-  WiFiManagerParameter("");
-}
-
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
-  _id             = NULL;
-  _label          = NULL;
-  _length         = 1;
-  _value          = NULL;
-  _labelPlacement = WFM_LABEL_BEFORE;
   _customHTML     = custom;
 }
 
@@ -61,13 +52,6 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
   setValue(defaultValue,length);
 }
 
-WiFiManagerParameter::~WiFiManagerParameter() {
-  if (_value != NULL) {
-    delete[] _value;
-  }
-  _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
-}
-
 // WiFiManagerParameter& WiFiManagerParameter::operator=(const WiFiManagerParameter& rhs){
 //   Serial.println("copy assignment op called");
 //   (*this->_value) = (*rhs._value);
@@ -87,16 +71,16 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   // }
 
   _length = length;
-  _value  = new char[_length + 1]; 
-  memset(_value, 0, _length + 1); // explicit null
+  _value  = std::make_unique<char[]>(_length + 1);
+  memset(_value.get(), 0, _length + 1); // explicit null
   
   if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, _length);
+    strncpy(_value.get(), defaultValue, _length);
   }
 }
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
-  return _value;
+  return _value.get();
 }
 const char* WiFiManagerParameter::getID() const {
   return _id;
@@ -1805,7 +1789,7 @@ void WiFiManager::doParamSave(){
       }
 
       //store it in params array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      value.toCharArray(_params[i]->_value.get(), _params[i]->_length+1); // length+1 null terminated
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
       #endif
