@@ -313,9 +313,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
           DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),getWiFiHostname());
         #endif
       }
-      if (_configPortalIsBlocking || !_shouldRunNonblockingAfterConnection) {
-        return true; // connected success
-      }
+      return true; // connected success
     }
 
     #ifdef WM_DEBUG_LEVEL
