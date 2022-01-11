@@ -450,6 +450,7 @@ class WiFiManager
     int           _numNetworks            = 0; // init index for numnetworks wifiscans
     unsigned long _lastscan               = 0; // ms for timing wifi scans
     unsigned long _startscan              = 0; // ms for timing wifi scans
+    unsigned long _startconn              = 0; // ms for timing wifi connects
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
@@ -546,7 +547,7 @@ class WiFiManager
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint32_t timeout);
     void          updateConxResult(uint8_t status);
-	bool          getFastConfig(String ssid);
+	bool          getFastConConfig(String ssid);
 
     // webserver handlers
     void          handleRoot();
@@ -645,7 +646,7 @@ class WiFiManager
     // debugging
     typedef enum {
         DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default stable
+        DEBUG_NOTIFY    = 1, // alias
         DEBUG_INFO      = 1, // default stable
         DEBUG_VERBOSE   = 2,
         DEBUG_DEV       = 3, // default dev
@@ -673,7 +674,7 @@ class WiFiManager
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else 
-    uint8_t _debugLevel = DEBUG_VERBOSE; // default debug level
+    uint8_t _debugLevel = DEBUG_INFO; // default debug level
     #endif
 
     // @todo use DEBUG_ESP_PORT ?

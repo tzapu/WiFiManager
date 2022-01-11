@@ -20,6 +20,7 @@ unsigned long mtime = 0;
 
 
 WiFiManager wm;
+// WiFiManager wm(Serial); // pass in debug out io stream/print
 
 
 // TEST OPTION FLAGS
@@ -82,11 +83,12 @@ void setup() {
   Serial.println("[ERROR]  TEST");
   Serial.println("[INFORMATION] TEST");  
 
-  wm.debugPlatformInfo();
+  wm.debugPlatformInfo(); // debug info about eso platform
+  // wm.setDebugOutput(true, "[WM] "); // enable debugging, optional custom log prefix
 
   //reset settings - for testing
   // wm.resetSettings();
-  // wm.erase();  
+  // wm.erase();
 
   // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
@@ -146,6 +148,7 @@ void setup() {
 
   // set country
   // setting wifi country seems to improve OSX soft ap connectivity, 
+  // setting country also seems to improve sta connection times for some reason
   // may help others as well, default is CN which has different channels
   wm.setCountry("US"); 
 
@@ -172,7 +175,7 @@ void setup() {
   // wm.setConnectRetries(2);
 
   // connect after portal save toggle
-  wm.setSaveConnect(false); // do not connect, only save
+  // wm.setSaveConnect(false); // do not connect, only save
 
   // show static ip fields
   // wm.setShowStaticFields(true);
@@ -195,8 +198,8 @@ void setup() {
   // use autoconnect, but prevent configportal from auto starting
   // wm.setEnableConfigPortal(false);
 
-  // force esp to store channel and bssid for faster connections (theoretically)
-  // wm.setFastConnectMode(true);
+  // force esp to store channel and bssid for faster connections (theoretically 2-3x faster connections)
+  wm.setFastConnectMode(true);
 
   wifiInfo();
 
@@ -244,6 +247,11 @@ void loop() {
     delay(100);
     if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
+
+      wm.resetSettings();
+      wm.reboot();
+      delay(200);
+      return;
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 

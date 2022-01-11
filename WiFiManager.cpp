@@ -241,7 +241,7 @@ void WiFiManager::_begin(){
   if(_hasBegun) return;
   _hasBegun = true;
   // _usermode = WiFi.getMode();
-
+  _startconn = millis();
   #ifndef ESP32
   WiFi.persistent(false); // disable persistent so scannetworks and mode switching do not cause overwrites
   #endif
@@ -295,7 +295,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     // no getter for autoreconnectpolicy before this
     // https://github.com/esp8266/Arduino/pull/4359
     // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
-    WiFi_autoReconnect();
+    // WiFi_autoReconnect();
 
     // set hostname before stating
     if((String)_hostname != ""){
@@ -320,6 +320,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
+      DEBUG_WM(F("Connected in"),(String)((millis()-_startconn)) + " ms");
       DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
       #endif
       _lastconxresult = WL_CONNECTED;
@@ -996,9 +997,9 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
   WiFi.persistent(true);
     if(_fastConnectMode) {
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT"));
+    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT NEW"));
     #endif
-    getFastConfig(ssid);
+    getFastConConfig(ssid);
     ret = WiFi.begin(ssid.c_str(), pass.c_str(), _fastConnectChannel, _fastConnectBSSID, true);
   } else {
     ret = WiFi.begin(ssid.c_str(), pass.c_str(), 0, NULL, connect);
@@ -1023,7 +1024,7 @@ bool WiFiManager::wifiConnectDefault(){
   #endif
 
   ret = WiFi_enableSTA(true,storeSTAmode);
-  delay(500); // THIS DELAY ?
+  // delay(500); // enable sta race condition bugs exist
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Mode after delay: "),getModeString(WiFi.getMode()));
@@ -1033,11 +1034,12 @@ bool WiFiManager::wifiConnectDefault(){
   ret = WiFi.begin();
 
   if(!ret && _fastConnectMode) {
+    // @todo since fastconnect is usually only for saved, this may cause delays/issues, add check if retries >1 maybe
     #ifdef WM_DEBUG_LEVEL    
-    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT"));
+    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT UPDATE"));
     #endif
     // have another go if using fast connect in case channel has changed
-    getFastConfig(WiFi_SSID(true));
+    getFastConConfig(WiFi_SSID(true));
     ret = WiFi.begin(WiFi_SSID(true).c_str(), WiFi_psk(true).c_str(), _fastConnectChannel, _fastConnectBSSID, true);
   }
 
@@ -1054,12 +1056,10 @@ bool WiFiManager::wifiConnectDefault(){
  * @return bool success
  */
 bool WiFiManager::setSTAConfig(){
-  #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_DEV,F("STA static IP:"),_sta_static_ip);  
-  #endif
   bool ret = true;
   if (_sta_static_ip) {
       #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_DEV,F("STA static IP:"),_sta_static_ip);  
       DEBUG_WM(DEBUG_VERBOSE,F("Custom static IP/GW/Subnet/DNS"));
       #endif
     if(_sta_static_dns) {
@@ -3347,8 +3347,8 @@ bool WiFiManager::WiFiSetCountry(){
   #endif
   
   #ifdef WM_DEBUG_LEVEL
-  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("[OK] esp_wifi_set_country: "),_wificountry);
-  else DEBUG_WM(DEBUG_ERROR,F("[ERROR] esp_wifi_set_country failed"));  
+  if(ret) DEBUG_WM(DEBUG_VERBOSE,F("esp_wifi_set_country SUCCESS: "),_wificountry);
+  else DEBUG_WM(DEBUG_ERROR,F("[ERROR] esp_wifi_set_country FAILED"));  
   #endif
   return ret;
 }
@@ -3589,14 +3589,13 @@ void WiFiManager::WiFi_autoReconnect(){
 }
 
 /**
- * getFastConfig
- * do wifi scan, and store the best channel and bssid
+ * getFastConConfig
+ * attempt to set fastconfig, do wifi scan, and store the best channel and bssid to pass to begin()
  * @param  {[type]} String ssid [description]
  * @return {[type]}        [description]
  */
-bool WiFiManager::getFastConfig(String ssid){
-  DEBUG_WM(F("Get Fast config by scanning"));
-  int networksFound = WiFi.scanNetworks();
+bool WiFiManager::getFastConConfig(String ssid){
+  int networksFound = WiFi_scanNetworks(true);
   int i;
   bool ret = false;
   int32_t scan_rssi = -200;
@@ -3611,17 +3610,32 @@ bool WiFiManager::getFastConfig(String ssid){
     }
   }
 
+  #ifdef WM_DEBUG_LEVEL
   if(ret){
-    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Fast Config RSSI: "),(String)scan_rssi);
     DEBUG_WM(DEBUG_VERBOSE,F("Fast Config CHAN: "),(String)_fastConnectChannel);
     char mac[18] = { 0 };
     sprintf(mac,"%02X:%02X:%02X:%02X:%02X:%02X", _fastConnectBSSID[0], _fastConnectBSSID[1], _fastConnectBSSID[2], _fastConnectBSSID[3], _fastConnectBSSID[4], _fastConnectBSSID[5]);
     DEBUG_WM(DEBUG_VERBOSE,F("Fast Config BSSID: "),(String)mac);
-    #endif
   }
+  else{
+    DEBUG_WM(DEBUG_ERROR,F("[ERROR] Fast Config SET FAILED "),(String)scan_rssi);
+  }
+  #endif
+
   return ret;
 }
+
+
+// bool clearFastConConfig(){
+// // wifi_config_sta.bssid = null;
+// // wifi_config_sta.channel = null
+// }
+
+// infer fast connect from flash ? channel and bssid set?
+// bool getfastConnectSet(){
+//   return WiFi.channel()!= "" && WiFi.BSSID() != "";
+// }
 
 // Called when /update is requested
 void WiFiManager::handleUpdate() {
