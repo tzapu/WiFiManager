@@ -10,6 +10,7 @@
  * @license MIT
  */
 
+
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
@@ -23,19 +24,19 @@
 
 // #define WM_MDNS            // includes MDNS, also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
-// #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS
+// #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
 
 // #define WM_JSTEST                      // build flag for enabling js xhr tests
 // #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
 
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
-#warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled"
+#warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
 // @todo check failing on platform = espressif8266@1.7.3
-#define WM_NOASYNC      // esp8266 no async scan wifi
-#define WM_NOCOUNTRY    // esp8266 no country
-#define WM_NOAUTH       // no httpauth
-#define WM_NOSOFTAPSSID // no softapssid() @todo shim
+#define WM_NOASYNC         // esp8266 no async scan wifi
+#define WM_NOCOUNTRY       // esp8266 no country
+#define WM_NOAUTH          // no httpauth
+#define WM_NOSOFTAPSSID    // no softapssid() @todo shim
 #endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
@@ -43,7 +44,7 @@
 // #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge, @DEPRECATED
 // autoreconnect is WORKING https://github.com/espressif/arduino-esp32/issues/653#issuecomment-405604766
 
-#define WM_WEBSERVERSHIM // use webserver shim lib
+#define WM_WEBSERVERSHIM      // use webserver shim lib
 
 #ifdef ESP8266
 
@@ -63,48 +64,48 @@ extern "C"
 
 #elif defined(ESP32)
 
-// #define STRING2(x) #x
-// #define STRING(x) STRING2(x)
-// #ifdef ESP_IDF_VERSION
-// #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
-// #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
-// #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
-// #endif
-// #ifdef ESP_ARDUINO_VERSION
-// #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
-// #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
-// #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
-// #endif
+    // #define STRING2(x) #x
+    // #define STRING(x) STRING2(x)    
+    // #ifdef ESP_IDF_VERSION
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
+    // #endif
+    // #ifdef ESP_ARDUINO_VERSION
+    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
+    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
+    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
+    // #endif
 
-#include <WiFi.h>
-#include <esp_wifi.h>
-#include <Update.h>
+    #include <WiFi.h>
+    #include <esp_wifi.h>  
+    #include <Update.h>
+    
+    #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
+    #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
-#define WIFI_getChipId() (uint32_t) ESP.getEfuseMac()
-#define WM_WIFIOPEN WIFI_AUTH_OPEN
+    #ifndef WEBSERVER_H
+        #ifdef WM_WEBSERVERSHIM
+            #include <WebServer.h>
+        #else
+            #include <ESP8266WebServer.h>
+            // Forthcoming official ? probably never happening
+            // https://github.com/esp8266/ESPWebServer
+        #endif
+    #endif
 
-#ifndef WEBSERVER_H
-#ifdef WM_WEBSERVERSHIM
-#include <WebServer.h>
-#else
-#include <ESP8266WebServer.h>
-// Forthcoming official ? probably never happening
-// https://github.com/esp8266/ESPWebServer
-#endif
-#endif
+    #ifdef WM_ERASE_NVS
+       #include <nvs.h>
+       #include <nvs_flash.h>
+    #endif
 
-#ifdef WM_ERASE_NVS
-#include <nvs.h>
-#include <nvs_flash.h>
-#endif
+    #ifdef WM_MDNS
+        #include <ESPmDNS.h>
+    #endif
 
-#ifdef WM_MDNS
-#include <ESPmDNS.h>
-#endif
-
-#ifdef WM_RTC
-#include <rom/rtc.h>
-#endif
+    #ifdef WM_RTC
+        #include <rom/rtc.h>
+    #endif
 
 #else
 #endif
@@ -114,14 +115,152 @@ extern "C"
 #include "strings_en.h"
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
-#define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
+    #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
+#endif
+
+#ifndef WIFI_MANAGER_MAX_OPTIONS
+    #define WIFI_MANAGER_MAX_OPTIONS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
 #define WFM_NO_LABEL 0
 
-#include "WifiManagerParameters.h"
+class WiFiManagerParameterBase
+{
+public:
+    WiFiManagerParameterBase();
+    WiFiManagerParameterBase(const char *id, const char *label, const char *defaultValue, int length);
+    ~WiFiManagerParameterBase();
+    // void init(const char *id, const char *label, const char *defaultValue, int length);
+
+    const char *getID() const;
+    const char *getValue() const;
+
+    const char *getLabel() const;
+    const char *getPlaceholder() const; // @deprecated, use getLabel
+    int getValueLength() const;
+
+    void setValue(const char *defaultValue, int length);
+    char *_value;
+
+private:
+    const char *_id;
+    const char *_label;
+    int _length;
+};
+
+class WiFiManagerParameterOption : public WiFiManagerParameterBase
+{
+public:
+    WiFiManagerParameterOption();
+    WiFiManagerParameterOption(const char *id, const char *label, const char *defaultValue, int length);
+    void init(const char *id, const char *label, const char *defaultValue, int length);
+    void setValue(const char *defaultValue, int length);
+
+private:
+    WiFiManagerParameterOption &operator=(const WiFiManagerParameterOption &);
+    const char *_id;
+    const char *_label;
+    int _length;
+    char *_value;
+};
+
+class WiFiManagerParameter : public WiFiManagerParameterBase
+{
+public:
+    /** 
+        Create custom parameters that can be added to the WiFiManager setup web page
+        @id is used for HTTP queries and must not contain spaces nor other special characters
+    */
+    WiFiManagerParameter();
+    WiFiManagerParameter(const char *custom);
+    WiFiManagerParameter(const char *id, const char *label);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+
+    virtual String getHTML();
+    virtual String getHTMLTemplate();
+    bool addOption(WiFiManagerParameterOption *p);
+
+    // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
+
+    int getLabelPlacement() const;
+    virtual const char *getCustomHTML() const;
+
+    int _optionsCount = 0;
+    WiFiManagerParameterOption **_options = NULL;
+
+protected:
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+
+private:
+    WiFiManagerParameter &operator=(const WiFiManagerParameter &);
+
+    int _labelPlacement;
+
+    int _max_options;
+
+protected:
+    const char *_customHTML;
+    friend class WiFiManager;
+};
+
+class WiFiManagerParameterCheckBox : public WiFiManagerParameter
+{
+public:
+    WiFiManagerParameterCheckBox();
+    WiFiManagerParameterCheckBox(const char *id, const char *label);
+    WiFiManagerParameterCheckBox(const char *id, const char *label, bool checked);
+    WiFiManagerParameterCheckBox(const char *id, const char *label, bool checked, int labelPlacement);
+    String getHTMLTemplate();
+    String getHTML();
+    bool isChecked();
+
+private:
+    bool _checked = false;
+};
+class WiFiManagerParameterPassword : public WiFiManagerParameter
+{
+public:
+    WiFiManagerParameterPassword();
+    WiFiManagerParameterPassword(const char *id, const char *label);
+    WiFiManagerParameterPassword(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameterPassword(const char *id, const char *label, const char *defaultValue, int length, int labelPlacement);
+    String getHTMLTemplate();
+};
+
+class WiFiManagerParameterSelect : public WiFiManagerParameter
+{
+public:
+    WiFiManagerParameterSelect();
+    WiFiManagerParameterSelect(const char *id, const char *label);
+    WiFiManagerParameterSelect(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameterSelect(const char *id, const char *label, const char *defaultValue, int length, int labelPlacement);
+    String getHTMLTemplate();
+    String getHTML();
+};
+
+class WiFiManagerParameterRadio : public WiFiManagerParameter
+{
+public:
+    WiFiManagerParameterRadio();
+    WiFiManagerParameterRadio(const char *id, const char *label);
+    WiFiManagerParameterRadio(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameterRadio(const char *id, const char *label, const char *defaultValue, int length, int labelPlacement);
+    String getHTMLTemplate();
+    String getHTML();
+};
+
+class WiFiManagerParameterSpacer : public WiFiManagerParameter
+{
+public:
+    WiFiManagerParameterSpacer();
+    WiFiManagerParameterSpacer(const char *id, const char *label);
+    String getHTMLTemplate();
+    String getHTML();
+};
 
 class WiFiManager
 {
