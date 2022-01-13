@@ -60,8 +60,8 @@ const char HTTP_FORM_STATIC_HEAD[] PROGMEM = "<hr><br/>";
 const char HTTP_FORM_END[]         PROGMEM = "<br/><br/><button type='submit'>Save</button></form>";
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
 const char HTTP_FORM_PARAM_HEAD[]  PROGMEM = "<hr><br/>";
-const char HTTP_FORM_PARAM[] PROGMEM = "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
-const char HTTP_FORM_PARAM_PASS[] PROGMEM = "<br/><input type=\"password\" id='{i}' name='{n}' maxlength='{l}' {c}>";
+const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
+const char HTTP_FORM_PARAM_PASS[]  PROGMEM = "<br/><input type=\"password\" id='{i}' name='{n}' maxlength='{l}' {c}>";
 const char HTTP_FORM_PARAM_CHECKBOX[] PROGMEM = "<br/><input type=\"checkbox\" id='{i}' name='{n}' value='true' {C} {c}>";
 const char HTTP_FORM_PARAM_SELECT[] PROGMEM = "<br/> <select id='{i}' name='{n}'>{o}</select>";
 const char HTTP_FORM_PARAM_SELECT_OPTION[] PROGMEM = "<option value='{v}'{s}>{l}</option>";
@@ -404,6 +404,7 @@ const wifi_country_t WM_COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
 
 /*
 * ESP32 WiFi Events
+
 0  SYSTEM_EVENT_WIFI_READY               < ESP32 WiFi ready
 1  SYSTEM_EVENT_SCAN_DONE                < ESP32 finish scanning AP
 2  SYSTEM_EVENT_STA_START                < ESP32 station start
@@ -430,6 +431,8 @@ const wifi_country_t WM_COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
 23 SYSTEM_EVENT_ETH_DISCONNECTED         < ESP32 ethernet phy link down
 24 SYSTEM_EVENT_ETH_GOT_IP               < ESP32 ethernet got IP from connected AP
 25 SYSTEM_EVENT_MAX
+
+
 typedef enum {
     ARDUINO_EVENT_WIFI_READY = 0,
     ARDUINO_EVENT_WIFI_SCAN_DONE,
@@ -473,6 +476,7 @@ typedef enum {
     ARDUINO_EVENT_PROV_CRED_SUCCESS,
     ARDUINO_EVENT_MAX
 } arduino_event_id_t;
+
 typedef union {
     wifi_event_sta_scan_done_t wifi_scan_done;
     wifi_event_sta_authmode_change_t wifi_sta_authmode_change;
@@ -492,5 +496,6 @@ typedef union {
     wifi_sta_config_t prov_cred_recv;
     wifi_prov_sta_fail_reason_t prov_fail_reason;
 } arduino_event_info_t;
+
 */
 #endif
