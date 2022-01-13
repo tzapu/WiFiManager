@@ -48,19 +48,18 @@
 
 #ifdef ESP8266
 
-extern "C"
-{
-#include "user_interface.h"
-}
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+    extern "C" {
+      #include "user_interface.h"
+    }
+    #include <ESP8266WiFi.h>
+    #include <ESP8266WebServer.h>
 
-#ifdef WM_MDNS
-#include <ESP8266mDNS.h>
-#endif
+    #ifdef WM_MDNS
+        #include <ESP8266mDNS.h>
+    #endif
 
-#define WIFI_getChipId() ESP.getChipId()
-#define WM_WIFIOPEN ENC_TYPE_NONE
+    #define WIFI_getChipId() ESP.getChipId() 
+    #define WM_WIFIOPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
 
@@ -120,10 +119,6 @@ extern "C"
 
 #ifndef WIFI_MANAGER_MAX_OPTIONS
     #define WIFI_MANAGER_MAX_OPTIONS 5 // params will autoincrement and realloc by this amount when max is reached
-#endif
-
-#ifndef WIFI_MANAGER_MAX_OPTIONS
-#define WIFI_MANAGER_MAX_OPTIONS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
 
 #define WFM_LABEL_BEFORE 1
@@ -202,7 +197,7 @@ protected:
 private:
     WiFiManagerParameter &operator=(const WiFiManagerParameter &);
 
-    int _labelPlacement;
+    int         _labelPlacement;
 
     int _max_options;
 
@@ -269,14 +264,14 @@ public:
 class WiFiManager
 {
 public:
-    WiFiManager(Stream &consolePort);
+    WiFiManager(Stream& consolePort);
     WiFiManager();
     ~WiFiManager();
     void WiFiManagerInit();
 
     // auto connect to saved wifi, or custom, and start config portal on failures
-    boolean autoConnect();
-    boolean autoConnect(char const *apName, char const *apPassword = NULL);
+    boolean       autoConnect();
+    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
 
     //manually start the config portal, autoconnect does this automatically on connect failure
     boolean startConfigPortal(); // auto generates apname

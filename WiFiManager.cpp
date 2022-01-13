@@ -584,6 +584,80 @@ String WiFiManagerParameterSpacer::getHTML()
     return pitem;
 }
 
+/**
+ * [addParameter description]
+ * @access public
+ * @param {[type]} WiFiManagerParameter *p [description]
+ */
+bool WiFiManager::addParameter(WiFiManagerParameter *p) {
+
+  // check param id is valid, unless null
+  if(p->getID()){
+    for (size_t i = 0; i < strlen(p->getID()); i++){
+       if(!(isAlphaNumeric(p->getID()[i])) && !(p->getID()[i]=='_')){
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_ERROR,F("[ERROR] parameter IDs can only contain alpha numeric chars"));
+        #endif
+        return false;
+       }
+    }
+  }
+
+  // init params if never malloc
+  if(_params == NULL){
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV,F("allocating params bytes:"),_max_params * sizeof(WiFiManagerParameter*));        
+    #endif
+    _params = (WiFiManagerParameter**)malloc(_max_params * sizeof(WiFiManagerParameter*));
+  }
+
+  // resize the params array by increment of WIFI_MANAGER_MAX_PARAMS
+  if(_paramsCount == _max_params){
+    _max_params += WIFI_MANAGER_MAX_PARAMS;
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV,F("Updated _max_params:"),_max_params);
+    DEBUG_WM(DEBUG_DEV,F("re-allocating params bytes:"),_max_params * sizeof(WiFiManagerParameter*));    
+    #endif
+    WiFiManagerParameter** new_params = (WiFiManagerParameter**)realloc(_params, _max_params * sizeof(WiFiManagerParameter*));
+    #ifdef WM_DEBUG_LEVEL
+    // DEBUG_WM(WIFI_MANAGER_MAX_PARAMS);
+    // DEBUG_WM(_paramsCount);
+    // DEBUG_WM(_max_params);
+    #endif
+    if (new_params != NULL) {
+      _params = new_params;
+    } else {
+      #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_ERROR,F("[ERROR] failed to realloc params, size not increased!"));
+      #endif
+      return false;
+    }
+  }
+
+  _params[_paramsCount] = p;
+  _paramsCount++;
+  
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE,F("Added Parameter:"),p->getID());
+  #endif
+  return true;
+}
+
+/**
+ * [getParameters description]
+ * @access public
+ */
+WiFiManagerParameter** WiFiManager::getParameters() {
+  return _params;
+}
+
+/**
+ * [getParametersCount description]
+ * @access public
+ */
+int WiFiManager::getParametersCount() {
+  return _paramsCount;
+}
 
 /**
  * --------------------------------------------------------------------------------
