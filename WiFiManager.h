@@ -122,6 +122,10 @@ extern "C"
     #define WIFI_MANAGER_MAX_OPTIONS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
 
+#ifndef WIFI_MANAGER_MAX_OPTIONS
+#define WIFI_MANAGER_MAX_OPTIONS 5 // params will autoincrement and realloc by this amount when max is reached
+#endif
+
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
 #define WFM_NO_LABEL 0
