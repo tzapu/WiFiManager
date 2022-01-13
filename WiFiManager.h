@@ -220,6 +220,7 @@ public:
 private:
     bool _checked = false;
 };
+
 class WiFiManagerParameterPassword : public WiFiManagerParameter
 {
 public:
