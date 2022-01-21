@@ -705,15 +705,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
       if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
     #endif
-    return result;
+    return result; // skip blocking loop
   }
 
+  // enter blocking loop, waiting for config
+  
   #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
     if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
   #endif
 
-  // blocking loop waiting for config
   while(1){
 
     // if timed out or abort, break
@@ -729,6 +730,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     state = processConfigPortal();
     
     // status change, break
+    // @todo what is this for, should be moved inside the processor
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
         DEBUG_WM(DEBUG_DEV,F("configportal loop break"));
@@ -832,7 +834,7 @@ uint8_t WiFiManager::processConfigPortal(){
         shutdownConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
       }
-      else{
+      else if(_configPortalIsBlocking){
         // clear save strings
         _ssid = "";
         _pass = "";
@@ -840,8 +842,13 @@ uint8_t WiFiManager::processConfigPortal(){
         WiFi_Disconnect();
         WiFi_enableSTA(false);
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_VERBOSE,F("Disabling STA"));
+        DEBUG_WM(DEBUG_VERBOSE,F("Processing - Disabling STA"));
         #endif
+      }
+      else{
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Portal is non blocking - remaining open"));
+        #endif        
       }
     }
 
