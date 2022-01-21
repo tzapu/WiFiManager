@@ -811,8 +811,8 @@ uint8_t WiFiManager::processConfigPortal(){
           if ( _savewificallback != NULL) {
             _savewificallback();
           }
-          shutdownConfigPortal();
           if(!_connectonsave) return WL_IDLE_STATUS;
+          shutdownConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -944,12 +944,16 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   // if ssid argument provided connect to that
   if (ssid != "") {
     wifiConnectNew(ssid,pass,connect);
-    if(_saveTimeout > 0){
-      connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
-    }
-    else {
-       connRes = waitForConnectResult(0);
-    }
+    // @todo connect=false seems to disconnect sta in begin() so not sure if _connectonsave is useful at all
+    // skip wait if not connecting
+    // if(connect){
+      if(_saveTimeout > 0){
+        connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
+      }
+      else {
+         connRes = waitForConnectResult(0);
+      }
+    // }
   }
   else {
     // connect using saved ssid if there is one
@@ -2053,13 +2057,13 @@ String WiFiManager::getInfoData(String id){
       p.replace(FPSTR(T_1),WiFi.softAPgetHostname());
   }
   #endif
-  #ifdef ESP8266
+  // #ifdef ESP8266
   #ifndef WM_NOSOFTAPSSID
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
     p.replace(FPSTR(T_1),htmlEntities(WiFi.softAPSSID()));
   }
-  #endif
+  // #endif
   #endif
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
