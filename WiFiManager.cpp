@@ -3405,11 +3405,16 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
       return ret;
     #endif
 }
+
 bool WiFiManager::WiFi_enableSTA(bool enable) {
 	return WiFi_enableSTA(enable,false);
 }
 
 bool WiFiManager::WiFi_eraseConfig() {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV,F("WiFi_eraseConfig"));
+    #endif
+
     #ifdef ESP8266
       #ifndef WM_FIXERASECONFIG 
         return ESP.eraseConfig();
@@ -3427,10 +3432,12 @@ bool WiFiManager::WiFi_eraseConfig() {
         return true;
       #endif
     #elif defined(ESP32)
+
       bool ret;
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
       WiFi.persistent(true);
       ret = WiFi.disconnect(true,true);
+      delay(500);
       WiFi.persistent(false);
       return ret;
     #endif
