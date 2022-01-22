@@ -61,7 +61,15 @@ const char HTTP_FORM_END[]         PROGMEM = "<br/><br/><button type='submit'>Sa
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
 const char HTTP_FORM_PARAM_HEAD[]  PROGMEM = "<hr><br/>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
+const char HTTP_FORM_PARAM_PASS[]  PROGMEM = "<br/><input type=\"password\" id='{i}' name='{n}' maxlength='{l}' {c}>";
+const char HTTP_FORM_PARAM_CHECKBOX[] PROGMEM = "<br/><input type=\"checkbox\" id='{i}' name='{n}' value='true' {C} {c}>";
+const char HTTP_FORM_PARAM_SELECT[] PROGMEM = "<br/> <select id='{i}' name='{n}'>{o}</select>";
+const char HTTP_FORM_PARAM_SELECT_OPTION[] PROGMEM = "<option value='{v}'{s}>{l}</option>";
+const char HTTP_FORM_PARAM_RADIO[] PROGMEM = "<br/><input type='radio' id='{i}' name='{n}' value='{ov}'{C}><label for='{on}'>{ol}</label>";
+const char HTTP_FORM_PARAM_CHECKED[] PROGMEM = " checked";
+const char HTTP_FORM_PARAM_SELECTED[] PROGMEM = " selected";
 
+const char HTTP_FORM_PARAM_SPACER[] PROGMEM = "<br/> <hr>";
 const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi?refresh=1' method='POST'><button name='refresh' value='1'>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
 const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg S'>Saved<br/></div>";
@@ -79,10 +87,11 @@ const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
 const char HTTP_BR[]               PROGMEM = "<br/>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
-".c,body{text-align:center;font-family:verdana}div,input{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box;}"
-"input,button,.msg{border-radius:.3rem;width: 100%},input[type=radio]{width: auto}"
+".c,body{text-align:center;font-family:verdana}div,input,select{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box;}"
+"input,button,.msg,select{border-radius:.3rem;width: 100%},input[type=radio]{width: auto}"
 "button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
 "input[type='file']{border:1px solid #1fa3ec}"
+"input[type='radio'] {width: 30px}"
 ".wrap {text-align:left;display:inline-block;min-width:260px;max-width:500px}"
 // links
 "a{color:#000;font-weight:700;text-decoration:none}a:hover{color:#1fa3ec;text-decoration:underline}"
@@ -313,6 +322,12 @@ const char T_q[]                  PROGMEM = "{q}"; // @token q
 const char T_r[]                  PROGMEM = "{r}"; // @token r
 const char T_R[]                  PROGMEM = "{R}"; // @token R
 const char T_h[]                  PROGMEM = "{h}"; // @token h
+const char T_o[]                  PROGMEM = "{o}";   // @token o
+const char T_s[]                  PROGMEM = "{s}";   // @token s
+const char T_C[]                  PROGMEM = "{C}";   // @token C
+const char T_ov[]                 PROGMEM = "{ov}"; // @token ov
+const char T_on[]                 PROGMEM = "{on}"; // @token on
+const char T_ol[]                 PROGMEM = "{ol}"; // @token on
 
 // http
 const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
