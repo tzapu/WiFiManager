@@ -1249,7 +1249,8 @@ void WiFiManager::handleWifi(boolean scan) {
     page += getScanItemOut();
   }
 
-  server->chunkedResponseModeStart(200, FPSTR(HTTP_HEAD_CT));
+  server->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server->send(200, FPSTR(HTTP_HEAD_CT), "");
   server->sendContent(page);
   page = ""; //clear for next send
 
@@ -1292,7 +1293,7 @@ void WiFiManager::handleWifi(boolean scan) {
   //server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
   server->sendContent(page);
-  server->chunkedResponseFinalize();
+  server->sendContent(""); //the empty send triggers the end of the chunked transfer
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent config page"));
