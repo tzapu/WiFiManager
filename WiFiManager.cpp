@@ -1303,9 +1303,15 @@ void WiFiManager::handleWifi(boolean scan) {
   if(_paramsInWifi && _paramsCount>0){
     page += FPSTR(HTTP_FORM_PARAM_HEAD);
     getParamOut(page);
+    if(_usechunkedresp){
+      server->sendContent(page);
+      page = "";
+    }
   }
+  
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
+
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
   page += FPSTR(HTTP_END);
