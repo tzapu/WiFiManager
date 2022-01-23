@@ -1256,12 +1256,14 @@ void WiFiManager::handleWifi(boolean scan) {
   #endif
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
+  // page.reserve(WM_PAGEBYTES); // @todo add string reserve
+
   if (scan) {
     #ifdef WM_DEBUG_LEVEL
     // DEBUG_WM(DEBUG_DEV,"refresh flag:",server->hasArg(F("refresh")));
     #endif
     WiFi_scanNetworks(server->hasArg(F("refresh")),false); //wifiscan, force if arg refresh
-    page += getScanItemOut();
+    page += getScanItemOut(); // @todo add append by ref
   }
   String pitem = "";
 
@@ -1284,11 +1286,20 @@ void WiFiManager::handleWifi(boolean scan) {
 
   page += pitem;
 
-  page += getStaticOut();
+  getStaticOut(page);
   page += FPSTR(HTTP_FORM_WIFI_END);
+
+  if(_usechunkedresp){
+    // server->chunkedResponseModeStart(200, FPSTR(HTTP_HEAD_CT)); // https://github.com/espressif/arduino-esp32/issues/5080
+    server->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server->send(200, FPSTR(HTTP_HEAD_CT), "");
+    server->sendContent(page);
+    page = "";
+  }
+
   if(_paramsInWifi && _paramsCount>0){
     page += FPSTR(HTTP_FORM_PARAM_HEAD);
-    page += getParamOut();
+    getParamOut(page);
   }
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
@@ -1297,7 +1308,12 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  if(_usechunkedresp){
+    server->sendContent(page);
+    server->sendContent("");
+    // server->chunkedResponseFinalize();
+  }
+  else server->send(200, FPSTR(HTTP_HEAD_CT), page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
   #ifdef WM_DEBUG_LEVEL
@@ -1321,7 +1337,7 @@ void WiFiManager::handleParam(){
   pitem.replace(FPSTR(T_v), F("paramsave"));
   page += pitem;
 
-  page += getParamOut();
+  getParamOut(page);
   page += FPSTR(HTTP_FORM_END);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
@@ -1569,8 +1585,7 @@ String WiFiManager::getIpForm(String id, String title, String value){
     return item;  
 }
 
-String WiFiManager::getStaticOut(){
-  String page;
+void WiFiManager::getStaticOut(String &page){
   if ((_staShowStaticFields || _sta_static_ip) && _staShowStaticFields>=0) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_DEV,F("_staShowStaticFields"));
@@ -1590,15 +1605,10 @@ String WiFiManager::getStaticOut(){
   }
 
   if(page!="") page += FPSTR(HTTP_BR); // @todo remove these, use css
-
-  return page;
 }
 
-String WiFiManager::getParamOut(){
-  String page;
-
+void WiFiManager::getParamOut(String &page){
   if(_paramsCount > 0){
-
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
     HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
     bool tok_I = HTTP_PARAM_temp.indexOf(FPSTR(T_I)) > 0;
@@ -1657,8 +1667,6 @@ String WiFiManager::getParamOut(){
       page += pitem;
     }
   }
-
-  return page;
 }
 
 void WiFiManager::handleWiFiStatus(){

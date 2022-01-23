@@ -493,6 +493,8 @@ class WiFiManager
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 
+    boolean       _usechunkedresp         = false; // use chunked resposes for params or larger content pages
+
     // internal options
     
     // wifiscan notes
@@ -603,10 +605,10 @@ class WiFiManager
     #endif
 
     // output helpers
-    String        getParamOut();
+    void          getParamOut(String &page);
     String        getIpForm(String id, String title, String value);
     String        getScanItemOut();
-    String        getStaticOut();
+    void          getStaticOut(String &page);
     String        getHTTPHead(String title);
     String        getMenuOut();
     //helpers
