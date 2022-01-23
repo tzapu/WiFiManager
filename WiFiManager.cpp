@@ -1256,6 +1256,9 @@ void WiFiManager::handleWifi(boolean scan) {
   #endif
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
+
+  // fix fragmentation
+  // page.resize()(WM_PAGEBYTES); // @todo add string size
   // page.reserve(WM_PAGEBYTES); // @todo add string reserve
 
   if (scan) {
