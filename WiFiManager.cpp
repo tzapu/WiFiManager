@@ -1607,6 +1607,10 @@ String WiFiManager::getStaticOut(){
 String WiFiManager::getParamOut(){
   String page;
 
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_DEV,F("getParamOut"),_paramsCount);
+  #endif
+
   if(_paramsCount > 0){
 
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
@@ -2913,7 +2917,7 @@ void WiFiManager::setTitle(String title){
  */
 void WiFiManager::setMenu(const char * menu[], uint8_t size){
 #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(DEBUG_VERBOSE,"setmenu array");
+  // DEBUG_WM(DEBUG_DEV,"setmenu array");
   #endif
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
@@ -2940,7 +2944,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
  */
 void WiFiManager::setMenu(std::vector<const char *>& menu){
 #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
+  // DEBUG_WM(DEBUG_DEV,"setmenu vector");
   #endif
   _menuIds.clear();
   for(auto menuitem : menu ){
@@ -2952,7 +2956,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
     }
   }
   #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(getMenuOut());
+  // DEBUG_WM(DEBUG_DEV,getMenuOut());
   #endif
 }
 
