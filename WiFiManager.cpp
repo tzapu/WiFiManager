@@ -1904,7 +1904,7 @@ void WiFiManager::handleInfo() {
   #endif
 
   for(size_t i=0; i<infos;i++){
-    if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    if(!infoids[i].isEmpty()) page += getInfoData(infoids[i]);
   }
   page += F("</dl>");
   if(_showInfoUpdate){
@@ -3227,7 +3227,7 @@ String WiFiManager::toStringIp(IPAddress ip) {
 
 boolean WiFiManager::validApPassword(){
   // check that ap password is valid, return false
-  if (_apPassword == NULL) _apPassword = "";
+  if (_apPassword.isEmpty()) _apPassword = "";
   if (_apPassword != "") {
     if (_apPassword.length() < 8 || _apPassword.length() > 63) {
     #ifdef WM_DEBUG_LEVEL
