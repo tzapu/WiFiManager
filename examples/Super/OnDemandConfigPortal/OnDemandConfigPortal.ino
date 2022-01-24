@@ -165,6 +165,9 @@ void setup() {
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(120);
   
+  // set min quality to show in web list, default 8%
+  // wm.setMinimumSignalQuality(50);
+
   // set connection timeout
   // wm.setConnectTimeout(20);
 
