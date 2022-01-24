@@ -3546,15 +3546,15 @@ String WiFiManager::WiFi_psk(bool persistent) const {
   #endif
     if(!_hasBegun){
       #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+        // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
       #endif
-      Serial.println(F("\n[EVENT] WiFiEvent logging (wm debug not available)"));
-      Serial.print(F("[EVENT] ID: "));
-      Serial.println(event);
+      // Serial.println(F("\n[EVENT] WiFiEvent logging (wm debug not available)"));
+      // Serial.print(F("[EVENT] ID: "));
+      // Serial.println(event);
       return;
     }
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
+    // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     #endif
     if(event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED){
     #ifdef WM_DEBUG_LEVEL
