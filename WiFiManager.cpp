@@ -80,7 +80,8 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   // }
 
   _length = length;
-  _value  = std::make_unique<char[]>(_length + 1);
+  _value = std::unique_ptr<char[]>(new char[_length + 1]);
+
   memset(_value.get(), 0, _length + 1); // explicit null
   
   if (defaultValue != NULL) {
