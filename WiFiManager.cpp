@@ -931,12 +931,17 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  
+  // WiFi.setAutoReconnect(false);
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
+  // if retry without delay (via begin()), the IDF is still busy even after returning status
+  // E (5130) wifi:sta is connecting, return error
+  // [E][WiFiSTA.cpp:221] begin(): connect failed!
+
   while(retry <= _connectRetries && (connRes!=WL_CONNECTED)){
   if(_connectRetries > 1){
+    if(_aggresiveReconn) delay(1000); // add idle time before recon
     #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("Connect Wifi, ATTEMPT #"),(String)retry+" of "+(String)_connectRetries); 
       #endif
@@ -3273,6 +3278,12 @@ String WiFiManager::getWLStatusString(uint8_t status){
   return FPSTR(S_NA);
 }
 
+String WiFiManager::getWLStatusString(){
+  uint8_t status = WiFi.status();
+  if(status <= 7) return WIFI_STA_STATUS[status];
+  return FPSTR(S_NA);
+}
+
 String WiFiManager::encryptionTypeStr(uint8_t authmode) {
 #ifdef WM_DEBUG_LEVEL
   // DEBUG_WM("enc_tye: ",authmode);
@@ -3535,15 +3546,15 @@ String WiFiManager::WiFi_psk(bool persistent) const {
   #endif
     if(!_hasBegun){
       #ifdef WM_DEBUG_LEVEL
-        // DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
+        DEBUG_WM(DEBUG_VERBOSE,"[ERROR] WiFiEvent, not ready");
       #endif
-      // Serial.println(F("\n[EVENT] WiFiEvent logging (wm debug not available)"));
-      // Serial.print(F("[EVENT] ID: "));
-      // Serial.println(event);
+      Serial.println(F("\n[EVENT] WiFiEvent logging (wm debug not available)"));
+      Serial.print(F("[EVENT] ID: "));
+      Serial.println(event);
       return;
     }
     #ifdef WM_DEBUG_LEVEL
-    // DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
+    DEBUG_WM(DEBUG_VERBOSE,"[EVENT]",event);
     #endif
     if(event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED){
     #ifdef WM_DEBUG_LEVEL
@@ -3554,6 +3565,10 @@ String WiFiManager::WiFi_psk(bool persistent) const {
       } else _lastconxresulttmp = WiFi.status();
       #ifdef WM_DEBUG_LEVEL
       if(info.wifi_sta_disconnected.reason == WIFI_REASON_NO_AP_FOUND) DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: NO_AP_FOUND"));
+      if(info.wifi_sta_disconnected.reason == WIFI_REASON_ASSOC_FAIL){
+        if(_aggresiveReconn) _connectRetries+=4;
+        DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: AUTH FAIL"));
+      }  
       #endif
       #ifdef esp32autoreconnect
       #ifdef WM_DEBUG_LEVEL

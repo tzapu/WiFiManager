@@ -350,6 +350,7 @@ class WiFiManager
     
     // get a status as string
     String        getWLStatusString(uint8_t status);    
+    String        getWLStatusString();    
 
     // get wifi mode as string
     String        getModeString(uint8_t mode);
@@ -492,6 +493,8 @@ class WiFiManager
     const char*   _customHeadElement      = ""; // store custom head element html from user
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
+
+    boolean       _aggresiveReconn        = false; // use an agrressive reconnect strategy, on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
 
     // internal options
     
