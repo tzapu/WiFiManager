@@ -272,7 +272,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
   if(getWiFiIsSaved()){
-
+     _startconn = millis();
     _begin();
 
     // attempt to connect using saved settings, on fail fallback to AP config portal
@@ -320,6 +320,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
+      DEBUG_WM(DEBUG_VERBOSE,F("Connected in"),(String)((millis()-_startconn)) + " ms");
       DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
       #endif
       _lastconxresult = WL_CONNECTED;
