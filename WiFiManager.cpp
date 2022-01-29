@@ -3595,11 +3595,10 @@ void WiFiManager::WiFi_autoReconnect(){
  * @return {[type]}        [description]
  */
 bool WiFiManager::getFastConConfig(String ssid){
-  int networksFound = WiFi_scanNetworks(true);
-  int i;
-  bool ret = false;
+  bool ret = WiFi_scanNetworks(true);
+  int networksFound = _numNetworks;
   int32_t scan_rssi = -200;
-  for (i = 0; i < networksFound; i++) {
+  for (size_t i = 0; i < networksFound; i++) {
     if(ssid == WiFi.SSID(i)) {
       if(WiFi.RSSI(i) > scan_rssi) {
         _fastConnectChannel = WiFi.channel(i);
