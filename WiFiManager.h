@@ -463,8 +463,7 @@ class WiFiManager
     uint16_t      _httpPort               = 80; // port for webserver
     // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
-    unsigned long _startconn              = 0; // ms for timing wifi connects
-    bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
+    bool          _aggresiveReconn        = true; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
 
     #ifdef ESP32
