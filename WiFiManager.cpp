@@ -272,7 +272,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
   if(getWiFiIsSaved()){
-
+     _startconn = millis();
     _begin();
 
     // attempt to connect using saved settings, on fail fallback to AP config portal
@@ -320,7 +320,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
-      DEBUG_WM(F("Connected in"),(String)((millis()-_startconn)) + " ms");
+      DEBUG_WM(DEBUG_VERBOSE,F("Connected in"),(String)((millis()-_startconn)) + " ms");
       DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
       #endif
       _lastconxresult = WL_CONNECTED;
@@ -706,15 +706,16 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
       if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
     #endif
-    return result;
+    return result; // skip blocking loop
   }
 
+  // enter blocking loop, waiting for config
+  
   #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, blocking, waiting for clients..."));
     if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
   #endif
 
-  // blocking loop waiting for config
   while(1){
 
     // if timed out or abort, break
@@ -730,6 +731,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     state = processConfigPortal();
     
     // status change, break
+    // @todo what is this for, should be moved inside the processor
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
         DEBUG_WM(DEBUG_DEV,F("configportal loop break"));
@@ -757,6 +759,10 @@ boolean WiFiManager::process(){
     #if defined(WM_MDNS) && defined(ESP8266)
     MDNS.update();
     #endif
+	
+    if(configPortalActive && !_configPortalIsBlocking){
+      if(configPortalHasTimeout()) shutdownConfigPortal();
+    }
 
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
         uint8_t state = processConfigPortal();
@@ -806,8 +812,8 @@ uint8_t WiFiManager::processConfigPortal(){
           if ( _savewificallback != NULL) {
             _savewificallback();
           }
-          shutdownConfigPortal();
           if(!_connectonsave) return WL_IDLE_STATUS;
+          shutdownConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -829,7 +835,7 @@ uint8_t WiFiManager::processConfigPortal(){
         shutdownConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
       }
-      else{
+      else if(_configPortalIsBlocking){
         // clear save strings
         _ssid = "";
         _pass = "";
@@ -837,8 +843,13 @@ uint8_t WiFiManager::processConfigPortal(){
         WiFi_Disconnect();
         WiFi_enableSTA(false);
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_VERBOSE,F("Disabling STA"));
+        DEBUG_WM(DEBUG_VERBOSE,F("Processing - Disabling STA"));
         #endif
+      }
+      else{
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Portal is non blocking - remaining open"));
+        #endif        
       }
     }
 
@@ -921,12 +932,17 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   //@todo catch failures in set_config
   
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
-  
+  // WiFi.setAutoReconnect(false);
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
   // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
 
+  // if retry without delay (via begin()), the IDF is still busy even after returning status
+  // E (5130) wifi:sta is connecting, return error
+  // [E][WiFiSTA.cpp:221] begin(): connect failed!
+
   while(retry <= _connectRetries && (connRes!=WL_CONNECTED)){
   if(_connectRetries > 1){
+    if(_aggresiveReconn) delay(1000); // add idle time before recon
     #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("Connect Wifi, ATTEMPT #"),(String)retry+" of "+(String)_connectRetries); 
       #endif
@@ -934,12 +950,16 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   // if ssid argument provided connect to that
   if (ssid != "") {
     wifiConnectNew(ssid,pass,connect);
-    if(_saveTimeout > 0){
-      connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
-    }
-    else {
-       connRes = waitForConnectResult(0);
-    }
+    // @todo connect=false seems to disconnect sta in begin() so not sure if _connectonsave is useful at all
+    // skip wait if not connecting
+    // if(connect){
+      if(_saveTimeout > 0){
+        connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
+      }
+      else {
+         connRes = waitForConnectResult(0);
+      }
+    // }
   }
   else {
     // connect using saved ssid if there is one
@@ -1525,6 +1545,10 @@ String WiFiManager::WiFiManager::getScanItemOut(){
 
         if (_minimumQuality == -1 || _minimumQuality < rssiperc) {
           String item = HTTP_ITEM_STR;
+          if(WiFi.SSID(indices[i]) == ""){
+            // Serial.println(WiFi.BSSIDstr(indices[i]));
+            continue; // No idea why I am seeing these, lets just skip them for now
+          }
           item.replace(FPSTR(T_v), htmlEntities(WiFi.SSID(indices[i]))); // ssid no encoding
           if(tok_e) item.replace(FPSTR(T_e), encryptionTypeStr(enc_type));
           if(tok_r) item.replace(FPSTR(T_r), (String)rssiperc); // rssi percentage 0-100
@@ -1538,7 +1562,7 @@ String WiFiManager::WiFiManager::getScanItemOut(){
             }
           }
           #ifdef WM_DEBUG_LEVEL
-          //DEBUG_WM(item);
+          DEBUG_WM(DEBUG_DEV,item);
           #endif
           page += item;
           delay(0);
@@ -1597,6 +1621,10 @@ String WiFiManager::getStaticOut(){
 String WiFiManager::getParamOut(){
   String page;
 
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_DEV,F("getParamOut"),_paramsCount);
+  #endif
+
   if(_paramsCount > 0){
 
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
@@ -1611,15 +1639,20 @@ String WiFiManager::getParamOut(){
     bool tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
 
     char valLength[5];
-    // add the extra parameters to the form
+
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || _params[i]->_length == 0) {
+      Serial.println((String)_params[i]->_length);
+      if (_params[i] == NULL || _params[i]->_length == 0 || _params[i]->_length > 99999) {
+        // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
         #endif
-        break;
+        return "";
       }
+    }
 
+    // add the extra parameters to the form
+    for (int i = 0; i < _paramsCount; i++) {
      // label before or after, @todo this could be done via floats or CSS and eliminated
      String pitem;
       switch (_params[i]->getLabelPlacement()) {
@@ -1904,7 +1937,7 @@ void WiFiManager::handleInfo() {
   #endif
 
   for(size_t i=0; i<infos;i++){
-    if(infoids[i] != NULL) page += getInfoData(infoids[i]);
+    if(!infoids[i].isEmpty()) page += getInfoData(infoids[i]);
   }
   page += F("</dl>");
   if(_showInfoUpdate){
@@ -2057,13 +2090,13 @@ String WiFiManager::getInfoData(String id){
       p.replace(FPSTR(T_1),WiFi.softAPgetHostname());
   }
   #endif
-  #ifdef ESP8266
+  // #ifdef ESP8266
   #ifndef WM_NOSOFTAPSSID
   else if(id==F("apssid")){
     p = FPSTR(HTTP_INFO_apssid);
     p.replace(FPSTR(T_1),htmlEntities(WiFi.softAPSSID()));
   }
-  #endif
+  // #endif
   #endif
   else if(id==F("apbssid")){
     p = FPSTR(HTTP_INFO_apbssid);
@@ -2914,7 +2947,7 @@ void WiFiManager::setTitle(String title){
  */
 void WiFiManager::setMenu(const char * menu[], uint8_t size){
 #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(DEBUG_VERBOSE,"setmenu array");
+  // DEBUG_WM(DEBUG_DEV,"setmenu array");
   #endif
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
@@ -2941,7 +2974,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
  */
 void WiFiManager::setMenu(std::vector<const char *>& menu){
 #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(DEBUG_VERBOSE,"setmenu vector");
+  // DEBUG_WM(DEBUG_DEV,"setmenu vector");
   #endif
   _menuIds.clear();
   for(auto menuitem : menu ){
@@ -2953,7 +2986,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
     }
   }
   #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(getMenuOut());
+  // DEBUG_WM(DEBUG_DEV,getMenuOut());
   #endif
 }
 
@@ -3238,7 +3271,7 @@ String WiFiManager::toStringIp(IPAddress ip) {
 
 boolean WiFiManager::validApPassword(){
   // check that ap password is valid, return false
-  if (_apPassword == NULL) _apPassword = "";
+  if (_apPassword.isEmpty()) _apPassword = "";
   if (_apPassword != "") {
     if (_apPassword.length() < 8 || _apPassword.length() > 63) {
     #ifdef WM_DEBUG_LEVEL
@@ -3265,7 +3298,7 @@ String WiFiManager::htmlEntities(String str) {
   str.replace("&","&amp;");
   str.replace("<","&lt;");
   str.replace(">","&gt;");
-  // str.replace("'","&#39;");
+  str.replace("-","&#8211;");
   // str.replace("\"","&quot;");
   // str.replace("/": "&#x2F;");
   // str.replace("`": "&#x60;");
@@ -3280,6 +3313,12 @@ return str;
  * @return {[type]}         [description]
  */
 String WiFiManager::getWLStatusString(uint8_t status){
+  if(status <= 7) return WIFI_STA_STATUS[status];
+  return FPSTR(S_NA);
+}
+
+String WiFiManager::getWLStatusString(){
+  uint8_t status = WiFi.status();
   if(status <= 7) return WIFI_STA_STATUS[status];
   return FPSTR(S_NA);
 }
@@ -3431,11 +3470,16 @@ bool WiFiManager::WiFi_enableSTA(bool enable,bool persistent) {
       return ret;
     #endif
 }
+
 bool WiFiManager::WiFi_enableSTA(bool enable) {
 	return WiFi_enableSTA(enable,false);
 }
 
 bool WiFiManager::WiFi_eraseConfig() {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV,F("WiFi_eraseConfig"));
+    #endif
+
     #ifdef ESP8266
       #ifndef WM_FIXERASECONFIG 
         return ESP.eraseConfig();
@@ -3453,10 +3497,12 @@ bool WiFiManager::WiFi_eraseConfig() {
         return true;
       #endif
     #elif defined(ESP32)
+
       bool ret;
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
       WiFi.persistent(true);
       ret = WiFi.disconnect(true,true);
+      delay(500);
       WiFi.persistent(false);
       return ret;
     #endif
@@ -3558,6 +3604,10 @@ String WiFiManager::WiFi_psk(bool persistent) const {
       } else _lastconxresulttmp = WiFi.status();
       #ifdef WM_DEBUG_LEVEL
       if(info.wifi_sta_disconnected.reason == WIFI_REASON_NO_AP_FOUND) DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: NO_AP_FOUND"));
+      if(info.wifi_sta_disconnected.reason == WIFI_REASON_ASSOC_FAIL){
+        if(_aggresiveReconn) _connectRetries+=4;
+        DEBUG_WM(DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: AUTH FAIL"));
+      }  
       #endif
       #ifdef esp32autoreconnect
       #ifdef WM_DEBUG_LEVEL
