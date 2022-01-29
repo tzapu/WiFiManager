@@ -295,7 +295,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     // no getter for autoreconnectpolicy before this
     // https://github.com/esp8266/Arduino/pull/4359
     // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
-    // WiFi_autoReconnect();
+    WiFi_autoReconnect();
 
     // set hostname before stating
     if((String)_hostname != ""){
