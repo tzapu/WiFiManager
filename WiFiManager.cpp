@@ -1053,15 +1053,35 @@ bool WiFiManager::wifiConnectDefault(){
 
   ret = WiFi.begin();
 
-  if(!ret && _fastConnectMode) {
-    // @todo since fastconnect is usually only for saved, this may cause delays/issues, add check if retries >1 maybe
-    #ifdef WM_DEBUG_LEVEL    
-    DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT UPDATE"));
-    #endif
-    // have another go if using fast connect in case channel has changed
-    getFastConConfig(WiFi_SSID(true));
-    ret = WiFi.begin(WiFi_SSID(true).c_str(), WiFi_psk(true).c_str(), _fastConnectChannel, _fastConnectBSSID, true);
-  }
+  // if(!ret && _fastConnectMode) {
+  //   // @todo since fastconnect is usually only for saved, this may cause delays/issues, add check if retries >1 maybe
+  //   #ifdef WM_DEBUG_LEVEL    
+  //   DEBUG_WM(DEBUG_INFO,F("Using FASTCONNECT UPDATE"));
+  //   #endif
+  //   // have another go if using fast connect in case channel has changed
+  //   getFastConConfig(WiFi_SSID(true));
+  //   ret = WiFi.begin(WiFi_SSID(true).c_str(), WiFi_psk(true).c_str(), _fastConnectChannel, _fastConnectBSSID, true);
+  // }
+// Crashing ATM
+// *wm:[1] Using FASTCONNECT UPDATE 
+// *wm:[2] WiFi Scan SYNC started 
+// *wm:[0] [ERROR] scan failed 
+// *wm:[2] WiFi Scan completed in 2 ms
+// *wm:[2] Fast Config RSSI:  -200
+// *wm:[2] Fast Config CHAN:  0
+// Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
+// Core 1 register dump:
+// PC      : 0x400dbd56  PS      : 0x00060230  A0      : 0x800dc040  A1      : 0x3ffb1d10  
+// A2      : 0x3ffc1720  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000001  
+// A6      : 0xffffff38  A7      : 0x00000000  A8      : 0x800dbd50  A9      : 0x3ffb1d00  
+// A10     : 0x3ffb1d48  A11     : 0x3f40099e  A12     : 0x00000012  A13     : 0x3ffb1d5a  
+// A14     : 0x3ffc698c  A15     : 0x00000001  SAR     : 0x00000010  EXCCAUSE: 0x0000001c  
+// EXCVADDR: 0x00000005  LBEG    : 0x4000c46c  LEND    : 0x4000c477  LCOUNT  : 0x00000000  
+
+// ELF file SHA256: 0000000000000000
+
+// Backtrace: 0x400dbd56:0x3ffb1d10 0x400dc03d:0x3ffb1d80 0x400dc26d:0x3ffb1dc0 0x400e0ec2:0x3ffb1e30 0x400d1a4b:0x3ffb1e80 0x400e3946:0x3ffb1fb0 0x40089a8a:0x3ffb1fd0
+
 
   #ifdef WM_DEBUG_LEVEL
   if(!ret) DEBUG_WM(DEBUG_ERROR,F("[ERROR] wifi begin failed"));
