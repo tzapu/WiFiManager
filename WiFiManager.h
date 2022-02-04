@@ -594,10 +594,15 @@ class WiFiManager
 
     // check for arduino or system event system, handle esp32 arduino v2 and IDF
     #if defined(ESP_ARDUINO_VERSION) && defined(ESP_ARDUINO_VERSION_VAL)
-    #define WM_ARDUINOVERCHECK ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
-    #ifdef WM_ARDUINOVERCHECK
-    #define WM_ARDUINOEVENTS
-    #endif
+
+        #define WM_ARDUINOVERCHECK ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
+
+        #ifdef WM_ARDUINOVERCHECK
+            #define WM_ARDUINOEVENTS
+        #else
+            #define WM_NOSOFTAPSSID
+        #endif
+    
     #endif
 
     #ifdef WM_ARDUINOEVENTS
