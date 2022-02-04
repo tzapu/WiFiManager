@@ -462,6 +462,7 @@ class WiFiManager
     unsigned long _startconn              = 0; // ms for timing wifi connects
     bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
+    bool          _allowExit              = true; // allow exit non blocking
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id;

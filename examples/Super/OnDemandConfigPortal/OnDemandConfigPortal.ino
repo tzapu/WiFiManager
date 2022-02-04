@@ -29,6 +29,7 @@ int  TESP_CP_TIMEOUT = 90; // test cp timeout
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
+bool WMISBLOCKING    = false; // use blocking or non blocking mode
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -161,6 +162,13 @@ void setup() {
   // show password publicly in form
   // wm.setShowPassword(true);
 
+  // sets wether wm configportal is a blocking loop(legacy) or not, use wm.process() in loop if false
+  // wm.setConfigPortalBlocking(false);
+  
+  if(!WMISBLOCKING){
+    wm.setConfigPortalBlocking(false);
+  }
+
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(120);
@@ -233,6 +241,10 @@ void wifiInfo(){
 
 void loop() {
 
+  if(!WMISBLOCKING){
+    wm.process();
+  }
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
@@ -241,6 +253,13 @@ void loop() {
     delay(100);
     if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
+
+      // button reset/reboot
+      // wm.resetSettings();
+      // wm.reboot();
+      // delay(200);
+      // return;
+      
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 

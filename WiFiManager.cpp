@@ -752,7 +752,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 /**
  * [process description]
  * @access public
- * @return {[type]} [description]
+ * @return bool connected
  */
 boolean WiFiManager::process(){
     // process mdns, esp32 not required
@@ -765,13 +765,23 @@ boolean WiFiManager::process(){
     }
 
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
-        uint8_t state = processConfigPortal();
-        return state == WL_CONNECTED;
+      
+      // if timed out or abort, break
+      if(_allowExit && (configPortalHasTimeout() || abort)){
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_DEV,F("process loop abort"));
+        #endif
+        shutdownConfigPortal();
+        return false;
+      }
+
+      uint8_t state = processConfigPortal();
+      return state == WL_CONNECTED;
     }
     return false;
 }
 
-//using esp enums returns for now, should be fine
+//using esp wl_status enums as returns for now, should be fine
 uint8_t WiFiManager::processConfigPortal(){
     if(configPortalActive){
       //DNS handler
