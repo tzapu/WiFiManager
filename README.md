@@ -19,8 +19,8 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 ![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)
 
 ![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)
-![ESP32](https://img.shields.io/badge/ESP-32-S2-000000.svg?longCache=true&style=flat&colorA=CC101F)
-![ESP32](https://img.shields.io/badge/ESP-32-C3-000000.svg?longCache=true&style=flat&colorA=CC101F)
+![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)
+![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)
 
 Member to Member Support / Chat
 
