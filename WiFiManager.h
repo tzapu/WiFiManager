@@ -318,6 +318,7 @@ class WiFiManager
     
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
+    bool          setHostname(String hostname);
 
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
@@ -492,7 +493,7 @@ class WiFiManager
     boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
     boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
-    const char *  _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
+    String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
     const char*   _customHeadElement      = ""; // store custom head element html from user
     String        _bodyClass              = ""; // class to add to body

@@ -298,7 +298,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     WiFi_autoReconnect();
 
     // set hostname before stating
-    if((String)_hostname != ""){
+    if(_hostname != ""){
       setupHostname(true);
     }
 
@@ -325,7 +325,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       #endif
       _lastconxresult = WL_CONNECTED;
 
-      if((String)_hostname != ""){
+      if(_hostname != ""){
         #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_DEV,F("hostname: STA: "),getWiFiHostname());
         #endif
@@ -358,7 +358,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 }
 
 bool WiFiManager::setupHostname(bool restart){
-  if((String)_hostname == "") {
+  if(_hostname == "") {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_DEV,F("No Hostname to set"));
     #endif
@@ -366,34 +366,39 @@ bool WiFiManager::setupHostname(bool restart){
   } 
   else {
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_DEV,F("setupHostname: "),_hostname);
+    DEBUG_WM(DEBUG_VERBOSE,F("Setting Hostnames: "),_hostname);
     #endif
   }
   bool res = true;
   #ifdef ESP8266
-  #ifdef WM_DEBUG_LEVEL
+    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Setting WiFi hostname"));
     #endif
-    res = WiFi.hostname(_hostname);
+    res = WiFi.hostname(_hostname.c_str());
     // #ifdef ESP8266MDNS_H
     #ifdef WM_MDNS
-    #ifdef WM_DEBUG_LEVEL
+      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("Setting MDNS hostname, tcp 80"));
       #endif
-      if(MDNS.begin(_hostname)){
+      if(MDNS.begin(_hostname.c_str())){
         MDNS.addService("http", "tcp", 80);
       }
     #endif
   #elif defined(ESP32)
     // @note hostname must be set after STA_START
     delay(200); // do not remove, give time for STA_START
-    res = WiFi.setHostname(_hostname);
+   
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("Setting WiFi hostname"));
+    #endif
+
+    res = WiFi.setHostname(_hostname.c_str());
     // #ifdef ESP32MDNS_H
       #ifdef WM_MDNS
-      #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,F("Setting MDNS hostname, tcp 80"));
-      #endif
-      if(MDNS.begin(_hostname)){
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("Setting MDNS hostname, tcp 80"));
+        #endif
+      if(MDNS.begin(_hostname.c_str())){
         MDNS.addService("http", "tcp", 80);
       }
     #endif
@@ -491,8 +496,8 @@ bool WiFiManager::startAP(){
 
   // set ap hostname
   #ifdef ESP32
-    if(ret && (String)_hostname != ""){
-      bool res =  WiFi.softAPsetHostname(_hostname);
+    if(ret && _hostname != ""){
+      bool res =  WiFi.softAPsetHostname(_hostname.c_str());
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("setting softAP Hostname:"),_hostname);
       if(!res)DEBUG_WM(DEBUG_ERROR,F("[ERROR] hostname: AP set failed!"));
@@ -2849,6 +2854,12 @@ void WiFiManager::setEnableConfigPortal(boolean enable)
  */
 bool  WiFiManager::setHostname(const char * hostname){
   //@todo max length 32
+  _hostname = String(hostname);
+  return true;
+}
+
+bool  WiFiManager::setHostname(String hostname){
+  //@todo max length 32
   _hostname = hostname;
   return true;
 }
@@ -3020,6 +3031,11 @@ bool WiFiManager::getWiFiIsSaved(){
   return WiFi_hasAutoConnect();
 }
 
+/**
+ * getDefaultAPName
+ * @since $dev
+ * @return string 
+ */
 String WiFiManager::getDefaultAPName(){
   String hostString = String(WIFI_getChipId(),HEX);
   hostString.toUpperCase();

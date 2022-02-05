@@ -151,7 +151,8 @@ void setup() {
   wm.setCountry("US"); 
 
   // set Hostname
-  wm.setHostname("WIFIMANAGERTESTING");
+
+ wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
