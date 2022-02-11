@@ -24,6 +24,73 @@ uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
  * --------------------------------------------------------------------------------
 **/
 
+
+/*  
+*
+*!!!CUSTOM PART!!!
+*
+*/
+
+WiFiManagerParameter::WiFiManagerParameter() {
+  WiFiManagerParameter("",int(0));
+}
+
+//WiFiManagerParameter::WiFiManagerParameter(const char *custom) {	//!!!CUSTOM!!!
+WiFiManagerParameter::WiFiManagerParameter(const char *custom, int custom_length) {	//!!!CUSTOM!!!
+  _id             = NULL;
+  _label          = NULL;
+  _length         = 1;
+  _value          = NULL;
+  _labelPlacement = WFM_LABEL_BEFORE;
+  //_customHTML     = custom;  !!!CUSTOM!!!
+  _customHTML	  = NULL; //!!!CUSTOM!!!
+  _custom_length  = NULL;
+  setCustomHTML(custom,custom_length);//!!!CUSTOM!!!
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
+  init(id, label, "", 0, "", 0, WFM_LABEL_BEFORE);
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length) {
+  init(id, label, defaultValue, length, "", 0, WFM_LABEL_BEFORE);
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length) {
+  init(id, label, defaultValue, length, custom, custom_length, WFM_LABEL_BEFORE);
+}
+
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length, int labelPlacement) {
+  init(id, label, defaultValue, length, custom, custom_length, labelPlacement);
+}
+
+//void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) { //!!!CUSTOM!!!
+void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length, int labelPlacement) { //!!!CUSTOM!!!
+  _id             = id;
+  _label          = label;
+  _labelPlacement = labelPlacement;
+  //_customHTML     = custom;  !!!CUSTOM!!!
+  setCustomHTML(custom,custom_length);//!!!CUSTOM!!!
+  setValue(defaultValue,length);
+}
+
+WiFiManagerParameter::~WiFiManagerParameter() {
+  if (_value != NULL) {
+    delete[] _value;
+  }
+  _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
+
+  if (_customHTML != NULL) {
+	delete[] _customHTML;
+  }
+  _custom_length=0;
+}
+
+/*
+*
+*Original Library Starting
+*
+
 WiFiManagerParameter::WiFiManagerParameter() {
   WiFiManagerParameter("");
 }
@@ -67,6 +134,7 @@ WiFiManagerParameter::~WiFiManagerParameter() {
   }
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
+*/
 
 // WiFiManagerParameter& WiFiManagerParameter::operator=(const WiFiManagerParameter& rhs){
 //   Serial.println("copy assignment op called");
@@ -94,6 +162,34 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
     strncpy(_value, defaultValue, _length);
   }
 }
+
+void WiFiManagerParameter::setCustomHTML(const char *custom, int length){  //!!!Custom!!!
+  //if(strlen(custom) > length){
+  //  Serial.println("defaultValue length mismatch");
+    // return false; //@todo bail 
+  //}
+
+
+  if (_custom_length == NULL){
+	_custom_length = length;
+	_customHTML  = new char[_custom_length + 1];
+	memset(_customHTML, 0, _custom_length + 1); // explicit null
+  }  
+  else if (length == _custom_length){
+	memset(_customHTML, 0, _custom_length + 1); // explicit null
+  }
+  else{
+	delete[] _customHTML;
+	_custom_length = length;
+	_customHTML  = new char[_custom_length + 1]; 
+    memset(_customHTML, 0, _custom_length + 1); // explicit null
+  }
+  
+  if (custom != NULL) {
+    strncpy(_customHTML, custom, _custom_length);
+  }
+}
+
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
@@ -2126,6 +2222,10 @@ void WiFiManager::handleExit() {
   server->send(200, FPSTR(HTTP_HEAD_CT), page);
   delay(2000);
   abort = true;
+  // !!!CUSTOM!!! do exit callback if set
+  if ( _exitconfigcallback != NULL) {
+    _exitconfigcallback();
+  }
 }
 
 /** 
@@ -2628,6 +2728,15 @@ void WiFiManager::setSaveParamsCallback( std::function<void()> func ) {
  */
 void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
   _presavecallback = func;
+}
+
+/**
+ * !!!CUSTOM!!! setExitConfigCallback, set a callback on exiting the portal
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setExitConfigCallback( std::function<void()> func ) {
+  _exitconfigcallback = func;
 }
 
 /**

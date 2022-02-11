@@ -22,7 +22,7 @@
 
 #include <vector>
 
-// #define WM_MDNS            // includes MDNS, also set MDNS with sethostname
+#define WM_MDNS            // includes MDNS, also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
@@ -128,12 +128,21 @@ class WiFiManagerParameter {
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
     WiFiManagerParameter();
+    ///CUSTOM PART!!!///
+	WiFiManagerParameter(const char *custom, int custom_length);
+    WiFiManagerParameter(const char *id, const char *label);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length, int labelPlacement);
+    ~WiFiManagerParameter();
+    /*
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *label);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
+    */
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getID() const;
@@ -144,10 +153,11 @@ class WiFiManagerParameter {
     int         getLabelPlacement() const;
     virtual const char *getCustomHTML() const;
     void        setValue(const char *defaultValue, int length);
+    void		setCustomHTML(const char *custom, int length); //!!!CUSTOM!!
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
-
+    //void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int custom_length, int labelPlacement); //!!!CUSTOM!!!
   private:
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
@@ -156,7 +166,9 @@ class WiFiManagerParameter {
     int         _length;
     int         _labelPlacement;
   protected:
-    const char *_customHTML;
+    //const char *_customHTML;
+    char 	   *_customHTML; //!!!CUSTOM!!!	
+	int			_custom_length;  //!!!CUSTOM!!!
     friend class WiFiManager;
 };
 
@@ -234,6 +246,9 @@ class WiFiManager
 
     //called when saving params-in-wifi or params before anything else happens (eg wifi)
     void          setPreSaveConfigCallback( std::function<void()> func );
+    
+	//called when exiting the portal
+	void          setExitConfigCallback( std::function<void()> func );
 
     //called just before doing OTA update
     void          setPreOtaUpdateCallback( std::function<void()> func );
@@ -691,6 +706,7 @@ class WiFiManager
     std::function<void()> _presavecallback;
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
+    std::function<void()> _exitconfigcallback;
     std::function<void()> _preotaupdatecallback;
 
     template <class T>
