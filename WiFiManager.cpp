@@ -1766,7 +1766,7 @@ void WiFiManager::handleWiFiStatus(AsyncWebServerRequest *request){
 void WiFiManager::handleWifiSave(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
-  DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
+  DEBUG_WM(DEBUG_DEV,F("Method:"),request->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
   handleRequest();
 
@@ -3738,7 +3738,7 @@ void WiFiManager::handleUpdate(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
 	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
   #endif
-	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	if (captivePortal(request)) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(_title); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
   str.replace(FPSTR(T_t), _title);
