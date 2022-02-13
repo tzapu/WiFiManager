@@ -23,12 +23,13 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
+bool WMISBLOCKING    = false; // use blocking or non blocking mode
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -44,6 +45,8 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
+  // 
+  // esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 }
 
 void saveParamCallback(){
@@ -148,7 +151,8 @@ void setup() {
   wm.setCountry("US"); 
 
   // set Hostname
-  wm.setHostname("WIFIMANAGERTESTING");
+
+ wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
@@ -159,15 +163,28 @@ void setup() {
   // show password publicly in form
   // wm.setShowPassword(true);
 
+  // sets wether wm configportal is a blocking loop(legacy) or not, use wm.process() in loop if false
+  // wm.setConfigPortalBlocking(false);
+  
+  if(!WMISBLOCKING){
+    wm.setConfigPortalBlocking(false);
+  }
+
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(120);
   
+  // set min quality to show in web list, default 8%
+  // wm.setMinimumSignalQuality(50);
+
   // set connection timeout
   // wm.setConnectTimeout(20);
 
   // set wifi connect retries
   // wm.setConnectRetries(2);
+
+  // connect after portal save toggle
+  wm.setSaveConnect(false); // do not connect, only save
 
   // show static ip fields
   // wm.setShowStaticFields(true);
@@ -186,7 +203,10 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+
+  // use autoconnect, but prevent configportal from auto starting
+  // wm.setEnableConfigPortal(false);
+
   wifiInfo();
 
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
@@ -222,6 +242,10 @@ void wifiInfo(){
 
 void loop() {
 
+  if(!WMISBLOCKING){
+    wm.process();
+  }
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
@@ -230,6 +254,13 @@ void loop() {
     delay(100);
     if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
+
+      // button reset/reboot
+      // wm.resetSettings();
+      // wm.reboot();
+      // delay(200);
+      // return;
+      
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 
@@ -248,8 +279,12 @@ void loop() {
     }
   }
 
-  if(WiFi.status() == WL_CONNECTED && millis()-mtime > 10000 ){
-    getTime();
+  // every 10 seconds
+  if(millis()-mtime > 10000 ){
+    if(WiFi.status() == WL_CONNECTED){
+      getTime();
+    }
+    else Serial.println("No Wifi");  
     mtime = millis();
   }
   // put your main code here, to run repeatedly:
@@ -260,11 +295,11 @@ void getTime() {
   int tz           = -5;
   int dst          = 0;
   time_t now       = time(nullptr);
-  unsigned timeout = 5000;
-  unsigned start   = millis();  
+  unsigned timeout = 5000; // try for timeout
+  unsigned start   = millis();
   configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
   Serial.print("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) {
+  while (now < 8 * 3600 * 2 ) { // what is this ?
     delay(100);
     Serial.print(".");
     now = time(nullptr);

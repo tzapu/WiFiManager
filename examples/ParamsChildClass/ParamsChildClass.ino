@@ -64,6 +64,8 @@ void setup() {
         delay(1000);
     }
 
+    // warning for example only, this will initialize empty memory into your vars
+    // always init flash memory or add some checksum bits
     EEPROM.begin( 512 );
     EEPROM.get(0, sett);
     Serial.println("Settings loaded");
