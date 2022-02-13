@@ -25,5 +25,25 @@
   [
     "espressif8266",
     "espressif32"
+  ],
+  "dependencies":
+  [
+    {
+      "owner": "me-no-dev",
+      "name": "ESPAsyncWebServer",
+      "version": "*"
+    },
+    {
+      "owner": "me-no-dev",
+      "name": "AsyncTCP",
+      "version": "*",
+      "platforms": ["espressif32"]
+    },
+    {
+      "owner": "me-no-dev",
+      "name": "ESPAsyncTCP",
+      "version": "*",
+      "platforms": ["espressif8266"]
+    }
   ]
 }
