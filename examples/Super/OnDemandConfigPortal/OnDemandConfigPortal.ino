@@ -91,12 +91,12 @@ void setup() {
 
   // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", 10, 40);
+  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
-  WiFiManagerParameter static_html("myhtmlinput","",40); // static html inputs
+  WiFiManagerParameter custom_staticarg("myhtmlinput","",40); // ID only for args, no html generated and output for these
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
@@ -115,7 +115,7 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
-  wm.addParameter(&static_html);
+  wm.addParameter(&custom_staticarg);
 
   // set values later if you want
   custom_html.setValue("test",4);
@@ -233,8 +233,10 @@ void setup() {
     ArduinoOTA.begin();
   #endif
 
-  Serial.print("static_html: ");
-  Serial.println((String)static_html.getValue());
+  // Serial.print("param staticarg: ");
+  // Serial.println((String)custom_staticarg.getValue());
+  // Serial.print("param mqtt_server: ");
+  // Serial.println((String)custom_mqtt_server.getValue());
 
 }
 
