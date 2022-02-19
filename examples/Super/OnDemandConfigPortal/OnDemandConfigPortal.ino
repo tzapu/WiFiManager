@@ -29,7 +29,7 @@ int  TESP_CP_TIMEOUT = 90; // test cp timeout
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
-bool WMISBLOCKING    = false; // use blocking or non blocking mode
+bool WMISBLOCKING    = true; // use blocking or non blocking mode, will have to create parameters in global scope here
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -90,13 +90,13 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
-  WiFiManagerParameter static_html("myhtmlinput",1); // static html inputs
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
+  WiFiManagerParameter custom_html("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
+  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", 10, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  WiFiManagerParameter static_html("myhtmlinput","",40); // static html inputs
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
@@ -108,7 +108,6 @@ void setup() {
   wm.setSaveParamsCallback(saveParamCallback);
 
   // add all your parameters here
-  wm.addParameter(&static_html);
   wm.addParameter(&custom_html);
   wm.addParameter(&custom_mqtt_server);
   wm.addParameter(&custom_mqtt_port);
@@ -116,6 +115,7 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
+  wm.addParameter(&static_html);
 
   // set values later if you want
   custom_html.setValue("test",4);
@@ -150,7 +150,7 @@ void setup() {
   // set country
   // setting wifi country seems to improve OSX soft ap connectivity, 
   // may help others as well, default is CN which has different channels
-  wm.setCountry("US"); 
+  // wm.setCountry("US"); 
 
   // set Hostname
 
@@ -232,6 +232,9 @@ void setup() {
   #ifdef USEOTA
     ArduinoOTA.begin();
   #endif
+
+  Serial.print("static_html: ");
+  Serial.println((String)static_html.getValue());
 
 }
 

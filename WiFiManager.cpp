@@ -37,8 +37,10 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _customHTML     = custom;
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, uint8_t type) {
-  _id             = id;
+// @todo this is BAD and confusing for now, prefer using a alt constructor or pass in an enum for type
+// but it works for testing and is the only 3 arg so should be safe
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *defaultValue, int length) {
+  init(id, NULL, defaultValue, length, NULL, NULL);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
@@ -1646,13 +1648,13 @@ String WiFiManager::getParamOut(){
     char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
-      Serial.println((String)_params[i]->_length);
+      // Serial.println((String)_params[i]->_length);
       if (_params[i] == NULL || _params[i]->_length == 0 || _params[i]->_length > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
+        DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter may be out of scope"));
         #endif
-        return "";
+        // return "";
       }
     }
 
@@ -1678,7 +1680,7 @@ String WiFiManager::getParamOut(){
       // Input templating
       // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
-      if (_params[i]->getID() != NULL) {
+      if (_params[i]->getID() != NULL && _params[i]->_type==0) {
         if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
         if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
@@ -1827,15 +1829,14 @@ void WiFiManager::doParamSave(){
     for (int i = 0; i < _paramsCount; i++) {
       if (_params[i] == NULL || _params[i]->_length == 0) {
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
+        DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter may be out of scope"));
         #endif
-        break; // @todo might not be needed anymore
       }
       //read parameter from server
-      String name = (String)FPSTR(S_parampre)+(String)i;
+      String name = (String)FPSTR(S_parampre)+(String)i; // param_n
       String value;
       if(server->hasArg(name)) {
-        value = server->arg(name);
+        value = server->arg(name); // check for param_n name
       } else {
         value = server->arg(_params[i]->getID());
       }

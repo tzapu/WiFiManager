@@ -137,7 +137,7 @@ class WiFiManagerParameter {
         @id is used for HTTP queries and must not contain spaces nor other special characters
     */
     WiFiManagerParameter();
-    WiFiManagerParameter(const char *id, uint8_t type);
+    WiFiManagerParameter(const char *id, const char *defaultValue, int length);
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *label);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
@@ -165,6 +165,7 @@ class WiFiManagerParameter {
     char       *_value;
     int         _length;
     int         _labelPlacement;
+    // uint8_t     _type = 0;
   protected:
     const char *_customHTML;
     friend class WiFiManager;
