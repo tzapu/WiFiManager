@@ -90,6 +90,7 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
+  WiFiManagerParameter static_html("myhtmlinput",1); // static html inputs
   WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
@@ -107,6 +108,7 @@ void setup() {
   wm.setSaveParamsCallback(saveParamCallback);
 
   // add all your parameters here
+  wm.addParameter(&static_html);
   wm.addParameter(&custom_html);
   wm.addParameter(&custom_mqtt_server);
   wm.addParameter(&custom_mqtt_port);

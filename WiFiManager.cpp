@@ -37,6 +37,10 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _customHTML     = custom;
 }
 
+WiFiManagerParameter::WiFiManagerParameter(const char *id, uint8_t type) {
+  _id             = id;
+}
+
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
   init(id, label, "", 0, "", WFM_LABEL_BEFORE);
 }
