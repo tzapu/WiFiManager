@@ -40,7 +40,7 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
 // @todo this is BAD and confusing for now, prefer using a alt constructor or pass in an enum for type
 // but it works for testing and is the only 3 arg so should be safe
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *defaultValue, int length) {
-  init(id, NULL, defaultValue, length, NULL, NULL);
+  init(id, NULL, defaultValue, length, NULL, WFM_LABEL_BEFORE);
 }
 
 WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
@@ -1680,7 +1680,7 @@ String WiFiManager::getParamOut(){
       // Input templating
       // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
-      if (_params[i]->getID() != NULL && _params[i]->_type==0) {
+      if (_params[i]->getID() != NULL) {
         if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
         if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
