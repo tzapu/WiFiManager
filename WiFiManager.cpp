@@ -1680,7 +1680,8 @@ String WiFiManager::getParamOut(){
       // Input templating
       // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
-      if (_params[i]->getID() != NULL) {
+      // if NULL label this is a non html input used for getvalue etc.
+      if (_params[i]->getID() != NULL && _params[i]->_label != NULL) {
         if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
         if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
