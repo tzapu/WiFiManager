@@ -29,7 +29,7 @@ int  TESP_CP_TIMEOUT = 90; // test cp timeout
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
-bool WMISBLOCKING    = false; // use blocking or non blocking mode
+bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -90,7 +90,7 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
+  WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
@@ -98,7 +98,29 @@ void setup() {
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+  WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
+
+  const char *bufferStr = R"(
+  <!-- INPUT CHOICE -->
+  <br/>
+  <p>Select Choice</p>
+  <input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+  <label for='choice1'>Choice1</label><br/>
+  <input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
+  <label for='choice2'>Choice2</label><br/>
+
+  <!-- INPUT SELECT -->
+  <br/>
+  <label for='input_select'>Label for Input Select</label>
+  <select name="input_select" id="input_select" class="button">
+  <option value="0">Option 1</option>
+  <option value="1" selected>Option 2</option>
+  <option value="2">Option 3</option>
+  <option value="3">Option 4</option>
+  </select>
+  )";
+
+  WiFiManagerParameter custom_html_inputs(bufferStr);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -114,6 +136,8 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
+
+  wm.addParameter(&custom_html_inputs);
 
   // set values later if you want
   custom_html.setValue("test",4);

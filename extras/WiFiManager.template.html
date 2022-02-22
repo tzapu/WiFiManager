@@ -43,18 +43,22 @@ body {
 	max-width:500px;
 }
 div,
-input {
+input,select {
     padding: 5px;
     font-size: 1em;
     /*width: 100%;*/
-    margin:5px 0;
+    /*/*margin: 3px 0 10px 0; // BEFORE spacing shows label closer to input, but need to do same for AFTER*/
+    margin: 5px 0;
 	box-sizing: border-box;
 }
-input,button,.msg{
+div{
+	margin: 5px 0;
+}
+input,button,select,.msg{
 	border-radius:.3rem;
     width: 100%;
 }
-input[type=radio]{
+input[type=radio],input[type=checkbox]{
     width: auto;
 }
 button,input[type="button"],input[type="submit"] {
@@ -321,19 +325,42 @@ input:disabled {
 			<form method='POST' action='u' enctype='multipart/form-data'>
 				<input type='file' name='update' accept='.bin,application/octet-stream' onchange="(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)">
 				<button id='uploadbin' class="h">Submit</button>
-			</form>
 			<a href='http://192.168.4.1' target='_blank'><small>* Upload may not function inside captive portal, Open in browser - http://192.168.4.1</a></small>
 			<!-- /FORM_UPLOAD -->	
 
 
 			<!-- FORM_EXTRAS -->
 			<br/><br/><br/><hr>
-			<br/><label for='custom'>Label for Custom Param</label>
-			<br/><input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
-			<br/><input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+			<br/>
+			<label for='custom'>Label for Custom Param</label>
+			<br/>
+			<input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
+			<br/>
+
+			<!-- INOUT CHECKBOX -->
+			<!-- <label for='input_checkbox'>Label for Input Checkbox</label> -->
+			<input id='input_checkbox' name='input_checkbox' placeholder='placeholder' value='' type="checkbox" {c}>
+			<label for='input_checkbox'>Label for Input Checkbox</label>
+			<br/>
+
+			<!-- INPUT CHOICE -->
+			<p>Select Choice</p>
+			<input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
   			<label for='choice1'>Choice1</label><br>
   			<input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
   			<label for='choice2'>Choice2</label><br>
+
+  			<!-- INPUT SELECT -->
+			<br/>
+			<label for='input_select'>Label for Input Select</label>
+			<select name="input_select" id="input_select" class="button">
+			<option value="0">Option 1</option>
+			<option value="1" selected>Option 2</option>
+			<option value="2">Option 3</option>
+			<option value="3">Option 4</option>
+			</select>
+
+			</form>
 
 			<!-- /FORM_EXTRAS -->
 

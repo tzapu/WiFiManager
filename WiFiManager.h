@@ -129,6 +129,7 @@
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
 #define WFM_NO_LABEL 0
+#define WFM_LABEL_DEFAULT 1
 
 class WiFiManagerParameter {
   public:
