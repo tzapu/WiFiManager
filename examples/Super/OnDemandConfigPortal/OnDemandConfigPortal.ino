@@ -23,7 +23,7 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = false; // always start the configportal, even if ap found
+bool TEST_CP         = true; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -91,15 +91,43 @@ void setup() {
 
   // setup some parameters
   WiFiManagerParameter custom_html("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
-  WiFiManagerParameter custom_token("api_token", "api token", "", 16);
+  WiFiManagerParameter custom_mqtt_server("server", "Mqtt Server", "", 40);
+  WiFiManagerParameter custom_mqtt_port("port", "Mqtt Port", "", 6);
+  WiFiManagerParameter custom_token("api_token", "Api Token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
-  WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  WiFiManagerParameter custom_ipaddress("input_ip", "Input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
   WiFiManagerParameter custom_staticarg("myhtmlinput","",40); // ID only for args, no html generated and output for these
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+  WiFiManagerParameter custom_checkbox("checkbox", "Input Checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+
+
+  const char *day_select_str = R"(
+  <br/><label for='day'>Day of Week Dropdown</label>
+  <select name="dayOfWeek" id="day">
+    <option value="0">Monday</option>
+    <option value="1">Tuesday</option>
+    <option value="2">Wednesday</option>
+    <option value="3">Thursday</option>
+    <option value="4">Friday</option>
+    <option value="5">Saturday</option>
+    <option value="6">Sunday</option>
+  </select>
+  <script>
+    document.getElementById('day').value = "%d";
+  </script>
+  )";
+
+  char bufferStr[700];
+  // The sprintf is so we can input the value of the current selected day
+  // If you dont need to do that, then just pass the const char* straight in.
+  // or add 'selected' to static html option instead for non js
+  sprintf(bufferStr, day_select_str, 1);
+
+  // Serial.print(bufferStr);
+
+  WiFiManagerParameter custom_combobox_html(bufferStr);
+  WiFiManagerParameter custom_combobox_input("dayOfWeek","",32);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -114,8 +142,11 @@ void setup() {
   wm.addParameter(&custom_token);
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
-  wm.addParameter(&custom_checkbox);
+  // wm.addParameter(&custom_checkbox); // bad alignment
   wm.addParameter(&custom_staticarg);
+
+  wm.addParameter(&custom_combobox_html);
+  wm.addParameter(&custom_combobox_input);
 
   // set values later if you want
   custom_html.setValue("test",4);
