@@ -29,7 +29,7 @@ int  TESP_CP_TIMEOUT = 90; // test cp timeout
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
-bool WMISBLOCKING    = true; // use blocking or non blocking mode, will have to create parameters in global scope here
+bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -90,44 +90,38 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
+  WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "Mqtt Server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "Mqtt Port", "", 6);
   WiFiManagerParameter custom_token("api_token", "Api Token", "", 16);
-  WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
-  WiFiManagerParameter custom_ipaddress("input_ip", "Input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+
+  WiFiManagerParameter custom_staticarghtml("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
   WiFiManagerParameter custom_staticarg("myhtmlinput","",40); // ID only for args, no html generated and output for these
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("checkbox", "Input Checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
 
+  const char *bufferStr = R"(
+  <!-- INPUT CHOICE -->
+  <br/>
+  <p>Select Choice</p>
+  <input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+  <label for='choice1'>Choice1</label><br/>
+  <input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
+  <label for='choice2'>Choice2</label><br/>
 
-  const char *day_select_str = R"(
-  <br/><label for='day'>Day of Week Dropdown</label>
-  <select name="dayOfWeek" id="day">
-    <option value="0">Monday</option>
-    <option value="1">Tuesday</option>
-    <option value="2">Wednesday</option>
-    <option value="3">Thursday</option>
-    <option value="4">Friday</option>
-    <option value="5">Saturday</option>
-    <option value="6">Sunday</option>
+  <!-- INPUT SELECT -->
+  <br/>
+  <label for='input_select'>Label for Input Select</label>
+  <select name="input_select" id="input_select" class="button">
+  <option value="0">Option 1</option>
+  <option value="1" selected>Option 2</option>
+  <option value="2">Option 3</option>
+  <option value="3">Option 4</option>
   </select>
-  <script>
-    document.getElementById('day').value = "%d";
-  </script>
   )";
 
-  char bufferStr[700];
-  // The sprintf is so we can input the value of the current selected day
-  // If you dont need to do that, then just pass the const char* straight in.
-  // or add 'selected' to static html option instead for non js
-  sprintf(bufferStr, day_select_str, 1);
-
-  // Serial.print(bufferStr);
-
-  WiFiManagerParameter custom_combobox_html(bufferStr);
-  WiFiManagerParameter custom_combobox_input("dayOfWeek","",32);
+  WiFiManagerParameter custom_html_inputs(bufferStr);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -142,11 +136,15 @@ void setup() {
   wm.addParameter(&custom_token);
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
-  // wm.addParameter(&custom_checkbox); // bad alignment
+  wm.addParameter(&custom_checkbox); // bad alignment
+  
+  wm.addParameter(&custom_staticarghtml);
   wm.addParameter(&custom_staticarg);
 
   wm.addParameter(&custom_combobox_html);
   wm.addParameter(&custom_combobox_input);
+
+  wm.addParameter(&custom_html_inputs);
 
   // set values later if you want
   custom_html.setValue("test",4);
