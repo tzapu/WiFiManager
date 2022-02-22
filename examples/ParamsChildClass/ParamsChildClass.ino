@@ -5,6 +5,8 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
+bool STARTAP = true; // always start ap
+
 #define SETUP_PIN 0
 
 class IPAddressParameter : public WiFiManagerParameter {
@@ -43,6 +45,38 @@ public:
     }
 };
 
+class SelectParameter : public WiFiManagerParameter {
+public:          
+
+    // just for testing, add custom args for each input, pass arrays etc.
+    const char *bufferStr = R"(
+          <br/>
+          <label for='input_select'>Label for Input Select</label>
+          <select name="input_select" id="input_select" class="button">
+          <option value="0">Option 1</option>
+          <option value="1" selected>Option 2</option>
+          <option value="2">Option 3</option>
+          <option value="3">Option 4</option>
+          </select>
+          )";
+
+    SelectParameter(const char *id, const char *placeholder, float value, const uint8_t length = 10)
+        : WiFiManagerParameter("") {
+
+        // WiFiManagerParameter(id,String(value).c_str(), (int)length);
+        WiFiManagerParameter(id, "", length);
+    }
+
+    float getValue() {
+        return String(WiFiManagerParameter::getValue()).toFloat();
+    }
+
+    const char *getCustomHTML() const override{
+        return bufferStr;
+    }
+};
+
+
 struct Settings {
     float f;
     int i;
@@ -70,16 +104,19 @@ void setup() {
     EEPROM.get(0, sett);
     Serial.println("Settings loaded");
     
-    if (digitalRead(SETUP_PIN) == LOW) {  
+    if (digitalRead(SETUP_PIN) == LOW || STARTAP) {  
         // Button pressed 
         Serial.println("SETUP");
 
         WiFiManager wm;
-        
+        wm.setDarkMode(true);
+        // wm.setConfigPortalTimeout(120);
+
         sett.s[19] = '\0';   //add null terminator at the end cause overflow
         WiFiManagerParameter param_str( "str", "param_string",  sett.s, 20);
         FloatParameter param_float( "float", "param_float",  sett.f);
         IntParameter param_int( "int", "param_int",  sett.i);
+        SelectParameter select_int( "input_select", "select_int",  sett.i);
 
         IPAddress ip(sett.ip);
         IPAddressParameter param_ip("ip", "param_ip", ip);
@@ -88,6 +125,7 @@ void setup() {
         wm.addParameter( &param_float );
         wm.addParameter( &param_int );
         wm.addParameter( &param_ip );
+        wm.addParameter( &select_int );
 
         //SSID & password parameters already included
         wm.startConfigPortal();
