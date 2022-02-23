@@ -647,26 +647,6 @@ void WiFiManager::setupConfigPortal() {
   }
   // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
 
-  /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
-
-  server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this));
-  server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, true));
-  server->on(String(FPSTR(R_wifinoscan)).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
-  server->on(String(FPSTR(R_wifisave)).c_str(),   std::bind(&WiFiManager::handleWifiSave, this));
-  server->on(String(FPSTR(R_info)).c_str(),       std::bind(&WiFiManager::handleInfo, this));
-  server->on(String(FPSTR(R_param)).c_str(),      std::bind(&WiFiManager::handleParam, this));
-  server->on(String(FPSTR(R_paramsave)).c_str(),  std::bind(&WiFiManager::handleParamSave, this));
-  server->on(String(FPSTR(R_restart)).c_str(),    std::bind(&WiFiManager::handleReset, this));
-  server->on(String(FPSTR(R_exit)).c_str(),       std::bind(&WiFiManager::handleExit, this));
-  server->on(String(FPSTR(R_close)).c_str(),      std::bind(&WiFiManager::handleClose, this));
-  server->on(String(FPSTR(R_erase)).c_str(),      std::bind(&WiFiManager::handleErase, this, false));
-  server->on(String(FPSTR(R_status)).c_str(),     std::bind(&WiFiManager::handleWiFiStatus, this));
-  server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
-  
-  server->on(String(FPSTR(R_update)).c_str(), std::bind(&WiFiManager::handleUpdate, this));
-  server->on(String(FPSTR(R_updatedone)).c_str(), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
-  
-  server->begin(); // Web server start
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
   #endif
@@ -1277,23 +1257,20 @@ void WiFiManager::handleRequest() {
   // void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
 
   // 2.3 NO AUTH available
-  bool testauth = false;
-  if(!testauth) return;
+  // bool testauth = false;
+  // if(!testauth) return;
   
-  DEBUG_WM(DEBUG_DEV,F("DOING AUTH"));
-  bool res = server->authenticate("admin","12345");
-  if(!res){
-    #ifndef WM_NOAUTH
-    server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
-    #endif
-    DEBUG_WM(DEBUG_DEV,F("AUTH FAIL"));
-  }
+  // DEBUG_WM(DEBUG_DEV,F("DOING AUTH"));
+  // bool res = server->authenticate("admin","12345");
+  // if(!res){
+  //   #ifndef WM_NOAUTH
+  //   server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
+  //   #endif
+  //   DEBUG_WM(DEBUG_DEV,F("AUTH FAIL"));
+  // }
 }
 
 void WiFiManager::HTTPSend(AsyncWebServerRequest *request, String page){
-  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
-  response->addHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  request->send(response);void WiFiManager::HTTPSend(AsyncWebServerRequest *request, String page){
   AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
   response->addHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   request->send(response);
@@ -1774,7 +1751,7 @@ void WiFiManager::handleWiFiStatus(AsyncWebServerRequest *request){
 void WiFiManager::handleWifiSave(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP WiFi save "));
-  DEBUG_WM(DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
+  DEBUG_WM(DEBUG_DEV,F("Method:"),request->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
   handleRequest();
 
@@ -3706,11 +3683,11 @@ void WiFiManager::WiFi_autoReconnect(){
 }
 
 // Called when /update is requested
-void WiFiManager::handleUpdate() {
+void WiFiManager::handleUpdate(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
 	DEBUG_WM(DEBUG_VERBOSE,F("<- Handle update"));
   #endif
-	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	if (captivePortal(request)) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(_title); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
   str.replace(FPSTR(T_t), _title);
@@ -3764,7 +3741,7 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
     #endif
 
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,"Update file: ", upload.filename.c_str());
+    DEBUG_WM(DEBUG_VERBOSE,"Update file: ", filename.c_str());
     #endif
 
   	if (!Update.begin(maxSketchSpace)) { // start with max available size
@@ -3780,22 +3757,22 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
 	}
   
   // UPLOAD WRITE
-  else if (upload.status == UPLOAD_FILE_WRITE) {
+  if (index<len) {
 		Serial.print(".");
-		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-      #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
-			//Update.printError(Serial); // write failure
-      #endif
+    if (Update.write(data,len) != len) {
+      // #ifdef WM_DEBUG_LEVEL
+      // DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
+			Update.printError(Serial); // write failure
+      // #endif
       error = true;
 		}
-	// }
+	}
   
   // UPLOAD FILE END
   if (final) {
 		if (Update.end(true)) { // true to set the size to the current progress
 	      #ifdef WM_DEBUG_LEVEL
-	      DEBUG_WM(DEBUG_VERBOSE,F("\n\n[OTA] OTA FILE END bytes: "), upload.totalSize);
+	      DEBUG_WM(DEBUG_VERBOSE,F("\n\n[OTA] OTA FILE END bytes: "),  index+len);
 				// Serial.printf("Updated: %u bytes\r\nRebooting...\r\n", upload.totalSize);
 	      #endif
 		}
