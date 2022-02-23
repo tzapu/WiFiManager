@@ -49,6 +49,7 @@ class SelectParameter : public WiFiManagerParameter {
 public:          
 
     // just for testing, add custom args for each input, pass arrays etc.
+    // an exercise for the reader
     const char *bufferStr = R"(
           <br/>
           <label for='input_select'>Label for Input Select</label>
@@ -60,16 +61,16 @@ public:
           </select>
           )";
 
-    SelectParameter(const char *id, const char *placeholder, float value, const uint8_t length = 10)
+    SelectParameter(const char *id, const char *placeholder, uint8_t value, const uint8_t length = 10)
         : WiFiManagerParameter("") {
 
         // WiFiManagerParameter(id,String(value).c_str(), (int)length);
         WiFiManagerParameter(id, "", length);
     }
 
-    float getValue() {
+    uint8_t getValue() {
         // Serial.println(String(WiFiManagerParameter::getValue()));
-        return String(WiFiManagerParameter::getValue()).toFloat();
+        return String(WiFiManagerParameter::getValue()).toInt();
     }
 
     const char *getCustomHTML() const override{
