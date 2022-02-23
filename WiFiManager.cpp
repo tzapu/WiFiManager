@@ -574,40 +574,21 @@ boolean WiFiManager::configPortalHasTimeout(){
     return false;
 }
 
-void WiFiManager::setupDNSD(){
-  dnsServer.reset(new DNSServer());
-
-  /* Setup the DNS server redirecting all the domains to the apIP */
-  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
-  #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM("dns server started port: ",DNS_PORT);
-  DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
-  #endif
-  dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
-}
-
-void WiFiManager::setupConfigPortal() {
+void WiFiManager::setupHTTPServer(){
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("Starting Web Portal"));
   #endif
 
-  // setup dns and web servers
-  server.reset(new WM_WebServer(_httpPort));
-
   if(_httpPort != 80) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("http server started with custom port: "),_httpPort); // @todo not showing ip
     #endif
-  } 
-
-  if ( _webservercallback != NULL) {
-    _webservercallback();
   }
-  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
+
+  server.reset(new WM_WebServer(_httpPort));
 
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
-
   server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this));
   server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, true));
   server->on(String(FPSTR(R_wifinoscan)).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
@@ -629,6 +610,28 @@ void WiFiManager::setupConfigPortal() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("HTTP server started"));
   #endif
+}
+
+void WiFiManager::setupDNSD(){
+  dnsServer.reset(new DNSServer());
+
+  /* Setup the DNS server redirecting all the domains to the apIP */
+  dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+  #ifdef WM_DEBUG_LEVEL
+  // DEBUG_WM("dns server started port: ",DNS_PORT);
+  DEBUG_WM(DEBUG_DEV,F("dns server started with ip: "),WiFi.softAPIP()); // @todo not showing ip
+  #endif
+  dnsServer->start(DNS_PORT, F("*"), WiFi.softAPIP());
+}
+
+void WiFiManager::setupConfigPortal() {
+
+  if ( _webservercallback != NULL) {
+    _webservercallback();
+  }
+  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
+
+  setupHTTPServer();
 
   if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan , async
 }
