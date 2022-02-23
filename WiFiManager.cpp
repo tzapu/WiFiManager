@@ -1676,7 +1676,6 @@ String WiFiManager::getParamOut(){
           pitem = FPSTR(HTTP_FORM_PARAM);
           break;
       }
-
       // Input templating
       // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
@@ -1845,7 +1844,7 @@ void WiFiManager::doParamSave(){
       //store it in params array
       value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
       #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
+      if(_params[i]->getID()!=NULL) DEBUG_WM(DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
       #endif
     }
     #ifdef WM_DEBUG_LEVEL

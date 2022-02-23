@@ -94,19 +94,22 @@ void setup() {
   WiFiManagerParameter custom_mqtt_server("server", "Mqtt Server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "Mqtt Port", "", 6);
   WiFiManagerParameter custom_token("api_token", "Api Token", "", 16);
-
+  WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
+  WiFiManagerParameter custom_ipaddress("input_ip", "Input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  
   WiFiManagerParameter custom_staticarghtml("<p>This Is Custom HTML<input id=\"myhtmlinput\" name=\"myhtmlinput\" type=text></input</p>"); // only custom html
   WiFiManagerParameter custom_staticarg("myhtmlinput","",40); // ID only for args, no html generated and output for these
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("checkbox", "Input Checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
 
+
   const char *bufferStr = R"(
   <!-- INPUT CHOICE -->
   <br/>
   <p>Select Choice</p>
-  <input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
-  <label for='choice1'>Choice1</label><br/>
+  <input style='display: inline-block;' type='radio' id='input_radio' name='input_radio' value='1'>
+  <label for='input_radio'>Choice1</label><br/>
   <input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
   <label for='choice2'>Choice2</label><br/>
 
@@ -122,6 +125,8 @@ void setup() {
   )";
 
   WiFiManagerParameter custom_html_inputs(bufferStr);
+  WiFiManagerParameter custom_html_input_radio("input_radio","2",1);
+  WiFiManagerParameter custom_html_input_select("input_select","2",1);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -141,10 +146,9 @@ void setup() {
   wm.addParameter(&custom_staticarghtml);
   wm.addParameter(&custom_staticarg);
 
-  wm.addParameter(&custom_combobox_html);
-  wm.addParameter(&custom_combobox_input);
-
   wm.addParameter(&custom_html_inputs);
+  wm.addParameter(&custom_html_input_radio);
+  wm.addParameter(&custom_html_input_select);
 
   // set values later if you want
   custom_html.setValue("test",4);

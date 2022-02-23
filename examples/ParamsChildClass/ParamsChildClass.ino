@@ -68,6 +68,7 @@ public:
     }
 
     float getValue() {
+        // Serial.println(String(WiFiManagerParameter::getValue()));
         return String(WiFiManagerParameter::getValue()).toFloat();
     }
 
@@ -116,7 +117,7 @@ void setup() {
         WiFiManagerParameter param_str( "str", "param_string",  sett.s, 20);
         FloatParameter param_float( "float", "param_float",  sett.f);
         IntParameter param_int( "int", "param_int",  sett.i);
-        SelectParameter select_int( "input_select", "select_int",  sett.i);
+        SelectParameter select_int( "input_select", "select_int",  3);
 
         IPAddress ip(sett.ip);
         IPAddressParameter param_ip("ip", "param_ip", ip);
