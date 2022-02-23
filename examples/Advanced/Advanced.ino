@@ -6,6 +6,10 @@
 
 #define TRIGGER_PIN 0
 
+// wifimanager can run in a blocking mode or a non blocking mode
+// Be sure to know how to process loops with no delay() if using non blocking
+bool wm_nonblocking = false; // change to true to use non blocking
+
 WiFiManager wm; // global wm instance
 WiFiManagerParameter custom_field; // global param ( for non blocking w params )
 
@@ -19,6 +23,8 @@ void setup() {
   pinMode(TRIGGER_PIN, INPUT);
   
   // wm.resetSettings(); // wipe settings
+
+  if(wm_nonblocking) wm.setConfigPortalBlocking(false);
 
   // add a custom input field
   int customFieldLength = 40;
@@ -129,6 +135,7 @@ void saveParamCallback(){
 }
 
 void loop() {
+  if(wm_nonblocking) wm.process(); // avoid delays() in loop when non-blocking and other long running code  
   checkButton();
   // put your main code here, to run repeatedly:
 }

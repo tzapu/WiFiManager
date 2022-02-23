@@ -23,12 +23,13 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
+bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -44,6 +45,8 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   // Serial.println(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   // Serial.println(myWiFiManager->getConfigPortalSSID());
+  // 
+  // esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 }
 
 void saveParamCallback(){
@@ -87,7 +90,7 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
+  WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
@@ -95,7 +98,29 @@ void setup() {
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+  WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
+
+  const char *bufferStr = R"(
+  <!-- INPUT CHOICE -->
+  <br/>
+  <p>Select Choice</p>
+  <input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+  <label for='choice1'>Choice1</label><br/>
+  <input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
+  <label for='choice2'>Choice2</label><br/>
+
+  <!-- INPUT SELECT -->
+  <br/>
+  <label for='input_select'>Label for Input Select</label>
+  <select name="input_select" id="input_select" class="button">
+  <option value="0">Option 1</option>
+  <option value="1" selected>Option 2</option>
+  <option value="2">Option 3</option>
+  <option value="3">Option 4</option>
+  </select>
+  )";
+
+  WiFiManagerParameter custom_html_inputs(bufferStr);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -111,6 +136,8 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
+
+  wm.addParameter(&custom_html_inputs);
 
   // set values later if you want
   custom_html.setValue("test",4);
@@ -148,7 +175,8 @@ void setup() {
   wm.setCountry("US"); 
 
   // set Hostname
-  wm.setHostname("WIFIMANAGERTESTING");
+
+ wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
@@ -159,15 +187,28 @@ void setup() {
   // show password publicly in form
   // wm.setShowPassword(true);
 
+  // sets wether wm configportal is a blocking loop(legacy) or not, use wm.process() in loop if false
+  // wm.setConfigPortalBlocking(false);
+  
+  if(!WMISBLOCKING){
+    wm.setConfigPortalBlocking(false);
+  }
+
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(120);
   
+  // set min quality to show in web list, default 8%
+  // wm.setMinimumSignalQuality(50);
+
   // set connection timeout
   // wm.setConnectTimeout(20);
 
   // set wifi connect retries
   // wm.setConnectRetries(2);
+
+  // connect after portal save toggle
+  wm.setSaveConnect(false); // do not connect, only save
 
   // show static ip fields
   // wm.setShowStaticFields(true);
@@ -186,7 +227,10 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  
+
+  // use autoconnect, but prevent configportal from auto starting
+  // wm.setEnableConfigPortal(false);
+
   wifiInfo();
 
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
@@ -222,6 +266,10 @@ void wifiInfo(){
 
 void loop() {
 
+  if(!WMISBLOCKING){
+    wm.process();
+  }
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
@@ -230,6 +278,13 @@ void loop() {
     delay(100);
     if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
+
+      // button reset/reboot
+      // wm.resetSettings();
+      // wm.reboot();
+      // delay(200);
+      // return;
+      
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 
@@ -248,8 +303,12 @@ void loop() {
     }
   }
 
-  if(WiFi.status() == WL_CONNECTED && millis()-mtime > 10000 ){
-    getTime();
+  // every 10 seconds
+  if(millis()-mtime > 10000 ){
+    if(WiFi.status() == WL_CONNECTED){
+      getTime();
+    }
+    else Serial.println("No Wifi");  
     mtime = millis();
   }
   // put your main code here, to run repeatedly:
@@ -260,11 +319,11 @@ void getTime() {
   int tz           = -5;
   int dst          = 0;
   time_t now       = time(nullptr);
-  unsigned timeout = 5000;
-  unsigned start   = millis();  
+  unsigned timeout = 5000; // try for timeout
+  unsigned start   = millis();
   configTime(tz * 3600, dst * 3600, "pool.ntp.org", "time.nist.gov");
   Serial.print("Waiting for NTP time sync: ");
-  while (now < 8 * 3600 * 2 ) {
+  while (now < 8 * 3600 * 2 ) { // what is this ?
     delay(100);
     Serial.print(".");
     now = time(nullptr);

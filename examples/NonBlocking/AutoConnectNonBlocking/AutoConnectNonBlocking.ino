@@ -10,7 +10,7 @@ void setup() {
     //wm.resetSettings();
 
     wm.setConfigPortalBlocking(false);
-
+    wm.setConfigPortalTimeout(60);
     //automatically connect using saved credentials if they exist
     //If connection fails it starts an access point with the specified name
     if(wm.autoConnect("AutoConnectAP")){
@@ -19,6 +19,9 @@ void setup() {
     else {
         Serial.println("Configportal running");
     }
+
+    wm.startConfigPortal();
+    // wm.startWebPortal();
 }
 
 void loop() {

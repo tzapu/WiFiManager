@@ -1,0 +1,118 @@
+name: Compile examples
+
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/cpp_lint.yml'
+      - '.github/workflows/compile_library.yml'
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/cpp_lint.yml'
+      - '.github/workflows/compile_library.yml'
+
+jobs:
+  esp8266:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: 
+        - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
+        - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
+        - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
+        - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
+        - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
+        - "examples/Basic/Basic.ino"
+        - "examples/Super/OnDemandConfigPortal/OnDemandConfigPortal.ino"
+        - "examples/Advanced/Advanced.ino"
+        - "examples/Old_examples/AutoConnectWithStaticIP/AutoConnectWithStaticIP.ino"
+        - "examples/Old_examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino"
+        - "examples/Old_examples/AutoConnectWithReset/AutoConnectWithReset.ino"
+        - "examples/Old_examples/AutoConnectWithTimeout/AutoConnectWithTimeout.ino"
+        - "examples/ParamsChildClass/ParamsChildClass.ino"
+        - "examples/OnDemand/OnDemandConfigPortal/OnDemandConfigPortal.ino"
+        - "examples/OnDemand/OnDemandWebPortal/onDemandWebPortal.ino"
+     
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Install 3rd party dependecies
+      run: | 
+        pio lib -g install \
+        https://github.com/tzapu/WiFiManager \
+        https://github.com/bblanchon/ArduinoJson \
+        https://github.com/knolleary/pubsubclient
+        
+    - name: Run PlatformIO Examples
+      run: pio ci --board=nodemcuv2
+      env:
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}
+
+  esp32:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
+          - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
+          - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
+          - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
+          - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
+          - "examples/Basic/Basic.ino"
+          - "examples/Super/OnDemandConfigPortal/OnDemandConfigPortal.ino"
+          - "examples/Advanced/Advanced.ino"
+          - "examples/Old_examples/AutoConnectWithStaticIP/AutoConnectWithStaticIP.ino"
+          - "examples/Old_examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino"
+          - "examples/Old_examples/AutoConnectWithReset/AutoConnectWithReset.ino"
+          - "examples/Old_examples/AutoConnectWithTimeout/AutoConnectWithTimeout.ino"
+          - "examples/ParamsChildClass/ParamsChildClass.ino"
+          - "examples/OnDemand/OnDemandConfigPortal/OnDemandConfigPortal.ino"
+          - "examples/OnDemand/OnDemandWebPortal/onDemandWebPortal.ino"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+      - name: Cache PlatformIO
+        uses: actions/cache@v2
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+      - name: Install 3rd party dependecies
+        run: |
+          pio lib -g install \
+          https://github.com/tzapu/WiFiManager \
+          https://github.com/bblanchon/ArduinoJson \
+          https://github.com/knolleary/pubsubclient
+
+      - name: Run PlatformIO Examples
+        run: pio ci --board=esp32dev
+        env:
+          PLATFORMIO_CI_SRC: ${{ matrix.example }}
