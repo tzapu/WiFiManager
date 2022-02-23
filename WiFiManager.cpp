@@ -1212,6 +1212,10 @@ String WiFiManager::getHTTPHead(String title){
   return page;
 }
 
+void WiFiManager::HTTPSend(String content){
+  server->send(200, FPSTR(HTTP_HEAD_CT), content);
+}
+
 /** 
  * HTTPD handler for page requests
  */
@@ -1260,7 +1264,7 @@ void WiFiManager::handleRoot() {
 
   // server->setContentLength(page.length());
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
   if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
@@ -1318,7 +1322,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
   // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
   #ifdef WM_DEBUG_LEVEL
@@ -1349,7 +1353,7 @@ void WiFiManager::handleParam(){
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent param page"));
@@ -1706,7 +1710,7 @@ void WiFiManager::handleWiFiStatus(){
     page = FPSTR(HTTP_JS);
   #endif
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 }
 
 /** 
@@ -1774,7 +1778,7 @@ void WiFiManager::handleWifiSave() {
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent wifi save page"));
@@ -1800,7 +1804,7 @@ void WiFiManager::handleParamSave() {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent param save page"));
@@ -1951,7 +1955,7 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent info page"));
@@ -2174,7 +2178,7 @@ void WiFiManager::handleExit() {
   server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
   // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
   delay(2000);
   abort = true;
 }
@@ -2192,7 +2196,7 @@ void WiFiManager::handleReset() {
   page += FPSTR(HTTP_END);
 
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("RESETTING ESP"));
@@ -2227,7 +2231,7 @@ void WiFiManager::handleErase(boolean opt) {
 
   page += FPSTR(HTTP_END);
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 
   if(ret){
     delay(2000);
@@ -2308,7 +2312,7 @@ void WiFiManager::handleClose(){
   String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
   // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->send(200, FPSTR(HTTP_HEAD_CT), page);
+  HTTPSend(page);
 }
 
 void WiFiManager::reportStatus(String &page){
@@ -3653,7 +3657,7 @@ void WiFiManager::handleUpdate() {
 	page += FPSTR(HTTP_END);
 
 	// server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+	HTTPSend(page);
 
 }
 
@@ -3770,7 +3774,7 @@ void WiFiManager::handleUpdateDone() {
 	page += FPSTR(HTTP_END);
 
 	// server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-	server->send(200, FPSTR(HTTP_HEAD_CT), page);
+	HTTPSend(page);
 
 	delay(1000); // send page
 	if (!Update.hasError()) {
