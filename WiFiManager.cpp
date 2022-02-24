@@ -1265,10 +1265,7 @@ void WiFiManager::handleRoot() {
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-  // server->setContentLength(page.length());
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
-  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits  WiFi_scanNetworks(); // preload wifiscan 
   if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
   // @todo buggy, captive portals make a query on every page load, causing this to run every time in addition to the real page load
   // I dont understand why, when you are already in the captive portal, I guess they want to know that its still up and not done or gone
@@ -1324,9 +1321,7 @@ void WiFiManager::handleWifi(boolean scan) {
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
-  // server->close(); // testing reliability fix for content length mismatches during mutiple flood hits
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent config page"));
@@ -1355,7 +1350,6 @@ void WiFiManager::handleParam(){
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
@@ -1712,7 +1706,6 @@ void WiFiManager::handleWiFiStatus(){
   #ifdef WM_JSTEST
     page = FPSTR(HTTP_JS);
   #endif
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 }
 
@@ -1779,8 +1772,7 @@ void WiFiManager::handleWifiSave() {
   }
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL));
+  server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
   HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
@@ -1806,7 +1798,6 @@ void WiFiManager::handleParamSave() {
   page += FPSTR(HTTP_PARAMSAVED);
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
@@ -1957,7 +1948,6 @@ void WiFiManager::handleInfo() {
   page += FPSTR(HTTP_HELP);
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
@@ -2178,9 +2168,8 @@ void WiFiManager::handleExit() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
-  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
   // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
   HTTPSend(page);
   delay(2000);
   abort = true;
@@ -2198,7 +2187,6 @@ void WiFiManager::handleReset() {
   page += FPSTR(S_resetting); //@token resetting
   page += FPSTR(HTTP_END);
 
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 
   #ifdef WM_DEBUG_LEVEL
@@ -2233,7 +2221,6 @@ void WiFiManager::handleErase(boolean opt) {
   }
 
   page += FPSTR(HTTP_END);
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 
   if(ret){
@@ -2263,10 +2250,9 @@ void WiFiManager::handleNotFound() {
   for ( uint8_t i = 0; i < server->args(); i++ ) {
     message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
   }
-  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
+  server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
   server->sendHeader(F("Pragma"), F("no-cache"));
   server->sendHeader(F("Expires"), F("-1"));
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(message.length()));
   server->send ( 404, FPSTR(HTTP_HEAD_CT2), message );
 }
 
@@ -2291,7 +2277,7 @@ boolean WiFiManager::captivePortal() {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
     #endif
-    server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true);
+    server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true); // @HTTPHEAD send redirect
     server->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server->client().stop(); // Stop is needed because we sent no content length
     return true;
@@ -2314,7 +2300,6 @@ void WiFiManager::handleClose(){
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
   HTTPSend(page);
 }
 
@@ -3659,7 +3644,6 @@ void WiFiManager::handleUpdate() {
 	page += FPSTR(HTTP_UPDATE);
 	page += FPSTR(HTTP_END);
 
-	// server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
 	HTTPSend(page);
 
 }
@@ -3776,7 +3760,6 @@ void WiFiManager::handleUpdateDone() {
 	}
 	page += FPSTR(HTTP_END);
 
-	// server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
 	HTTPSend(page);
 
 	delay(1000); // send page
