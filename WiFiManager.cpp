@@ -588,8 +588,12 @@ void WiFiManager::setupHTTPServer(){
 
   server.reset(new WM_WebServer(_httpPort));
 
+  #define G(string_literal)  (String(FPSTR(string_literal)).c_str())
+  
+  // workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
+  
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server->on(String(FPSTR(R_root)).c_str(),       std::bind(&WiFiManager::handleRoot, this));
+  server->on(G(R_root),       std::bind(&WiFiManager::handleRoot, this));
   server->on(String(FPSTR(R_wifi)).c_str(),       std::bind(&WiFiManager::handleWifi, this, true));
   server->on(String(FPSTR(R_wifinoscan)).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(String(FPSTR(R_wifisave)).c_str(),   std::bind(&WiFiManager::handleWifiSave, this));
