@@ -46,6 +46,8 @@
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
+#define G(string_literal)  (String(FPSTR(string_literal)).c_str())
+
 #ifdef ESP8266
 
     extern "C" {
