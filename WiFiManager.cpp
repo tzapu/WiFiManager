@@ -729,6 +729,22 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   while(1){
 
+    //check if client connected to softap, for callback
+    if (WiFi_softap_num_stations() > 0 && _clientConn == false) {
+    _clientConn = true;
+		  if ( _clientconcallback != NULL) {
+			  _clientconcallback();
+		  }
+   }
+
+    //check if client disconnected from softap, for callback
+    if (WiFi_softap_num_stations() == 0 && _clientConn == true) {
+      _clientConn = false;
+		  if ( _clientdisconcallback != NULL) {
+	  		_clientdisconcallback();
+	  	}  
+    
+    }
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
       #ifdef WM_DEBUG_LEVEL
@@ -2685,6 +2701,24 @@ void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
  */
 void WiFiManager::setPreOtaUpdateCallback( std::function<void()> func ) {
   _preotaupdatecallback = func;
+}
+
+/**
+ * setClientConnectedCallback, set a callback when client connects to softap
+ * @access public 
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setClientConnectedCallback( std::function<void()> func ) {
+  _clientconcallback = func;
+}
+
+/**
+ * setClientDisconnectedCallback, set a callback when client disconnects from softap
+ * @access public 
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setClientDisconnectedCallback( std::function<void()> func ) {
+  _clientdisconcallback = func;
 }
 
 /**

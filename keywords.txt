@@ -24,6 +24,8 @@ setDebugOutput	KEYWORD2
 setMinimumSignalQuality KEYWORD2
 setAPStaticIPConfig	KEYWORD2
 setSTAStaticIPConfig KEYWORD2
+setClientConnectedCallback	KEYWORD2
+setClientDisconnectedCallback	KEYWORD2
 setAPCallback	KEYWORD2
 setSaveConfigCallback KEYWORD2
 addParameter KEYWORD2
