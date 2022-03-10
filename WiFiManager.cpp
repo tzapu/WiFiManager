@@ -3291,6 +3291,7 @@ boolean WiFiManager::validApPassword(){
  * @return string      encoded string
  */
 String WiFiManager::htmlEntities(String str) {
+  // str.replace(" ","&#32;");
   str.replace("&","&amp;");
   str.replace("<","&lt;");
   str.replace(">","&gt;");

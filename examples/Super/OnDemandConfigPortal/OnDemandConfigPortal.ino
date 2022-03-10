@@ -209,7 +209,7 @@ void setup() {
   // wm.setConnectRetries(2);
 
   // connect after portal save toggle
-  wm.setSaveConnect(false); // do not connect, only save
+  // wm.setSaveConnect(false); // do not connect, only save
 
   // show static ip fields
   // wm.setShowStaticFields(true);
