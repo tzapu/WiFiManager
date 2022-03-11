@@ -587,6 +587,15 @@ void WiFiManager::setupHTTPServer(){
   }
 
   server.reset(new WM_WebServer(_httpPort));
+  // This is not the safest way to reset the webserver, it can cause crashes on callbacks initilized before this and since its a shared pointer...
+
+  if ( _webservercallback != NULL) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("[CB] _webservercallback calling"));
+    #endif
+    _webservercallback();
+  }
+  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
   
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
@@ -627,14 +636,6 @@ void WiFiManager::setupDNSD(){
 }
 
 void WiFiManager::setupConfigPortal() {
-
-  if ( _webservercallback != NULL) {
-    #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,F("[CB] _webservercallback calling"));
-    #endif
-    _webservercallback();
-  }
-  // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
 
   setupHTTPServer();
 

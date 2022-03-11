@@ -24,6 +24,7 @@ WiFiManager wm;
 
 // TEST OPTION FLAGS
 bool TEST_CP         = false; // always start the configportal, even if ap found
+bool TEST_CP         = true; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -55,7 +56,7 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  // wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
+  wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
   // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
