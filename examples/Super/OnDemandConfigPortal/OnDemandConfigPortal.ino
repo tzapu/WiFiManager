@@ -55,7 +55,7 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  wm.server->on("/custom",handleRoute);
+  // wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
   // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
