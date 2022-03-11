@@ -1562,7 +1562,8 @@ String WiFiManager::WiFiManager::getScanItemOut(){
             // Serial.println(WiFi.BSSIDstr(indices[i]));
             continue; // No idea why I am seeing these, lets just skip them for now
           }
-          item.replace(FPSTR(T_v), htmlEntities(WiFi.SSID(indices[i]))); // ssid no encoding
+          item.replace(FPSTR(T_V), htmlEntities(WiFi.SSID(indices[i]))); // ssid no encoding
+          item.replace(FPSTR(T_v), htmlEntities(WiFi.SSID(indices[i]),true)); // ssid no encoding
           if(tok_e) item.replace(FPSTR(T_e), encryptionTypeStr(enc_type));
           if(tok_r) item.replace(FPSTR(T_r), (String)rssiperc); // rssi percentage 0-100
           if(tok_R) item.replace(FPSTR(T_R), (String)WiFi.RSSI(indices[i])); // rssi db
@@ -3298,11 +3299,11 @@ boolean WiFiManager::validApPassword(){
  * @param  string str  string to replace entities
  * @return string      encoded string
  */
-String WiFiManager::htmlEntities(String str) {
-  // str.replace(" ","&#32;");
+String WiFiManager::htmlEntities(String str, bool whitespace) {
   str.replace("&","&amp;");
   str.replace("<","&lt;");
   str.replace(">","&gt;");
+  if(whitespace) str.replace(" ","&#160;");
   // str.replace("-","&ndash;");
   // str.replace("\"","&quot;");
   // str.replace("/": "&#x2F;");

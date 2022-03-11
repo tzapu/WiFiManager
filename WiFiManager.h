@@ -384,7 +384,7 @@ class WiFiManager
     void          debugPlatformInfo();
 
     // helper for html
-    String        htmlEntities(String str);
+    String        htmlEntities(String str, bool whitespace = false);
     
     // set the country code for wifi settings, CN
     void          setCountry(String cc);
