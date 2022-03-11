@@ -588,7 +588,6 @@ void WiFiManager::setupHTTPServer(){
 
   server.reset(new WM_WebServer(_httpPort));
   
-
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
   // G macro workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
@@ -630,6 +629,9 @@ void WiFiManager::setupDNSD(){
 void WiFiManager::setupConfigPortal() {
 
   if ( _webservercallback != NULL) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("[CB] _webservercallback calling"));
+    #endif
     _webservercallback();
   }
   // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
@@ -697,6 +699,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   // do AP callback if set
   if ( _apcallback != NULL) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE,F("[CB] _apcallback calling"));
+    #endif
     _apcallback(this);
   }
 
@@ -831,6 +836,9 @@ uint8_t WiFiManager::processConfigPortal(){
           #endif
 
           if ( _savewificallback != NULL) {
+            #ifdef WM_DEBUG_LEVEL
+            DEBUG_WM(DEBUG_VERBOSE,F("[CB] _savewificallback calling"));
+            #endif
             _savewificallback();
           }
           if(!_connectonsave) return WL_IDLE_STATUS;
@@ -849,7 +857,7 @@ uint8_t WiFiManager::processConfigPortal(){
         // confirm or verify data was saved to make this more accurate callback
         if ( _savewificallback != NULL) {
           #ifdef WM_DEBUG_LEVEL
-          DEBUG_WM(DEBUG_VERBOSE,F("WiFi/Param save callback"));
+          DEBUG_WM(DEBUG_VERBOSE,F("[CB] WiFi/Param save callback"));
           #endif
           _savewificallback();
         }
