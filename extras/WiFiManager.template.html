@@ -173,10 +173,29 @@ button.D{
 	background-color:#dc3630;
 }
 
-input:disabled {
-	opacity: 0.5;
+button{
+	/*transition: 0s filter;*/
+	transition: 0s opacity;
+	transition-delay: 3s;
+	transition-duration: 0s;
+	cursor: pointer;
 }
 
+button:active{
+	opacity: 50% !important;
+	/*filter: brightness(50%);*/
+	cursor: wait;
+	transition-delay: 0s;
+}
+
+button:hover{
+	/*opacity: 80%;*/
+}
+
+input:disabled {
+	opacity: 0.5;
+	/* not working in cp ?? */
+}
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
@@ -318,7 +337,12 @@ input:disabled {
 		 		<tr><td><a href='/erase'>/erase</a></td>
 		 		<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>
 		 		</table>
-		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
+		 		<h3>About</h3><hr>
+		 		Version v1.x.x-xxxxx<Br/>
+		 		Build_date<br/>
+		 		Build_file<br/>
+		 		Arduino_version<br/>
+		 		<p/>Github <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
 			<!-- FORM_UPLOAD -->
 			<Br/><br/>Form UPLOAD<br/>

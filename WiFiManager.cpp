@@ -1887,7 +1887,7 @@ void WiFiManager::handleInfo() {
   //@todo convert to enum or refactor to strings
   //@todo wrap in build flag to remove all info code for memory saving
   #ifdef ESP8266
-    infos = 29;
+    infos = 28;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1895,7 +1895,6 @@ void WiFiManager::handleInfo() {
       F("fchipid"),
       F("idesize"),
       F("flashsize"),
-      F("sdkver"),
       F("corever"),
       F("bootver"),
       F("cpufreq"),
@@ -1922,7 +1921,7 @@ void WiFiManager::handleInfo() {
 
   #elif defined(ESP32)
     // add esp_chip_info ?
-    infos = 27;
+    infos = 26;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -1930,7 +1929,6 @@ void WiFiManager::handleInfo() {
       F("chiprev"),
       F("idesize"),
       F("flashsize"),      
-      F("sdkver"),
       F("cpufreq"),
       F("freeheap"),
       F("memsketch"),
@@ -1959,6 +1957,14 @@ void WiFiManager::handleInfo() {
     if(infoids[i] != NULL) page += getInfoData(infoids[i]);
   }
   page += F("</dl>");
+
+  page += F("<h3>About</h3><hr><dl>");
+  page += getInfoData("aboutver");
+  page += getInfoData("aboutarduinover");
+  page += getInfoData("aboutidfver");
+  page += getInfoData("aboutdate");
+  page += F("</dl>");
+
   if(_showInfoUpdate){
     page += HTTP_PORTAL_MENU[8];
     page += HTTP_PORTAL_MENU[9];
@@ -2020,15 +2026,6 @@ String WiFiManager::getInfoData(String id){
     #elif defined ESP32
       p = FPSTR(HTTP_INFO_psrsize);
       p.replace(FPSTR(T_1),(String)ESP.getPsramSize());      
-    #endif
-  }
-  else if(id==F("sdkver")){
-    p = FPSTR(HTTP_INFO_sdkver);
-    #ifdef ESP32
-      p.replace(FPSTR(T_1),(String)esp_get_idf_version());
-      // p.replace(FPSTR(T_1),(String)system_get_sdk_version()); // deprecated
-    #else
-    p.replace(FPSTR(T_1),(String)system_get_sdk_version());
     #endif
   }
   else if(id==F("corever")){
@@ -2177,6 +2174,35 @@ String WiFiManager::getInfoData(String id){
     p.replace(FPSTR(T_3),"NA");
   }
   #endif
+  else if(id==F("aboutver")){
+    p = FPSTR(HTTP_INFO_aboutver);
+    p.replace(FPSTR(T_1),FPSTR(WM_VERSION_STR));
+  }
+  else if(id==F("aboutarduinover")){
+    #ifdef VER_ARDUINO_STR
+    p = FPSTR(HTTP_INFO_aboutarduino);
+    p.replace(FPSTR(T_1),String(VER_ARDUINO_STR));
+    #endif
+  }
+  // else if(id==F("aboutidfver")){
+  //   #ifdef VER_IDF_STR
+  //   p = FPSTR(HTTP_INFO_aboutidf);
+  //   p.replace(FPSTR(T_1),String(VER_IDF_STR));
+  //   #endif
+  // }
+  else if(id==F("aboutsdkver")){
+    p = FPSTR(HTTP_INFO_sdkver);
+    #ifdef ESP32
+      p.replace(FPSTR(T_1),(String)esp_get_idf_version());
+      // p.replace(FPSTR(T_1),(String)system_get_sdk_version()); // deprecated
+    #else
+    p.replace(FPSTR(T_1),(String)system_get_sdk_version());
+    #endif
+  }
+  else if(id==F("aboutdate")){
+    p = FPSTR(HTTP_INFO_aboutdate);
+    p.replace(FPSTR(T_1),String(__DATE__) + " " + String(__TIME__));
+  }
   return p;
 }
 

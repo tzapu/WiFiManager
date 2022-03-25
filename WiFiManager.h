@@ -48,6 +48,31 @@
 
 #define G(string_literal)  (String(FPSTR(string_literal)).c_str())
 
+#define STRING2(x) #x
+#define STRING(x) STRING2(x)    
+
+// #include <esp_idf_version.h>
+#ifdef ESP_IDF_VERSION
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
+    #define VER_IDF_STR STRING(ESP_IDF_VERSION_MAJOR)  "."  STRING(ESP_IDF_VERSION_MINOR)  "."  STRING(ESP_IDF_VERSION_PATCH)
+#endif
+
+// #include "esp_arduino_version.h"
+#ifdef ESP_ARDUINO_VERSION
+    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
+    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
+    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
+    #define VER_ARDUINO_STR STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  STRING(ESP_ARDUINO_VERSION_MINOR)  "."  STRING(ESP_ARDUINO_VERSION_PATCH)
+#else
+    #include <core_version.h>
+    // #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
+    // #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
+    #define VER_ARDUINO_STR STRING(ARDUINO_ESP32_GIT_DESC)
+    // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
+#endif
+
 #ifdef ESP8266
 
     extern "C" {
@@ -64,28 +89,6 @@
     #define WM_WIFIOPEN   ENC_TYPE_NONE
 
 #elif defined(ESP32)
-
-    // #define STRING2(x) #x
-    // #define STRING(x) STRING2(x)    
-
-    // // #include <esp_idf_version.h>
-    // #ifdef ESP_IDF_VERSION
-    //     #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
-    //     #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
-    //     #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
-    // #endif
-
-    // // #include "esp_arduino_version.h"
-    // #ifdef ESP_ARDUINO_VERSION
-    //     #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
-    //     #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
-    //     #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
-    // #else
-    //     #include <core_version.h>
-    //     #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
-    //     #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
-    //     // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
-    // #endif
 
     #include <WiFi.h>
     #include <esp_wifi.h>  
