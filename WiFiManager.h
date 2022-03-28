@@ -646,8 +646,8 @@ class WiFiManager
     String        getInfoData(String id);
 
     // flags
-    boolean       connect;
-    boolean       abort;
+    boolean       connect             = false;
+    boolean       abort               = false;
     boolean       reset               = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
