@@ -2510,9 +2510,10 @@ void WiFiManager::resetSettings() {
   DEBUG_WM(F("resetSettings"));
   #endif
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
-  
-  if (_resetcallback != NULL)
+  delay(500); // ensure sta is enabled
+  if (_resetcallback != NULL){
       _resetcallback();
+  }
   
   #ifdef ESP32
     WiFi.disconnect(true,true);
