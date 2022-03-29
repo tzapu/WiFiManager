@@ -66,10 +66,10 @@
     // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
     #define VER_ARDUINO_STR STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  STRING(ESP_ARDUINO_VERSION_MINOR)  "."  STRING(ESP_ARDUINO_VERSION_PATCH)
 #else
-    #include <core_version.h>
+    // #include <core_version.h>
     // #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
     // #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
-    #define VER_ARDUINO_STR STRING(ARDUINO_ESP32_GIT_DESC)
+    #define VER_ARDUINO_STR "Unknown"
     // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
 #endif
 
