@@ -65,7 +65,7 @@ void handleRoute(){
 }
 
 void setup() {
-  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -259,10 +259,11 @@ void setup() {
 }
 
 void wifiInfo(){
-  WiFi.printDiag(Serial);
-  Serial.println("SAVED: " + (String)wm.getWiFiIsSaved() ? "YES" : "NO");
-  Serial.println("SSID: " + (String)wm.getWiFiSSID());
-  Serial.println("PASS: " + (String)wm.getWiFiPass());
+  Serial.println("[WIFI] WIFI INFO DEBUG");
+  // WiFi.printDiag(Serial);
+  Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
+  Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
+  Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
 }
 
 void loop() {
