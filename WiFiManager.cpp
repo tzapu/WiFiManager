@@ -516,6 +516,7 @@ bool WiFiManager::startAP(){
  */
 void WiFiManager::startWebPortal() {
   if(configPortalActive || webPortalActive) return;
+  connect = abort = false;
   setupConfigPortal();
   webPortalActive = true;
 }
@@ -1382,6 +1383,10 @@ String WiFiManager::getMenuOut(){
 
   for(auto menuId :_menuIds ){
     if((String)_menutokens[menuId] == "param" && _paramsCount == 0) continue; // no params set, omit params from menu, @todo this may be undesired by someone, use only menu to force?
+    if((String)_menutokens[menuId] == "custom" && _customMenuHTML!=NULL){
+      page += _customMenuHTML;
+      continue;
+    }
     page += HTTP_PORTAL_MENU[menuId];
   }
 
@@ -2733,12 +2738,22 @@ void WiFiManager::setPreOtaUpdateCallback( std::function<void()> func ) {
 
 /**
  * set custom head html
- * custom element will be added to head, eg. new style tag etc.
+ * custom element will be added to head, eg. new meta,style,script tag etc.
  * @access public
  * @param char element
  */
-void WiFiManager::setCustomHeadElement(const char* element) {
-  _customHeadElement = element;
+void WiFiManager::setCustomHeadElement(const char* html) {
+  _customHeadElement = html;
+}
+
+/**
+ * set custom menu html
+ * custom element will be added to menu under custom menu item.
+ * @access public
+ * @param char element
+ */
+void WiFiManager::setCustomMenuHTML(const char* html) {
+  _customMenuHTML = html;
 }
 
 /**
@@ -3674,7 +3689,7 @@ void WiFiManager::WiFi_autoReconnect(){
       DEBUG_WM(DEBUG_VERBOSE,F("ESP32 event handler enabled"));
       #endif
       using namespace std::placeholders;
-      wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      if(wm_event_id !=0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
 }

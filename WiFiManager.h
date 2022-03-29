@@ -66,10 +66,10 @@
     // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
     #define VER_ARDUINO_STR STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  STRING(ESP_ARDUINO_VERSION_MINOR)  "."  STRING(ESP_ARDUINO_VERSION_PATCH)
 #else
-    #include <core_version.h>
+    // #include <core_version.h>
     // #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
     // #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
-    #define VER_ARDUINO_STR STRING(ARDUINO_ESP32_GIT_DESC)
+    #define VER_ARDUINO_STR "Unknown"
     // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
 #endif
 
@@ -295,9 +295,12 @@ class WiFiManager
     // setConfigPortalTimeout is ignored in this mode, user is responsible for closing configportal
     void          setConfigPortalBlocking(boolean shouldBlock);
     
+    //add custom html at inside <head> for all pages
+    void          setCustomHeadElement(const char* html);
+
     //if this is set, customise style
-    void          setCustomHeadElement(const char* element);
-    
+    void          setCustomMenuHTML(const char* html);
+
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
     
@@ -481,7 +484,7 @@ class WiFiManager
     bool          _allowExit              = true; // allow exit non blocking
 
     #ifdef ESP32
-    wifi_event_id_t wm_event_id;
+    wifi_event_id_t wm_event_id           = 0;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
@@ -510,7 +513,8 @@ class WiFiManager
     boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
-    const char*   _customHeadElement      = ""; // store custom head element html from user
+    const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
+    const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 
@@ -646,8 +650,8 @@ class WiFiManager
     String        getInfoData(String id);
 
     // flags
-    boolean       connect;
-    boolean       abort;
+    boolean       connect             = false;
+    boolean       abort               = false;
     boolean       reset               = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
