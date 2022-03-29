@@ -481,7 +481,7 @@ class WiFiManager
     bool          _allowExit              = true; // allow exit non blocking
 
     #ifdef ESP32
-    wifi_event_id_t wm_event_id;
+    wifi_event_id_t wm_event_id           = 0;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
