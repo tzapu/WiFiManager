@@ -295,9 +295,12 @@ class WiFiManager
     // setConfigPortalTimeout is ignored in this mode, user is responsible for closing configportal
     void          setConfigPortalBlocking(boolean shouldBlock);
     
+    //add custom html at inside <head> for all pages
+    void          setCustomHeadElement(const char* html);
+
     //if this is set, customise style
-    void          setCustomHeadElement(const char* element);
-    
+    void          setCustomMenuHTML(const char* html);
+
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
     
@@ -510,7 +513,8 @@ class WiFiManager
     boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
-    const char*   _customHeadElement      = ""; // store custom head element html from user
+    const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
+    const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 

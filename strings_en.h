@@ -259,8 +259,8 @@ const char D_HR[]                 PROGMEM = "--------------------";
 // -----------------------------------------------------------------------------------------------
 // DO NOT EDIT BELOW THIS LINE
 
-const uint8_t _nummenutokens = 10;
-const char * const _menutokens[10] PROGMEM = {
+const uint8_t _nummenutokens = 11;
+const char * const _menutokens[_nummenutokens] PROGMEM = {
     "wifi",
     "wifinoscan",
     "info",
@@ -270,7 +270,8 @@ const char * const _menutokens[10] PROGMEM = {
     "exit",
     "erase",
     "update",
-    "sep"
+    "sep",
+    "custom"
 };
 
 const char R_root[]               PROGMEM = "/";
