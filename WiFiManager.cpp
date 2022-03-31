@@ -1273,6 +1273,8 @@ void WiFiManager::handleRoot() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Root"));
   #endif
+  _configPortalTimeout = 120000;   // New Config Portal Timeout
+  DEBUG_WM(DEBUG_VERBOSE,F("<- New Config Portal Timeout: 120 seconds"));
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
   String page = getHTTPHead(_title); // @token options @todo replace options with title
