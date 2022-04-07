@@ -243,6 +243,9 @@ void setup() {
 
   wifiInfo();
 
+  // to preload autoconnect with credentials
+  // wm.preloadWiFi("ssid","password");
+
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
   }

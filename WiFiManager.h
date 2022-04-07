@@ -431,6 +431,7 @@ class WiFiManager
     std::unique_ptr<WM_WebServer> server;
 
   private:
+    // vars
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsParams  = {"wifi","param","info","exit"};
     std::vector<const char *> _menuIdsUpdate  = {"wifi","param","info","update","exit"};
@@ -445,9 +446,16 @@ class WiFiManager
     IPAddress     _sta_static_sn;
     IPAddress     _sta_static_dns;
 
+    unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
+    unsigned long _webPortalAccessed      = 0; // ms last web access time
+    uint8_t       _lastconxresult         = WL_IDLE_STATUS; // store last result when doing connect operations
+    int           _numNetworks            = 0; // init index for numnetworks wifiscans
+    unsigned long _lastscan               = 0; // ms for timing wifi scans
+    unsigned long _startscan              = 0; // ms for timing wifi scans
+    unsigned long _startconn              = 0; // ms for timing wifi connects
+
     // defaults
     const byte    DNS_PORT                = 53;
-    const byte    HTTP_PORT               = 80;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = ""; // var temp ssid
@@ -459,26 +467,20 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
     unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
-    unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
-    unsigned long _webPortalAccessed      = 0; // ms last web access time
+    
     WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
-    uint8_t       _lastconxresult         = WL_IDLE_STATUS; // store last result when doing connect operations
-    int           _numNetworks            = 0; // init index for numnetworks wifiscans
-    unsigned long _lastscan               = 0; // ms for timing wifi scans
-    unsigned long _startscan              = 0; // ms for timing wifi scans
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
-    int32_t       _apChannel              = 0; // channel to use for ap
+    int32_t       _apChannel              = 0; // default channel to use for ap, 0 for auto
     bool          _apHidden               = false; // store softap hidden value
     uint16_t      _httpPort               = 80; // port for webserver
     // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
-    unsigned long _startconn              = 0; // ms for timing wifi connects
     bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
     bool          _allowExit              = true; // allow exit non blocking
@@ -494,8 +496,8 @@ class WiFiManager
 
     // parameter options
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
-    int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
-    int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
+    int           _staShowStaticFields    = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
+    int           _staShowDns             = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _showPassword           = false; // show or hide saved password on wifi form, might be a security issue!
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
