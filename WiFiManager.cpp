@@ -1427,7 +1427,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       force = true;
     }
-    if(force || (millis()-_lastscan > 60000)){
+    if(force || (_lastscan>0 && (millis()-_lastscan > 60000))){
       int8_t res;
       _startscan = millis();
       if(async && _asyncScan){
@@ -1477,7 +1477,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");
       #endif
       return true;
-    } 
+    }
     else {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("Scan is cached"),(String)(millis()-_lastscan )+" ms ago");
@@ -1489,7 +1489,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
 String WiFiManager::WiFiManager::getScanItemOut(){
     String page;
 
-    if(!_numNetworks) WiFi_scanNetworks(); // scan in case this gets called before any scans
+    if(!_numNetworks) WiFi_scanNetworks(true); // scan in case this gets called before any scans
 
     int n = _numNetworks;
     if (n == 0) {
