@@ -333,7 +333,10 @@ class WiFiManager
     
     // if true (default) then start the config portal from autoConnect if connection failed
     void          setEnableConfigPortal(boolean enable);
-    
+
+    // if true (default) then stop the config portal from autoConnect when wifi is saved
+    void          setDisableConfigPortal(boolean enable);
+
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
     bool          setHostname(String hostname);
@@ -512,7 +515,8 @@ class WiFiManager
     boolean       _showInfoErase          = true;  // info page erase button
     boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
-    boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
+    boolean       _enableConfigPortal     = true;  // FOR autoconnect - start config portal if autoconnect failed
+    boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
     const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
