@@ -118,6 +118,7 @@
             #endif
         #endif
     #endif
+
     #ifdef WM_ERASE_NVS
        #include <nvs.h>
        #include <nvs_flash.h>
@@ -452,7 +453,6 @@ class WiFiManager
     
     std::unique_ptr<WM_WebServer> server;
 
-
   private:
     // vars
     std::vector<uint8_t> _menuIds;
@@ -574,8 +574,6 @@ class WiFiManager
     void          setupConfigPortal();
     bool          shutdownConfigPortal();
     bool          setupHostname(bool restart);
-    void          setupHTTPServer();
-    void          teardownHTTPServer();
 
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
@@ -585,6 +583,7 @@ class WiFiManager
     bool          startAP();
     void          setupDNSD();
     void          setupHTTPServer();
+    void          teardownHTTPServer();
 
     uint8_t       connectWifi(String ssid, String pass, bool connect = true);
     bool          setSTAConfig();
@@ -596,7 +595,7 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
-    void          HTTPSend(AsyncWebServerRequest *request, String page);
+    void          HTTPSend(AsyncWebServerRequest *request, String content);
     void          handleRoot(AsyncWebServerRequest *request);
     void          handleWifi(AsyncWebServerRequest *request, boolean scan);
     void          handleWifiSave(AsyncWebServerRequest *request);
@@ -612,7 +611,6 @@ class WiFiManager
     void          handleRequest();
     void          handleParamSave(AsyncWebServerRequest *request);
     void          doParamSave(AsyncWebServerRequest *request);
-
 
     boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();

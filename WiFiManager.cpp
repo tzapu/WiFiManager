@@ -271,12 +271,6 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("AutoConnect"));
   #endif
-
-  // no getter for autoreconnectpolicy before this
-  // https://github.com/esp8266/Arduino/pull/4359
-  // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
-  WiFi_autoReconnect();
-
   if(getWiFiIsSaved()){
      _startconn = millis();
     _begin();
@@ -297,6 +291,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #endif
 
     _usermode = WIFI_STA; // When using autoconnect , assume the user wants sta mode on permanently.
+
+    // no getter for autoreconnectpolicy before this
+    // https://github.com/esp8266/Arduino/pull/4359
+    // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
+    WiFi_autoReconnect();
 
     // set hostname before stating
     if(_hostname != ""){
@@ -602,12 +601,11 @@ void WiFiManager::setupHTTPServer(){
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
   // G macro workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
-  server->on(G(R_wifi),       HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,std::placeholders::_1,true));
-  server->on(G(R_wifinoscan), HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,std::placeholders::_1,false));
-  server->on(G(R_erase),      HTTP_ANY, std::bind(&WiFiManager::handleErase, this,std::placeholders::_1,false));
   {
   using namespace std::placeholders;
   server->on(G(R_root),       HTTP_ANY, std::bind(&WiFiManager::handleRoot, this,_1));
+  server->on(G(R_wifi),       HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,_1,true));
+  server->on(G(R_wifinoscan), HTTP_ANY, std::bind(&WiFiManager::handleWifi, this,_1,false));
   server->on(G(R_wifisave),   HTTP_ANY, std::bind(&WiFiManager::handleWifiSave, this,_1));
   server->on(G(R_info),       HTTP_ANY, std::bind(&WiFiManager::handleInfo, this,_1));
   server->on(G(R_param),      HTTP_ANY, std::bind(&WiFiManager::handleParam, this,_1));
@@ -615,6 +613,7 @@ void WiFiManager::setupHTTPServer(){
   server->on(G(R_restart),    HTTP_ANY, std::bind(&WiFiManager::handleReset, this,_1));
   server->on(G(R_exit),       HTTP_ANY, std::bind(&WiFiManager::handleExit, this,_1));
   server->on(G(R_close),      HTTP_ANY, std::bind(&WiFiManager::handleClose, this,_1));
+  server->on(G(R_erase),      HTTP_ANY, std::bind(&WiFiManager::handleErase, this,_1,false));
   server->on(G(R_status),     HTTP_ANY, std::bind(&WiFiManager::handleWiFiStatus, this,_1));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this, _1));
 
@@ -935,12 +934,12 @@ bool WiFiManager::shutdownConfigPortal(){
   #endif
   server.reset();
 
-  dnsServer->stop(); //  free heap ?
-  dnsServer.reset();
-
   WiFi.scanDelete(); // free wifi scan results
 
   if(!configPortalActive) return false;
+
+  dnsServer->stop(); //  free heap ?
+  dnsServer.reset();
 
   // turn off AP
   // @todo bug workaround
@@ -1252,8 +1251,10 @@ String WiFiManager::getHTTPHead(String title){
   return page;
 }
 
-void WiFiManager::HTTPSend(String content){
-  server->send(200, FPSTR(HTTP_HEAD_CT), content);
+void WiFiManager::HTTPSend(AsyncWebServerRequest *request, String content){
+  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), content);
+  response->addHeader(FPSTR(HTTP_HEAD_CL), String(content.length()));
+  request->send(response);
 }
 
 /**
@@ -1281,12 +1282,6 @@ void WiFiManager::handleRequest() {
   //   #endif
   //   DEBUG_WM(DEBUG_DEV,F("AUTH FAIL"));
   // }
-}
-
-void WiFiManager::HTTPSend(AsyncWebServerRequest *request, String page){
-  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
-  response->addHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  request->send(response);
 }
 
 /** 
@@ -1318,7 +1313,7 @@ void WiFiManager::handleRoot(AsyncWebServerRequest *request) {
 /**
  * HTTPD CALLBACK Wifi config page handler
  */
-void WiFiManager::handleWifi(AsyncWebServerRequest *request,bool scan = true) {
+void WiFiManager::handleWifi(AsyncWebServerRequest *request,boolean scan) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Wifi"));
   #endif
@@ -1447,8 +1442,8 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     #endif
     if(_numNetworks == 0){
-      // DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
-      // force = true;
+       DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
+       force = true;
     }
     // kludge for asn webserver, always be async
     force = false;
@@ -1457,7 +1452,6 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     if(force || (_lastscan>0 && (millis()-_lastscan > 60000))){
       int8_t res;
       _startscan = millis();
-
       if(async && _asyncScan){
         #ifdef ESP8266
           #ifndef WM_NOASYNC // no async available < 2.4.0
@@ -1473,7 +1467,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         #else
         #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan ASYNC started"));
-        #endif
+          #endif
           res = WiFi.scanNetworks(true);
         #endif
         return false;
@@ -1482,7 +1476,6 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan SYNC started"));
         res = WiFi.scanNetworks();
       }
-
       if(res == WIFI_SCAN_FAILED){
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] scan failed"));
@@ -1826,10 +1819,12 @@ void WiFiManager::handleWifiSave(AsyncWebServerRequest *request) {
   }
   page += FPSTR(HTTP_END);
 
-  server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
-  HTTPSend(request,page);
+  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
+  response->addHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
+  response->addHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
+  request->send(response);
 
-   #ifdef WM_DEBUG_LEVEL
+  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent wifi save page"));
   #endif
 
@@ -1912,7 +1907,7 @@ void WiFiManager::handleInfo(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Info"));
   #endif
-  // handleRequest();
+  handleRequest();
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
@@ -2250,14 +2245,11 @@ void WiFiManager::handleExit(AsyncWebServerRequest *request) {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
-
+  // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
   AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
   response->addHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
   request->send(response);
 
-  // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
-  // server->sendHeader(FPSTR(HTTP_HEAD_CL), String(page.length()));
-  // server->send(200, FPSTR(HTTP_HEAD_CT), page);
   delay(2000);
   abort = true;
 }
@@ -2274,9 +2266,7 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
   page += FPSTR(S_resetting); //@token resetting
   page += FPSTR(HTTP_END);
 
-  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
-  response->addHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
-  request->send(response);
+  HTTPSend(request,page);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("RESETTING ESP"));
@@ -2290,9 +2280,8 @@ void WiFiManager::handleReset(AsyncWebServerRequest *request) {
 
 // void WiFiManager::handleErase() {
 //   handleErase(false);
-//
 // }
-void WiFiManager::handleErase(AsyncWebServerRequest *request,bool opt = false) {
+void WiFiManager::handleErase(AsyncWebServerRequest *request,boolean opt) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_NOTIFY,F("<- HTTP Erase"));
   #endif
@@ -2349,13 +2338,11 @@ void WiFiManager::handleNotFound(AsyncWebServerRequest *request) {
  */
 boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
   #ifdef WM_DEBUG_LEVEL
-  // DEBUG_WM(DEBUG_MAX,"-> " + request->host());
-  // DEBUG_WM(DEBUG_MAX,"-> " + request->url());
+  DEBUG_WM(DEBUG_DEV,"-> " + request->host());
   #endif
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
   String serverLoc =  toStringIp(request->client()->localIP());
-  // String serverLoc =  "192.168.4.1";
   if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
   bool doredirect = serverLoc != request->host(); // redirect if hostheader not server ip, prevent redirect loops
   // doredirect = !isIp(server->hostHeader()) // old check
@@ -2367,8 +2354,7 @@ boolean WiFiManager::captivePortal(AsyncWebServerRequest *request) {
 
   AsyncWebServerResponse *response = request->beginResponse(302,FPSTR(HTTP_HEAD_CT2), "");
   response->addHeader(F("Location"), (String)F("http://") + serverLoc); // @HTTPHEAD send redirect
-  request->send(response);
-  // Empty content inhibits Content-length header so we have to close the socket ourselves.
+  request->send(response); // Empty content inhibits Content-length header so we have to close the socket ourselves.
   // request->client().stop(); // Stop is needed because we sent no content length
     return true;
   }
@@ -2390,11 +2376,7 @@ void WiFiManager::handleClose(AsyncWebServerRequest *request){
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
-
-  AsyncWebServerResponse *response = request->beginResponse(200,FPSTR(HTTP_HEAD_CT), page);
-  response->addHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate"));
-  request->send(response);
-
+  HTTPSend(request,page);
 }
 
 void WiFiManager::reportStatus(String &page){
@@ -3741,7 +3723,7 @@ void WiFiManager::WiFi_autoReconnect(){
     // if(_wifiAutoReconnect){
       // @todo move to seperate method, used for event listener now
       #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,F("[ESP32] event handler enabled"));
+      DEBUG_WM(DEBUG_VERBOSE,F("ESP32 event handler enabled"));
       #endif
       using namespace std::placeholders;
       if(wm_event_id !=0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2)); // @todo move, needed for async esp32 scannetworks
@@ -3768,8 +3750,6 @@ void WiFiManager::handleUpdate(AsyncWebServerRequest *request) {
 
 }
 
-// AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final
-
 // upload via /u POST
 void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename, size_t index, uint8_t *data, size_t len, bool final){
   // @todo
@@ -3787,7 +3767,6 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
   bool error = false;
   unsigned long _configPortalTimeoutSAV = _configPortalTimeout; // store cp timeout
   _configPortalTimeout = 0; // disable timeout
-  bool otadebug = false;
 
   // UPLOAD START
 	if (!index) {
