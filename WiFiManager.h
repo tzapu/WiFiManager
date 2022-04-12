@@ -47,6 +47,33 @@
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 #define WM_ASYNCWEBSERVER     // use async webserver
 
+#define G(string_literal)  (String(FPSTR(string_literal)).c_str())
+
+#define STRING2(x) #x
+#define STRING(x) STRING2(x)
+
+// #include <esp_idf_version.h>
+#ifdef ESP_IDF_VERSION
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
+    #define VER_IDF_STR STRING(ESP_IDF_VERSION_MAJOR)  "."  STRING(ESP_IDF_VERSION_MINOR)  "."  STRING(ESP_IDF_VERSION_PATCH)
+#endif
+
+// #include "esp_arduino_version.h"
+#ifdef ESP_ARDUINO_VERSION
+    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
+    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
+    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
+    #define VER_ARDUINO_STR STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  STRING(ESP_ARDUINO_VERSION_MINOR)  "."  STRING(ESP_ARDUINO_VERSION_PATCH)
+#else
+    // #include <core_version.h>
+    // #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
+    // #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
+    #define VER_ARDUINO_STR "Unknown"
+    // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
+#endif
+
 #ifdef ESP8266
 
     extern "C" {
@@ -70,28 +97,6 @@
 
 #elif defined(ESP32)
 
-    // #define STRING2(x) #x
-    // #define STRING(x) STRING2(x)    
-
-    // // #include <esp_idf_version.h>
-    // #ifdef ESP_IDF_VERSION
-    //     #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
-    //     #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
-    //     #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
-    // #endif
-
-    // // #include "esp_arduino_version.h"
-    // #ifdef ESP_ARDUINO_VERSION
-    //     #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
-    //     #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
-    //     #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
-    // #else
-    //     #include <core_version.h>
-    //     #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
-    //     #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
-    //     // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
-    // #endif
-
     #include <WiFi.h>
     #include <esp_wifi.h>  
     #include <Update.h>
@@ -113,6 +118,7 @@
             #endif
         #endif
     #endif
+
     #ifdef WM_ERASE_NVS
        #include <nvs.h>
        #include <nvs_flash.h>
@@ -301,9 +307,12 @@ class WiFiManager
     // setConfigPortalTimeout is ignored in this mode, user is responsible for closing configportal
     void          setConfigPortalBlocking(boolean shouldBlock);
     
+    //add custom html at inside <head> for all pages
+    void          setCustomHeadElement(const char* html);
+
     //if this is set, customise style
-    void          setCustomHeadElement(const char* element);
-    
+    void          setCustomMenuHTML(const char* html);
+
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(boolean removeDuplicates);
     
@@ -336,7 +345,10 @@ class WiFiManager
     
     // if true (default) then start the config portal from autoConnect if connection failed
     void          setEnableConfigPortal(boolean enable);
-    
+
+    // if true (default) then stop the config portal from autoConnect when wifi is saved
+    void          setDisableConfigPortal(boolean enable);
+
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
     bool          setHostname(String hostname);
@@ -393,7 +405,7 @@ class WiFiManager
     void          debugPlatformInfo();
 
     // helper for html
-    String        htmlEntities(String str);
+    String        htmlEntities(String str, bool whitespace = false);
     
     // set the country code for wifi settings, CN
     void          setCountry(String cc);
@@ -441,8 +453,8 @@ class WiFiManager
     
     std::unique_ptr<WM_WebServer> server;
 
-
   private:
+    // vars
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsParams  = {"wifi","param","info","exit"};
     std::vector<const char *> _menuIdsUpdate  = {"wifi","param","info","update","exit"};
@@ -457,9 +469,16 @@ class WiFiManager
     IPAddress     _sta_static_sn;
     IPAddress     _sta_static_dns;
 
+    unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
+    unsigned long _webPortalAccessed      = 0; // ms last web access time
+    uint8_t       _lastconxresult         = WL_IDLE_STATUS; // store last result when doing connect operations
+    int           _numNetworks            = 0; // init index for numnetworks wifiscans
+    unsigned long _lastscan               = 0; // ms for timing wifi scans
+    unsigned long _startscan              = 0; // ms for timing wifi scans
+    unsigned long _startconn              = 0; // ms for timing wifi connects
+
     // defaults
     const byte    DNS_PORT                = 53;
-    const byte    HTTP_PORT               = 80;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = ""; // var temp ssid
@@ -471,32 +490,26 @@ class WiFiManager
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
     unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
-    unsigned long _configPortalStart      = 0; // ms config portal start time (updated for timeouts)
-    unsigned long _webPortalAccessed      = 0; // ms last web access time
+
     WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
-    uint8_t       _lastconxresult         = WL_IDLE_STATUS; // store last result when doing connect operations
-    int           _numNetworks            = 0; // init index for numnetworks wifiscans
-    unsigned long _lastscan               = 0; // ms for timing wifi scans
-    unsigned long _startscan              = 0; // ms for timing wifi scans
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
     bool          _channelSync            = false; // use same wifi sta channel when starting ap
-    int32_t       _apChannel              = 0; // channel to use for ap
+    int32_t       _apChannel              = 0; // default channel to use for ap, 0 for auto
     bool          _apHidden               = false; // store softap hidden value
     uint16_t      _httpPort               = 80; // port for webserver
     // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
-    unsigned long _startconn              = 0; // ms for timing wifi connects
     bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
     bool          _allowExit              = true; // allow exit non blocking
 
     #ifdef ESP32
-    wifi_event_id_t wm_event_id;
+    wifi_event_id_t wm_event_id           = 0;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
@@ -506,8 +519,8 @@ class WiFiManager
 
     // parameter options
     int           _minimumQuality         = -1;    // filter wifiscan ap by this rssi
-    int            _staShowStaticFields   = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
-    int            _staShowDns            = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
+    int           _staShowStaticFields    = 0;     // ternary 1=always show static ip fields, 0=only if set, -1=never(cannot change ips via web!)
+    int           _staShowDns             = 0;     // ternary 1=always show dns, 0=only if set, -1=never(cannot change dns via web!)
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _showPassword           = false; // show or hide saved password on wifi form, might be a security issue!
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
@@ -522,10 +535,12 @@ class WiFiManager
     boolean       _showInfoErase          = true;  // info page erase button
     boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
-    boolean       _enableConfigPortal     = true;  // use config portal if autoconnect failed
+    boolean       _enableConfigPortal     = true;  // FOR autoconnect - start config portal if autoconnect failed
+    boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
-    const char*   _customHeadElement      = ""; // store custom head element html from user
+    const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
+    const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 
@@ -542,8 +557,8 @@ class WiFiManager
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
     // no aps found is problematic as scans are always going to want to run, leading to page load delays
-    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
-    boolean       _asyncScan              = false; // perform wifi network scan async
+    boolean       _preloadwifiscan        = true;  // preload wifiscan if true
+    boolean       _asyncScan              = true; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
 
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
@@ -559,8 +574,6 @@ class WiFiManager
     void          setupConfigPortal();
     bool          shutdownConfigPortal();
     bool          setupHostname(bool restart);
-    void          setupHTTPServer();
-    void          teardownHTTPServer();
 
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
@@ -569,6 +582,8 @@ class WiFiManager
 
     bool          startAP();
     void          setupDNSD();
+    void          setupHTTPServer();
+    void          teardownHTTPServer();
 
     uint8_t       connectWifi(String ssid, String pass, bool connect = true);
     bool          setSTAConfig();
@@ -580,8 +595,9 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
+    void          HTTPSend(AsyncWebServerRequest *request, String content);
     void          handleRoot(AsyncWebServerRequest *request);
-    void          handleWifi(AsyncWebServerRequest *request,bool scan);
+    void          handleWifi(AsyncWebServerRequest *request, boolean scan);
     void          handleWifiSave(AsyncWebServerRequest *request);
     void          handleInfo(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
@@ -589,15 +605,12 @@ class WiFiManager
     void          handleExit(AsyncWebServerRequest *request);
     void          handleClose(AsyncWebServerRequest *request);
     // void          handleErase(AsyncWebServerRequest *request);
-    void          handleErase(AsyncWebServerRequest *request, bool opt);
+    void          handleErase(AsyncWebServerRequest *request, boolean opt);
     void          handleParam(AsyncWebServerRequest *request);
     void          handleWiFiStatus(AsyncWebServerRequest *request);
+    void          handleRequest();
     void          handleParamSave(AsyncWebServerRequest *request);
     void          doParamSave(AsyncWebServerRequest *request);
-
-    void          handleRequest();
-    void          HTTPSend(AsyncWebServerRequest *request, String page);
-
 
     boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();
@@ -665,8 +678,8 @@ class WiFiManager
     String        getInfoData(String id);
 
     // flags
-    boolean       connect;
-    boolean       abort;
+    boolean       connect             = false;
+    boolean       abort               = false;
     boolean       reset               = false;
     boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;

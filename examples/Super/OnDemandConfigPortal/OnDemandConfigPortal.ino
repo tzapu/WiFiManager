@@ -23,7 +23,7 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = false; // always start the configportal, even if ap found
+bool TEST_CP         = true; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -55,7 +55,7 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  // wm.server->on("/custom",handleRoute);
+  // wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
   // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
@@ -65,13 +65,13 @@ void handleRoute(){
 }
 
 void setup() {
-  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   
   // put your setup code here, to run once:
   Serial.begin(115200);
   // Serial1.begin(115200);
 
-  Serial.setDebugOutput(true);  
+  Serial.setDebugOutput(true);
   delay(1000);
 
   Serial.println("\n Starting");
@@ -90,6 +90,7 @@ void setup() {
   // wm.erase();  
 
   // setup some parameters
+
   WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
@@ -143,6 +144,14 @@ void setup() {
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
 
+  // set custom html head content , inside <head>
+  const char* headhtml = "<meta name='color-scheme' content='dark light'><style></style><script></script>";
+  wm.setCustomHeadElement(headhtml);
+
+  // set custom html menu content , inside <head>
+  const char* menuhtml = "<form action='/custom' method='get'><button>Custom</button></form><br/>\n";
+  wm.setCustomMenuHTML(menuhtml);
+
   // invert theme, dark
   wm.setDarkMode(true);
 
@@ -155,7 +164,7 @@ void setup() {
   wm.setMenu(menu,9); // custom menu array must provide length
 */
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","update","restart","exit"};
+  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
   wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
@@ -172,7 +181,8 @@ void setup() {
   // set country
   // setting wifi country seems to improve OSX soft ap connectivity, 
   // may help others as well, default is CN which has different channels
-  wm.setCountry("US"); 
+
+  // wm.setCountry("US"); // crashing on esp32 2.0
 
   // set Hostname
 
@@ -208,7 +218,7 @@ void setup() {
   // wm.setConnectRetries(2);
 
   // connect after portal save toggle
-  wm.setSaveConnect(false); // do not connect, only save
+  // wm.setSaveConnect(false); // do not connect, only save
 
   // show static ip fields
   // wm.setShowStaticFields(true);
@@ -233,6 +243,9 @@ void setup() {
 
   wifiInfo();
 
+  // to preload autoconnect with credentials
+  // wm.preloadWiFi("ssid","password");
+
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
   }
@@ -241,7 +254,7 @@ void setup() {
     delay(1000);
     Serial.println("TEST_CP ENABLED");
     wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
-    wm.startConfigPortal("WM_ConnectAP");
+    wm.startConfigPortal("WM_ConnectAP","12345678");
   }
   else {
     //if you get here you have connected to the WiFi
@@ -258,10 +271,11 @@ void setup() {
 }
 
 void wifiInfo(){
-  WiFi.printDiag(Serial);
-  Serial.println("SAVED: " + (String)wm.getWiFiIsSaved() ? "YES" : "NO");
-  Serial.println("SSID: " + (String)wm.getWiFiSSID());
-  Serial.println("PASS: " + (String)wm.getWiFiPass());
+  Serial.println("[WIFI] WIFI INFO DEBUG");
+  // WiFi.printDiag(Serial);
+  Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
+  Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
+  Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
 }
 
 void loop() {
