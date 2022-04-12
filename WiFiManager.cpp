@@ -3699,7 +3699,7 @@ void WiFiManager::WiFi_autoReconnect(){
       DEBUG_WM(DEBUG_VERBOSE,F("ESP32 event handler enabled"));
       #endif
       using namespace std::placeholders;
-      if(wm_event_id !=0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      if(wm_event_id == 0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
 }
