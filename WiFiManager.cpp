@@ -637,9 +637,8 @@ void WiFiManager::setupDNSD(){
 }
 
 void WiFiManager::setupConfigPortal() {
-
   setupHTTPServer();
-
+  _lastscan = 0; // reset network scan cache
   if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan , async
 }
 
@@ -728,7 +727,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
   if(!_configPortalIsBlocking){
     #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking/processing"));
+      DEBUG_WM(DEBUG_VERBOSE,F("Config Portal Running, non blocking (processing)"));
       if(_configPortalTimeout > 0) DEBUG_WM(DEBUG_VERBOSE,F("Portal Timeout In"),(String)(_configPortalTimeout/1000) + (String)F(" seconds"));
     #endif
     return result; // skip blocking loop
@@ -851,7 +850,7 @@ uint8_t WiFiManager::processConfigPortal(){
             _savewificallback();
           }
           if(!_connectonsave) return WL_IDLE_STATUS;
-          shutdownConfigPortal();
+          if(_disableConfigPortal) shutdownConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
         }
         #ifdef WM_DEBUG_LEVEL
@@ -870,7 +869,7 @@ uint8_t WiFiManager::processConfigPortal(){
           #endif
           _savewificallback();
         }
-        shutdownConfigPortal();
+        if(_disableConfigPortal) shutdownConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
       }
       else if(_configPortalIsBlocking){
@@ -1429,7 +1428,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       force = true;
     }
-    if(force || (millis()-_lastscan > 60000)){
+    if(force || (_lastscan>0 && (millis()-_lastscan > 60000))){
       int8_t res;
       _startscan = millis();
       if(async && _asyncScan){
@@ -1479,7 +1478,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
       DEBUG_WM(DEBUG_VERBOSE,F("WiFi Scan completed"), "in "+(String)(_lastscan - _startscan)+" ms");
       #endif
       return true;
-    } 
+    }
     else {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_VERBOSE,F("Scan is cached"),(String)(millis()-_lastscan )+" ms ago");
@@ -2902,6 +2901,17 @@ void WiFiManager::setEnableConfigPortal(boolean enable)
     _enableConfigPortal = enable;
 }
 
+/**
+ * toggle configportal if autoconnect failed
+ * if enabled, then the configportal will be de-activated on wifi save
+ * @since $dev
+ * @access public
+ * @param boolean enabled [true]
+ */
+void WiFiManager::setDisableConfigPortal(boolean enable)
+{
+    _disableConfigPortal = enable;
+}
 
 /**
  * set the hostname (dhcp client id)
@@ -3691,7 +3701,7 @@ void WiFiManager::WiFi_autoReconnect(){
       DEBUG_WM(DEBUG_VERBOSE,F("ESP32 event handler enabled"));
       #endif
       using namespace std::placeholders;
-      if(wm_event_id !=0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
+      if(wm_event_id == 0) wm_event_id = WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
     // }
   #endif
 }
