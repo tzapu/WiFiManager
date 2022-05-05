@@ -46,7 +46,7 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 "<form action='/restart' method='get'><button>Restart</button></form><br/>\n",// MENU_RESTART
 "<form action='/exit'    method='get'><button>Exit</button></form><br/>\n",  // MENU_EXIT
 "<form action='/erase'   method='get'><button class='D'>Erase</button></form><br/>\n", // MENU_ERASE
-"<form action='/update'  method='get'><button>Update</button></form><br/>\n",// MENU_UPDATE
+"<form action='/update'  method='get'><button>UpdateNow</button></form><br/>\n",// MENU_UPDATE
 "<hr><br/>" // MENU_SEP
 };
 
@@ -71,7 +71,7 @@ const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credential
 const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg S'>Saved<br/></div>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button class='D'>Erase WiFi Config</button></form>";
-const char HTTP_UPDATEBTN[]        PROGMEM = "<br/><form action='/update' method='get'><button>Update</button></form>";
+const char HTTP_UPDATEBTN[]        PROGMEM = "<br/><form action='/update' method='get'><button>UpdateNow</button></form>";
 const char HTTP_BACKBTN[]          PROGMEM = "<hr><br/><form action='/' method='get'><button>Back</button></form>";
 
 const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg S'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
@@ -144,7 +144,7 @@ const char HTTP_HELP[]             PROGMEM =
 const char HTTP_HELP[]             PROGMEM = "";
 #endif
 
-const char HTTP_UPDATE[] PROGMEM = "Upload New Firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Update</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* May not function inside captive portal, Open in browser http://192.168.4.1</a><small>";
+const char HTTP_UPDATE[] PROGMEM = "Upload New Firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>UpdateNow</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* May not function inside captive portal, Open in browser http://192.168.4.1</a><small>";
 const char HTTP_UPDATE_FAIL[] PROGMEM = "<div class='msg D'><strong>Update Failed!</strong><Br/>Reboot device and try again</div>";
 const char HTTP_UPDATE_SUCCESS[] PROGMEM = "<div class='msg S'><strong>Update Successful.  </strong> <br/> Device Rebooting now...</div>";
 
