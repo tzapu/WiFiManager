@@ -218,8 +218,8 @@ input:disabled {
 			<!-- HTTP_PORTAL_OPTIONS -->
 			<!-- /HTTP_PORTAL_OPTIONS -->
 			<!-- HTTP_PORTAL_MENU[] -->
-			<form action='/wifi' method='get'><button>Configure WiFi</button></form><br/>
-			<form action='/0wifi' method='get'><button>Configure WiFi (No Scan)</button></form><br/>
+			<form action='/wifi' method='get'><button>Configure WiFi and Sensor</button></form><br/>
+			<form action='/0wifi' method='get'><button>Configure WiFi (No Scan) and Sensor</button></form><br/>
 			<form action='/info' method='get'><button>Info</button></form><br/>
 			<form action='/param' method='get'><button>Setup</button></form><br/>
 			<Hr><br/>
@@ -251,7 +251,7 @@ input:disabled {
 			<div><a href='#p' onclick='c(this)'>{v}</a><div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div></div>
 			<!-- /HTTP_ITEM -->
 			<!-- HTTP_FORM_START -->
-			<form method='get' action='wifisave'><label for='s'>SSID</label><br/><input id='s' name='s' length=32 placeholder='SSID'><br/><label for='p'>Password</label><input id='p' name='p' length=64 type='password' placeholder='password'><br/>
+			<form method='get' action='wifisave'><label for='s'>SSID</label><br/><input id='s' name='s' length=32 placeholder='SSID'><br/><label for='p'>Password</label><input id='p' name='p' length=64 type='password' placeholder='password'><!-- An element to toggle between password visibility --><input type="checkbox" onclick="showPassword('p')">Show Password<br/>
 			<!-- /HTTP_FORM_START -->
 			<!-- SAMPLE -->
 			<h3>custom parameter</h3><hr>
