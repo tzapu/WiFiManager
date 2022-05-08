@@ -46,7 +46,7 @@
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
-#define G(string_literal)  (String(FPSTR(string_literal)).c_str())
+#define FH(string_literal)  (String(FPSTR(string_literal)).c_str())
 
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)    

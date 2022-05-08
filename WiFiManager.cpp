@@ -600,23 +600,23 @@ void WiFiManager::setupHTTPServer(){
   
   /* Setup httpd callbacks, web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
-  // G macro workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
-  server->on(G(R_root),       std::bind(&WiFiManager::handleRoot, this));
-  server->on(G(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
-  server->on(G(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
-  server->on(G(R_wifisave),   std::bind(&WiFiManager::handleWifiSave, this));
-  server->on(G(R_info),       std::bind(&WiFiManager::handleInfo, this));
-  server->on(G(R_param),      std::bind(&WiFiManager::handleParam, this));
-  server->on(G(R_paramsave),  std::bind(&WiFiManager::handleParamSave, this));
-  server->on(G(R_restart),    std::bind(&WiFiManager::handleReset, this));
-  server->on(G(R_exit),       std::bind(&WiFiManager::handleExit, this));
-  server->on(G(R_close),      std::bind(&WiFiManager::handleClose, this));
-  server->on(G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
-  server->on(G(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
+  // FH macro workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
+  server->on(FH(R_root),       std::bind(&WiFiManager::handleRoot, this));
+  server->on(FH(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
+  server->on(FH(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
+  server->on(FH(R_wifisave),   std::bind(&WiFiManager::handleWifiSave, this));
+  server->on(FH(R_info),       std::bind(&WiFiManager::handleInfo, this));
+  server->on(FH(R_param),      std::bind(&WiFiManager::handleParam, this));
+  server->on(FH(R_paramsave),  std::bind(&WiFiManager::handleParamSave, this));
+  server->on(FH(R_restart),    std::bind(&WiFiManager::handleReset, this));
+  server->on(FH(R_exit),       std::bind(&WiFiManager::handleExit, this));
+  server->on(FH(R_close),      std::bind(&WiFiManager::handleClose, this));
+  server->on(FH(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
+  server->on(FH(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
-  server->on(G(R_update), std::bind(&WiFiManager::handleUpdate, this));
-  server->on(G(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
+  server->on(FH(R_update), std::bind(&WiFiManager::handleUpdate, this));
+  server->on(FH(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
   
   server->begin(); // Web server start
   #ifdef WM_DEBUG_LEVEL
