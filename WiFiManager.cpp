@@ -1667,7 +1667,7 @@ String WiFiManager::getParamOut(){
     char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
-      Serial.println((String)_params[i]->_length);
+      //Serial.println((String)_params[i]->_length);
       if (_params[i] == NULL || _params[i]->_length == 0 || _params[i]->_length > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
