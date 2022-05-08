@@ -3363,6 +3363,7 @@ String WiFiManager::htmlEntities(String str, bool whitespace) {
   str.replace("&","&amp;");
   str.replace("<","&lt;");
   str.replace(">","&gt;");
+  str.replace("'","&#39;");
   if(whitespace) str.replace(" ","&#160;");
   // str.replace("-","&ndash;");
   // str.replace("\"","&quot;");
