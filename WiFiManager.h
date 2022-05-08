@@ -46,31 +46,31 @@
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
-#define G(string_literal)  (String(FPSTR(string_literal)).c_str())
+#define WM_G(string_literal)  (String(FPSTR(string_literal)).c_str())
 
-#define STRING2(x) #x
-#define STRING(x) STRING2(x)    
+#define WM_STRING2(x) #x
+#define WM_STRING(x) STRING2(x)    
 
 // #include <esp_idf_version.h>
 #ifdef ESP_IDF_VERSION
-    // #pragma message "ESP_IDF_VERSION_MAJOR = " STRING(ESP_IDF_VERSION_MAJOR)
-    // #pragma message "ESP_IDF_VERSION_MINOR = " STRING(ESP_IDF_VERSION_MINOR)
-    // #pragma message "ESP_IDF_VERSION_PATCH = " STRING(ESP_IDF_VERSION_PATCH)
-    #define VER_IDF_STR STRING(ESP_IDF_VERSION_MAJOR)  "."  STRING(ESP_IDF_VERSION_MINOR)  "."  STRING(ESP_IDF_VERSION_PATCH)
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " WM_STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " WM_STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " WM_STRING(ESP_IDF_VERSION_PATCH)
+    #define VER_IDF_STR WM_STRING(ESP_IDF_VERSION_MAJOR)  "."  WM_STRING(ESP_IDF_VERSION_MINOR)  "."  WM_STRING(ESP_IDF_VERSION_PATCH)
 #endif
 
 // #include "esp_arduino_version.h"
 #ifdef ESP_ARDUINO_VERSION
-    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " STRING(ESP_ARDUINO_VERSION_MAJOR)
-    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " STRING(ESP_ARDUINO_VERSION_MINOR)
-    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " STRING(ESP_ARDUINO_VERSION_PATCH)
-    #define VER_ARDUINO_STR STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  STRING(ESP_ARDUINO_VERSION_MINOR)  "."  STRING(ESP_ARDUINO_VERSION_PATCH)
+    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " WM_STRING(ESP_ARDUINO_VERSION_MAJOR)
+    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " WM_STRING(ESP_ARDUINO_VERSION_MINOR)
+    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " WM_STRING(ESP_ARDUINO_VERSION_PATCH)
+    #define VER_ARDUINO_STR WM_STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_MINOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_PATCH)
 #else
     // #include <core_version.h>
-    // #pragma message "ESP_ARDUINO_VERSION_GIT  = " STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
-    // #pragma message "ESP_ARDUINO_VERSION_DESC = " STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
+    // #pragma message "ESP_ARDUINO_VERSION_GIT  = " WM_STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
+    // #pragma message "ESP_ARDUINO_VERSION_DESC = " WM_STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
     #define VER_ARDUINO_STR "Unknown"
-    // #pragma message "ESP_ARDUINO_VERSION_REL  = " STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
+    // #pragma message "ESP_ARDUINO_VERSION_REL  = " WM_STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
 #endif
 
 #ifdef ESP8266
@@ -484,7 +484,7 @@ class WiFiManager
     uint16_t      _httpPort               = 80; // port for webserver
     // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
-    bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
+    bool          _aggresiveReconn        = true; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
     bool          _allowExit              = true; // allow exit non blocking
 
