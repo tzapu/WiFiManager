@@ -35,7 +35,7 @@ const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){"
 "function showPass(){"
 "var x = document.getElementById('p');"
 "if (x.type === 'password') {x.type = 'text';}"
-"else {x.type = 'password';}}</script>" // @todo add button states, disable on click , show ack , spinner etc
+"else {x.type = 'password';}}</script>"; // @todo add button states, disable on click , show ack , spinner etc
 
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div class='wrap'>"; // {c} = _bodyclass
 // example of embedded logo, base64 encoded inline, No styling here
