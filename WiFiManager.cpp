@@ -3773,14 +3773,14 @@ bool WiFiManager::getFastConConfig(String ssid){
 
   #ifdef WM_DEBUG_LEVEL
   if(ret){
-    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config RSSI: "),(String)scan_rssi);
-    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config CHAN: "),(String)_fastConnectChannel);
+    DEBUG_WM(DEBUG_VERBOSE,F("FastConfig RSSI: "),(String)scan_rssi);
+    DEBUG_WM(DEBUG_VERBOSE,F("FastConfig CHAN: "),(String)_fastConnectChannel);
     char mac[18] = { 0 };
     sprintf(mac,"%02X:%02X:%02X:%02X:%02X:%02X", _fastConnectBSSID[0], _fastConnectBSSID[1], _fastConnectBSSID[2], _fastConnectBSSID[3], _fastConnectBSSID[4], _fastConnectBSSID[5]);
-    DEBUG_WM(DEBUG_VERBOSE,F("Fast Config BSSID: "),(String)mac);
+    DEBUG_WM(DEBUG_VERBOSE,F("FastConfig BSSID: "),(String)mac);
   }
   else{
-    DEBUG_WM(DEBUG_ERROR,F("[ERROR] Fast Config SET FAILED "),(String)scan_rssi);
+    DEBUG_WM(DEBUG_ERROR,F("[ERROR] FastConfig SET FAILED "),(String)scan_rssi);
   }
   #endif
 
