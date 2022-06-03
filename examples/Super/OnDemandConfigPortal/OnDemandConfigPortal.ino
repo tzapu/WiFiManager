@@ -24,12 +24,13 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = false; // always start the configportal, even if ap found
+bool TEST_CP         = true; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
+bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -55,7 +56,7 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  wm.server->on("/custom",handleRoute);
+  wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
   // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
@@ -65,7 +66,7 @@ void handleRoute(){
 }
 
 void setup() {
-  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -91,7 +92,8 @@ void setup() {
   // wm.erase();
 
   // setup some parameters
-  WiFiManagerParameter custom_html("<p>This Is Custom HTML</p>"); // only custom html
+    
+  WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
@@ -99,7 +101,29 @@ void setup() {
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("checkbox", "my checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
+  WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
+
+  const char *bufferStr = R"(
+  <!-- INPUT CHOICE -->
+  <br/>
+  <p>Select Choice</p>
+  <input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+  <label for='choice1'>Choice1</label><br/>
+  <input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
+  <label for='choice2'>Choice2</label><br/>
+
+  <!-- INPUT SELECT -->
+  <br/>
+  <label for='input_select'>Label for Input Select</label>
+  <select name="input_select" id="input_select" class="button">
+  <option value="0">Option 1</option>
+  <option value="1" selected>Option 2</option>
+  <option value="2">Option 3</option>
+  <option value="3">Option 4</option>
+  </select>
+  )";
+
+  WiFiManagerParameter custom_html_inputs(bufferStr);
 
   // callbacks
   wm.setAPCallback(configModeCallback);
@@ -116,9 +140,29 @@ void setup() {
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
 
+  wm.addParameter(&custom_html_inputs);
+
   // set values later if you want
   custom_html.setValue("test",4);
   custom_token.setValue("test",4);
+
+  // const char* icon = "
+  // <link rel='icon' type='image/png' sizes='16x16' href='data:image/png;base64,
+  // iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIu
+  // O0L+AAC2FBZ2JyuNICOfGx7xAwTjCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888G
+  // CItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCa
+  // GqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg==' />";
+
+
+  // set custom html head content , inside <head>
+  // examples of favicon, or meta tags etc
+  // const char* headhtml = "<link rel='icon' type='image/png' href='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAADQElEQVRoQ+2YjW0VQQyE7Q6gAkgFkAogFUAqgFQAVACpAKiAUAFQAaECQgWECggVGH1PPrRvn3dv9/YkFOksoUhhfzwz9ngvKrc89JbnLxuA/63gpsCmwCADWwkNEji8fVNgotDM7osI/x777x5l9F6JyB8R4eeVql4P0y8yNsjM7KGIPBORp558T04A+CwiH1UVUItiUQmZ2XMReSEiAFgjAPBeVS96D+sCYGaUx4cFbLfmhSpnqnrZuqEJgJnd8cQplVLciAgX//Cf0ToIeOB9wpmloLQAwpnVmAXgdf6pwjpJIz+XNoeZQQZlODV9vhc1Tuf6owrAk/8qIhFbJH7eI3eEzsvydQEICqBEkZwiALfF70HyHPpqScPV5HFjeFu476SkRA0AzOfy4hYwstj2ZkDgaphE7m6XqnoS7Q0BOPs/sw0kDROzjdXcCMFCNwzIy0EcRcOvBACfh4k0wgOmBX4xjfmk4DKTS31hgNWIKBCI8gdzogTgjYjQWFMw+o9LzJoZ63GUmjWm2wGDc7EvDDOj/1IVMIyD9SUAL0WEhpriRlXv5je5S+U1i2N88zdPuoVkeB+ls4SyxCoP3kVm9jsjpEsBLoOBNC5U9SwpGdakFkviuFP1keblATkTENTYcxkzgxTKOI3jyDxqLkQT87pMA++H3XvJBYtsNbBN6vuXq5S737WqHkW1VgMQNXJ0RshMqbbT33sJ5kpHWymzcJjNTeJIymJZtSQd9NHQHS1vodoFoTMkfbJzpRnLzB2vi6BZAJxWaCr+62BC+jzAxVJb3dmmiLzLwZhZNPE5e880Suo2AZgB8e8idxherqUPnT3brBDTlPxO3Z66rVwIwySXugdNd+5ejhqp/+NmgIwGX3Py3QBmlEi54KlwmjkOytQ+iJrLJj23S4GkOeecg8G091no737qvRRdzE+HLALQoMTBbJgBsCj5RSWUlUVJiZ4SOljb05eLFWgoJ5oY6yTyJp62D39jDANoKKcSocPJD5dQYzlFAFZJflUArgTPZKZwLXAnHmerfJquUkKZEgyzqOb5TuDt1P3nwxobqwPocZA11m4A1mBx5IxNgRH21ti7KbAGiyNn3HoF/gJ0w05A8xclpwAAAABJRU5ErkJggg==' />";
+  // const char* headhtml = "<meta name='color-scheme' content='dark light'><style></style><script></script>";
+  // wm.setCustomHeadElement(headhtml);
+
+  // set custom html menu content , inside menu item "custom", see setMenu()
+  const char* menuhtml = "<form action='/custom' method='get'><button>Custom</button></form><br/>\n";
+  wm.setCustomMenuHTML(menuhtml);
 
   // invert theme, dark
   wm.setDarkMode(true);
@@ -132,7 +176,7 @@ void setup() {
   wm.setMenu(menu,9); // custom menu array must provide length
 */
 
-  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","close","sep","erase","update","restart","exit"};
+  std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
   wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
@@ -150,10 +194,12 @@ void setup() {
   // setting wifi country seems to improve OSX soft ap connectivity, 
   // setting country also seems to improve sta connection times for some reason
   // may help others as well, default is CN which has different channels
-  wm.setCountry("US"); 
+
+  // wm.setCountry("US"); // crashing on esp32 2.0
 
   // set Hostname
-  wm.setHostname("WIFIMANAGERTESTING");
+
+ wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
@@ -163,6 +209,13 @@ void setup() {
 
   // show password publicly in form
   // wm.setShowPassword(true);
+
+  // sets wether wm configportal is a blocking loop(legacy) or not, use wm.process() in loop if false
+  // wm.setConfigPortalBlocking(false);
+  
+  if(!WMISBLOCKING){
+    wm.setConfigPortalBlocking(false);
+  }
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
@@ -206,6 +259,9 @@ void setup() {
 
   wifiInfo();
 
+  // to preload autoconnect with credentials
+  // wm.preloadWiFi("ssid","password");
+
   if(!wm.autoConnect("WM_AutoConnectAP","12345678")) {
     Serial.println("failed to connect and hit timeout");
   }
@@ -214,7 +270,7 @@ void setup() {
     delay(1000);
     Serial.println("TEST_CP ENABLED");
     wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
-    wm.startConfigPortal("WM_ConnectAP");
+    wm.startConfigPortal("WM_ConnectAP","12345678");
   }
   else {
     //if you get here you have connected to the WiFi
@@ -242,6 +298,10 @@ void wifiInfo(){
 
 void loop() {
 
+  if(!WMISBLOCKING){
+    wm.process();
+  }
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
@@ -251,10 +311,12 @@ void loop() {
     if ( digitalRead(ONDDEMANDPIN) == LOW ){
       Serial.println("BUTTON PRESSED");
 
-      wm.resetSettings();
-      wm.reboot();
-      delay(200);
-      return;
+      // button reset/reboot
+      // wm.resetSettings();
+      // wm.reboot();
+      // delay(200);
+      // return;
+      
       wm.setConfigPortalTimeout(140);
       wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
 

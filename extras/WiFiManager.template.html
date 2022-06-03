@@ -43,18 +43,22 @@ body {
 	max-width:500px;
 }
 div,
-input {
+input,select {
     padding: 5px;
     font-size: 1em;
     /*width: 100%;*/
-    margin:5px 0;
+    /*/*margin: 3px 0 10px 0; // BEFORE spacing shows label closer to input, but need to do same for AFTER*/
+    margin: 5px 0;
 	box-sizing: border-box;
 }
-input,button,.msg{
+div{
+	margin: 5px 0;
+}
+input,button,select,.msg{
 	border-radius:.3rem;
     width: 100%;
 }
-input[type=radio]{
+input[type=radio],input[type=checkbox]{
     width: auto;
 }
 button,input[type="button"],input[type="submit"] {
@@ -169,10 +173,28 @@ button.D{
 	background-color:#dc3630;
 }
 
-input:disabled {
-	opacity: 0.5;
+button{
+	/*transition: 0s filter;*/
+	transition: 0s opacity;
+	transition-delay: 3s;
+	transition-duration: 0s;
+	cursor: pointer;
 }
 
+button:active{
+	opacity: 50% !important;
+	/*filter: brightness(50%);*/
+	cursor: wait;
+	transition-delay: 0s;
+}
+
+button:hover{
+	/*opacity: 80%;*/
+}
+
+:disabled {
+	opacity: 0.5;
+}
 </style>
 <!-- /HTTP_STYLE -->
 <!-- HTTP_SCRIPT -->
@@ -208,21 +230,21 @@ input:disabled {
 			<!-- /HTTP_PORTAL_MENU -->
 			<!-- SAMPLE -->
 			<h2>/wifi</h2><hr>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 01</a><div role='img' aria-label='88%' title='88%' class='q q-4 l'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 02</a><div role='img' aria-label='88%' title='88%' class='q q-4'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 03</a><div role='img' aria-label='60%' title='60%' class='q q-3 l'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 04</a><div role='img' aria-label='60%' title='60%' class='q q-3'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 05</a><div role='img' aria-label='60%' title='60%' class='q q-3'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 06</a><div role='img' aria-label='40%' title='40%' class='q q-2'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 07</a><div role='img' aria-label='40%' title='40%' class='q q-2 l'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 08</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 09</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 10</a><div role='img' aria-label='20%' title='20%' class='q q-4 l'></div><div class='q '>100%</div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 11</a><div role='img' aria-label='10%' title='10%' class='q q-3'></div><div class='q '>70%</div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 12</a><div role='img' aria-label='10%' title='10%' class='q q-1 l'></div><div class='q '>10%</div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 13</a><div role='img' aria-label='10%' title='10%' class='q q-0 h'></div><div class='q '>100%</div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 14</a><div class='q'>66%</div></div>
-			<div><a href='#p' onclick='c(this)'>Acccess Point 15</a><div class='q'>56%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 01</a><div role='img' aria-label='88%' title='88%' class='q q-4 l'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 02</a><div role='img' aria-label='88%' title='88%' class='q q-4'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 03</a><div role='img' aria-label='60%' title='60%' class='q q-3 l'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 04</a><div role='img' aria-label='60%' title='60%' class='q q-3'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 05</a><div role='img' aria-label='60%' title='60%' class='q q-3'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 06</a><div role='img' aria-label='40%' title='40%' class='q q-2'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 07</a><div role='img' aria-label='40%' title='40%' class='q q-2 l'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 08</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 09</a><div role='img' aria-label='20%' title='20%' class='q q-1'></div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 10</a><div role='img' aria-label='20%' title='20%' class='q q-4 l'></div><div class='q '>100%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 11</a><div role='img' aria-label='10%' title='10%' class='q q-3'></div><div class='q '>70%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 12</a><div role='img' aria-label='10%' title='10%' class='q q-1 l'></div><div class='q '>10%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 13</a><div role='img' aria-label='10%' title='10%' class='q q-0 h'></div><div class='q '>100%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 14</a><div class='q'>66%</div></div>
+			<div><a href='#p' onclick='c(this)'>Access Point 15</a><div class='q'>56%</div></div>
 			<!-- /SAMPLE -->
 			<!-- HTTP_ITEM -->
 			<div><a href='#p' onclick='c(this)'>{v}</a><div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i}'></div></div>
@@ -234,7 +256,7 @@ input:disabled {
 			<h3>custom parameter</h3><hr>
 			<br/><label for='custom'>Label for Custom Param</label>
 			<br/><input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
-			<!-- /SAMPLE -->			
+			<!-- /SAMPLE -->
 			<!-- HTTP_FORM_LABEL -->
 			<br/><label for='{i}'>{p}</label>
 			<!-- /HTTP_FORM_LABEL -->
@@ -252,10 +274,10 @@ input:disabled {
 			<!-- /HTTP_SAVED -->
 			<!-- HTTP_STATUS_ON -->
 			<div class='msg P'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>
-			<!-- /HTTP_STATUS_ON -->     	
+			<!-- /HTTP_STATUS_ON -->
 			<!-- HTTP_STATUS_OFF -->
 			<div class='msg {c}'><strong>Not Connected</strong> to {v}{r}</div>
-			<!-- /HTTP_STATUS_OFF --> 
+			<!-- /HTTP_STATUS_OFF -->
 			<!-- sample -->
 			<div class='msg D'><strong>Not Connected</strong> to apname
 			<!-- /sample -->
@@ -264,10 +286,10 @@ input:disabled {
 			<!-- /HTTP_STATUS_OFFPW -->
 			<!-- HTTP_STATUS_OFFNOAP -->
 				<br/>AP not found
-			<!-- /HTTP_STATUS_OFFNOAP -->	
+			<!-- /HTTP_STATUS_OFFNOAP -->
 			<!-- HTTP_STATUS_OFFFAIL -->
 				<br/>Could not Connect
-			<!-- /HTTP_STATUS_OFFFAIL -->	
+			<!-- /HTTP_STATUS_OFFFAIL -->
 			</div>
 			<!-- HTTP_STATUS_NONE -->
 			<div class='msg'>No AP set</div>
@@ -277,7 +299,7 @@ input:disabled {
 			<!-- /SAMPLE -->
 			<!-- SAMPLE -->
 			<div class='msg S'><h4>H4 Color Header S</h4>content</div>
-			<!-- /SAMPLE -->	
+			<!-- /SAMPLE -->
 			<!-- SAMPLE -->
 			<h2>/info</h3><hr>
 			<dl>
@@ -314,26 +336,54 @@ input:disabled {
 		 		<tr><td><a href='/erase'>/erase</a></td>
 		 		<td>Erase WiFi configuration and reboot Device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>
 		 		</table>
-		 		<p/>More information about WiFiManager at <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
+		 		<h3>About</h3><hr>
+		 		Version v1.x.x-xxxxx<Br/>
+		 		Build_date<br/>
+		 		Build_file<br/>
+		 		Arduino_version<br/>
+		 		<p/>Github <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>
 			<!-- /HTTP_HELP -->
 			<!-- FORM_UPLOAD -->
 			<Br/><br/>Form UPLOAD<br/>
 			<form method='POST' action='u' enctype='multipart/form-data'>
 				<input type='file' name='update' accept='.bin,application/octet-stream' onchange="(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)">
 				<button id='uploadbin' class="h">Submit</button>
-			</form>
 			<a href='http://192.168.4.1' target='_blank'><small>* Upload may not function inside captive portal, Open in browser - http://192.168.4.1</a></small>
-			<!-- /FORM_UPLOAD -->	
+			<!-- /FORM_UPLOAD -->
 
 
 			<!-- FORM_EXTRAS -->
 			<br/><br/><br/><hr>
-			<br/><label for='custom'>Label for Custom Param</label>
-			<br/><input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
-			<br/><input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
+			<br/>
+			<label for='custom'>Label for Custom Param</label>
+			<br/>
+			<input id='custom' name='custom' length='255' placeholder='placeholder' value='' {c}>
+			<br/>
+
+			<!-- INOUT CHECKBOX -->
+			<!-- <label for='input_checkbox'>Label for Input Checkbox</label> -->
+			<input id='input_checkbox' name='input_checkbox' placeholder='placeholder' value='' type="checkbox" {c}>
+			<label for='input_checkbox'>Label for Input Checkbox</label>
+			<br/>
+
+			<!-- INPUT CHOICE -->
+			<p>Select Choice</p>
+			<input style='display: inline-block;' type='radio' id='choice1' name='program_selection' value='1'>
   			<label for='choice1'>Choice1</label><br>
   			<input style='display: inline-block;' type='radio' id='choice2' name='program_selection' value='2'>
   			<label for='choice2'>Choice2</label><br>
+
+  			<!-- INPUT SELECT -->
+			<br/>
+			<label for='input_select'>Label for Input Select</label>
+			<select name="input_select" id="input_select" class="button">
+			<option value="0">Option 1</option>
+			<option value="1" selected>Option 2</option>
+			<option value="2">Option 3</option>
+			<option value="3">Option 4</option>
+			</select>
+
+			</form>
 
 			<!-- /FORM_EXTRAS -->
 

@@ -2,6 +2,7 @@
 .cache
 .pioenvs
 .piolibdeps
+.idea
 .vscode
 !.vscode/extensions.json
 /platformio_override.ini
