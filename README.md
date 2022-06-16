@@ -171,8 +171,8 @@ Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
 
 [PlatformIO](https://platformio.org/) is an emerging ecosystem for IoT development, and 
 is an alternative to using the Arduino IDE. Install `WiFiManager`
-using the platformio [library manager](https://docs.platformio.org/en/latest/librarymanager/index.htm) in your editor, 
-or using the [PlatformIO Core CLI](https://docs.platformio.org/en/latest/userguide/demo.html#library-manager),
+using the platformio [library manager](https://docs.platformio.org/en/latest/librarymanager/index.html#librarymanager) in your editor, 
+or using the [PlatformIO Core CLI](https://docs.platformio.org/en/latest/core/index.html),
 or by adding it to your `platformio.ini` as shown below (recommended approach).
 
 The simplest way is to open the `platformio.ini` file at the root of your project, and `WifiManager` to the common top-level env
@@ -291,7 +291,7 @@ Usage scenario would be:
 
 ```
 - if connection to AP fails, configuration portal starts and you can set /change the values (or use on demand configuration portal)
-- once configuration is done and connection is established [save config callback]() is called
+- once configuration is done and connection is established save config callback() is called
 - once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
 ```cpp
  mqtt_server = custom_mqtt_server.getValue();
@@ -299,7 +299,7 @@ Usage scenario would be:
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
 You should also take a look at adding custom HTML to your form.
 
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/AutoConnectWithFSParameters)
+- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
 
 #### Custom IP Configuration
