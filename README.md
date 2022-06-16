@@ -165,7 +165,7 @@ wifiManager.autoConnect();
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
-Also see [examples](https://github.com/tzapu/WiFiManager/examples).
+Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
 
 #### Install Using PlatformIO
 
