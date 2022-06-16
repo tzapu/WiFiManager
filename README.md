@@ -165,7 +165,7 @@ wifiManager.autoConnect();
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
-Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
+Also see [examples](https://github.com/tzapu/WiFiManager/examples).
 
 #### Install Using PlatformIO
 
@@ -229,7 +229,7 @@ IF YOU NEED TO SAVE PARAMETERS EVEN ON WIFI FAIL OR EMPTY, you must set `setBrea
     void          setBreakAfterConfig(boolean shouldBreak);
 ```
 
-See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters).
+See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/examples/AutoConnectWithFSParameters).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -269,7 +269,7 @@ void loop() {
   }
 }
 ```
-See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemandConfigPortal)
+See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/examples/OnDemandConfigPortal)
 
 #### Exiting from the Configuration Portal
 Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered or a timeout is reached.
@@ -299,7 +299,7 @@ Usage scenario would be:
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
 You should also take a look at adding custom HTML to your form.
 
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/AutoConnectWithFSParameters)
+- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/examples/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
 
 #### Custom IP Configuration
