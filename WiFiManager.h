@@ -486,7 +486,8 @@ class WiFiManager
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
     bool          _aggresiveReconn        = true; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
-    bool          _allowExit              = true; // allow exit non blocking
+                                                   // https://github.com/tzapu/WiFiManager/issues/1067
+    bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
@@ -527,6 +528,7 @@ class WiFiManager
     // internal options
     
     // wifiscan notes
+    // currently disabled due to issues with caching, sometimes first scan is empty esp32 wifi not init yet race, or portals hit server nonstop flood
     // The following are background wifi scanning optimizations
     // experimental to make scans faster, preload scans after starting cp, and visiting home page, so when you click wifi its already has your list
     // ideally we would add async and xhr here but I am holding off on js requirements atm
