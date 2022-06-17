@@ -226,7 +226,7 @@ WiFiManager::~WiFiManager() {
     _params = NULL;
   }
 
-  // @todo remove event
+  // remove event
   // WiFi.onEvent(std::bind(&WiFiManager::WiFiEvent,this,_1,_2));
   #ifdef ESP32
     WiFi.removeEvent(wm_event_id);
@@ -312,7 +312,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       DEBUG_WM(F("AutoConnect: ESP Already Connected"));
       #endif
       setSTAConfig();
-      // @todo not sure if this check makes sense, causes dup setSTAConfig in connectwifi, 
+      // @todo not sure if this is safe, causes dup setSTAConfig in connectwifi,
       // and we have no idea WHAT we are connected to
     }
 
@@ -486,7 +486,7 @@ bool WiFiManager::startAP(){
 
   if(_debugLevel >= DEBUG_DEV) debugSoftAPConfig();
 
-  // @todo add softAP retry here
+  // @todo add softAP retry here to dela with unknown failures
   
   delay(500); // slight delay to make sure we get an AP IP
   #ifdef WM_DEBUG_LEVEL
@@ -677,7 +677,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   if(!validApPassword()) return false;
   
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
-  // @todo sometimes still cannot connect to AP for no known reason, no events in log either
   if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
     WiFi_Disconnect();
@@ -687,7 +686,6 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     #endif
   }
   else {
-    // @todo even if sta is connected, it is possible that softap connections will fail, IOS says "invalid password", windows says "cannot connect to this network" researching
     WiFi_enableSTA(true);
   }
 
@@ -756,6 +754,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     
     // status change, break
     // @todo what is this for, should be moved inside the processor
+    // I think.. this is to detect autoconnect by esp in background, there are also many open issues about autoreconnect not working
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
         DEBUG_WM(DEBUG_DEV,F("configportal loop break"));
@@ -914,6 +913,7 @@ bool WiFiManager::shutdownConfigPortal(){
   server->handleClient();
 
   // @todo what is the proper way to shutdown and free the server up
+  // debug - many open issues aobut port not clearing for use with other servers
   server->stop();
   server.reset();
 
@@ -971,7 +971,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   // make sure sta is on before `begin` so it does not call enablesta->mode while persistent is ON ( which would save WM AP state to eeprom !)
   // WiFi.setAutoReconnect(false);
   if(_cleanConnect) WiFi_Disconnect(); // disconnect before begin, in case anything is hung, this causes a 2 seconds delay for connect
-  // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status
+  // @todo find out what status is when this is needed, can we detect it and handle it, say in between states or idle_status to avoid these
 
   // if retry without delay (via begin()), the IDF is still busy even after returning status
   // E (5130) wifi:sta is connecting, return error
@@ -3343,7 +3343,7 @@ boolean WiFiManager::validApPassword(){
       DEBUG_WM(F("AccessPoint set password is INVALID or <8 chars"));
       #endif
       _apPassword = "";
-      return false; // @todo FATAL or fallback to empty ?
+      return false; // @todo FATAL or fallback to empty , currently fatal, fail secure.
     }
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("AccessPoint set password is VALID"));
@@ -3423,7 +3423,7 @@ bool WiFiManager::WiFiSetCountry(){
   // ret = esp_wifi_set_bandwidth(WIFI_IF_AP,WIFI_BW_HT20); // WIFI_BW_HT40
   #ifdef ESP32
   esp_err_t err = ESP_OK;
-  // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( might be now! )
+  // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( check again it might be now! )
   if(WiFi.getMode() == WIFI_MODE_NULL){
       DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
   } // exception if wifi not init!
@@ -3473,7 +3473,7 @@ bool WiFiManager::WiFi_Mode(WiFiMode_t m,bool persistent) {
     return ret;
     #elif defined(ESP32)
       if(persistent && esp32persistent) WiFi.persistent(true);
-      ret = WiFi.mode(m); // @todo persistent check persistant mode , NI
+      ret = WiFi.mode(m); // @todo persistent check persistant mode, was eventually added to esp lib, but have to add version checking probably
       if(persistent && esp32persistent) WiFi.persistent(false);
       return ret;
     #endif
@@ -3490,7 +3490,7 @@ bool WiFiManager::WiFi_Disconnect() {
           #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_DEV,F("WiFi station disconnect"));
           #endif
-          ETS_UART_INTR_DISABLE(); // @todo probably not needed
+          ETS_UART_INTR_DISABLE(); // @todo possibly not needed
           ret = wifi_station_disconnect();
           ETS_UART_INTR_ENABLE();        
           return ret;
