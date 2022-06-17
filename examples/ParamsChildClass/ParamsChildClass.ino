@@ -45,11 +45,14 @@ public:
     }
 };
 
+// create dropdown select using anonymous html content
+// return value as int
 class SelectParameter : public WiFiManagerParameter {
 public:          
 
-    // just for testing, add custom args for each input, pass arrays etc.
+    // just an example for reference/testing, add custom args for each input, use templates, pass arrays etc.
     // an exercise for the reader
+    // id is hardcoded to `input_select` here
     const char *bufferStr = R"(
           <br/>
           <label for='input_select'>Label for Input Select</label>
@@ -65,7 +68,7 @@ public:
         : WiFiManagerParameter("") {
 
         // WiFiManagerParameter(id,String(value).c_str(), (int)length);
-        WiFiManagerParameter(id, "", length);
+        WiFiManagerParameter("input_select", "", length); // NOTE: this constructor will most likely change at some point to a better method
     }
 
     uint8_t getValue() {
@@ -118,7 +121,7 @@ void setup() {
         WiFiManagerParameter param_str( "str", "param_string",  sett.s, 20);
         FloatParameter param_float( "float", "param_float",  sett.f);
         IntParameter param_int( "int", "param_int",  sett.i);
-        SelectParameter select_int( "input_select", "select_int",  3);
+        SelectParameter select_int( "", "",  3);
 
         IPAddress ip(sett.ip);
         IPAddressParameter param_ip("ip", "param_ip", ip);
