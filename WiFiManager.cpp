@@ -1773,11 +1773,10 @@ void WiFiManager::handleWifiSave() {
     #endif
   }
 
- // @todo use new callback for before paramsaves
-  if (!_paramsInWifi && _presavecallback != NULL) {
+  if (_presavecallback != NULL) {
     _presavecallback();  // @CALLBACK 
   }
-  
+
   if(_paramsInWifi) doParamSave();
 
   String page;
@@ -1827,8 +1826,8 @@ void WiFiManager::handleParamSave() {
 
 void WiFiManager::doParamSave(){
    // @todo use new callback for before paramsaves, is this really needed?
-  if ( _presavecallback != NULL) {
-    _presavecallback();  // @CALLBACK
+  if ( _presaveparamscallback != NULL) {
+    _presaveparamscallback();  // @CALLBACK
   }
 
   //parameters
@@ -2711,6 +2710,15 @@ void WiFiManager::setConfigResetCallback( std::function<void()> func ) {
  */
 void WiFiManager::setSaveParamsCallback( std::function<void()> func ) {
   _saveparamscallback = func;
+}
+
+/**
+ * setPreSaveParamsCallback, set a pre save params callback on params save prior to anything else
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setPreSaveParamsCallback( std::function<void()> func ) {
+  _presaveparamscallback = func;
 }
 
 /**

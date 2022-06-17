@@ -244,11 +244,14 @@ class WiFiManager
     //called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
     void          setSaveConfigCallback( std::function<void()> func );
 
-    //called when saving either params-in-wifi or params page
-    void          setSaveParamsCallback( std::function<void()> func );
-
     //called when saving params-in-wifi or params before anything else happens (eg wifi)
     void          setPreSaveConfigCallback( std::function<void()> func );
+
+    //called when saving params before anything else happens
+    void          setPreSaveParamsCallback( std::function<void()> func );
+
+    //called when saving either params-in-wifi or params page
+    void          setSaveParamsCallback( std::function<void()> func );
 
     //called just before doing OTA update
     void          setPreOtaUpdateCallback( std::function<void()> func );
@@ -729,6 +732,7 @@ class WiFiManager
     std::function<void()> _webservercallback;
     std::function<void()> _savewificallback;
     std::function<void()> _presavecallback;
+    std::function<void()> _presaveparamscallback;
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
     std::function<void()> _preotaupdatecallback;
