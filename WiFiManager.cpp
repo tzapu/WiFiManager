@@ -783,12 +783,7 @@ boolean WiFiManager::process(){
     MDNS.update();
     #endif
 	
-    if(configPortalActive && !_configPortalIsBlocking){
-      if(configPortalHasTimeout()) shutdownConfigPortal();
-    }
-
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
-      
       // if timed out or abort, break
       if(_allowExit && (configPortalHasTimeout() || abort)){
         #ifdef WM_DEBUG_LEVEL
