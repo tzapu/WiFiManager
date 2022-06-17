@@ -594,7 +594,7 @@ void WiFiManager::setupHTTPServer(){
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("[CB] _webservercallback calling"));
     #endif
-    _webservercallback();
+    _webservercallback(); // @CALLBACK
   }
   // @todo add a new callback maybe, after webserver started, callback cannot override handlers, but can grab them first
   
@@ -841,7 +841,7 @@ uint8_t WiFiManager::processConfigPortal(){
             #ifdef WM_DEBUG_LEVEL
             DEBUG_WM(DEBUG_VERBOSE,F("[CB] _savewificallback calling"));
             #endif
-            _savewificallback();
+            _savewificallback(); // @CALLBACK
           }
           if(!_connectonsave) return WL_IDLE_STATUS;
           if(_disableConfigPortal) shutdownConfigPortal();
@@ -861,7 +861,7 @@ uint8_t WiFiManager::processConfigPortal(){
           #ifdef WM_DEBUG_LEVEL
           DEBUG_WM(DEBUG_VERBOSE,F("[CB] WiFi/Param save callback"));
           #endif
-          _savewificallback();
+          _savewificallback(); // @CALLBACK
         }
         if(_disableConfigPortal) shutdownConfigPortal();
         return WL_CONNECT_FAILED; // CONNECT FAIL
@@ -1738,17 +1738,11 @@ void WiFiManager::handleWifiSave() {
   #endif
   handleRequest();
 
- // @todo use new callback for before paramsaves
-  if (!_paramsInWifi && _presavecallback != NULL) {
-    _presavecallback();
-  }
-
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
   _pass = server->arg(F("p")).c_str();
 
-  if(_paramsInWifi) doParamSave();
-
+  // set static ips from server args
   if (server->arg(FPSTR(S_ip)) != "") {
     //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
     String ip = server->arg(FPSTR(S_ip));
@@ -1778,6 +1772,13 @@ void WiFiManager::handleWifiSave() {
     DEBUG_WM(DEBUG_DEV,F("static DNS:"),dns);
     #endif
   }
+
+ // @todo use new callback for before paramsaves
+  if (!_paramsInWifi && _presavecallback != NULL) {
+    _presavecallback();  // @CALLBACK 
+  }
+  
+  if(_paramsInWifi) doParamSave();
 
   String page;
 
@@ -1827,7 +1828,7 @@ void WiFiManager::handleParamSave() {
 void WiFiManager::doParamSave(){
    // @todo use new callback for before paramsaves, is this really needed?
   if ( _presavecallback != NULL) {
-    _presavecallback();
+    _presavecallback();  // @CALLBACK
   }
 
   //parameters
@@ -1865,7 +1866,7 @@ void WiFiManager::doParamSave(){
   }
 
    if ( _saveparamscallback != NULL) {
-    _saveparamscallback();
+    _saveparamscallback();  // @CALLBACK
   }
    
 }
@@ -2511,7 +2512,7 @@ void WiFiManager::resetSettings() {
   WiFi_enableSTA(true,true); // must be sta to disconnect erase
   delay(500); // ensure sta is enabled
   if (_resetcallback != NULL){
-      _resetcallback();
+      _resetcallback();  // @CALLBACK
   }
   
   #ifdef ESP32
@@ -3747,7 +3748,7 @@ void WiFiManager::handleUpdating(){
     
     // Use new callback for before OTA update
     if (_preotaupdatecallback != NULL) {
-      _preotaupdatecallback();
+      _preotaupdatecallback();  // @CALLBACK
     }
     #ifdef ESP8266
     		WiFiUDP::stopAll();
