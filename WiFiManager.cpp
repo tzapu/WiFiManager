@@ -1773,8 +1773,8 @@ void WiFiManager::handleWifiSave() {
     #endif
   }
 
-  if (_presavecallback != NULL) {
-    _presavecallback();  // @CALLBACK 
+  if (_presavewificallback != NULL) {
+    _presavewificallback();  // @CALLBACK 
   }
 
   if(_paramsInWifi) doParamSave();
@@ -2695,6 +2695,15 @@ void WiFiManager::setSaveConfigCallback( std::function<void()> func ) {
 }
 
 /**
+ * setPreSaveConfigCallback, set a callback to fire before saving wifi or params
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
+  _presavewificallback = func;
+}
+
+/**
  * setConfigResetCallback, set a callback to occur when a resetSettings() occurs
  * @access public
  * @param {[type]} void(*func)(void)
@@ -2719,15 +2728,6 @@ void WiFiManager::setSaveParamsCallback( std::function<void()> func ) {
  */
 void WiFiManager::setPreSaveParamsCallback( std::function<void()> func ) {
   _presaveparamscallback = func;
-}
-
-/**
- * setPreSaveConfigCallback, set a callback to fire before saving wifi or params
- * @access public
- * @param {[type]} void (*func)(void)
- */
-void WiFiManager::setPreSaveConfigCallback( std::function<void()> func ) {
-  _presavecallback = func;
 }
 
 /**

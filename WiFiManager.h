@@ -731,7 +731,7 @@ class WiFiManager
     std::function<void(WiFiManager*)> _apcallback;
     std::function<void()> _webservercallback;
     std::function<void()> _savewificallback;
-    std::function<void()> _presavecallback;
+    std::function<void()> _presavewificallback;
     std::function<void()> _presaveparamscallback;
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
