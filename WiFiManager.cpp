@@ -3768,6 +3768,11 @@ void WiFiManager::handleUpdating(){
     DEBUG_WM(DEBUG_VERBOSE,"Update file: ", upload.filename.c_str());
     #endif
 
+    // Update.onProgress(THandlerFunction_Progress fn);
+    // Update.onProgress([](unsigned int progress, unsigned int total) {
+    //       Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    // });
+
   	if (!Update.begin(maxSketchSpace)) { // start with max available size
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update ERROR"), Update.getError());
@@ -3778,7 +3783,7 @@ void WiFiManager::handleUpdating(){
 	}
   // UPLOAD WRITE
   else if (upload.status == UPLOAD_FILE_WRITE) {
-		Serial.print(".");
+		// Serial.print(".");
 		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
