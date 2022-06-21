@@ -97,6 +97,7 @@ void setup() {
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  WiFiManagerParameter custom_input_type("input_pwd", "input pass", "", 15,"type='password'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
@@ -137,6 +138,7 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
+  wm.addParameter(&custom_input_type);
 
   wm.addParameter(&custom_html_inputs);
 
