@@ -34,6 +34,21 @@ bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global pa
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
 
+  // called after AP mode and config portal has started
+  //  setAPCallback( std::function<void(WiFiManager*)> func );
+  // called after webserver has started
+  //  setWebServerCallback( std::function<void()> func );
+  // called when settings reset have been triggered
+  //  setConfigResetCallback( std::function<void()> func );
+  // called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
+  //  setSaveConfigCallback( std::function<void()> func );
+  // called when saving either params-in-wifi or params page
+  //  setSaveParamsCallback( std::function<void()> func );
+  // called when saving params-in-wifi or params before anything else happens (eg wifi)
+  //  setPreSaveConfigCallback( std::function<void()> func );
+  // called just before doing OTA update
+  //  setPreOtaUpdateCallback( std::function<void()> func );
+
 void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
 }
@@ -62,6 +77,12 @@ void bindServerCallback(){
 void handleRoute(){
   Serial.println("[HTTP] handle route");
   wm.server->send(200, "text/plain", "hello from user code");
+}
+
+void handlePreOtaUpdateCallback(){
+  Update.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("CUSTOM Progress: %u%%\r", (progress / (total / 100)));
+  });
 }
 
 void setup() {
@@ -129,6 +150,7 @@ void setup() {
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveWifiCallback);
   wm.setSaveParamsCallback(saveParamCallback);
+  wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
   // add all your parameters here
   wm.addParameter(&custom_html);
