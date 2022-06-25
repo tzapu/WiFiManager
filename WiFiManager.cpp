@@ -277,9 +277,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
     // sethostname before wifi ready
     // https://github.com/tzapu/WiFiManager/issues/1403
+    #ifdef ESP32
     if(_hostname != ""){
       setupHostname(true);
     }
+    #endif
 
     // attempt to connect using saved settings, on fail fallback to AP config portal
     if(!WiFi.enableSTA(true)){
@@ -303,10 +305,11 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     // so we must force it on else, if not connectimeout then waitforconnectionresult gets stuck endless loop
     WiFi_autoReconnect();
 
-    // set hostname before stating
-    // if(_hostname != ""){
-    //   setupHostname(true);
-    // }
+    #ifdef ESP8266
+    if(_hostname != ""){
+      setupHostname(true);
+    }
+    #endif
 
     // if already connected, or try stored connect 
     // @note @todo ESP32 has no autoconnect, so connectwifi will always be called unless user called begin etc before
