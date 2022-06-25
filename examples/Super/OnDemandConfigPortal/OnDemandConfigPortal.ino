@@ -23,7 +23,7 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -34,6 +34,8 @@ bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global pa
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
 
+
+//callbacks
   // called after AP mode and config portal has started
   //  setAPCallback( std::function<void(WiFiManager*)> func );
   // called after webserver has started
@@ -220,7 +222,8 @@ void setup() {
 
   // set Hostname
 
- wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
@@ -310,6 +313,7 @@ void wifiInfo(){
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
   Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
   Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
+  Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
 }
 
 void loop() {
