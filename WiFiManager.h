@@ -39,6 +39,10 @@
 #define WM_NOSOFTAPSSID    // no softapssid() @todo shim
 #endif
 
+#ifdef ARDUINO_ESP32S3_DEV
+#define WM_NOTEMP
+#endif
+
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
 
 // #define esp32autoreconnect    // implement esp32 autoreconnect event listener kludge, @DEPRECATED
