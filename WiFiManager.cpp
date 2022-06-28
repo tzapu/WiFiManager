@@ -2209,7 +2209,7 @@ String WiFiManager::getInfoData(String id){
   }
   else if(id==F("aboutdate")){
     p = FPSTR(HTTP_INFO_aboutdate);
-    p.replace(FPSTR(T_1),String(__DATE__) + " " + String(__TIME__));
+    p.replace(FPSTR(T_1),String(__DATE__ " " __TIME__));
   }
   return p;
 }
