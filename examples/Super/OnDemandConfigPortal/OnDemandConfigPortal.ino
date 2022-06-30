@@ -106,6 +106,8 @@ void setup() {
   Serial.println("[ERROR]  TEST");
   Serial.println("[INFORMATION] TEST");  
 
+
+  wm.setDebugOutput(true);
   wm.debugPlatformInfo();
 
   //reset settings - for testing
@@ -222,7 +224,7 @@ void setup() {
 
   // set Hostname
 
-  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  // wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
   // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel
