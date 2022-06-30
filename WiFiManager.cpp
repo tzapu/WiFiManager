@@ -271,6 +271,14 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("AutoConnect"));
   #endif
+
+  #ifdef ESP32
+  if(WiFi.getMode() != WIFI_STA){
+    WiFi.mode(WIFI_STA);
+  }
+  #endif
+
+
   if(getWiFiIsSaved()){
      _startconn = millis();
     _begin();
@@ -332,6 +340,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       DEBUG_WM(DEBUG_VERBOSE,F("Connected in"),(String)((millis()-_startconn)) + " ms");
       DEBUG_WM(F("STA IP Address:"),WiFi.localIP());
       #endif
+      // Serial.println("Connected in " + (String)((millis()-_startconn)) + " ms");
       _lastconxresult = WL_CONNECTED;
 
       if(_hostname != ""){

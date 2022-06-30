@@ -95,7 +95,6 @@ void setup() {
   // Serial1.begin(115200);
 
   // Serial.setDebugOutput(true);  
-  delay(1000);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -310,6 +309,7 @@ void setup() {
 }
 
 void wifiInfo(){
+  // can contain gargbage on esp32 if wifi is not ready yet
   Serial.println("[WIFI] WIFI INFO DEBUG");
   // WiFi.printDiag(Serial);
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
