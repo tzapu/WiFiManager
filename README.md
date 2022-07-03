@@ -8,19 +8,19 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 ![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)
 
-![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)
+[![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
 
-![Build CI Status Examples](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)
+[![Build CI Status Examples](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml)
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
 
 [![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
 
-[![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://platformio.org)
+[![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp8266)
 
-[![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.platformio.org)
-[![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://platformio.org)
-[![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://platformio.org)
+[![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32)
+[![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-s2)
+[![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-c3)
 
 Member to Member Support / Chat
 
