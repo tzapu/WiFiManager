@@ -807,6 +807,7 @@ boolean WiFiManager::process(){
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_DEV,F("process loop abort"));
         #endif
+        webPortalActive = false;
         shutdownConfigPortal();
         return false;
       }
