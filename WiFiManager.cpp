@@ -795,6 +795,7 @@ boolean WiFiManager::process(){
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_DEV,F("process loop abort"));
         #endif
+        webPortalActive = false;
         shutdownConfigPortal();
         return false;
       }
@@ -2245,7 +2246,7 @@ String WiFiManager::getInfoData(String id){
 }
 
 /** 
- * HTTPD CALLBACK exit, closes configportal if blocking, if non blocking undefined
+ * HTTPD CALLBACK exit, closes configportal or webportal if running
  */
 void WiFiManager::handleExit() {
   #ifdef WM_DEBUG_LEVEL
