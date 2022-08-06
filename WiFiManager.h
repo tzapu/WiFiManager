@@ -429,6 +429,8 @@ class WiFiManager
     // get hostname helper
     String        getWiFiHostname();
 
+    void          setFindBestRSSI(boolean enabled);
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -531,6 +533,7 @@ class WiFiManager
     const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
+    boolean       _findBestRSSI           = false; // find best rssi ap in wifiscan
 
     // internal options
     
