@@ -1060,7 +1060,12 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
     } else {
       // connect using saved ssid if there is one
       if (WiFi_hasAutoConnect()) {
-        wifiConnectDefault();
+        if (_findBestRSSI) {
+          wifiConnectNew(WiFi_SSID(), WiFi_psk(), connect);
+        } else {
+          // connect to saved ssid
+          wifiConnectDefault();
+        }
         connRes = waitForConnectResult();
       } else {
 #ifdef WM_DEBUG_LEVEL
@@ -1131,11 +1136,18 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass, bool connect) {
       int bestConnection = -1;
       // Find best RSSI AP for given SSID
       for (int i = 0; i < n; i++) {
-        if (ssid == WiFi_SSID(i)) {
+        if (ssid == WiFi.SSID(i)) {
+#ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(String(F("SSID ")) + ssid + String(F(" found with RSSI: ")) +
+                   String(WiFi.RSSI(i)) + String(F("(")) +
+                   String(constrain((100.0 + WiFi.RSSI(i)) * 2, 0, 100)) +
+                   String(F(" %) and BSSID: ")) + WiFi.BSSIDstr(i) +
+                   String(F(" and channel: ")) + String(WiFi.channel(i)));
+#endif
           if (bestConnection == -1) {
             bestConnection = i;
           } else {
-            if (WiFi_RSSI(i) > WiFi_RSSI(bestConnection)) {
+            if (WiFi.RSSI(i) > WiFi.RSSI(bestConnection)) {
               bestConnection = i;
             }
           }
@@ -1146,8 +1158,15 @@ bool WiFiManager::wifiConnectNew(String ssid, String pass, bool connect) {
         DEBUG_WM(F("No network found with SSID: "), ssid);
 #endif
       } else {
-        ret =
-            WiFi.begin(ssid.c_str(), pass.c_str(), WiFi.BSSID(), NULL, connect);
+#ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(String(F("Trying to connect to SSID ")) + ssid + String(F(" found with RSSI: ")) +
+                   String(WiFi.RSSI(bestConnection)) + String(F("(")) +
+                   String(constrain((100.0 + WiFi.RSSI(bestConnection)) * 2, 0, 100)) +
+                   String(F(" %) and BSSID: ")) + WiFi.BSSIDstr(bestConnection) +
+                   String(F(" and channel: ")) + String(WiFi.channel(bestConnection)));
+#endif
+        ret = WiFi.begin(ssid.c_str(), pass.c_str(), 0,
+                         WiFi.BSSID(bestConnection), connect);
       }
     }
   } else {
@@ -3120,9 +3139,7 @@ void WiFiManager::setShowInfoErase(boolean enabled) {
  * toggle showing find best RSSID
  * @param boolean enabled
  */
-void WiFiManager::setFindBestRSSI(boolean enabled) {
-  _findBestRSSI = enabled;
-}
+void WiFiManager::setFindBestRSSI(boolean enabled) { _findBestRSSI = enabled; }
 
 /**
  * toggle showing update upload web ota button on info page
