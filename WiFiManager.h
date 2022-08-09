@@ -129,7 +129,14 @@
 
 #include <DNSServer.h>
 #include <memory>
-#include "strings_en.h"
+
+
+// Include wm strings vars
+#ifndef WM_STRINGS_FILE
+#define WM_STRINGS_FILE "wm_strings_en.h"
+#endif
+#include WM_STRINGS_FILE
+
 // #include "wm_consts.h"
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
