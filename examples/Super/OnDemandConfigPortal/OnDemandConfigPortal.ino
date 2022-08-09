@@ -219,7 +219,7 @@ void setup() {
   // setting wifi country seems to improve OSX soft ap connectivity, 
   // may help others as well, default is CN which has different channels
 
-  // wm.setCountry("US"); // crashing on esp32 2.0
+  wm.setCountry("US"); // crashing on esp32 2.0
 
   // set Hostname
 

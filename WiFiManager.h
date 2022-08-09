@@ -638,9 +638,17 @@ class WiFiManager
             #define WM_ARDUINOEVENTS
         #else
             #define WM_NOSOFTAPSSID
+            #define WM_NOCOUNTRY
         #endif
 
+    #else 
+        #define WM_NOCOUNTRY
     #endif
+
+    #ifdef WM_NOCOUNTRY
+        #warning "ESP32 set country unavailable" 
+    #endif
+
 
     #ifdef WM_ARDUINOEVENTS
         void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);

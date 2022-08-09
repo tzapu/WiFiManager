@@ -3457,8 +3457,14 @@ bool WiFiManager::WiFiSetCountry(){
   // If an invalid country code is passed, ESP_ERR_WIFI_ARG will be returned
   // This also uses 802.11d mode, which matches the STA to the country code of the AP it connects to (meaning
   // that the country code will be overridden if connecting to a "foreign" AP)
-  else err = esp_wifi_set_country_code(_wificountry.c_str(), true);
-
+  else {
+    #ifndef WM_NOCOUNTRY
+    err = esp_wifi_set_country_code(_wificountry.c_str(), true);
+    #else
+    DEBUG_WM(DEBUG_ERROR,"[ERROR] esp wifi set country is not available");
+    err = true;
+    #endif
+  }
   #ifdef WM_DEBUG_LEVEL
     if(err){
       if(err == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
