@@ -19,7 +19,6 @@
 
 const char WM_VERSION_STR[] PROGMEM = "v2.0.12-beta";
 
-
 const uint8_t _nummenutokens = 11;
 const char * const _menutokens[_nummenutokens] PROGMEM = {
     "wifi",
