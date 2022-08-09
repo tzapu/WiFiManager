@@ -78,7 +78,7 @@ void bindServerCallback(){
 
 void handleRoute(){
   Serial.println("[HTTP] handle route");
-  wm.server->send(200, "text/plain", "hello from user code");
+  // wm.server->send(200, "text/plain", "hello from user code");
 }
 
 void handlePreOtaUpdateCallback(){

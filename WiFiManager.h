@@ -49,6 +49,7 @@
 // autoreconnect is WORKING https://github.com/espressif/arduino-esp32/issues/653#issuecomment-405604766
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
+#define WM_ASYNCWEBSERVER     // use async webserver
 
 #define WM_G(string_literal)  (String(FPSTR(string_literal)).c_str())
 
@@ -83,7 +84,13 @@
       #include "user_interface.h"
     }
     #include <ESP8266WiFi.h>
-    #include <ESP8266WebServer.h>
+
+    #ifdef WM_ASYNCWEBSERVER
+        #include <ESPAsyncTCP.h>
+        #include <ESPAsyncWebServer.h>
+    #else
+        #include <ESP8266WebServer.h>
+    #endif
 
     #ifdef WM_MDNS
         #include <ESP8266mDNS.h>
@@ -101,16 +108,20 @@
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
-    #ifndef WEBSERVER_H
-        #ifdef WM_WEBSERVERSHIM
-            #include <WebServer.h>
-        #else
-            #include <ESP8266WebServer.h>
-            // Forthcoming official ? probably never happening
-            // https://github.com/esp8266/ESPWebServer
+    #ifdef WM_ASYNCWEBSERVER
+        #include <AsyncTCP.h>
+        #include <ESPAsyncWebServer.h>
+    #else
+        #ifndef WEBSERVER_H
+            #ifdef WM_WEBSERVERSHIM
+                #include <WebServer.h>
+            #else
+                #include <ESP8266WebServer.h>
+                // Forthcoming official ? probably never happening
+                // https://github.com/esp8266/ESPWebServer
+            #endif
         #endif
     #endif
-
     #ifdef WM_ERASE_NVS
        #include <nvs.h>
        #include <nvs_flash.h>
@@ -433,12 +444,21 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
+        #ifdef WM_ASYNCWEBSERVER
+        using WM_WebServer = AsyncWebServer;
+        #else
         using WM_WebServer = WebServer;
+        #endif
     #else
+        #ifdef WM_ASYNCWEBSERVER
+        using WM_WebServer = AsyncWebServer;
+        #else
         using WM_WebServer = ESP8266WebServer;
+        #endif
     #endif
     
     std::unique_ptr<WM_WebServer> server;
+
 
   private:
     // vars
@@ -534,6 +554,8 @@ class WiFiManager
 
     // internal options
     
+    bool         _rebootNeeded            = false; // async reboot flag
+
     // wifiscan notes
     // currently disabled due to issues with caching, sometimes first scan is empty esp32 wifi not init yet race, or portals hit server nonstop flood
     // The following are background wifi scanning optimizations
@@ -561,7 +583,9 @@ class WiFiManager
     void          setupConfigPortal();
     bool          shutdownConfigPortal();
     bool          setupHostname(bool restart);
-    
+    void          setupHTTPServer();
+    void          teardownHTTPServer();
+
 #ifdef NO_EXTRA_4K_HEAP
     boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
     void          startWPS();
@@ -581,32 +605,32 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
-    void          HTTPSend(String content);
-    void          handleRoot();
-    void          handleWifi(boolean scan);
-    void          handleWifiSave();
-    void          handleInfo();
-    void          handleReset();
-    void          handleNotFound();
-    void          handleExit();
-    void          handleClose();
-    // void          handleErase();
-    void          handleErase(boolean opt);
-    void          handleParam();
-    void          handleWiFiStatus();
+    void          HTTPSend(AsyncWebServerRequest *request, String page);
+    void          handleRoot(AsyncWebServerRequest *request);
+    void          handleWifi(AsyncWebServerRequest *request,bool scan);
+    void          handleWifiSave(AsyncWebServerRequest *request);
+    void          handleInfo(AsyncWebServerRequest *request);
+    void          handleReset(AsyncWebServerRequest *request);
+    void          handleNotFound(AsyncWebServerRequest *request);
+    void          handleExit(AsyncWebServerRequest *request);
+    void          handleClose(AsyncWebServerRequest *request);
+    // void          handleErase(AsyncWebServerRequest *request);
+    void          handleErase(AsyncWebServerRequest *request, bool opt);
+    void          handleParam(AsyncWebServerRequest *request);
+    void          handleWiFiStatus(AsyncWebServerRequest *request);
+    void          handleParamSave(AsyncWebServerRequest *request);
+    void          doParamSave(AsyncWebServerRequest *request);
     void          handleRequest();
-    void          handleParamSave();
-    void          doParamSave();
 
-    boolean       captivePortal();
+
+    boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
-	// OTA Update handler
-	void          handleUpdate();
-	void          handleUpdating();
-	void          handleUpdateDone();
-
+    // OTA Update handler
+    void          handleUpdate(AsyncWebServerRequest *request);
+    void          handleUpdating(AsyncWebServerRequest *request,String filename, size_t index, uint8_t *data, size_t len, bool final);
+    void          handleUpdateDone(AsyncWebServerRequest *request);
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
