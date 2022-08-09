@@ -3450,16 +3450,19 @@ bool WiFiManager::WiFiSetCountry(){
   if(WiFi.getMode() == WIFI_MODE_NULL){
       DEBUG_WM(DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
   } // exception if wifi not init!
-  else if(_wificountry == "US") err = esp_wifi_set_country(&WM_COUNTRY_US);
-  else if(_wificountry == "JP") err = esp_wifi_set_country(&WM_COUNTRY_JP);
-  else if(_wificountry == "CN") err = esp_wifi_set_country(&WM_COUNTRY_CN);
+  // Assumes that _wificountry is set to one of the supported country codes : "01"(world safe mode) "AT","AU","BE","BG","BR",
+  //               "CA","CH","CN","CY","CZ","DE","DK","EE","ES","FI","FR","GB","GR","HK","HR","HU",
+  //               "IE","IN","IS","IT","JP","KR","LI","LT","LU","LV","MT","MX","NL","NO","NZ","PL","PT",
+  //               "RO","SE","SI","SK","TW","US"
+  // If an invalid country code is passed, ESP_ERR_WIFI_ARG will be returned
+  // This also uses 802.11d mode, which matches the STA to the country code of the AP it connects to (meaning
+  // that the country code will be overridden if connecting to a "foreign" AP)
+  else err = esp_wifi_set_country_code(_wificountry.c_str(), true);
+
   #ifdef WM_DEBUG_LEVEL
-    else{
-      DEBUG_WM(DEBUG_ERROR,"[ERROR] country code not found");
-    }
     if(err){
       if(err == ESP_ERR_WIFI_NOT_INIT) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_NOT_INIT");
-      else if(err == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG");
+      else if(err == ESP_ERR_INVALID_ARG) DEBUG_WM(DEBUG_ERROR,"[ERROR] ESP_ERR_WIFI_ARG (invalid country code)");
       else if(err != ESP_OK)DEBUG_WM(DEBUG_ERROR,"[ERROR] unknown error",(String)err);
     }
   #endif
