@@ -1261,10 +1261,6 @@ String WiFiManager::getHTTPHead(String title){
   return page;
 }
 
-void WiFiManager::HTTPSend(String content){
-  server->send(200, FPSTR(HTTP_HEAD_CT), content);
-}
-
 /** 
  * HTTPD handler for page requests
  */
@@ -1824,7 +1820,7 @@ void WiFiManager::handleWifiSave(AsyncWebServerRequest *request) {
     _presavewificallback();  // @CALLBACK 
   }
 
-  if(_paramsInWifi) doParamSave();
+  if(_paramsInWifi) doParamSave(request);
 
   String page;
 
@@ -3860,13 +3856,13 @@ void WiFiManager::handleUpdating(AsyncWebServerRequest *request,String filename,
 	}
   
   // UPLOAD WRITE
-  else if (upload.status == UPLOAD_FILE_WRITE) {
-		// Serial.print(".");
-		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-      #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
-			//Update.printError(Serial); // write failure
-      #endif
+  if (index<len) {
+		Serial.print(".");
+    if (Update.write(data,len) != len) {
+      // #ifdef WM_DEBUG_LEVEL
+      // DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
+			Update.printError(Serial); // write failure
+      // #endif
       error = true;
 		}
 	}

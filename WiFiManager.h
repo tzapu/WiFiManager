@@ -593,7 +593,6 @@ class WiFiManager
 
     bool          startAP();
     void          setupDNSD();
-    void          setupHTTPServer();
 
     uint8_t       connectWifi(String ssid, String pass, bool connect = true);
     bool          setSTAConfig();

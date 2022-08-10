@@ -21,6 +21,14 @@
     "url": "https://github.com/tzapu/WiFiManager.git"
   },
   "frameworks": "arduino",
+  "dependencies": {
+    "me-no-dev/AsyncTCP": "*",
+    "bbx10/DNSServer": "^1.1.0",
+    "external-repo": "https://github.com/me-no-dev/ESPAsyncWebServer.git"
+  },
+  "build": {
+    "libLDFMode": "chain+"
+  },
   "platforms": 
   [
     "espressif8266",
