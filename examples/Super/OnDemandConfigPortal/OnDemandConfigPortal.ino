@@ -223,7 +223,7 @@ void setup() {
 
   // set Hostname
 
-  // wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
   // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel

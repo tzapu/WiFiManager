@@ -272,12 +272,19 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
+  // sethostname before wifi ready
+  // https://github.com/tzapu/WiFiManager/issues/1403
+  #ifdef ESP32
+  if(_hostname != ""){
+    setupHostname(false);
+  }
+  #endif
+
   #ifdef ESP32
   if(WiFi.getMode() != WIFI_STA){
     WiFi.mode(WIFI_STA);
   }
   #endif
-
 
   if(getWiFiIsSaved()){
      _startconn = millis();
@@ -287,7 +294,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     // https://github.com/tzapu/WiFiManager/issues/1403
     #ifdef ESP32
     if(_hostname != ""){
-      setupHostname(true);
+      setupHostname(false);
     }
     #endif
 
