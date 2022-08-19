@@ -272,31 +272,25 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
-  // sethostname before wifi ready
-  // https://github.com/tzapu/WiFiManager/issues/1403
   #ifdef ESP32
-  if(_hostname != ""){
-    setupHostname(false);
-  }
-  #endif
+  setupHostname(true);
 
-  #ifdef ESP32
-  if(WiFi.getMode() != WIFI_STA){
-    WiFi.mode(WIFI_STA);
+  if(_hostname){
+    // disable wifi if already on
+    if(WiFi.getMode() & WIFI_STA){
+      WiFi.mode(WIFI_OFF);
+      int timeout = millis()+1200;
+      // async loop for mode change
+      while(WiFi.getMode()!= WIFI_OFF && millis()<timeout){
+        delay(0);
+      }
+    }
   }
   #endif
 
   if(getWiFiIsSaved()){
      _startconn = millis();
     _begin();
-
-    // sethostname before wifi ready
-    // https://github.com/tzapu/WiFiManager/issues/1403
-    #ifdef ESP32
-    if(_hostname != ""){
-      setupHostname(false);
-    }
-    #endif
 
     // attempt to connect using saved settings, on fail fallback to AP config portal
     if(!WiFi.enableSTA(true)){
@@ -412,12 +406,20 @@ bool WiFiManager::setupHostname(bool restart){
   #elif defined(ESP32)
     // @note hostname must be set after STA_START
     // @note, this may have changed at some point, now it wont work, I have to set it before.
-   
+    // same for S2, must set it before mode(STA) now
+  
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("Setting WiFi hostname"));
     #endif
 
     res = WiFi.setHostname(_hostname.c_str());
+    // esp_err_t err;
+    //   // err = set_esp_interface_hostname(ESP_IF_WIFI_STA, "TEST_HOSTNAME");
+    //   err = esp_netif_set_hostname(esp_netifs[ESP_IF_WIFI_STA], "TEST_HOSTNAME");
+    //     if(err){
+    //         log_e("Could not set hostname! %d", err);
+    //         return false;
+    //     } 
     // #ifdef ESP32MDNS_H
       #ifdef WM_MDNS
         #ifdef WM_DEBUG_LEVEL
@@ -3607,7 +3609,7 @@ bool WiFiManager::WiFi_eraseConfig() {
       bool ret;
       WiFi.mode(WIFI_AP_STA); // cannot erase if not in STA mode !
       WiFi.persistent(true);
-      ret = WiFi.disconnect(true,true);
+      ret = WiFi.disconnect(true,true); // disconnect(bool wifioff, bool eraseap)
       delay(500);
       WiFi.persistent(false);
       return ret;
