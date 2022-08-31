@@ -88,13 +88,12 @@ void handlePreOtaUpdateCallback(){
 }
 
 void setup() {
-  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp can default to STA+AP
   
   // put your setup code here, to run once:
   Serial.begin(115200);
-  // Serial1.begin(115200);
 
-  // Serial.setDebugOutput(true);  
+  // Serial.setDebugOutput(true);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -111,7 +110,7 @@ void setup() {
 
   //reset settings - for testing
   // wm.resetSettings();
-  // wm.erase();  
+  // wm.erase();
 
   // setup some parameters
     
@@ -219,7 +218,7 @@ void setup() {
   // setting wifi country seems to improve OSX soft ap connectivity, 
   // may help others as well, default is CN which has different channels
 
-  wm.setCountry("US"); // crashing on esp32 2.0
+  // wm.setCountry("US"); // crashing on esp32 2.0
 
   // set Hostname
 
@@ -388,7 +387,7 @@ void getTime() {
   }
   Serial.println("");
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+  gmtime_r(&now, &timeinfo);
   Serial.print("Current time: ");
   Serial.print(asctime(&timeinfo));
 }
