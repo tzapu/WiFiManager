@@ -32,7 +32,7 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
   _label          = NULL;
   _length         = 1;
-  _value          = NULL;
+  _value          = nullptr;
   _labelPlacement = WFM_LABEL_DEFAULT;
   _customHTML     = custom;
 }
@@ -58,6 +58,7 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
   _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
+  _value          = nullptr;
   setValue(defaultValue,length);
 }
 
@@ -86,8 +87,14 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   //   // return false; //@todo bail 
   // }
 
-  _length = length;
-  _value  = new char[_length + 1]; 
+  if(_length != length){
+    _length = length;
+    if( _value != nullptr){
+      delete[] _value;
+    }
+    _value  = new char[_length + 1];  
+  }
+
   memset(_value, 0, _length + 1); // explicit null
   
   if (defaultValue != NULL) {
