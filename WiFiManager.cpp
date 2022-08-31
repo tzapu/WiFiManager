@@ -1452,11 +1452,20 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // DEBUG_WM(DEBUG_DEV,_numNetworks,(millis()-_lastscan ));
     // DEBUG_WM(DEBUG_DEV,"scanNetworks force:",force == true);
     #endif
-    if(_numNetworks == 0){
+
+    // if 0 networks, rescan @note this was a kludge, now disabling to test real cause ( maybe wifi not init etc)
+    // enable only if preload failed? 
+    if(_numNetworks == 0 && _autoforcerescan){
       DEBUG_WM(DEBUG_DEV,"NO APs found forcing new scan");
       force = true;
     }
-    if(force || (_lastscan>0 && (millis()-_lastscan > 60000))){
+
+    // if scan is empty or stale (last scantime > _scancachetime), this avoids fast reloading wifi page and constant scan delayed page loads appearing to freeze.
+    if(!_lastscan || (_lastscan>0 && (millis()-_lastscan > _scancachetime))){
+      force = true;
+    }
+
+    if(force){
       int8_t res;
       _startscan = millis();
       if(async && _asyncScan){
@@ -3731,7 +3740,7 @@ String WiFiManager::WiFi_psk(bool persistent) const {
         WiFi.reconnect();
       #endif
   }
-  else if(event == ARDUINO_EVENT_WIFI_SCAN_DONE){
+  else if(event == ARDUINO_EVENT_WIFI_SCAN_DONE && _asyncScan){
     uint16_t scans = WiFi.scanComplete();
     WiFi_scanComplete(scans);
   }

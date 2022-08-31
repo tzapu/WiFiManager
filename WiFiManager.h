@@ -544,10 +544,17 @@ class WiFiManager
     // async enables asyncronous scans, so they do not block anything
     // the refresh button bypasses cache
     // no aps found is problematic as scans are always going to want to run, leading to page load delays
-    boolean       _preloadwifiscan        = false;  // preload wifiscan if true
-    boolean       _asyncScan              = false; // perform wifi network scan async
-    unsigned int  _scancachetime          = 30000; // ms cache time for background scans
+    // 
+    // These settings really only make sense with _preloadwifiscan true
+    // but not limited to, we could run continuous background scans on various page hits, or xhr hits
+    // which would be better coupled with asyncscan
+    // atm preload is only done on root hit and startcp
+    boolean       _preloadwifiscan        = true; // preload wifiscan if true
+    unsigned int  _scancachetime          = 30000; // ms cache time for preload scans
+    boolean       _asyncScan              = true; // perform wifi network scan async
 
+    boolean       _autoforcerescan        = false;  // automatically force rescan if scan networks is 0, ignoring cache
+    
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
