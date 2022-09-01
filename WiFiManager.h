@@ -39,7 +39,8 @@
 #define WM_NOSOFTAPSSID    // no softapssid() @todo shim
 #endif
 
-#ifdef ARDUINO_ESP32S3_DEV
+// #ifdef ARDUINO_ESP32S3_DEV
+#ifdef ESP32
 #define WM_NOTEMP
 #endif
 
