@@ -123,7 +123,9 @@
 #endif
 
 #ifdef Arduino_h
+    #ifdef ESP32
     #include "esp_arduino_version.h"
+    #endif
     // esp_get_idf_version
     #ifdef ESP_ARDUINO_VERSION
         // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " WM_STRING(ESP_ARDUINO_VERSION_MAJOR)
