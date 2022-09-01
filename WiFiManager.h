@@ -111,8 +111,6 @@
 #define WM_STRING2(x) #x
 #define WM_STRING(x) WM_STRING2(x)    
 
-#define VER_ARDUINO_STR "Unknown"
-#define VER_IDF_STR "Unknown"
 
 // #include <esp_idf_version.h>
 #ifdef ESP_IDF_VERSION
@@ -120,6 +118,8 @@
     // #pragma message "ESP_IDF_VERSION_MINOR = " WM_STRING(ESP_IDF_VERSION_MINOR)
     // #pragma message "ESP_IDF_VERSION_PATCH = " WM_STRING(ESP_IDF_VERSION_PATCH)
     #define VER_IDF_STR WM_STRING(ESP_IDF_VERSION_MAJOR)  "."  WM_STRING(ESP_IDF_VERSION_MINOR)  "."  WM_STRING(ESP_IDF_VERSION_PATCH)
+#else 
+    #define VER_IDF_STR "Unknown"
 #endif
 
 #ifdef Arduino_h
@@ -137,7 +137,10 @@
         // #pragma message "ESP_ARDUINO_VERSION_REL  = " WM_STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
         #define VER_ARDUINO_STR WM_STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_MINOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_PATCH)
     #endif
+#else 
+#define VER_ARDUINO_STR "Unknown"
 #endif
+
 
 // #pragma message "VER_IDF_STR = " WM_STRING(VER_IDF_STR)
 // #pragma message "VER_ARDUINO_STR = " WM_STRING(VER_ARDUINO_STR)
