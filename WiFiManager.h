@@ -41,7 +41,7 @@
 
 // #ifdef ARDUINO_ESP32S3_DEV
 #ifdef ESP32
-#define WM_NOTEMP
+#define WM_NOTEMP // disabled temp sensor, have to determine which chip we are on
 #endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
@@ -52,31 +52,6 @@
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
 #define WM_G(string_literal)  (String(FPSTR(string_literal)).c_str())
-
-#define WM_STRING2(x) #x
-#define WM_STRING(x) STRING2(x)    
-
-// #include <esp_idf_version.h>
-#ifdef ESP_IDF_VERSION
-    // #pragma message "ESP_IDF_VERSION_MAJOR = " WM_STRING(ESP_IDF_VERSION_MAJOR)
-    // #pragma message "ESP_IDF_VERSION_MINOR = " WM_STRING(ESP_IDF_VERSION_MINOR)
-    // #pragma message "ESP_IDF_VERSION_PATCH = " WM_STRING(ESP_IDF_VERSION_PATCH)
-    #define VER_IDF_STR WM_STRING(ESP_IDF_VERSION_MAJOR)  "."  WM_STRING(ESP_IDF_VERSION_MINOR)  "."  WM_STRING(ESP_IDF_VERSION_PATCH)
-#endif
-
-// #include "esp_arduino_version.h"
-#ifdef ESP_ARDUINO_VERSION
-    // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " WM_STRING(ESP_ARDUINO_VERSION_MAJOR)
-    // #pragma message "ESP_ARDUINO_VERSION_MINOR = " WM_STRING(ESP_ARDUINO_VERSION_MINOR)
-    // #pragma message "ESP_ARDUINO_VERSION_PATCH = " WM_STRING(ESP_ARDUINO_VERSION_PATCH)
-    #define VER_ARDUINO_STR WM_STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_MINOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_PATCH)
-#else
-    // #include <core_version.h>
-    // #pragma message "ESP_ARDUINO_VERSION_GIT  = " WM_STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
-    // #pragma message "ESP_ARDUINO_VERSION_DESC = " WM_STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
-    #define VER_ARDUINO_STR "Unknown"
-    // #pragma message "ESP_ARDUINO_VERSION_REL  = " WM_STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
-#endif
 
 #ifdef ESP8266
 
@@ -131,6 +106,41 @@
 #include <DNSServer.h>
 #include <memory>
 #include "strings_en.h"
+
+// prep string concat vars
+#define WM_STRING2(x) #x
+#define WM_STRING(x) WM_STRING2(x)    
+
+#define VER_ARDUINO_STR "Unknown"
+#define VER_IDF_STR "Unknown"
+
+// #include <esp_idf_version.h>
+#ifdef ESP_IDF_VERSION
+    // #pragma message "ESP_IDF_VERSION_MAJOR = " WM_STRING(ESP_IDF_VERSION_MAJOR)
+    // #pragma message "ESP_IDF_VERSION_MINOR = " WM_STRING(ESP_IDF_VERSION_MINOR)
+    // #pragma message "ESP_IDF_VERSION_PATCH = " WM_STRING(ESP_IDF_VERSION_PATCH)
+    #define VER_IDF_STR WM_STRING(ESP_IDF_VERSION_MAJOR)  "."  WM_STRING(ESP_IDF_VERSION_MINOR)  "."  WM_STRING(ESP_IDF_VERSION_PATCH)
+#endif
+
+#ifdef Arduino_h
+    #include "esp_arduino_version.h"
+    // esp_get_idf_version
+    #ifdef ESP_ARDUINO_VERSION
+        // #pragma message "ESP_ARDUINO_VERSION_MAJOR = " WM_STRING(ESP_ARDUINO_VERSION_MAJOR)
+        // #pragma message "ESP_ARDUINO_VERSION_MINOR = " WM_STRING(ESP_ARDUINO_VERSION_MINOR)
+        // #pragma message "ESP_ARDUINO_VERSION_PATCH = " WM_STRING(ESP_ARDUINO_VERSION_PATCH)
+        #define VER_ARDUINO_STR WM_STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_MINOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_PATCH)
+    #else
+        #include <core_version.h>
+        // #pragma message "ESP_ARDUINO_VERSION_GIT  = " WM_STRING(ARDUINO_ESP32_GIT_VER)//  0x46d5afb1
+        // #pragma message "ESP_ARDUINO_VERSION_DESC = " WM_STRING(ARDUINO_ESP32_GIT_DESC) //  1.0.6
+        // #pragma message "ESP_ARDUINO_VERSION_REL  = " WM_STRING(ARDUINO_ESP32_RELEASE) //"1_0_6"
+        #define VER_ARDUINO_STR WM_STRING(ESP_ARDUINO_VERSION_MAJOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_MINOR)  "."  WM_STRING(ESP_ARDUINO_VERSION_PATCH)
+    #endif
+#endif
+
+// #pragma message "VER_IDF_STR = " WM_STRING(VER_IDF_STR)
+// #pragma message "VER_ARDUINO_STR = " WM_STRING(VER_ARDUINO_STR)
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached

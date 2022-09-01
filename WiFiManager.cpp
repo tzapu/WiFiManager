@@ -3332,8 +3332,10 @@ void WiFiManager::debugPlatformInfo(){
     #endif
   #elif defined(ESP32)
   #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("Free heap:       "), ESP.getFreeHeap());
+    DEBUG_WM(F("WM version: "),      WM_VERSION_STR);
+    DEBUG_WM(F("Arduino version: "), VER_ARDUINO_STR);
     DEBUG_WM(F("ESP SDK version: "), ESP.getSdkVersion());
+    DEBUG_WM(F("Free heap:       "), ESP.getFreeHeap());
     #endif
     // esp_chip_info_t chipInfo;
     // esp_chip_info(&chipInfo);
