@@ -282,7 +282,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   #ifdef ESP32
   setupHostname(true);
 
-  if(_hostname){
+  if(_hostname != ""){
     // disable wifi if already on
     if(WiFi.getMode() & WIFI_STA){
       WiFi.mode(WIFI_OFF);
