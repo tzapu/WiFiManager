@@ -279,10 +279,13 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
+  // ESP32: Read saved WiFi SSID before altering WiFi status in setupHostname()
+  bool isWiFiSaved = getWiFiIsSaved();
+
   #ifdef ESP32
   setupHostname(true);
 
-  if(_hostname){
+  if(_hostname != ""){
     // disable wifi if already on
     if(WiFi.getMode() & WIFI_STA){
       WiFi.mode(WIFI_OFF);
@@ -295,7 +298,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   }
   #endif
 
-  if(getWiFiIsSaved()){
+  if(isWiFiSaved){
      _startconn = millis();
     _begin();
 
