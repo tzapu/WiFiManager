@@ -279,6 +279,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
+  bool wifiIsSaved = getWiFiIsSaved();
+
   #ifdef ESP32
   setupHostname(true);
 
@@ -295,7 +297,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   }
   #endif
 
-  if(getWiFiIsSaved()){
+  if(wifiIsSaved){
      _startconn = millis();
     _begin();
 
