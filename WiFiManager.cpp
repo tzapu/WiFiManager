@@ -297,7 +297,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   }
   #endif
 
-  if(wifiIsSaved){
+  // check if wifi is saved, (has autoconnect) to speed up cp start
+  // NOT wifi init safe
+  // if(wifiIsSaved){
      _startconn = millis();
     _begin();
 
@@ -364,12 +366,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("AutoConnect: FAILED"));
     #endif
-  }
-  else {
-    #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("No Credentials are Saved, skipping connect"));
-    #endif
-  } 
+  // }
+  // else {
+    // #ifdef WM_DEBUG_LEVEL
+    // DEBUG_WM(F("No Credentials are Saved, skipping connect"));
+    // #endif
+  // } 
 
   // possibly skip the config portal
   if (!_enableConfigPortal) {
