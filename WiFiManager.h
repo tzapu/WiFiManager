@@ -252,6 +252,12 @@ class WiFiManager
 
     // SET CALLBACKS
 
+    //called when client connects to softap
+    void          setClientConnectedCallback( std::function<void()> func );
+	
+	//called when client disconnects from softap
+    void          setClientDisconnectedCallback( std::function<void()> func );
+
     //called after AP mode and config portal has started
     void          setAPCallback( std::function<void(WiFiManager*)> func );
 
@@ -542,6 +548,7 @@ class WiFiManager
     boolean       _enableConfigPortal     = true;  // FOR autoconnect - start config portal if autoconnect failed
     boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
+    boolean       _clientConn             = false; // for client connect and disconnect callbacks
 
     const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
     const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
@@ -771,6 +778,8 @@ class WiFiManager
     std::function<void()> _saveparamscallback;
     std::function<void()> _resetcallback;
     std::function<void()> _preotaupdatecallback;
+    std::function<void()> _clientconcallback;
+    std::function<void()> _clientdisconcallback;
 
     template <class T>
     auto optionalIPFromString(T *obj, const char *s) -> decltype(  obj->fromString(s)  ) {
