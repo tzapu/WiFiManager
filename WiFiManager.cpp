@@ -786,6 +786,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       #endif
       shutdownConfigPortal();
       result = abort ? portalAbortResult : portalTimeoutResult; // false, false
+      if (_configportaltimeoutcallback != NULL) {
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("[CB] config portal timeout callback"));
+        #endif
+        _configportaltimeoutcallback();  // @CALLBACK
+      }
       break;
     }
 
@@ -830,6 +836,12 @@ boolean WiFiManager::process(){
         #endif
         webPortalActive = false;
         shutdownConfigPortal();
+        if (_configportaltimeoutcallback != NULL) {
+          #ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(DEBUG_VERBOSE,F("[CB] config portal timeout callback"));
+          #endif
+          _configportaltimeoutcallback();  // @CALLBACK
+        }
         return false;
       }
 
@@ -2786,6 +2798,15 @@ void WiFiManager::setPreSaveParamsCallback( std::function<void()> func ) {
  */
 void WiFiManager::setPreOtaUpdateCallback( std::function<void()> func ) {
   _preotaupdatecallback = func;
+}
+
+/**
+ * setConfigPortalTimeoutCallback, set a callback to config portal is timeout
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setConfigPortalTimeoutCallback( std::function<void()> func ) {
+  _configportaltimeoutcallback = func;
 }
 
 /**
