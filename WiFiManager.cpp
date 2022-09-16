@@ -3813,7 +3813,7 @@ void WiFiManager::handleUpdating(){
 
   // UPLOAD START
 	if (upload.status == UPLOAD_FILE_START) {
-	  if(_debug) Serial.setDebugOutput(true);
+	  // if(_debug) Serial.setDebugOutput(true);
     uint32_t maxSketchSpace;
     
     // Use new callback for before OTA update
@@ -3831,7 +3831,7 @@ void WiFiManager::handleUpdating(){
     #endif
 
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(DEBUG_VERBOSE,"Update file: ", upload.filename.c_str());
+    DEBUG_WM(DEBUG_VERBOSE,"[OTA] Update file: ", upload.filename.c_str());
     #endif
 
     // Update.onProgress(THandlerFunction_Progress fn);
@@ -3867,7 +3867,7 @@ void WiFiManager::handleUpdating(){
       #endif
 		}
     else {
-			Update.printError(Serial);
+			// Update.printError(Serial);
       error = true;
 		}
 	}
@@ -3884,7 +3884,7 @@ void WiFiManager::handleUpdating(){
 // upload and ota done, show status
 void WiFiManager::handleUpdateDone() {
 	DEBUG_WM(DEBUG_VERBOSE, F("<- Handle update done"));
-	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	// if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 
 	String page = getHTTPHead(FPSTR(S_options)); // @token options
 	String str  = FPSTR(HTTP_ROOT_MAIN);
