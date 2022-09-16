@@ -279,10 +279,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
+  bool wifiIsSaved = getWiFiIsSaved();
+
   #ifdef ESP32
   setupHostname(true);
 
-  if(_hostname){
+  if(_hostname != ""){
     // disable wifi if already on
     if(WiFi.getMode() & WIFI_STA){
       WiFi.mode(WIFI_OFF);
@@ -295,7 +297,9 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   }
   #endif
 
-  if(getWiFiIsSaved()){
+  // check if wifi is saved, (has autoconnect) to speed up cp start
+  // NOT wifi init safe
+  // if(wifiIsSaved){
      _startconn = millis();
     _begin();
 
@@ -362,12 +366,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("AutoConnect: FAILED"));
     #endif
-  }
-  else {
-    #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("No Credentials are Saved, skipping connect"));
-    #endif
-  } 
+  // }
+  // else {
+    // #ifdef WM_DEBUG_LEVEL
+    // DEBUG_WM(F("No Credentials are Saved, skipping connect"));
+    // #endif
+  // } 
 
   // possibly skip the config portal
   if (!_enableConfigPortal) {
@@ -713,6 +717,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
   if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
+    WiFi.mode(WIFI_AP_STA);
     WiFi_Disconnect();
     WiFi_enableSTA(false);
     #ifdef WM_DEBUG_LEVEL
@@ -720,7 +725,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     #endif
   }
   else {
-    WiFi_enableSTA(true);
+    // WiFi_enableSTA(true);
   }
 
   // init configportal globals to known states
@@ -781,6 +786,12 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       #endif
       shutdownConfigPortal();
       result = abort ? portalAbortResult : portalTimeoutResult; // false, false
+      if (_configportaltimeoutcallback != NULL) {
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_VERBOSE,F("[CB] config portal timeout callback"));
+        #endif
+        _configportaltimeoutcallback();  // @CALLBACK
+      }
       break;
     }
 
@@ -825,6 +836,12 @@ boolean WiFiManager::process(){
         #endif
         webPortalActive = false;
         shutdownConfigPortal();
+        if (_configportaltimeoutcallback != NULL) {
+          #ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(DEBUG_VERBOSE,F("[CB] config portal timeout callback"));
+          #endif
+          _configportaltimeoutcallback();  // @CALLBACK
+        }
         return false;
       }
 
@@ -2787,6 +2804,15 @@ void WiFiManager::setPreSaveParamsCallback( std::function<void()> func ) {
  */
 void WiFiManager::setPreOtaUpdateCallback( std::function<void()> func ) {
   _preotaupdatecallback = func;
+}
+
+/**
+ * setConfigPortalTimeoutCallback, set a callback to config portal is timeout
+ * @access public
+ * @param {[type]} void (*func)(void)
+ */
+void WiFiManager::setConfigPortalTimeoutCallback( std::function<void()> func ) {
+  _configportaltimeoutcallback = func;
 }
 
 /**
