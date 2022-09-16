@@ -3801,7 +3801,8 @@ void WiFiManager::handleUpdating(){
   // combine route handlers into one callback and use argument or post checking instead of mutiple functions maybe, if POST process else server upload page?
   // [x] add upload checking, do we need too check file?
   // convert output to debugger if not moving to example
-	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
+	
+  // if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   bool error = false;
   unsigned long _configPortalTimeoutSAV = _configPortalTimeout; // store cp timeout
   _configPortalTimeout = 0; // disable timeout
