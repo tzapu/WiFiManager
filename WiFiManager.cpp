@@ -828,13 +828,19 @@ boolean WiFiManager::process(){
         return false;
       }
 
-      uint8_t state = processConfigPortal();
+      uint8_t state = processConfigPortal(); // state is WL_IDLE or WL_CONNECTED/FAILED
       return state == WL_CONNECTED;
     }
     return false;
 }
 
-//using esp wl_status enums as returns for now, should be fine
+/**
+ * [processConfigPortal description]
+ * using esp wl_status enums as returns for now, should be fine
+ * returns WL_IDLE_STATUS or WL_CONNECTED/WL_CONNECT_FAILED upon connect/save flag
+ * 
+ * @return {[type]} [description]
+ */
 uint8_t WiFiManager::processConfigPortal(){
     if(configPortalActive){
       //DNS handler
@@ -2354,7 +2360,7 @@ void WiFiManager::handleNotFound() {
  */
 boolean WiFiManager::captivePortal() {
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(DEBUG_DEV,"-> " + server->hostHeader());
+  DEBUG_WM(DEBUG_MAX,"-> " + server->hostHeader());
   #endif
   
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
