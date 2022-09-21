@@ -2052,9 +2052,14 @@ void WiFiManager::handleInfo() {
 String WiFiManager::getInfoData(String id){
 
   String p;
-  // @todo add WM versioning
-  if(id==F("esphead"))p = FPSTR(HTTP_INFO_esphead);
-  else if(id==F("wifihead"))p = FPSTR(HTTP_INFO_wifihead);
+  if(id==F("esphead")){
+    p = FPSTR(HTTP_INFO_esphead);
+    p.replace(FPSTR(T_1),(String)ESP.getChipModel());
+  }
+  else if(id==F("wifihead")){
+    p = FPSTR(HTTP_INFO_wifihead);
+    p.replace(FPSTR(T_1),getModeString(WiFi.getMode()));
+  }
   else if(id==F("uptime")){
     // subject to rollover!
     p = FPSTR(HTTP_INFO_uptime);
@@ -2107,7 +2112,7 @@ String WiFiManager::getInfoData(String id){
       p = FPSTR(HTTP_INFO_bootver);
       p.replace(FPSTR(T_1),(String)system_get_boot_version());
   }
-  #endif  
+  #endif
   else if(id==F("cpufreq")){
     p = FPSTR(HTTP_INFO_cpufreq);
     p.replace(FPSTR(T_1),(String)ESP.getCpuFreqMHz());
