@@ -717,7 +717,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
   if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
-    WiFi.mode(WIFI_AP_STA);
+    #ifdef WM_DISCONWORKAROUND
+      WiFi.mode(WIFI_AP_STA);
+    #endif
     WiFi_Disconnect();
     WiFi_enableSTA(false);
     #ifdef WM_DEBUG_LEVEL

@@ -659,12 +659,17 @@ class WiFiManager
     #if defined(ESP_ARDUINO_VERSION) && defined(ESP_ARDUINO_VERSION_VAL)
 
         #define WM_ARDUINOVERCHECK ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
+        #define WM_ARDUINOVERCHECK_204 ESP_ARDUINO_VERSION <= ESP_ARDUINO_VERSION_VAL(2, 0, 5)
 
         #ifdef WM_ARDUINOVERCHECK
             #define WM_ARDUINOEVENTS
         #else
             #define WM_NOSOFTAPSSID
             #define WM_NOCOUNTRY
+        #endif
+
+        #ifdef WM_ARDUINOVERCHECK_204
+            #define WM_DISCONWORKAROUND
         #endif
 
     #else 
