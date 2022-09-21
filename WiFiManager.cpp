@@ -2002,6 +2002,7 @@ void WiFiManager::handleInfo() {
       F("memsketch"),
       F("memsmeter"),      
       F("lastreset"),
+      F("temp"),
       F("wifihead"),
       F("conx"),
       F("stassid"),
@@ -2238,7 +2239,7 @@ String WiFiManager::getInfoData(String id){
     p.replace(FPSTR(T_1),(String)temperatureRead());
     p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
     // p.replace(FPSTR(T_3),(String)hallRead());
-    p.replace(FPSTR(T_3),"NA");
+    // p.replace(FPSTR(T_3),"NA"); // removed hall sensor as reads can cause issues with adcs
   }
   #endif
   else if(id==F("aboutver")){
