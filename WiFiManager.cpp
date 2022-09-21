@@ -2054,7 +2054,9 @@ String WiFiManager::getInfoData(String id){
   String p;
   if(id==F("esphead")){
     p = FPSTR(HTTP_INFO_esphead);
-    p.replace(FPSTR(T_1),(String)ESP.getChipModel());
+    #ifdef ESP32
+      p.replace(FPSTR(T_1), (String)ESP.getChipModel());
+    #endif
   }
   else if(id==F("wifihead")){
     p = FPSTR(HTTP_INFO_wifihead);
