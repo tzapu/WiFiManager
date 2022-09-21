@@ -58,6 +58,7 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
   _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
+  _length         = 1;
   _value          = nullptr;
   setValue(defaultValue,length);
 }
