@@ -3364,28 +3364,25 @@ void WiFiManager::debugPlatformInfo(){
   #ifdef ESP8266
     system_print_meminfo();
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("getCoreVersion():         "),ESP.getCoreVersion());
-    DEBUG_WM(F("system_get_sdk_version(): "),system_get_sdk_version());
-    DEBUG_WM(F("system_get_boot_version():"),system_get_boot_version());
-    DEBUG_WM(F("getFreeHeap():            "),(String)ESP.getFreeHeap());
+    DEBUG_WM(F("[SYS] getCoreVersion():         "),ESP.getCoreVersion());
+    DEBUG_WM(F("[SYS] system_get_sdk_version(): "),system_get_sdk_version());
+    DEBUG_WM(F("[SYS] system_get_boot_version():"),system_get_boot_version());
+    DEBUG_WM(F("[SYS] getFreeHeap():            "),(String)ESP.getFreeHeap());
     #endif
   #elif defined(ESP32)
   #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("WM version: "),      WM_VERSION_STR);
-    DEBUG_WM(F("Arduino version: "), VER_ARDUINO_STR);
-    DEBUG_WM(F("ESP SDK version: "), ESP.getSdkVersion());
-    DEBUG_WM(F("Free heap:       "), ESP.getFreeHeap());
+    DEBUG_WM(F("[SYS] WM version: "),      WM_VERSION_STR);
+    DEBUG_WM(F("[SYS] Arduino version: "), VER_ARDUINO_STR);
+    DEBUG_WM(F("[SYS] ESP SDK version: "), ESP.getSdkVersion());
+    DEBUG_WM(F("[SYS] Free heap:       "), ESP.getFreeHeap());
     #endif
-    // esp_chip_info_t chipInfo;
-    // esp_chip_info(&chipInfo);
+
     #ifdef WM_DEBUG_LEVEL
-    // DEBUG_WM("Chip Info: Model: ",chipInfo.model);
-    // DEBUG_WM("Chip Info: Cores: ",chipInfo.cores);
-    // DEBUG_WM("Chip Info: Rev: ",chipInfo.revision);
-    // DEBUG_WM(printf("Chip Info: Model: %d, cores: %d, revision: %d", chipInfo.model.c_str(), chipInfo.cores, chipInfo.revision));
-    // DEBUG_WM("Chip Rev: ",(String)ESP.getChipRevision());
+    DEBUG_WM(F("[SYS] Chip ID:"),WIFI_getChipId());
+    DEBUG_WM(F("[SYS] Chip Model:"), ESP.getChipModel());
+    DEBUG_WM(F("[SYS] Chip Cores:"), ESP.getChipCores());
+    DEBUG_WM(F("[SYS] Chip Rev:"),   ESP.getChipRevision());
     #endif
-    // core version is not avail
   #endif
 }
 
