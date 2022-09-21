@@ -39,8 +39,20 @@
 #define WM_NOSOFTAPSSID    // no softapssid() @todo shim
 #endif
 
-// #ifdef ARDUINO_ESP32S3_DEV
-#ifdef ESP32
+// #ifdef CONFIG_IDF_TARGET_ESP32S2
+// #warning ESP32S2
+// #endif
+
+// #ifdef CONFIG_IDF_TARGET_ESP32C3
+// #warning ESP32C3
+// #endif
+
+// #ifdef CONFIG_IDF_TARGET_ESP32S3
+// #warning ESP32S3
+// #endif
+
+#if defined(ARDUINO_ESP32S3_DEV) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#warning "WM_NOTEMP"
 #define WM_NOTEMP // disabled temp sensor, have to determine which chip we are on
 #endif
 

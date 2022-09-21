@@ -1989,7 +1989,7 @@ void WiFiManager::handleInfo() {
 
   #elif defined(ESP32)
     // add esp_chip_info ?
-    infos = 26;
+    infos = 27;
     String infoids[] = {
       F("esphead"),
       F("uptime"),
@@ -2017,7 +2017,6 @@ void WiFiManager::handleInfo() {
       F("apmac"),
       F("aphost"),
       F("apbssid")
-      // F("temp")
     };
   #endif
 
