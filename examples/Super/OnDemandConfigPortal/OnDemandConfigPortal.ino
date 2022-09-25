@@ -72,13 +72,14 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
+  // wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
+  wm.server->on("/custom", HTTP_ANY, std::bind(handleRoute, wm, std::placeholders::_1, true));
   // wm.server->on("/info",handleRoute); // you can override wm!
 }
 
 void handleRoute(){
   Serial.println("[HTTP] handle route");
-  wm.server->send(200, "text/plain", "hello from user code");
+  // wm.server->send(200, "text/plain", "hello from user code");
 }
 
 void handlePreOtaUpdateCallback(){

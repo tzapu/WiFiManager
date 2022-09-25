@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         board: 
-          - "nodemcuv2"
           - "lolin32"
+          # - "nodemcuv2"
 
     steps:
     - uses: actions/checkout@v2
@@ -50,4 +50,4 @@ jobs:
         echo "void loop() {}" >> main.ino
 
     - name: Run PlatformIO
-      run: pio ci --board=${{ matrix.board }} .
+      run: pio ci --board=${{ matrix.board }} --lib="." .

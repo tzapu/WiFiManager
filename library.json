@@ -26,6 +26,9 @@
     "me-no-dev/AsyncTCP": "*",
     "bbx10/DNSServer": "^1.1.0"
   },
+  "build": {
+    "libLDFMode": "chain+"
+  },
   "platforms": 
   [
     "espressif8266",
