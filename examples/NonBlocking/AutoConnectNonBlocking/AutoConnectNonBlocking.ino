@@ -19,9 +19,6 @@ void setup() {
     else {
         Serial.println("Configportal running");
     }
-
-    wm.startConfigPortal();
-    // wm.startWebPortal();
 }
 
 void loop() {
