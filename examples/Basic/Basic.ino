@@ -2,7 +2,7 @@
 
 
 void setup() {
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+    // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     // it is a good practice to make sure your code sets wifi mode how you want it.
 
     // put your setup code here, to run once:
@@ -13,7 +13,7 @@ void setup() {
 
     // reset settings - wipe stored credentials for testing
     // these are stored by the esp library
-    wm.resetSettings();
+    // wm.resetSettings();
 
     // Automatically connect using saved credentials,
     // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
