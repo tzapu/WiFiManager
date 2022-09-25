@@ -26,7 +26,7 @@ Member to Member Support / Chat
 
  [![Join the chat at https://gitter.im/tablatronix/WiFiManager](https://badges.gitter.im/tablatronix/WiFiManager.svg)](https://gitter.im/tablatronix/WiFiManager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
  
-[![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/dkjJbHwC)
+[![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/WgjVprfN)
 
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 

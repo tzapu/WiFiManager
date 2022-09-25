@@ -17,7 +17,7 @@
 #ifndef WIFI_MANAGER_OVERRIDE_STRINGS
 // !!! ABOVE WILL NOT WORK if you define in your sketch, must be build flag, if anyone one knows how to order includes to be able to do this it would be neat.. I have seen it done..
 
-const char WM_VERSION_STR[] PROGMEM = "v2.0.12-beta";
+const char WM_VERSION_STR[] PROGMEM = "v2.0.13-beta";
 
 const char HTTP_HEAD_START[]       PROGMEM = "<!DOCTYPE html>"
 "<html lang='en'><head>"
@@ -173,12 +173,13 @@ const char HTTP_JS[] PROGMEM =
 // Info html
 // @todo remove html elements from progmem, repetetive strings
 #ifdef ESP32
-	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp32</h3><hr><dl>";
+	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>{1}</h3><hr><dl>";
 	const char HTTP_INFO_chiprev[]    PROGMEM = "<dt>Chip Rev</dt><dd>{1}</dd>";
   	const char HTTP_INFO_lastreset[]  PROGMEM = "<dt>Last reset reason</dt><dd>CPU0: {1}<br/>CPU1: {2}</dd>";
   	const char HTTP_INFO_aphost[]     PROGMEM = "<dt>Access Point Hostname</dt><dd>{1}</dd>";
     const char HTTP_INFO_psrsize[]    PROGMEM = "<dt>PSRAM Size</dt><dd>{1} bytes</dd>";
-	const char HTTP_INFO_temp[]       PROGMEM = "<dt>Temperature</dt><dd>{1} C&deg; / {2} F&deg;</dd><dt>Hall</dt><dd>{3}</dd>";
+	const char HTTP_INFO_temp[]       PROGMEM = "<dt>Temperature</dt><dd>{1} C&deg; / {2} F&deg;</dd>";
+    // const char HTTP_INFO_temp[]       PROGMEM =  "<dt><dt>Hall</dt><dd>{3}</dd>";
 #else
 	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
 	const char HTTP_INFO_fchipid[]    PROGMEM = "<dt>Flash Chip ID</dt><dd>{1}</dd>";
@@ -191,7 +192,7 @@ const char HTTP_JS[] PROGMEM =
 const char HTTP_INFO_memsmeter[]  PROGMEM = "<br/><progress value='{1}' max='{2}'></progress></dd>";
 const char HTTP_INFO_memsketch[]  PROGMEM = "<dt>Memory - Sketch Size</dt><dd>Used / Total bytes<br/>{1} / {2}";
 const char HTTP_INFO_freeheap[]   PROGMEM = "<dt>Memory - Free Heap</dt><dd>{1} bytes available</dd>";
-const char HTTP_INFO_wifihead[]   PROGMEM = "<br/><h3>WiFi</h3><hr>";
+const char HTTP_INFO_wifihead[]   PROGMEM = "<br/><h3>WiFi <small><em>({1})</em></small></h3><hr>";
 const char HTTP_INFO_uptime[]     PROGMEM = "<dt>Uptime</dt><dd>{1} Mins {2} Secs</dd>";
 const char HTTP_INFO_chipid[]     PROGMEM = "<dt>Chip ID</dt><dd>{1}</dd>";
 const char HTTP_INFO_idesize[]    PROGMEM = "<dt>Flash Size</dt><dd>{1} bytes</dd>";
