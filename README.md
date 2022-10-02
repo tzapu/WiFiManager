@@ -102,7 +102,7 @@ The configuration portal is of the captive variety, so on various devices it wil
 - [x] seperate custom params page
 - [x] ondemand webportal
 - [x] complete refactor of code to segment functions
-- [x] wiif scan icons or percentage display
+- [x] wifi scan icons or percentage display
 - [x] invert class for dark mode
 - [x] more template tokens
 - [x] progmem for all strings
@@ -113,14 +113,14 @@ The configuration portal is of the captive variety, so on various devices it wil
 - [x] wm is now non persistent, will not erase or change stored esp config on esp8266
 - [x] tons of debugging output / levels
 - [ ] disable captiveportal
-- [ ] preload wiifscans, faster page loads
+- [ ] preload wifiscans, faster page loads
 - [ ] softap stability fixes when sta is not connected
 
 
 ## Quick Start
 
 ### Installing
-You can either install through the Arduino Library Manager or checkout the latest changes or a release from github
+You can either install through the Arduino Library Manager or checkout the latest changes for a release from github i.e. download the repo as a .zip file and add it in Arduino IDE.
 
 #### Install through Library Manager
 __Currently version 0.8+ works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
