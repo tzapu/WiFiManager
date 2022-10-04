@@ -1859,6 +1859,8 @@ void WiFiManager::handleWifiSave() {
     page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
     page += FPSTR(HTTP_SAVED);
   }
+
+  if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_END);
 
   server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
@@ -1885,6 +1887,7 @@ void WiFiManager::handleParamSave() {
 
   String page = getHTTPHead(FPSTR(S_titleparamsaved)); // @token titleparamsaved
   page += FPSTR(HTTP_PARAMSAVED);
+  if(_showBack) page += FPSTR(HTTP_BACKBTN); 
   page += FPSTR(HTTP_END);
 
   HTTPSend(page);
