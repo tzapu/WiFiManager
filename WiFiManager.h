@@ -150,7 +150,7 @@
 
 #ifdef Arduino_h
     #ifdef ESP32
-    #include "esp_arduino_version.h"
+    // #include "esp_arduino_version.h" // esp32 arduino > 2.x
     #endif
     // esp_get_idf_version
     #ifdef ESP_ARDUINO_VERSION
