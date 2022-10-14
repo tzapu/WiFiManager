@@ -280,7 +280,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
-  bool wifiIsSaved = getWiFiIsSaved();
+  // bool wifiIsSaved = getWiFiIsSaved();
 
   #ifdef ESP32
   setupHostname(true);
