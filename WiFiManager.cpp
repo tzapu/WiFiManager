@@ -1958,7 +1958,6 @@ void WiFiManager::handleWifiSave() {
                   #ifdef WM_DEBUG_LEVEL
                   DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
                   #endif
-                      Serial.printf("bruh");
                }
 
               nvs_set_str(handle, "wm.pass", _pass.c_str());
