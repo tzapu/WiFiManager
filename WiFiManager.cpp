@@ -387,6 +387,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
               _defaultpass = buffer;
               delete buffer;
             }
+	    nvs_close(handle);
         }
     }
     #endif
@@ -1932,49 +1933,47 @@ void WiFiManager::handleWifiSave() {
   #ifdef ESP32
   // handle WPA_ENTERPRISE saving, which doesn't automatically
   // save
-  if (_user != "") {
-      esp_err_t err = nvs_flash_init();
+  esp_err_t err = nvs_flash_init();
+  if (err != ESP_OK) {
+      #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_DEV,F("cannot init nvs flash"));
+      #endif
+  } else {
+      nvs_handle_t handle;
+      err = nvs_open("storage", NVS_READWRITE, &handle);
       if (err != ESP_OK) {
           #ifdef WM_DEBUG_LEVEL
-          DEBUG_WM(DEBUG_DEV,F("cannot init nvs flash"));
+          DEBUG_WM(DEBUG_DEV,F("cannot open nvs flash"));
           #endif
       } else {
-          nvs_handle_t handle;
-          err = nvs_open("storage", NVS_READWRITE, &handle);
+          err = nvs_set_str(handle, "wm.ssid", (_user != "") ? _ssid.c_str() : "");
           if (err != ESP_OK) {
               #ifdef WM_DEBUG_LEVEL
-              DEBUG_WM(DEBUG_DEV,F("cannot open nvs flash"));
+              DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
               #endif
-          } else {
-              err = nvs_set_str(handle, "wm.ssid", _ssid.c_str());
-              if (err != ESP_OK) {
-                  #ifdef WM_DEBUG_LEVEL
-                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
-                  #endif
-              }
-
-              nvs_set_str(handle, "wm.user", _user.c_str());
-              if (err != ESP_OK) {
-                  #ifdef WM_DEBUG_LEVEL
-                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
-                  #endif
-               }
-
-              nvs_set_str(handle, "wm.pass", _pass.c_str());
-              if (err != ESP_OK) {
-                  #ifdef WM_DEBUG_LEVEL
-                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
-                  #endif
-              }
-
-              err = nvs_commit(handle);
-              if (err != ESP_OK) {
-                  #ifdef WM_DEBUG_LEVEL
-                  DEBUG_WM(DEBUG_DEV,F("cannot commit to nvs flash"));
-                  #endif
-              }
-              nvs_close(handle);
           }
+
+          nvs_set_str(handle, "wm.user", _user.c_str());
+          if (err != ESP_OK) {
+              #ifdef WM_DEBUG_LEVEL
+              DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
+              #endif
+           }
+
+          nvs_set_str(handle, "wm.pass", (_user != "") ? _pass.c_str() : "");
+          if (err != ESP_OK) {
+              #ifdef WM_DEBUG_LEVEL
+              DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
+              #endif
+          }
+
+          err = nvs_commit(handle);
+          if (err != ESP_OK) {
+              #ifdef WM_DEBUG_LEVEL
+              DEBUG_WM(DEBUG_DEV,F("cannot commit to nvs flash"));
+              #endif
+          }
+          nvs_close(handle);
       }
   }
   #endif
