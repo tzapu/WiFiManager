@@ -514,8 +514,10 @@ class WiFiManager
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = ""; // var temp ssid
+    String        _user                   = ""; // var temp username
     String        _pass                   = ""; // var temp psk
     String        _defaultssid            = ""; // preload ssid
+    String        _defaultuser            = ""; // preload user
     String        _defaultpass            = ""; // preload pass
 
     // options flags
@@ -623,9 +625,11 @@ class WiFiManager
     void          setupDNSD();
     void          setupHTTPServer();
 
+    uint8_t       connectWifi(String ssid, String user, String pass, bool connect = true);
     uint8_t       connectWifi(String ssid, String pass, bool connect = true);
     bool          setSTAConfig();
     bool          wifiConnectDefault();
+    bool          wifiConnectNew(String ssid, String user, String pass,bool connect = true);
     bool          wifiConnectNew(String ssid, String pass,bool connect = true);
 
     uint8_t       waitForConnectResult();

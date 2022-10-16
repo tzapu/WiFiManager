@@ -16,6 +16,8 @@
 
 #ifdef ESP32
 uint8_t WiFiManager::_lastconxresulttmp = WL_IDLE_STATUS;
+#include "esp_wpa2.h"
+#include "nvs_flash.h"
 #endif
 
 /**
@@ -346,7 +348,50 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       // and we have no idea WHAT we are connected to
     }
 
-    if(connected || connectWifi(_defaultssid, _defaultpass) == WL_CONNECTED){
+    // WPA2_Enterprise: check if we have anything inside nvs
+    #ifdef ESP32
+    esp_err_t err = nvs_flash_init();
+    if (err != ESP_OK) {
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(DEBUG_DEV,F("cannot init nvs flash"));
+        #endif
+    } else {
+        nvs_handle_t handle;
+        err = nvs_open("storage", NVS_READWRITE, &handle);
+        if (err != ESP_OK) {
+            #ifdef WM_DEBUG_LEVEL
+            DEBUG_WM(DEBUG_DEV,F("cannot open nvs flash"));
+            #endif
+        } else {
+            size_t str_size;
+            err = nvs_get_str(handle, "wm.ssid", 0, &str_size);
+            if (str_size > 0) {
+              #ifdef WM_DEBUG_LEVEL
+              DEBUG_WM(DEBUG_DEV, F("found enterprise creds"));
+              #endif
+
+              char *buffer = (char *)calloc(str_size, sizeof(char));
+              nvs_get_str(handle, "wm.ssid", buffer, &str_size);
+              _defaultssid = buffer;
+              delete buffer;
+
+              nvs_get_str(handle, "wm.user", 0, &str_size);
+              buffer = (char *)calloc(str_size, sizeof(char));
+              nvs_get_str(handle, "wm.user", buffer, &str_size);
+              _defaultuser = buffer;
+              delete buffer;
+
+              nvs_get_str(handle, "wm.pass", 0, &str_size);
+              buffer = (char *)calloc(str_size, sizeof(char));
+              nvs_get_str(handle, "wm.pass", buffer, &str_size);
+              _defaultpass = buffer;
+              delete buffer;
+            }
+        }
+    }
+    #endif
+
+    if(connected || connectWifi(_defaultssid, _defaultuser, _defaultpass) == WL_CONNECTED){
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
@@ -886,7 +931,7 @@ uint8_t WiFiManager::processConfigPortal(){
       }
       else{
         // attempt sta connection to submitted _ssid, _pass
-        uint8_t res = connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED;
+        uint8_t res = connectWifi(_ssid, _user, _pass, _connectonsave) == WL_CONNECTED;
         if (res || (!_connectonsave)) {
           #ifdef WM_DEBUG_LEVEL
           if(!_connectonsave){
@@ -1011,10 +1056,15 @@ bool WiFiManager::shutdownConfigPortal(){
   return ret;
 }
 
+// pass through any older connectWifi calls
+uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
+    return connectWifi(ssid, "", pass, connect);
+}
+
 // @todo refactor this up into seperate functions
 // one for connecting to flash , one for new client
 // clean up, flow is convoluted, and causes bugs
-uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
+uint8_t WiFiManager::connectWifi(String ssid, String user, String pass, bool connect) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("Connecting as wifi client..."));
   #endif
@@ -1042,7 +1092,8 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
   }
   // if ssid argument provided connect to that
   if (ssid != "") {
-    wifiConnectNew(ssid,pass,connect);
+    if (user != "") wifiConnectNew(ssid,user,pass,connect);
+    else wifiConnectNew(ssid,pass,connect);
     // @todo connect=false seems to disconnect sta in begin() so not sure if _connectonsave is useful at all
     // skip wait if not connecting
     // if(connect){
@@ -1094,18 +1145,46 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
 /**
  * connect to a new wifi ap
  * @since $dev
- * @param  String ssid 
- * @param  String pass 
+ * @param  String ssid
+ * @param  String pass
  * @return bool success
  * @return connect only save if false
  */
-bool WiFiManager::wifiConnectNew(String ssid, String pass,bool connect){
+bool WiFiManager::wifiConnectNew(String ssid, String pass, bool connect) {
+    return wifiConnectNew(ssid, "", pass, connect);
+}
+
+/**
+ * connect to a new wifi ap
+ * @since $dev
+ * @param  String ssid
+ * @param  String user - WPA2_Enterprise
+ * @param  String pass
+ * @return bool success
+ * @return connect only save if false
+ */
+bool WiFiManager::wifiConnectNew(String ssid, String user, String pass,bool connect){
   bool ret = false;
   #ifdef WM_DEBUG_LEVEL
   // DEBUG_WM(DEBUG_DEV,F("CONNECTED: "),WiFi.status() == WL_CONNECTED ? "Y" : "NO");
   DEBUG_WM(F("Connecting to NEW AP:"),ssid);
   DEBUG_WM(DEBUG_DEV,F("Using Password:"),pass);
   #endif
+
+  if (user != "") {
+      #ifdef ESP32
+      esp_wifi_sta_wpa2_ent_set_username((uint8_t *)user.c_str(),
+                                         user.length());
+      esp_wifi_sta_wpa2_ent_set_password((uint8_t *)pass.c_str(),
+                                         pass.length());
+      esp_wifi_sta_wpa2_ent_enable();
+      WiFi_enableSTA(true,storeSTAmode);
+      WiFi.persistent(true);
+      ret = WiFi.begin(ssid.c_str());
+      WiFi.persistent(false);
+      #endif
+  }
+
   WiFi_enableSTA(true,storeSTAmode); // storeSTAmode will also toggle STA on in default opmode (persistent) if true (default)
   WiFi.persistent(true);
   ret = WiFi.begin(ssid.c_str(), pass.c_str(), 0, NULL, connect);
@@ -1810,6 +1889,7 @@ void WiFiManager::handleWifiSave() {
 
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
+  _user = server->arg(F("u")).c_str();
   _pass = server->arg(F("p")).c_str();
 
   // set static ips from server args
@@ -1848,6 +1928,57 @@ void WiFiManager::handleWifiSave() {
   }
 
   if(_paramsInWifi) doParamSave();
+
+  #ifdef ESP32
+  // handle WPA_ENTERPRISE saving, which doesn't automatically
+  // save
+  if (_user != "") {
+      esp_err_t err = nvs_flash_init();
+      if (err != ESP_OK) {
+          #ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(DEBUG_DEV,F("cannot init nvs flash"));
+          #endif
+      } else {
+          nvs_handle_t handle;
+          err = nvs_open("storage", NVS_READWRITE, &handle);
+          if (err != ESP_OK) {
+              #ifdef WM_DEBUG_LEVEL
+              DEBUG_WM(DEBUG_DEV,F("cannot open nvs flash"));
+              #endif
+          } else {
+              err = nvs_set_str(handle, "wm.ssid", _ssid.c_str());
+              if (err != ESP_OK) {
+                  #ifdef WM_DEBUG_LEVEL
+                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
+                  #endif
+              }
+
+              nvs_set_str(handle, "wm.user", _user.c_str());
+              if (err != ESP_OK) {
+                  #ifdef WM_DEBUG_LEVEL
+                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
+                  #endif
+                      Serial.printf("bruh");
+               }
+
+              nvs_set_str(handle, "wm.pass", _pass.c_str());
+              if (err != ESP_OK) {
+                  #ifdef WM_DEBUG_LEVEL
+                  DEBUG_WM(DEBUG_DEV,F("cannot write to nvs flash"));
+                  #endif
+              }
+
+              err = nvs_commit(handle);
+              if (err != ESP_OK) {
+                  #ifdef WM_DEBUG_LEVEL
+                  DEBUG_WM(DEBUG_DEV,F("cannot commit to nvs flash"));
+                  #endif
+              }
+              nvs_close(handle);
+          }
+      }
+  }
+  #endif
 
   String page;
 
