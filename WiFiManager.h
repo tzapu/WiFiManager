@@ -131,12 +131,18 @@
 
 #include <DNSServer.h>
 #include <memory>
-#include "strings_en.h"
+
+
+// Include wm strings vars
+// Pass in strings env override via WM_STRINGS_FILE
+#ifndef WM_STRINGS_FILE
+#define WM_STRINGS_FILE "wm_strings_en.h" // this includes constants as dependency
+#endif
+#include WM_STRINGS_FILE
 
 // prep string concat vars
 #define WM_STRING2(x) #x
 #define WM_STRING(x) WM_STRING2(x)    
-
 
 // #include <esp_idf_version.h>
 #ifdef ESP_IDF_VERSION
