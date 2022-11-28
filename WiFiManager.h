@@ -134,17 +134,15 @@
 
 
 // Include wm strings vars
+// Pass in strings env override via WM_STRINGS_FILE
 #ifndef WM_STRINGS_FILE
-#define WM_STRINGS_FILE "wm_strings_en.h"
+#define WM_STRINGS_FILE "wm_strings_en.h" // this includes constants as dependency
 #endif
 #include WM_STRINGS_FILE
-
-// #include "wm_consts.h"
 
 // prep string concat vars
 #define WM_STRING2(x) #x
 #define WM_STRING(x) WM_STRING2(x)    
-
 
 // #include <esp_idf_version.h>
 #ifdef ESP_IDF_VERSION
