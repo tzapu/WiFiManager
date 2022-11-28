@@ -105,6 +105,10 @@ void setup() {
   Serial.println("[INFORMATION] TEST");  
 
 
+  // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // wifi_scan_method_t scanMethod
+  // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
+  // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
+
   wm.setDebugOutput(true);
   wm.debugPlatformInfo();
 
