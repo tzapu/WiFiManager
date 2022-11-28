@@ -770,7 +770,7 @@ class WiFiManager
     
     // Set default debug level
     #ifndef WM_DEBUG_LEVEL
-    #define WM_DEBUG_LEVEL DEBUG_VERBOSE // development default, not release
+    #define WM_DEBUG_LEVEL DEBUG_NOTIFY
     #endif
 
     // override debug level OFF
@@ -781,7 +781,7 @@ class WiFiManager
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else 
-    uint8_t _debugLevel = DEBUG_VERBOSE; // default debug level
+    uint8_t _debugLevel = 0; // default debug level
     #endif
 
     // @todo use DEBUG_ESP_PORT ?
