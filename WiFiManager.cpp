@@ -88,7 +88,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   //   // return false; //@todo bail 
   // }
 
-  if(_length != length){
+  if(_length != length || _value == nullptr){
     _length = length;
     if( _value != nullptr){
       delete[] _value;
