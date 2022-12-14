@@ -1,7 +1,7 @@
 /**
  * WiFiManager.cpp
  * 
- * WiFiManager, a library for the ESP32/Arduino platform
+ * WiFiManager, a library for the ESP/Arduino platforms
  * for configuration of WiFi credentials using a Captive Portal
  * 
  * @author Creator tzapu

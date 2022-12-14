@@ -1,7 +1,7 @@
 /**
  * WiFiManager.h
  * 
- * WiFiManager, a library for the ESP32/Arduino platform
+ * WiFiManager, a library for the ESP/Arduino platforms
  * for configuration of WiFi credentials using a Captive Portal
  * 
  * @author Creator tzapu
@@ -72,7 +72,7 @@
       #include "user_interface.h"
     }
     #include <ESP8266WiFi.h>
-    #include <ESP8266WebServer.h>
+    #include <ESPAsyncWebServer.h>
 
     #ifdef WM_MDNS
         #include <ESP8266mDNS.h>
@@ -484,11 +484,7 @@ class WiFiManager
 
     std::unique_ptr<DNSServer>        dnsServer;
 
-    #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
-        using WM_WebServer = AsyncWebServer;
-    #else
-        using WM_WebServer = ESP8266WebServer;
-    #endif
+    using WM_WebServer = AsyncWebServer;
     
     std::unique_ptr<WM_WebServer> server;
 
