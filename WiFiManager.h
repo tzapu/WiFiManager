@@ -1,11 +1,12 @@
 /**
  * WiFiManager.h
  * 
- * WiFiManager, a library for the ESP8266/Arduino platform
+ * WiFiManager, a library for the ESP32/Arduino platform
  * for configuration of WiFi credentials using a Captive Portal
  * 
  * @author Creator tzapu
  * @author tablatronix
+ * @author joba-1 joachim.banzhaf@gmail.com (ESPAsyncWebServer port)
  * @version 0.0.0
  * @license MIT
  */
@@ -91,7 +92,7 @@
 
     #ifndef WEBSERVER_H
         #ifdef WM_WEBSERVERSHIM
-            #include <WebServer.h>
+            #include <ESPAsyncWebServer.h>
         #else
             #include <ESP8266WebServer.h>
             // Forthcoming official ? probably never happening
@@ -484,7 +485,7 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
-        using WM_WebServer = WebServer;
+        using WM_WebServer = AsyncWebServer;
     #else
         using WM_WebServer = ESP8266WebServer;
     #endif
@@ -639,32 +640,33 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
-    void          HTTPSend(String content);
-    void          handleRoot();
-    void          handleWifi(boolean scan);
-    void          handleWifiSave();
-    void          handleInfo();
-    void          handleReset();
-    void          handleNotFound();
-    void          handleExit();
-    void          handleClose();
+    void          HTTPSend(String content, AsyncWebServerRequest *request);
+    void          handleRoot(AsyncWebServerRequest *request);
+    void          handleWifi(AsyncWebServerRequest *request, boolean scan);
+    void          handleWifiSave(AsyncWebServerRequest *request);
+    void          handleInfo(AsyncWebServerRequest *request);
+    void          handleReset(AsyncWebServerRequest *request);
+    void          handleNotFound(AsyncWebServerRequest *request);
+    void          handleExit(AsyncWebServerRequest *request);
+    void          handleClose(AsyncWebServerRequest *request);
     // void          handleErase();
-    void          handleErase(boolean opt);
-    void          handleParam();
-    void          handleWiFiStatus();
-    void          handleRequest();
-    void          handleParamSave();
-    void          doParamSave();
+    void          handleErase(AsyncWebServerRequest *request, boolean opt);
+    void          handleParam(AsyncWebServerRequest *request);
+    void          handleWiFiStatus(AsyncWebServerRequest *request);
+    void          handleRequest(AsyncWebServerRequest *request);
+    void          handleParamSave(AsyncWebServerRequest *request);
+    void          doParamSave(AsyncWebServerRequest *request);
 
-    boolean       captivePortal();
+    boolean       captivePortal(AsyncWebServerRequest *request);
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
+/*
 	// OTA Update handler
-	void          handleUpdate();
-	void          handleUpdating();
-	void          handleUpdateDone();
-
+	void          handleUpdate(AsyncWebServerRequest *request);
+	void          handleUpdating(AsyncWebServerRequest *request);
+	void          handleUpdateDone(AsyncWebServerRequest *request);
+*/
 
     // wifi platform abstractions
     bool          WiFi_Mode(WiFiMode_t m);
