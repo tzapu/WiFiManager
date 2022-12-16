@@ -2251,10 +2251,10 @@ String WiFiManager::getInfoData(String id){
     p.replace(FPSTR(T_1),(String)temperatureRead());
     p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
   }
-  else if(id==F("hall")){ 
-    p = FPSTR(HTTP_INFO_hall);
-    p.replace(FPSTR(T_1),(String)hallRead()); // hall sensor reads can cause issues with adcs
-  }
+  // else if(id==F("hall")){ 
+  //   p = FPSTR(HTTP_INFO_hall);
+  //   p.replace(FPSTR(T_1),(String)hallRead()); // hall sensor reads can cause issues with adcs
+  // }
   #endif
   else if(id==F("aboutver")){
     p = FPSTR(HTTP_INFO_aboutver);
