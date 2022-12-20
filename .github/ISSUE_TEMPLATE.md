@@ -1,4 +1,4 @@
-## PLEASE TRY DEVELOPMENT BRANCH before submitting bugs on release or master, in case they were already fixed. ##
+## PLEASE TRY Latest Master BRANCH before submitting bugs, in case they were already fixed. ##
 
 Issues without basic info will be ignored or closed!
 
