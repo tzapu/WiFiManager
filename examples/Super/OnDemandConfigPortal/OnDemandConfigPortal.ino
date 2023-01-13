@@ -24,7 +24,7 @@ WiFiManager wm;
 
 
 // TEST OPTION FLAGS
-bool TEST_CP         = true; // always start the configportal, even if ap found
+bool TEST_CP         = false; // always start the configportal, even if ap found
 int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
@@ -34,6 +34,23 @@ bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global pa
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
+
+
+//callbacks
+  // called after AP mode and config portal has started
+  //  setAPCallback( std::function<void(WiFiManager*)> func );
+  // called after webserver has started
+  //  setWebServerCallback( std::function<void()> func );
+  // called when settings reset have been triggered
+  //  setConfigResetCallback( std::function<void()> func );
+  // called when wifi settings have been changed and connection was successful ( or setBreakAfterConfig(true) )
+  //  setSaveConfigCallback( std::function<void()> func );
+  // called when saving either params-in-wifi or params page
+  //  setSaveParamsCallback( std::function<void()> func );
+  // called when saving params-in-wifi or params before anything else happens (eg wifi)
+  //  setPreSaveConfigCallback( std::function<void()> func );
+  // called just before doing OTA update
+  //  setPreOtaUpdateCallback( std::function<void()> func );
 
 void saveWifiCallback(){
   Serial.println("[CALLBACK] saveCallback fired");
@@ -65,15 +82,19 @@ void handleRoute(){
   wm.server->send(200, "text/plain", "hello from user code");
 }
 
+void handlePreOtaUpdateCallback(){
+  Update.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("CUSTOM Progress: %u%%\r", (progress / (total / 100)));
+  });
+}
+
 void setup() {
-  // WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  // WiFi.mode(WIFI_STA); // explicitly set mode, esp can default to STA+AP
   
   // put your setup code here, to run once:
   Serial.begin(115200);
-  // Serial1.begin(115200);
 
-  // Serial.setDebugOutput(true);  
-  delay(1000);
+  // Serial.setDebugOutput(true);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -87,18 +108,24 @@ void setup() {
   wm.debugPlatformInfo(); // debug info about eso platform
   // wm.setDebugOutput(true, "[WM] "); // enable debugging, optional custom log prefix
 
+  // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // wifi_scan_method_t scanMethod
+  // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
+  // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
+
+
   //reset settings - for testing
   // wm.resetSettings();
   // wm.erase();
 
   // setup some parameters
-    
+
   WiFiManagerParameter custom_html("<p style=\"color:pink;font-weight:Bold;\">This Is Custom HTML</p>"); // only custom html
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", "", 6);
   WiFiManagerParameter custom_token("api_token", "api token", "", 16);
   WiFiManagerParameter custom_tokenb("invalid token", "invalid token", "", 0); // id is invalid, cannot contain spaces
   WiFiManagerParameter custom_ipaddress("input_ip", "input IP", "", 15,"pattern='\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}'"); // custom input attrs (ip mask)
+  WiFiManagerParameter custom_input_type("input_pwd", "input pass", "", 15,"type='password'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
   WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
@@ -130,6 +157,7 @@ void setup() {
   wm.setWebServerCallback(bindServerCallback);
   wm.setSaveConfigCallback(saveWifiCallback);
   wm.setSaveParamsCallback(saveParamCallback);
+  wm.setPreOtaUpdateCallback(handlePreOtaUpdateCallback);
 
   // add all your parameters here
   wm.addParameter(&custom_html);
@@ -139,6 +167,7 @@ void setup() {
   wm.addParameter(&custom_tokenb);
   wm.addParameter(&custom_ipaddress);
   wm.addParameter(&custom_checkbox);
+  wm.addParameter(&custom_input_type);
 
   wm.addParameter(&custom_html_inputs);
 
@@ -199,7 +228,8 @@ void setup() {
 
   // set Hostname
 
- wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel
   // wm.setWiFiAPChannel(13);
@@ -287,13 +317,13 @@ void setup() {
 }
 
 void wifiInfo(){
-  Serial.println("\nWIFI INFO\n**************");
-  WiFi.printDiag(Serial);
-  Serial.print("\nSAVED: ");
-  Serial.println((String)wm.getWiFiIsSaved() ? "YES" : "NO");
-  Serial.println("SSID: " + (String)wm.getWiFiSSID());
-  Serial.println("PASS: " + (String)wm.getWiFiPass());
-  Serial.println("**************\n");
+  // can contain gargbage on esp32 if wifi is not ready yet
+  Serial.println("[WIFI] WIFI INFO DEBUG");
+  // WiFi.printDiag(Serial);
+  Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
+  Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
+  Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
+  Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
 }
 
 void loop() {
@@ -366,7 +396,7 @@ void getTime() {
   }
   Serial.println("");
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo); // @NOTE doesnt work in esp2.3.0
+  gmtime_r(&now, &timeinfo);
   Serial.print("Current time: ");
   Serial.print(asctime(&timeinfo));
 }
