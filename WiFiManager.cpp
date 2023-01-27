@@ -1858,6 +1858,7 @@ void WiFiManager::handleWifiSave() {
   else {
     page = getHTTPHead(FPSTR(S_titlewifisaved)); // @token titlewifisaved
     page += FPSTR(HTTP_SAVED);
+    connect = true; //signal ready to connect/reset process in processConfigPortal
   }
 
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
@@ -1869,8 +1870,6 @@ void WiFiManager::handleWifiSave() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent wifi save page"));
   #endif
-
-  connect = true; //signal ready to connect/reset process in processConfigPortal
 }
 
 void WiFiManager::handleParamSave() {
