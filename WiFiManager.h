@@ -760,11 +760,12 @@ class WiFiManager
 
     // debugging
     typedef enum {
-        DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // default stable
-        DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3, // default dev
-        DEBUG_MAX       = 4
+        DEBUG_SILENT    = 0, // debug OFF but still compiled for runtime
+        DEBUG_ERROR     = 1, // error only
+        DEBUG_NOTIFY    = 2, // default stable,INFO
+        DEBUG_VERBOSE   = 3, // move verbose info
+        DEBUG_DEV       = 4, // development useful debugging info
+        DEBUG_MAX       = 5  // MAX extra dev auditing, var dumps etc (MAX+1 will print timing,mem and frag info)
     } wm_debuglevel_t;
 
     boolean _debug  = true;
