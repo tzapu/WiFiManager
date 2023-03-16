@@ -646,7 +646,7 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
-    void          HTTPSend(String content);
+    void          HTTPSend(const String &content);
     void          handleRoot();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
