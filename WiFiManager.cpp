@@ -31,7 +31,7 @@ WiFiManagerParameter::WiFiManagerParameter() {
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id             = NULL;
   _label          = NULL;
-  _length         = 1;
+  _length         = 0;
   _value          = nullptr;
   _labelPlacement = WFM_LABEL_DEFAULT;
   _customHTML     = custom;
@@ -58,7 +58,7 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
   _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
-  _length         = 1;
+  _length         = 0;
   _value          = nullptr;
   setValue(defaultValue,length);
 }
@@ -1734,7 +1734,7 @@ String WiFiManager::getParamOut(){
 
     for (int i = 0; i < _paramsCount; i++) {
       //Serial.println((String)_params[i]->_length);
-      if (_params[i] == NULL || _params[i]->_length == 0 || _params[i]->_length > 99999) {
+      if (_params[i] == NULL || _params[i]->_length > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
