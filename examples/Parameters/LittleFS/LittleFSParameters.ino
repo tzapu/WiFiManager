@@ -22,11 +22,12 @@ String readFile(fs::FS &fs, const char * path){
   Serial.println(fileContent);
   return fileContent;
 }
+
 void writeFile(fs::FS &fs, const char * path, const char * message){
   Serial.printf("Writing file: %s\r\n", path);
   File file = fs.open(path, "w");
   if(!file){
-    Serial.println("- failed to open file for writing");
+    Serial.println("- Failed to open file for writing");
     return;
   }
   if(file.print(message)){
@@ -44,13 +45,12 @@ int data = 4;
 int timeout = 120; // seconds to run for
 
 void setup() {
-if (!LittleFS.begin()) { //to start littlefs
-Serial.println("LittleFS mount failed");
-return;
-}
-data = readFile(LittleFS, "/data.txt").toInt();
-WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
-  // put your setup code here, to run once:
+  if (!LittleFS.begin()) { // to start littlefs
+    Serial.println("LittleFS mount failed");
+    return;
+  }
+  data = readFile(LittleFS, "/data.txt").toInt();
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP  
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
   WiFiManager wm;
   //wm.resetSettings();
@@ -59,21 +59,20 @@ WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   if(!res) {
      Serial.println("Failed to connect");
      // ESP.restart();
-  } 
-
+  }
 }
 
 void loop() {
-if ( digitalRead(TRIGGER_PIN) == LOW) {
+  if ( digitalRead(TRIGGER_PIN) == LOW) {
     WiFiManager wm;    
     //wm.resetSettings();
     wm.setConfigPortalTimeout(timeout);
     if (!wm.startConfigPortal("Sharmander")) {
-      Serial.println("failed to connect and hit timeout");
+      Serial.println("Failed to connect and hit timeout");
       delay(3000);
       ESP.restart();
       delay(5000);
     }
     Serial.println("connected...yeey :)");
-}
+  }
 }
