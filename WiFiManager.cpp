@@ -280,6 +280,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
+  _WifiAP_active = false;
+
   // bool wifiIsSaved = getWiFiIsSaved();
 
   #ifdef ESP32
@@ -572,6 +574,13 @@ void WiFiManager::stopWebPortal() {
   #endif
   webPortalActive = false;
   shutdownConfigPortal();
+}
+
+bool WiFiManager::WifiAP_active(int max_uptime_minutes){
+  if((millis()-_startconn) < (max_uptime_minutes * 60000)){
+    return (_WifiAP_active);
+  }
+  return false;
 }
 
 boolean WiFiManager::configPortalHasTimeout(){
@@ -1329,6 +1338,8 @@ void WiFiManager::handleRoot() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Root"));
   #endif
+
+  _WifiAP_active = true;
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
   String page = getHTTPHead(_title); // @token options @todo replace options with title
@@ -2312,6 +2323,7 @@ void WiFiManager::handleExit() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Exit"));
   #endif
+  _WifiAP_active = false;
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
@@ -2440,6 +2452,7 @@ void WiFiManager::stopCaptivePortal(){
 // HTTPD CALLBACK, handle close,  stop captive portal, if not enabled undefined
 void WiFiManager::handleClose(){
   DEBUG_WM(DEBUG_VERBOSE,F("Disabling Captive Portal"));
+  _WifiAP_active = false;
   stopCaptivePortal();
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP close"));

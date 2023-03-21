@@ -487,6 +487,9 @@ class WiFiManager
     // get hostname helper
     String        getWiFiHostname();
 
+    // indicate if AP is currently in use
+    bool          WifiAP_active(int max_uptime_minutes);
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -553,6 +556,7 @@ class WiFiManager
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
+    bool          _WifiAP_active          = false;
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
