@@ -365,7 +365,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     }
 
     #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("AutoConnect: FAILED"));
+    DEBUG_WM(F("AutoConnect: FAILED for "),(String)((millis()-_startconn)) + " ms");
     #endif
   // }
   // else {
@@ -1051,7 +1051,7 @@ uint8_t WiFiManager::connectWifi(String ssid, String pass, bool connect) {
         connRes = waitForConnectResult(_saveTimeout); // use default save timeout for saves to prevent bugs in esp->waitforconnectresult loop
       }
       else {
-         connRes = waitForConnectResult(0);
+         connRes = waitForConnectResult();
       }
     // }
   }
