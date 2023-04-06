@@ -429,6 +429,9 @@ class WiFiManager
     // set the webapp title, default WiFiManager
     void          setTitle(String title);
 
+    // set the webapp sub title, default AP name
+    void          setSubTitle(String subTitle);
+
     // add params to its own menu page and remove from wifi, NOT TO BE COMBINED WITH setMenu!
     void          setParamsPage(bool enable);
 
@@ -588,7 +591,8 @@ class WiFiManager
     const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
     const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
     String        _bodyClass              = ""; // class to add to body
-    String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
+    String        _title                  = FPSTR(S_brand); // app title - default WiFiManager
+    String        _subTitle               = ""; // app sub title - default AP name
 
     // internal options
     
