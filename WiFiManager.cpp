@@ -1334,7 +1334,7 @@ void WiFiManager::handleRoot() {
   String page = getHTTPHead(_title); // @token options @todo replace options with title
   String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
   str.replace(FPSTR(T_t),_title);
-  str.replace(FPSTR(T_v), _subTitle.length() ? _subTitle : (configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString()))); // Use sub title, use AP name or ip
+  str.replace(FPSTR(T_v), _subtitle.length() ? _subtitle : (configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString()))); // Use subtitle, use AP name or ip
   page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
@@ -3110,11 +3110,11 @@ void WiFiManager::setTitle(String title){
 }
 
 /**
- * [setSubTitle description]
- * @param String subTitle, set app sub title
+ * [setSubtitle description]
+ * @param String subtitle, set app subtitle
  */
-void WiFiManager::setSubTitle(String subTitle) {
-    _subTitle = subTitle;
+void WiFiManager::setSubtitle(String subtitle) {
+    _subtitle = subtitle;
 }
 
 /**
