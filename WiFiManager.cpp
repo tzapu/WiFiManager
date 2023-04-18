@@ -463,6 +463,7 @@ bool WiFiManager::setupHostname(bool restart){
 
 // CONFIG PORTAL
 bool WiFiManager::startAP(){
+  _WifiAP_active = true;
   bool ret = true;
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("StartAP with SSID: "),_apName);
