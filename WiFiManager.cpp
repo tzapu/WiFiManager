@@ -3125,7 +3125,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if(menu[i] == _menutokens[j]){
+      if((String)menu[i] == String(_menutokens[j])){
         if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
@@ -3152,7 +3152,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if(menuitem == _menutokens[j]){
+      if((String)menuitem == String(_menutokens[j])){
         if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
