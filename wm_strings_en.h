@@ -90,7 +90,7 @@ const char HTTP_BR[]               PROGMEM = "<br/>";
 const char HTTP_STYLE[]            PROGMEM = "<style>"
 ".c,body{text-align:center;font-family:verdana}div,input,select{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box}"
 "input,button,select,.msg{border-radius:.3rem;width: 100%}input[type=radio],input[type=checkbox]{width:auto}"
-"button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
+"button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#1F2A30;line-height:2.4rem;font-size:1.2rem;width:100%}"
 "input[type='file']{border:1px solid #1fa3ec}"
 ".wrap {text-align:left;display:inline-block;min-width:260px;max-width:500px}"
 // links
