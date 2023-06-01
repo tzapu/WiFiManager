@@ -70,7 +70,7 @@ The configuration portal is of the captive variety, so on various devices it wil
 - because of the Captive Portal and the DNS server you will either get a 'Join to network' type of popup or get any domain you try to access redirected to the configuration portal
 - choose one of the access points scanned, enter password, click save
 - ESP will try to connect. If successful, it relinquishes control back to your app. If not, reconnect to AP and reconfigure.
-- There are options to change this behavior or manually start the configportal and webportal independantly as well as run them in non blocking mode.
+- There are options to change this behavior or manually start the configportal and webportal independently as well as run them in non blocking mode.
 
 ## How It Looks
 ![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
