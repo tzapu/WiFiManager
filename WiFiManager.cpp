@@ -64,7 +64,7 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
 }
 
 WiFiManagerParameter::~WiFiManagerParameter() {
-  if (_value != NULL) {
+  if (_value != nullptr) {
     delete[] _value;
   }
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
