@@ -101,7 +101,7 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
 
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
-  return _value;
+  return _value.get();
 }
 
 const char* WiFiManagerParameter::getID() const {
