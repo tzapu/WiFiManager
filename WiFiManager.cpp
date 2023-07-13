@@ -2420,6 +2420,15 @@ boolean WiFiManager::captivePortal() {
   bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
   // doredirect = !isIp(server->hostHeader()) // old check
   
+  //Only redirect the portal detection requests. Avoids overload.
+  doredirect = doredirect 
+                && (server->hostHeader().indexOf("connect")>=0
+                    || server->hostHeader().indexOf("msft")>=0
+                    || server->hostHeader().indexOf("apple")>=0
+                    || server->uri().startsWith("/gen")
+                    || server->uri().indexOf("hostpot")>=0
+                );
+
   if (doredirect) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
