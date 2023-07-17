@@ -2477,20 +2477,20 @@ bool WiFiManager::erase(bool opt){
       #endif
       return err == ESP_OK;
     }
-  #elif defined(ESP8266) && defined(spiffs_api_h)
+  #elif defined(ESP8266) && defined(LittleFS_api_h)
     if(opt){
       bool ret = false;
-      if(SPIFFS.begin()){
+      if(LittleFS.begin()){
       #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(F("Erasing SPIFFS"));
+        DEBUG_WM(F("Erasing LittleFS"));
         #endif
-        bool ret = SPIFFS.format();
+        bool ret = LittleFS.format();
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(DEBUG_VERBOSE,F("spiffs erase: "),ret ? "Success" : "ERROR");
+        DEBUG_WM(DEBUG_VERBOSE,F("LittleFS erase: "),ret ? "Success" : "ERROR");
         #endif
       } else{
       #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(F("[ERROR] Could not start SPIFFS"));
+        DEBUG_WM(F("[ERROR] Could not start LittleFS"));
         #endif
       }
       return ret;

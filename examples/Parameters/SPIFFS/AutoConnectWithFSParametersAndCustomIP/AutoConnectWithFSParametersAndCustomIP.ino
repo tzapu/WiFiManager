@@ -3,7 +3,7 @@
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 
 #ifdef ESP32
-  #include <SPIFFS.h>
+  #include <LittleFS.h>
 #endif
 
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
@@ -33,17 +33,17 @@ void setup() {
   Serial.println();
 
   //clean FS, for testing
-  //SPIFFS.format();
+  //LittleFS.format();
 
   //read configuration from FS json
   Serial.println("mounting FS...");
 
-  if (SPIFFS.begin()) {
+  if (LittleFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (LittleFS.exists("/config.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = LittleFS.open("/config.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
@@ -167,7 +167,7 @@ void setup() {
     json["gateway"] = WiFi.gatewayIP().toString();
     json["subnet"] = WiFi.subnetMask().toString();
 
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = LittleFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
