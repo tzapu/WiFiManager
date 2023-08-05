@@ -5,6 +5,8 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
+frankolo
+
 [![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)]()
 
 [![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
