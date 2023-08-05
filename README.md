@@ -5,9 +5,7 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-frankolo
-
-[![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)]()
+[![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)](#)
 
 [![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
 
@@ -31,15 +29,10 @@ Member to Member Support / Chat
 [![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/nS5WGkaQH5)
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
-**This works with the ESP8266 Arduino platform**
-
-[https://github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
-
-**This works with the ESP32 Arduino platform** 
-
-[https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+Works with the [ESP8266 Arduino]([https://github.com/esp8266/Arduino]) and [ESP32 Arduino](https://github.com/espressif/arduino-esp32) platforms.
 
 ### Known Issues
+
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
 -------
 
