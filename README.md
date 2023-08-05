@@ -5,7 +5,7 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)
+[![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)]()
 
 [![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
 
@@ -20,6 +20,7 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 [![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32)
 [![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-s2)
 [![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-c3)
+[![ESP32](https://img.shields.io/badge/ESP-32S3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-S3)
 
 Member to Member Support / Chat
 
