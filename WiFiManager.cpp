@@ -1929,7 +1929,7 @@ void WiFiManager::doParamSave(){
     #endif
 
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || _params[i]->_length == 0) {
+      if (_params[i] == NULL || _params[i]->_length > 99999) {
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
         #endif
@@ -2267,7 +2267,7 @@ String WiFiManager::getInfoData(String id){
     // temperature is not calibrated, varying large offsets are present, use for relative temp changes only
     p = FPSTR(HTTP_INFO_temp);
     p.replace(FPSTR(T_1),(String)temperatureRead());
-    p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8));
+    p.replace(FPSTR(T_2),(String)((temperatureRead()+32)*1.8f));
   }
   // else if(id==F("hall")){ 
   //   p = FPSTR(HTTP_INFO_hall);
@@ -3134,7 +3134,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if(menu[i] == _menutokens[j]){
+      if((String)menu[i] == String(_menutokens[j])){
         if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
@@ -3161,7 +3161,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if(menuitem == _menutokens[j]){
+      if((String)menuitem == String(_menutokens[j])){
         if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }

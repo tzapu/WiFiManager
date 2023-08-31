@@ -19,20 +19,32 @@
 
 const char WM_VERSION_STR[] PROGMEM = "v2.0.15-rc.1";
 
-const uint8_t _nummenutokens = 11;
-const char * const _menutokens[_nummenutokens] PROGMEM = {
-    "wifi",
-    "wifinoscan",
-    "info",
-    "param",
-    "close",
-    "restart",
-    "exit",
-    "erase",
-    "update",
-    "sep",
-    "custom"
+static const char _wifi_token[]       PROGMEM = "wifi";
+static const char _wifinoscan_token[] PROGMEM = "wifinoscan";
+static const char _info_token[]       PROGMEM = "info";
+static const char _param_token[]      PROGMEM = "param";
+static const char _close_token[]      PROGMEM = "close";
+static const char _restart_token[]    PROGMEM = "restart";
+static const char _exit_token[]       PROGMEM = "exit";
+static const char _erase_token[]      PROGMEM = "erase";
+static const char _update_token[]     PROGMEM = "update";
+static const char _sep_token[]        PROGMEM = "sep";
+static const char _custom_token[]     PROGMEM = "custom";
+static PGM_P _menutokens[] PROGMEM = {
+    _wifi_token,
+    _wifinoscan_token,
+    _info_token,
+    _param_token,
+    _close_token,
+    _restart_token,
+    _exit_token,
+    _erase_token,
+    _update_token,
+    _sep_token,
+    _custom_token
 };
+const uint8_t _nummenutokens = (sizeof(_menutokens) / sizeof(PGM_P));
+
 
 const char R_root[]               PROGMEM = "/";
 const char R_wifi[]               PROGMEM = "/wifi";
