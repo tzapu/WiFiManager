@@ -17,8 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         example: 
-        - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
-        - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
+        - "examples/Parameters/LittleFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
+        - "examples/Parameters/LittleFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
         - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
         - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
         - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
@@ -70,8 +70,8 @@ jobs:
       fail-fast: false
       matrix:
         example:
-          - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
-          - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
+          - "examples/Parameters/LittleFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
+          - "examples/Parameters/LittleFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
           - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
           - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
           - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"

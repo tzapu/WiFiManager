@@ -27,7 +27,7 @@ script:
   - arduino --board esp8266:esp8266:generic:xtal=80,eesz=4M1M,FlashMode=qio,FlashFreq=80,dbg=Serial,lvl=CORE --save-prefs
   - build_examples
   - arduino --board esp32:esp32:esp32:FlashFreq=80,FlashSize=4M,DebugLevel=info --save-prefs
-# some examples fail (SPIFFS defines differ esp32 vs esp8266) so we exclude them
+# some examples fail (LittleFS defines differ esp32 vs esp8266) so we exclude them
   - build_examples
 #  - arduino -v --verbose-build --verify $PWD/examples/AutoConnect/AutoConnect.ino
 
