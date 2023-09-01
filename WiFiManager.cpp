@@ -1438,7 +1438,7 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     force = false;
     async = true;
     force = _lastscan == 0;
-    if(force || (millis()-_lastscan > 60000)){
+    if(force || (millis()-_lastscan > _scancachetime)){
       int8_t res;
       _startscan = millis();
 

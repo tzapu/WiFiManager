@@ -543,7 +543,7 @@ class WiFiManager
     // the refresh button bypasses cache
     // no aps found is problematic as scans are always going to want to run, leading to page load delays
     boolean       _preloadwifiscan        = false;  // preload wifiscan if true
-    boolean       _asyncScan              = false; // perform wifi network scan async
+    boolean       _asyncScan              = true; // perform wifi network scan async
     unsigned int  _scancachetime          = 30000; // ms cache time for background scans
 
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
