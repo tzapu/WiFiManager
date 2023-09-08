@@ -646,13 +646,16 @@ class WiFiManager
     void          updateConxResult(uint8_t status);
 
     // webserver handlers
+public:
+    void          handleNotFound();
+private:
     void          HTTPSend(const String &content);
     void          handleRoot();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleInfo();
     void          handleReset();
-    void          handleNotFound();
+
     void          handleExit();
     void          handleClose();
     // void          handleErase();

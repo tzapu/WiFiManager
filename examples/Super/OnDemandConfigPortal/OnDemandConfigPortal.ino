@@ -72,13 +72,22 @@ void saveParamCallback(){
 }
 
 void bindServerCallback(){
-  wm.server->on("/custom",handleRoute); // this is now crashing esp32 for some reason
-  // wm.server->on("/info",handleRoute); // you can override wm!
+  wm.server->on("/custom",handleRoute);
+
+  // you can override wm route endpoints, I have not found a way to remove handlers, but this would let you disable them or add auth etc.
+  // wm.server->on("/info",handleNotFound);
+  // wm.server->on("/update",handleNotFound);
+  wm.server->on("/erase",handleNotFound);
 }
 
 void handleRoute(){
   Serial.println("[HTTP] handle route");
   wm.server->send(200, "text/plain", "hello from user code");
+}
+
+void handleNotFound(){
+  Serial.println("[HTTP] handle route");
+  wm.handleNotFound();
 }
 
 void handlePreOtaUpdateCallback(){

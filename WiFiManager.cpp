@@ -2386,16 +2386,20 @@ void WiFiManager::handleNotFound() {
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
   String message = FPSTR(S_notfound); // @token notfound
-  message += FPSTR(S_uri); // @token uri
-  message += server->uri();
-  message += FPSTR(S_method); // @token method
-  message += ( server->method() == HTTP_GET ) ? FPSTR(S_GET) : FPSTR(S_POST);
-  message += FPSTR(S_args); // @token args
-  message += server->args();
-  message += F("\n");
 
-  for ( uint8_t i = 0; i < server->args(); i++ ) {
-    message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
+  bool verbose404 = false; // show info in 404 body, uri,method, args
+  if(verbose404){
+    message += FPSTR(S_uri); // @token uri
+    message += server->uri();
+    message += FPSTR(S_method); // @token method
+    message += ( server->method() == HTTP_GET ) ? FPSTR(S_GET) : FPSTR(S_POST);
+    message += FPSTR(S_args); // @token args
+    message += server->args();
+    message += F("\n");
+
+    for ( uint8_t i = 0; i < server->args(); i++ ) {
+      message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
+    }
   }
   server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
   server->sendHeader(F("Pragma"), F("no-cache"));
