@@ -2416,6 +2416,16 @@ boolean WiFiManager::captivePortal() {
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
   String serverLoc =  toStringIp(server->client().localIP());
+
+  // fallback for ipv6 bug
+  if(serverloc = 0.0.0.0){
+    if ((WiFi.status()) != WL_CONNECTED)
+      serverLoc = toStringIp(WiFi.softAPIP());
+    else
+      serverLoc = toStringIp(WiFi.localIP());
+    }
+  }
+  
   if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
   bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
   

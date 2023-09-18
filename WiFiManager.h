@@ -618,6 +618,9 @@ class WiFiManager
     // but not limited to, we could run continuous background scans on various page hits, or xhr hits
     // which would be better coupled with asyncscan
     // atm preload is only done on root hit and startcp
+    // 
+    // preload scanning causes AP to delay showing for users, but also caches and lets the cp load faster once its open
+    //  my scan takes 7-10 seconds
     boolean       _preloadwifiscan        = true; // preload wifiscan if true
     unsigned int  _scancachetime          = 30000; // ms cache time for preload scans
     boolean       _asyncScan              = true; // perform wifi network scan async
