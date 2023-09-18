@@ -92,8 +92,10 @@ void setup() {
   
   // put your setup code here, to run once:
   Serial.begin(115200);
+  delay(3000);
+  Serial.setDebugOutput(true);
 
-  // Serial.setDebugOutput(true);
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -109,7 +111,7 @@ void setup() {
   // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
   // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
 
-  wm.setDebugOutput(true);
+  wm.setDebugOutput(true, DEBUG_DEV);
   wm.debugPlatformInfo();
 
   //reset settings - for testing
@@ -127,7 +129,7 @@ void setup() {
   WiFiManagerParameter custom_input_type("input_pwd", "input pass", "", 15,"type='password'"); // custom input attrs (ip mask)
 
   const char _customHtml_checkbox[] = "type=\"checkbox\""; 
-  WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox,WFM_LABEL_AFTER);
+  WiFiManagerParameter custom_checkbox("my_checkbox", "My Checkbox", "T", 2, _customHtml_checkbox, WFM_LABEL_AFTER);
 
   const char *bufferStr = R"(
   <!-- INPUT CHOICE -->
@@ -313,7 +315,7 @@ void setup() {
 
 void wifiInfo(){
   // can contain gargbage on esp32 if wifi is not ready yet
-  Serial.println("[WIFI] WIFI INFO DEBUG");
+  Serial.println("[WIFI] WIFI_INFO DEBUG");
   // WiFi.printDiag(Serial);
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
   Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
