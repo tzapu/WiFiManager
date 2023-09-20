@@ -2422,12 +2422,11 @@ boolean WiFiManager::captivePortal() {
   String serverLoc =  toStringIp(server->client().localIP());
 
   // fallback for ipv6 bug
-  if(serverloc = 0.0.0.0){
+  if(serverLoc = "0.0.0.0"){
     if ((WiFi.status()) != WL_CONNECTED)
       serverLoc = toStringIp(WiFi.softAPIP());
     else
       serverLoc = toStringIp(WiFi.localIP());
-    }
   }
   
   if(_httpPort != 80) serverLoc += ":" + (String)_httpPort; // add port if not default
