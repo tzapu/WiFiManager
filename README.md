@@ -5,7 +5,7 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-[Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases) [https://github.com/tzapu/WiFiManager/releases]
+[Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)](https://github.com/tzapu/WiFiManager/releases)
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
 
