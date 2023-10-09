@@ -211,7 +211,7 @@ class WiFiManagerParameter {
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getID() const;
-    const char *getValue() const;
+    virtual const char *getValue() const;
     const char *getLabel() const;
     const char *getPlaceholder() const; // @deprecated, use getLabel
     int         getValueLength() const;
