@@ -31,6 +31,8 @@ bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
 bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
+uint8_t BUTTONFUNC   = 1; // 0 resetsettings, 1 configportal, 2 autoconnect
+
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
 
@@ -102,9 +104,9 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   delay(3000);
-  Serial.setDebugOutput(true);
+  // Serial.setDebugOutput(true);
 
-  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+  // WiFi.setTxPower(WIFI_POWER_8_5dBm);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -329,7 +331,7 @@ void wifiInfo(){
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
   Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
   Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
-  Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
+  // Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
 }
 
 void loop() {
@@ -348,21 +350,28 @@ void loop() {
       Serial.println("BUTTON PRESSED");
 
       // button reset/reboot
-      // wm.resetSettings();
-      // wm.reboot();
-      // delay(200);
-      // return;
-      
-      wm.setConfigPortalTimeout(140);
-      wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
-
-      // disable captive portal redirection
-      // wm.setCaptivePortalEnable(false);
-      
-      if (!wm.startConfigPortal("OnDemandAP","12345678")) {
-        Serial.println("failed to connect and hit timeout");
-        delay(3000);
+      if(BUTTONFUNC == 0){
+        wm.resetSettings();
+        wm.reboot();
+        delay(200);
+        return;
       }
+      
+      // start configportal
+      if(BUTTONFUNC == 1)
+        if (!wm.startConfigPortal("OnDemandAP","12345678")) {
+          Serial.println("failed to connect and hit timeout");
+          delay(3000);
+        }
+      }
+
+      //test autoconnect as reconnect etc.
+      if(BUTTONFUNC == 2){
+        wm.setConfigPortalTimeout(20);
+        wm.autoConnect();
+        return;
+      }
+    
     }
     else {
       //if you get here you have connected to the WiFi
