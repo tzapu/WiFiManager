@@ -1444,6 +1444,7 @@ String WiFiManager::getMenuOut(){
       continue;
     }
     page += HTTP_PORTAL_MENU[menuId];
+    delay(0);
   }
 
   return page;
@@ -3149,7 +3150,9 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
         if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
+      delay(0);
     }
+    delay(0);
   }
   #ifdef WM_DEBUG_LEVEL
   // DEBUG_WM(getMenuOut());
