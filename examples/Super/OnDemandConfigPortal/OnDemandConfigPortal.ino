@@ -358,7 +358,7 @@ void loop() {
       }
       
       // start configportal
-      if(BUTTONFUNC == 1)
+      if(BUTTONFUNC == 1){
         if (!wm.startConfigPortal("OnDemandAP","12345678")) {
           Serial.println("failed to connect and hit timeout");
           delay(3000);
