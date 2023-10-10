@@ -2711,7 +2711,7 @@ void WiFiManager::setSaveConnect(bool connect) {
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
   if(_debug && _debugLevel == WM_DEBUG_DEV) debugPlatformInfo();
-  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY) DEBUG_WM((String)WM_VERSION_STR + " L:"+(String)_debugLevel);
+  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY) DEBUG_WM((String)WM_VERSION_STR + " D:"+(String)_debugLevel);
 }
 
 void WiFiManager::setDebugOutput(boolean debug, String prefix) {
@@ -3326,7 +3326,7 @@ template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(!_debug || _debugLevel < level) return;
 
-  if(_debugLevel > WM_DEBUG_MAX){
+  if(_debugLevel >= WM_DEBUG_MAX){
     #ifdef ESP8266
     // uint32_t free;
     // uint16_t max;
