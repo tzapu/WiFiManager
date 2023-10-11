@@ -2712,7 +2712,7 @@ void WiFiManager::setSaveConnect(bool connect) {
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
   if(_debug && _debugLevel == WM_DEBUG_DEV) debugPlatformInfo();
-  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY) DEBUG_WM((String)WM_VERSION_STR + " D:"+(String)_debugLevel);
+  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY)DEBUG_WM((__FlashStringHelper *)WM_VERSION_STR," D:"+String(_debugLevel));
 }
 
 void WiFiManager::setDebugOutput(boolean debug, String prefix) {
@@ -3146,7 +3146,7 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if((String)menu[i] == String(_menutokens[j])){
+      if((String)menu[i] == (__FlashStringHelper *)(_menutokens[j])){
         if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
@@ -3175,7 +3175,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if((String)menuitem == String(_menutokens[j])){
+      if((String)menuitem == (__FlashStringHelper *)(_menutokens[j])){
         if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }

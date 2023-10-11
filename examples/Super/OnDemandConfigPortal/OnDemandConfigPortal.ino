@@ -122,7 +122,7 @@ void setup() {
   // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
   // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
 
-  wm.setDebugOutput(true, DEBUG_DEV);
+  wm.setDebugOutput(true, WM_DEBUG_DEV);
   wm.debugPlatformInfo();
 
   //reset settings - for testing
