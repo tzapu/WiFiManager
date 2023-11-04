@@ -480,6 +480,12 @@ class WiFiManager
     // set dark mode via invert class
     void          setDarkMode(bool enable);
 
+    // set digest authentication for all pages
+    void          setAuthentication(bool enable);
+
+    // set authentication credentials
+    void          setAuthCredientials(String username, String password);
+
     // get default ap esp uses , esp_chipid etc
     String        getDefaultAPName();
     
@@ -564,7 +570,9 @@ class WiFiManager
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
-
+    bool          _enableAuth             = false; // enables http digest authentication for all pages
+    String        _authUsername           = "admin"; // default username for http authentication
+    String        _authPassword           = "12345"; // default password for http authentication
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
@@ -679,7 +687,7 @@ private:
     void          handleErase(boolean opt);
     void          handleParam();
     void          handleWiFiStatus();
-    void          handleRequest();
+    bool          handleRequest();
     void          handleParamSave();
     void          doParamSave();
 

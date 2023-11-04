@@ -1296,30 +1296,25 @@ void WiFiManager::HTTPSend(const String &content){
 }
 
 /** 
- * HTTPD handler for page requests
+ * handles pre-request authentication
+ * return false if not authenticated
  */
-void WiFiManager::handleRequest() {
+bool WiFiManager::handleRequest() {
   _webPortalAccessed = millis();
 
-  // TESTING HTTPD AUTH RFC 2617
-  // BASIC_AUTH will hold onto creds, hard to "logout", but convienent
-  // DIGEST_AUTH will require new auth often, and nonce is random
-  // bool authenticate(const char * username, const char * password);
-  // bool authenticateDigest(const String& username, const String& H1);
-  // void requestAuthentication(HTTPAuthMethod mode = BASIC_AUTH, const char* realm = NULL, const String& authFailMsg = String("") );
-
-  // 2.3 NO AUTH available
-  bool testauth = false;
-  if(!testauth) return;
+  // We use DIGEST_AUTH since connection is over insecure HTTP
   
+  if (!_enableAuth) return true;
+
   DEBUG_WM(WM_DEBUG_DEV,F("DOING AUTH"));
-  bool res = server->authenticate("admin","12345");
-  if(!res){
+  bool authenticated = server->authenticate(_authUsername.c_str(), _authPassword.c_str());
+  if(!authenticated){
     #ifndef WM_NOAUTH
-    server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
+    server->requestAuthentication(HTTPAuthMethod::DIGEST_AUTH);
     #endif
     DEBUG_WM(WM_DEBUG_DEV,F("AUTH FAIL"));
   }
+  return authenticated;
 }
 
 /** 
@@ -1330,7 +1325,7 @@ void WiFiManager::handleRoot() {
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Root"));
   #endif
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(_title); // @token options @todo replace options with title
   String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
   str.replace(FPSTR(T_t),_title);
@@ -1355,7 +1350,7 @@ void WiFiManager::handleWifi(boolean scan) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Wifi"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titlewifi)); // @token titlewifi
   if (scan) {
     #ifdef WM_DEBUG_LEVEL
@@ -1411,7 +1406,7 @@ void WiFiManager::handleParam(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Param"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titleparam)); // @token titlewifi
 
   String pitem = "";
@@ -1791,7 +1786,7 @@ void WiFiManager::handleWiFiStatus(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP WiFi status "));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page;
   // String page = "{\"result\":true,\"count\":1}";
   #ifdef WM_JSTEST
@@ -1808,7 +1803,7 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP WiFi save "));
   DEBUG_WM(WM_DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
 
   //SAVE/connect here
   _ssid = server->arg(F("s")).c_str();
@@ -1899,7 +1894,7 @@ void WiFiManager::handleParamSave() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("Method:"),server->method() == HTTP_GET  ? (String)FPSTR(S_GET) : (String)FPSTR(S_POST));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
 
   doParamSave();
 
@@ -1968,7 +1963,7 @@ void WiFiManager::handleInfo() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Info"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titleinfo)); // @token titleinfo
   reportStatus(page);
 
@@ -2313,7 +2308,7 @@ void WiFiManager::handleExit() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Exit"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titleexit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
   // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
@@ -2330,7 +2325,7 @@ void WiFiManager::handleReset() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP Reset"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titlereset)); //@token titlereset
   page += FPSTR(S_resetting); //@token resetting
   page += FPSTR(HTTP_END);
@@ -2355,7 +2350,7 @@ void WiFiManager::handleErase(boolean opt) {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_NOTIFY,F("<- HTTP Erase"));
   #endif
-  handleRequest();
+  if (!handleRequest()) return;
   String page = getHTTPHead(FPSTR(S_titleerase)); // @token titleerase
 
   bool ret = erase(opt);
@@ -2385,7 +2380,7 @@ void WiFiManager::handleErase(boolean opt) {
  */
 void WiFiManager::handleNotFound() {
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
-  handleRequest();
+  if (!handleRequest()) return;
   String message = FPSTR(S_notfound); // @token notfound
 
   bool verbose404 = false; // show info in 404 body, uri,method, args
@@ -2452,12 +2447,14 @@ void WiFiManager::stopCaptivePortal(){
 
 // HTTPD CALLBACK, handle close,  stop captive portal, if not enabled undefined
 void WiFiManager::handleClose(){
+  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("Disabling Captive Portal"));
+  if (!handleRequest()) return;
+  #endif
   stopCaptivePortal();
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP close"));
   #endif
-  handleRequest();
   String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
   HTTPSend(page);
@@ -3272,13 +3269,30 @@ void WiFiManager::setDarkMode(bool enable){
 }
 
 /**
+ * setAuthentication
+ * @param bool enables digest authentication for all pages
+ */
+void WiFiManager::setAuthentication(bool enable){
+  _enableAuth = enable;
+}
+
+/**
+ * setAuthCredentials
+ * @param String username
+ * @param String password
+ */
+void WiFiManager::setAuthCredientials(String username, String password){
+  _authUsername = username;
+  _authPassword = password;
+}
+
+/**
  * setHttpPort
  * @param uint16_t port webserver port number default 80
  */
 void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
 }
-
 
 bool WiFiManager::preloadWiFi(String ssid, String pass){
   _defaultssid = ssid;
