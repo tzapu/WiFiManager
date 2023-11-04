@@ -218,7 +218,7 @@ void setup() {
 */
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
-  wm.setMenu(menu); // custom menu, pass vector
+  // wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
@@ -239,7 +239,7 @@ void setup() {
 
   // set Hostname
 
-  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  // wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
   // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel
@@ -260,7 +260,7 @@ void setup() {
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
-  wm.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
   
   // set min quality to show in web list, default 8%
   // wm.setMinimumSignalQuality(50);
@@ -340,13 +340,14 @@ void loop() {
     wm.process();
   }
 
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
   // is configuration portal requested?
   if (ALLOWONDEMAND && digitalRead(ONDDEMANDPIN) == LOW ) {
     delay(100);
-    if ( digitalRead(ONDDEMANDPIN) == LOW ){
+    if ( digitalRead(ONDDEMANDPIN) == LOW || BUTTONFUNC == 2){
       Serial.println("BUTTON PRESSED");
 
       // button reset/reboot
@@ -363,11 +364,12 @@ void loop() {
           Serial.println("failed to connect and hit timeout");
           delay(3000);
         }
+        return;
       }
 
       //test autoconnect as reconnect etc.
       if(BUTTONFUNC == 2){
-        wm.setConfigPortalTimeout(20);
+        wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
         wm.autoConnect();
         return;
       }
