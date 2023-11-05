@@ -1444,6 +1444,7 @@ String WiFiManager::getMenuOut(){
       continue;
     }
     page += HTTP_PORTAL_MENU[menuId];
+    delay(0);
   }
 
   return page;
@@ -2711,7 +2712,7 @@ void WiFiManager::setSaveConnect(bool connect) {
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
   if(_debug && _debugLevel == WM_DEBUG_DEV) debugPlatformInfo();
-  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY) DEBUG_WM((String)WM_VERSION_STR + " L:"+(String)_debugLevel);
+  if(_debug && _debugLevel >= WM_DEBUG_NOTIFY)DEBUG_WM((__FlashStringHelper *)WM_VERSION_STR," D:"+String(_debugLevel));
 }
 
 void WiFiManager::setDebugOutput(boolean debug, String prefix) {
@@ -3145,11 +3146,13 @@ void WiFiManager::setMenu(const char * menu[], uint8_t size){
   _menuIds.clear();
   for(size_t i = 0; i < size; i++){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if((String)menu[i] == String(_menutokens[j])){
+      if((String)menu[i] == (__FlashStringHelper *)(_menutokens[j])){
         if((String)menu[i] == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
+      delay(0);
     }
+    delay(0);
   }
   #ifdef WM_DEBUG_LEVEL
   // DEBUG_WM(getMenuOut());
@@ -3172,7 +3175,7 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   _menuIds.clear();
   for(auto menuitem : menu ){
     for(size_t j = 0; j < _nummenutokens; j++){
-      if((String)menuitem == String(_menutokens[j])){
+      if((String)menuitem == (__FlashStringHelper *)(_menutokens[j])){
         if((String)menuitem == "param") _paramsInWifi = false; // param auto flag
         _menuIds.push_back(j);
       }
@@ -3326,7 +3329,7 @@ template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   if(!_debug || _debugLevel < level) return;
 
-  if(_debugLevel > WM_DEBUG_MAX){
+  if(_debugLevel >= WM_DEBUG_MAX){
     #ifdef ESP8266
     // uint32_t free;
     // uint16_t max;

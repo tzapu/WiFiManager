@@ -31,6 +31,8 @@ bool ALLOWONDEMAND   = true; // enable on demand
 int  ONDDEMANDPIN    = 0; // gpio for button
 bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
+uint8_t BUTTONFUNC   = 1; // 0 resetsettings, 1 configportal, 2 autoconnect
+
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
 
@@ -77,16 +79,16 @@ void bindServerCallback(){
   // you can override wm route endpoints, I have not found a way to remove handlers, but this would let you disable them or add auth etc.
   // wm.server->on("/info",handleNotFound);
   // wm.server->on("/update",handleNotFound);
-  wm.server->on("/erase",handleNotFound);
+  wm.server->on("/erase",handleNotFound); // disable erase
 }
 
 void handleRoute(){
-  Serial.println("[HTTP] handle route");
+  Serial.println("[HTTP] handle custom route");
   wm.server->send(200, "text/plain", "hello from user code");
 }
 
 void handleNotFound(){
-  Serial.println("[HTTP] handle route");
+  Serial.println("[HTTP] override handle route");
   wm.handleNotFound();
 }
 
@@ -102,9 +104,9 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   delay(3000);
-  Serial.setDebugOutput(true);
+  // Serial.setDebugOutput(true);
 
-  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+  // WiFi.setTxPower(WIFI_POWER_8_5dBm);
 
   Serial.println("\n Starting");
   // WiFi.setSleepMode(WIFI_NONE_SLEEP); // disable sleep, can improve ap stability
@@ -120,7 +122,7 @@ void setup() {
   // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
   // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
 
-  wm.setDebugOutput(true, DEBUG_DEV);
+  wm.setDebugOutput(true, WM_DEBUG_DEV);
   wm.debugPlatformInfo();
 
   //reset settings - for testing
@@ -216,7 +218,7 @@ void setup() {
 */
 
   std::vector<const char *> menu = {"wifi","wifinoscan","info","param","custom","close","sep","erase","update","restart","exit"};
-  wm.setMenu(menu); // custom menu, pass vector
+  // wm.setMenu(menu); // custom menu, pass vector
   
   // wm.setParamsPage(true); // move params to seperate page, not wifi, do not combine with setmenu!
 
@@ -237,7 +239,7 @@ void setup() {
 
   // set Hostname
 
-  wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
+  // wm.setHostname(("WM_"+wm.getDefaultAPName()).c_str());
   // wm.setHostname("WM_RANDO_1234");
 
   // set custom channel
@@ -258,7 +260,7 @@ void setup() {
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
-  wm.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
   
   // set min quality to show in web list, default 8%
   // wm.setMinimumSignalQuality(50);
@@ -329,7 +331,7 @@ void wifiInfo(){
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
   Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
   Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
-  Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
+  // Serial.println("[WIFI] HOSTNAME: " + (String)WiFi.getHostname());
 }
 
 void loop() {
@@ -338,31 +340,40 @@ void loop() {
     wm.process();
   }
 
+
   #ifdef USEOTA
   ArduinoOTA.handle();
   #endif
   // is configuration portal requested?
   if (ALLOWONDEMAND && digitalRead(ONDDEMANDPIN) == LOW ) {
     delay(100);
-    if ( digitalRead(ONDDEMANDPIN) == LOW ){
+    if ( digitalRead(ONDDEMANDPIN) == LOW || BUTTONFUNC == 2){
       Serial.println("BUTTON PRESSED");
 
       // button reset/reboot
-      // wm.resetSettings();
-      // wm.reboot();
-      // delay(200);
-      // return;
-      
-      wm.setConfigPortalTimeout(140);
-      wm.setParamsPage(false); // move params to seperate page, not wifi, do not combine with setmenu!
-
-      // disable captive portal redirection
-      // wm.setCaptivePortalEnable(false);
-      
-      if (!wm.startConfigPortal("OnDemandAP","12345678")) {
-        Serial.println("failed to connect and hit timeout");
-        delay(3000);
+      if(BUTTONFUNC == 0){
+        wm.resetSettings();
+        wm.reboot();
+        delay(200);
+        return;
       }
+      
+      // start configportal
+      if(BUTTONFUNC == 1){
+        if (!wm.startConfigPortal("OnDemandAP","12345678")) {
+          Serial.println("failed to connect and hit timeout");
+          delay(3000);
+        }
+        return;
+      }
+
+      //test autoconnect as reconnect etc.
+      if(BUTTONFUNC == 2){
+        wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
+        wm.autoConnect();
+        return;
+      }
+    
     }
     else {
       //if you get here you have connected to the WiFi
