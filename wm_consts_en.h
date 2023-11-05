@@ -56,9 +56,7 @@ const char R_paramsave[]          PROGMEM = "/paramsave";
 const char R_restart[]            PROGMEM = "/restart";
 const char R_exit[]               PROGMEM = "/exit";
 const char R_close[]              PROGMEM = "/close";
-const char R_erase[]              PROGMEM = "/erase";
 const char R_status[]             PROGMEM = "/status";
-const char R_update[]             PROGMEM = "/update";
 const char R_updatedone[]         PROGMEM = "/u";
 
 
