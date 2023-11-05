@@ -125,6 +125,9 @@ void setup() {
   wm.setDebugOutput(true, WM_DEBUG_DEV);
   wm.debugPlatformInfo();
 
+  wm.setAuthentication(true);
+  // wm.setAuthCredientials("admin","12345"); // default
+  
   //reset settings - for testing
   // wm.resetSettings();
   // wm.erase();
