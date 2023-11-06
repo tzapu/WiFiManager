@@ -1961,6 +1961,13 @@ void WiFiManager::doParamSave(){
    
 }
 
+#ifdef WM_NOINFO
+  void WiFiManager::handleInfo() {
+  }
+
+  String WiFiManager::getInfoData(String id){
+  }
+#else
 /** 
  * HTTPD CALLBACK info page
  */
@@ -2063,6 +2070,7 @@ void WiFiManager::handleInfo() {
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_HELP);
+  page += FPSTR(HTTP_CREDITS);
   page += FPSTR(HTTP_END);
 
   HTTPSend(page);
@@ -2305,6 +2313,8 @@ String WiFiManager::getInfoData(String id){
   }
   return p;
 }
+
+#endif
 
 /** 
  * HTTPD CALLBACK exit, closes configportal if blocking, if non blocking undefined

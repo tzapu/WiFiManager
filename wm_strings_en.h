@@ -118,6 +118,8 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 ":disabled {opacity: 0.5;}"
 "</style>";
 
+const char HTTP_CREDITS[]		   PROGMEM = "Github <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+
 #ifndef WM_NOHELP
 const char HTTP_HELP[]             PROGMEM =
  "<br/><h3>Available pages</h3><hr>"
@@ -144,7 +146,7 @@ const char HTTP_HELP[]             PROGMEM =
  "<tr><td>/erase</td>"
  "<td>Erase WiFi configuration and reboot device. Device will not reconnect to a network until new WiFi configuration data is entered.</td></tr>"
  "</table>"
- "<p/>Github <a href='https://github.com/tzapu/WiFiManager'>https://github.com/tzapu/WiFiManager</a>.";
+ "<p/>";
 #else
 const char HTTP_HELP[]             PROGMEM = "";
 #endif
