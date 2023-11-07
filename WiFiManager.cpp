@@ -217,7 +217,9 @@ WiFiManager::WiFiManager() {
 
 void WiFiManager::WiFiManagerInit(){
   setMenu(_menuIdsDefault);
+  #ifdef WM_DEBUG_LEVEL
   if(_debug && _debugLevel >= WM_DEBUG_DEV) debugPlatformInfo();
+  #endif
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
 
@@ -523,7 +525,9 @@ bool WiFiManager::startAP(){
     }  
   }
 
+  #ifdef WM_DEBUG_LEVEL
   if(_debugLevel >= WM_DEBUG_DEV) debugSoftAPConfig();
+  #endif
 
   // @todo add softAP retry here to dela with unknown failures
   
@@ -805,7 +809,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     // I think.. this is to detect autoconnect by esp in background, there are also many open issues about autoreconnect not working
     if(state != WL_IDLE_STATUS){
         result = (state == WL_CONNECTED); // true if connected
+        #ifdef WM_DEBUG_LEVEL        
         DEBUG_WM(WM_DEBUG_DEV,F("configportal loop break"));
+        #endif
         break;
     }
 
@@ -1004,9 +1010,9 @@ bool WiFiManager::shutdownConfigPortal(){
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("wifi status:"),getWLStatusString(WiFi.status()));
   DEBUG_WM(WM_DEBUG_VERBOSE,F("wifi mode:"),getModeString(WiFi.getMode()));
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("configportal closed"));
   #endif
   configPortalActive = false;
-  DEBUG_WM(WM_DEBUG_VERBOSE,F("configportal closed"));
   _end();
   return ret;
 }
@@ -1209,7 +1215,10 @@ void WiFiManager::updateConxResult(uint8_t status){
           // _lastconxresulttmp = WL_IDLE_STATUS;
         }
       }
+    #ifdef WM_DEBUG_LEVEL      
     DEBUG_WM(WM_DEBUG_DEV,F("lastconxresult:"),getWLStatusString(_lastconxresult));
+    #endif
+
     #endif
 }
 
@@ -1311,14 +1320,17 @@ void WiFiManager::handleRequest() {
   // 2.3 NO AUTH available
   bool testauth = false;
   if(!testauth) return;
-  
+  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("DOING AUTH"));
+  #endif
   bool res = server->authenticate("admin","12345");
   if(!res){
     #ifndef WM_NOAUTH
     server->requestAuthentication(HTTPAuthMethod::BASIC_AUTH); // DIGEST_AUTH
     #endif
+    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(WM_DEBUG_DEV,F("AUTH FAIL"));
+    #endif
   }
 }
 
@@ -1484,7 +1496,9 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
     // if 0 networks, rescan @note this was a kludge, now disabling to test real cause ( maybe wifi not init etc)
     // enable only if preload failed? 
     if(_numNetworks == 0 && _autoforcerescan){
+      #ifdef WM_DEBUG_LEVEL      
       DEBUG_WM(WM_DEBUG_DEV,"NO APs found forcing new scan");
+      #endif
       force = true;
     }
 
@@ -1517,7 +1531,9 @@ bool WiFiManager::WiFi_scanNetworks(bool force,bool async){
         return false;
       }
       else{
+        #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_VERBOSE,F("WiFi Scan SYNC started"));
+        #endif
         res = WiFi.scanNetworks();
       }
       if(res == WIFI_SCAN_FAILED){
@@ -2462,11 +2478,11 @@ void WiFiManager::stopCaptivePortal(){
 
 // HTTPD CALLBACK, handle close,  stop captive portal, if not enabled undefined
 void WiFiManager::handleClose(){
-  DEBUG_WM(WM_DEBUG_VERBOSE,F("Disabling Captive Portal"));
-  stopCaptivePortal();
   #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("Disabling Captive Portal"));
   DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP close"));
   #endif
+  stopCaptivePortal();
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleclose)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
@@ -2475,8 +2491,10 @@ void WiFiManager::handleClose(){
 
 void WiFiManager::reportStatus(String &page){
   // updateConxResult(WiFi.status()); // @todo: this defeats the purpose of last result, update elsewhere or add logic here
+  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("[WIFI] reportStatus prev:"),getWLStatusString(_lastconxresult));
   DEBUG_WM(WM_DEBUG_DEV,F("[WIFI] reportStatus current:"),getWLStatusString(WiFi.status()));
+  #endif
   String str;
   if (WiFi_SSID() != ""){
     if (WiFi.status()==WL_CONNECTED){
@@ -2721,8 +2739,10 @@ void WiFiManager::setSaveConnect(bool connect) {
  */
 void WiFiManager::setDebugOutput(boolean debug) {
   _debug = debug;
+  #ifdef WM_DEBUG_LEVEL
   if(_debug && _debugLevel == WM_DEBUG_DEV) debugPlatformInfo();
   if(_debug && _debugLevel >= WM_DEBUG_NOTIFY)DEBUG_WM((__FlashStringHelper *)WM_VERSION_STR," D:"+String(_debugLevel));
+  #endif
 }
 
 void WiFiManager::setDebugOutput(boolean debug, String prefix) {
@@ -3318,21 +3338,19 @@ String WiFiManager::getWiFiPass(bool persistent){
   return WiFi_psk(persistent);
 } 
 
+#ifndef WM_NODEBUG
 // DEBUG
 // @todo fix DEBUG_WM(0,0);
 template <typename Generic>
 void WiFiManager::DEBUG_WM(Generic text) {
-  DEBUG_WM(WM_DEBUG_NOTIFY,text,"");
 }
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text) {
-  if(_debugLevel >= level) DEBUG_WM(level,text,"");
 }
 
 template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
-  DEBUG_WM(WM_DEBUG_NOTIFY,text,textb);
 }
 
 template <typename Generic, typename Genericb>
@@ -3372,6 +3390,9 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
   }
   _debugPort.println();
 }
+// #else
+// template <typename Generic, typename Genericb>
+// void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
 
 /**
  * [debugSoftAPConfig description]
@@ -3409,9 +3430,9 @@ void WiFiManager::debugSoftAPConfig(){
     #if !defined(WM_NOCOUNTRY) 
     #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("country:         "),(String)country.cc);
+      DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
+      DEBUG_WM(FPSTR(D_HR));
       #endif
-    DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
-    DEBUG_WM(FPSTR(D_HR));
     #endif
 }
 
@@ -3445,6 +3466,8 @@ void WiFiManager::debugPlatformInfo(){
     #endif
   #endif
 }
+
+#endif
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;
@@ -3571,7 +3594,9 @@ bool WiFiManager::WiFiSetCountry(){
   esp_err_t err = ESP_OK;
   // @todo check if wifi is init, no idea how, doesnt seem to be exposed atm ( check again it might be now! )
   if(WiFi.getMode() == WIFI_MODE_NULL){
+      #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(WM_DEBUG_ERROR,"[ERROR] cannot set country, wifi not init");        
+      #endif
   } // exception if wifi not init!
   // Assumes that _wificountry is set to one of the supported country codes : "01"(world safe mode) "AT","AU","BE","BG","BR",
   //               "CA","CH","CN","CY","CZ","DE","DK","EE","ES","FI","FR","GB","GR","HK","HR","HU",
@@ -3964,7 +3989,9 @@ void WiFiManager::handleUpdating(){
   // UPLOAD ABORT
   else if (upload.status == UPLOAD_FILE_ABORTED) {
 		Update.end();
+    #ifdef WM_DEBUG_LEVEL
 		DEBUG_WM(F("[OTA] Update was aborted"));
+    #endif
     error = true;
   }
   if(error) _configPortalTimeout = _configPortalTimeoutSAV;
@@ -3973,7 +4000,9 @@ void WiFiManager::handleUpdating(){
 
 // upload and ota done, show status
 void WiFiManager::handleUpdateDone() {
+  #ifdef WM_DEBUG_LEVEL
 	DEBUG_WM(WM_DEBUG_VERBOSE, F("<- Handle update done"));
+  #endif
 	// if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 
 	String page = getHTTPHead(FPSTR(S_options)); // @token options
@@ -3989,11 +4018,15 @@ void WiFiManager::handleUpdateDone() {
     #else
     page += "OTA Error: " + (String)Update.getError();
     #endif
+    #ifdef WM_DEBUG_LEVEL
 		DEBUG_WM(F("[OTA] update failed"));
+    #endif
 	}
 	else {
 		page += FPSTR(HTTP_UPDATE_SUCCESS);
+    #ifdef WM_DEBUG_LEVEL
 		DEBUG_WM(F("[OTA] update ok"));
+    #endif
 	}
 	page += FPSTR(HTTP_END);
 

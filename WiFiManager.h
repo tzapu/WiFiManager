@@ -793,6 +793,7 @@ private:
 
     // override debug level OFF
     #ifdef WM_NODEBUG
+    #warning "WM NO DEBUG"
     #undef WM_DEBUG_LEVEL
     #endif
 
