@@ -175,6 +175,7 @@ const char HTTP_JS[] PROGMEM =
 "</script>";
 #endif
 
+#ifndef WM_NOINFO
 // Info html
 // @todo remove html elements from progmem, repetetive strings
 #ifdef ESP32
@@ -221,6 +222,7 @@ const char HTTP_INFO_aboutver[]     PROGMEM = "<dt>WiFiManager</dt><dd>{1}</dd>"
 const char HTTP_INFO_aboutarduino[] PROGMEM = "<dt>Arduino</dt><dd>{1}</dd>";
 const char HTTP_INFO_aboutsdk[]     PROGMEM = "<dt>ESP-SDK/IDF</dt><dd>{1}</dd>";
 const char HTTP_INFO_aboutdate[]    PROGMEM = "<dt>Build date</dt><dd>{1}</dd>";
+#endif
 
 const char S_brand[]              PROGMEM = "WiFiManager";
 const char S_debugPrefix[]        PROGMEM = "*wm:";

@@ -648,19 +648,27 @@ void WiFiManager::setupHTTPServer(){
   server->on(WM_G(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
   server->on(WM_G(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(WM_G(R_wifisave),   std::bind(&WiFiManager::handleWifiSave, this));
-  server->on(WM_G(R_info),       std::bind(&WiFiManager::handleInfo, this));
   server->on(WM_G(R_param),      std::bind(&WiFiManager::handleParam, this));
   server->on(WM_G(R_paramsave),  std::bind(&WiFiManager::handleParamSave, this));
   server->on(WM_G(R_restart),    std::bind(&WiFiManager::handleReset, this));
   server->on(WM_G(R_exit),       std::bind(&WiFiManager::handleExit, this));
   server->on(WM_G(R_close),      std::bind(&WiFiManager::handleClose, this));
-  server->on(WM_G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
   server->on(WM_G(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
+  #ifndef WM_NOINFO  
+  server->on(WM_G(R_info),       std::bind(&WiFiManager::handleInfo, this));
+  #endif
+  
+  #ifndef WM_NOERASE
+  server->on(WM_G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
+  #endif
+
+  #ifndef WM_NOOTA
   server->on(WM_G(R_update), std::bind(&WiFiManager::handleUpdate, this));
   server->on(WM_G(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
-  
+  #endif
+
   server->begin(); // Web server start
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("HTTP server started"));
@@ -3885,6 +3893,7 @@ void WiFiManager::WiFi_autoReconnect(){
   #endif
 }
 
+#ifndef WM_NOOTA
 // Called when /update is requested
 void WiFiManager::handleUpdate() {
   #ifdef WM_DEBUG_LEVEL
@@ -4037,5 +4046,7 @@ void WiFiManager::handleUpdateDone() {
 		ESP.restart();
 	}
 }
+#endif
+
 
 #endif
