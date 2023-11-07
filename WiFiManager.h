@@ -20,7 +20,7 @@
 #include <core_version.h>
 #endif
 
-#include <vector>
+#include <vector> // 1.2k setmenu(vector)
 
 // #define WM_MDNS            // includes MDNS, also set MDNS with sethostname
 // #define WM_FIXERASECONFIG  // use erase flash fix
@@ -29,6 +29,12 @@
 
 // #define WM_JSTEST                      // build flag for enabling js xhr tests
 // #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
+
+#ifdef WM_SLIM
+    #define WM_NOINFO
+    #define WM_NOOTA
+    #define WM_NODEBUG
+#endif
 
 #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
 #warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
