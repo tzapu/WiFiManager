@@ -3434,13 +3434,11 @@ void WiFiManager::debugSoftAPConfig(){
     DEBUG_WM(F("authmode:        "),config.authmode);
     DEBUG_WM(F("ssid_hidden:     "),config.ssid_hidden);
     DEBUG_WM(F("max_connection:  "),config.max_connection);
-    #endif
     #if !defined(WM_NOCOUNTRY) 
-    #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("country:         "),(String)country.cc);
       DEBUG_WM(F("beacon_interval: "),(String)config.beacon_interval + "(ms)");
       DEBUG_WM(FPSTR(D_HR));
-      #endif
+    #endif
     #endif
 }
 
@@ -3450,32 +3448,28 @@ void WiFiManager::debugSoftAPConfig(){
  * @return {[type]} [description]
  */
 void WiFiManager::debugPlatformInfo(){
+  #ifdef WM_DEBUG_LEVEL
   #ifdef ESP8266
     system_print_meminfo();
-    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("[SYS] getCoreVersion():         "),ESP.getCoreVersion());
     DEBUG_WM(F("[SYS] system_get_sdk_version(): "),system_get_sdk_version());
     DEBUG_WM(F("[SYS] system_get_boot_version():"),system_get_boot_version());
     DEBUG_WM(F("[SYS] getFreeHeap():            "),(String)ESP.getFreeHeap());
-    #endif
   #elif defined(ESP32)
-  #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("[SYS] WM version: "),      WM_VERSION_STR);
     DEBUG_WM(F("[SYS] Arduino version: "), VER_ARDUINO_STR);
     DEBUG_WM(F("[SYS] ESP SDK version: "), ESP.getSdkVersion());
     DEBUG_WM(F("[SYS] Free heap:       "), ESP.getFreeHeap());
-    #endif
 
-    #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("[SYS] Chip ID:"),WIFI_getChipId());
     DEBUG_WM(F("[SYS] Chip Model:"), ESP.getChipModel());
     DEBUG_WM(F("[SYS] Chip Cores:"), ESP.getChipCores());
     DEBUG_WM(F("[SYS] Chip Rev:"),   ESP.getChipRevision());
-    #endif
+  #endif
   #endif
 }
 
-#endif
+#endif // WM_NODEBUG
 
 int WiFiManager::getRSSIasQuality(int RSSI) {
   int quality = 0;

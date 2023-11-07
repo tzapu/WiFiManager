@@ -31,6 +31,7 @@
 // #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
 
 #ifdef WM_SLIM
+    // #define WM_NOHELP
     #define WM_NOINFO
     #define WM_NOOTA
     #define WM_NODEBUG
