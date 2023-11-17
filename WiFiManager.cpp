@@ -2416,16 +2416,18 @@ void WiFiManager::handleNotFound() {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal() {
-  #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(WM_DEBUG_MAX,"-> " + server->hostHeader());
-  #endif
   
   if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
   
   String serverLoc =  toStringIp(server->client().localIP());
 
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_DEV,"-> " + server->hostHeader());
+  DEBUG_WM(WM_DEBUG_DEV,"serverLoc " + serverLoc);
+  #endif
+
   // fallback for ipv6 bug
-  if(serverLoc = "0.0.0.0"){
+  if(serverLoc == "0.0.0.0"){
     if ((WiFi.status()) != WL_CONNECTED)
       serverLoc = toStringIp(WiFi.softAPIP());
     else
@@ -2438,6 +2440,7 @@ boolean WiFiManager::captivePortal() {
   if (doredirect) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(WM_DEBUG_VERBOSE,F("<- Request redirected to captive portal"));
+    DEBUG_WM(WM_DEBUG_DEV,"serverLoc " + serverLoc);
     #endif
     server->sendHeader(F("Location"), (String)F("http://") + serverLoc, true); // @HTTPHEAD send redirect
     server->send ( 302, FPSTR(HTTP_HEAD_CT2), ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
