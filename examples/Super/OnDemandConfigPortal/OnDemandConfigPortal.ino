@@ -79,16 +79,16 @@ void bindServerCallback(){
   // you can override wm route endpoints, I have not found a way to remove handlers, but this would let you disable them or add auth etc.
   // wm.server->on("/info",handleNotFound);
   // wm.server->on("/update",handleNotFound);
-  wm.server->on("/erase",handleNotFound);
+  wm.server->on("/erase",handleNotFound); // disable erase
 }
 
 void handleRoute(){
-  Serial.println("[HTTP] handle route");
+  Serial.println("[HTTP] handle custom route");
   wm.server->send(200, "text/plain", "hello from user code");
 }
 
 void handleNotFound(){
-  Serial.println("[HTTP] handle route");
+  Serial.println("[HTTP] override handle route");
   wm.handleNotFound();
 }
 
