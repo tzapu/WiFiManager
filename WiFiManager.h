@@ -767,8 +767,15 @@ private:
     boolean       abort               = false;
     boolean       reset               = false;
     boolean       configPortalActive  = false;
+
+
+    // these are state flags for portal mode, we are either in webportal mode(STA) or configportal mode(AP)
+    // these are mutually exclusive as STA+AP mode is not supported due to channel restrictions and stability
+    // if we decide to support this, these checks will need to be replaced with something client aware to check if client origin is ap or web
+    // These state checks are critical and used for internal function checks
     boolean       webPortalActive     = false;
     boolean       portalTimeoutResult = false;
+
     boolean       portalAbortResult   = false;
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
     int           timer               = 0;    // timer for debug throttle for numclients, and portal timeout messages
