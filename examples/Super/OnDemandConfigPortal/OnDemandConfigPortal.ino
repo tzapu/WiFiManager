@@ -28,10 +28,10 @@ int  TESP_CP_TIMEOUT = 90; // test cp timeout
 
 bool TEST_NET        = true; // do a network test after connect, (gets ntp time)
 bool ALLOWONDEMAND   = true; // enable on demand
-int  ONDDEMANDPIN    = 0; // gpio for button
+int  ONDDEMANDPIN    = 9; // gpio for button
 bool WMISBLOCKING    = true; // use blocking or non blocking mode, non global params wont work in non blocking
 
-uint8_t BUTTONFUNC   = 1; // 0 resetsettings, 1 configportal, 2 autoconnect
+uint8_t BUTTONFUNC   = 1; // 0 resetsettings, 1 configportal, 2 webportal, 3 config/web-portal(with auth), 9 autoconnect
 
 // char ssid[] = "*************";  //  your network SSID (name)
 // char pass[] = "********";       // your network password
@@ -103,7 +103,7 @@ void setup() {
   
   // put your setup code here, to run once:
   Serial.begin(115200);
-  delay(3000);
+  delay(5000);
   // Serial.setDebugOutput(true);
 
   // WiFi.setTxPower(WIFI_POWER_8_5dBm);
@@ -118,6 +118,7 @@ void setup() {
   Serial.println("[INFORMATION] TEST");  
 
 
+  // Set ESP WIFI specifics 
   // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // wifi_scan_method_t scanMethod
   // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
   // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
@@ -125,9 +126,12 @@ void setup() {
   wm.setDebugOutput(true, WM_DEBUG_DEV);
   wm.debugPlatformInfo();
 
-  wm.setAuthentication(true);
-  // wm.setAuthCredientials("admin","12345"); // default
-  
+
+  // enable browser auth (DIGEST_AUTH)
+  // NOTE: auth is not compatible with captiveportal, and WILL BE DISABLED when in configportal(AP) mode if setCaptivePortalEnable is true(default)
+  // wm.setAuthentication(true);
+  // wm.setAuthCredientials("admin","WifiManag3r"); // default admin:12345
+
   //reset settings - for testing
   // wm.resetSettings();
   // wm.erase();
@@ -298,6 +302,9 @@ void setup() {
   // use autoconnect, but prevent configportal from auto starting
   // wm.setEnableConfigPortal(false);
 
+  // disable captiveportal detect/redirect, Will have to goto ap ip in browser to access the configportal
+  // wm.setCaptivePortalEnable(false);
+
   wifiInfo();
 
   // to preload autoconnect with credentials
@@ -363,6 +370,25 @@ void loop() {
       
       // start configportal
       if(BUTTONFUNC == 1){
+        wm.setCaptivePortalEnable(false);
+        // wm.setAuthentication(true);
+        if (!wm.startConfigPortal("OnDemandAP","12345678")) {
+          Serial.println("failed to connect and hit timeout");
+          delay(3000);
+        }
+        return;
+      }
+
+      // start configportal
+      if(BUTTONFUNC == 2){
+        wm.startWebPortal();
+        return;
+      }
+
+      // start configportal
+      if(BUTTONFUNC == 3){
+        wm.setCaptivePortalEnable(false);
+        wm.setAuthentication(true);
         if (!wm.startConfigPortal("OnDemandAP","12345678")) {
           Serial.println("failed to connect and hit timeout");
           delay(3000);
@@ -371,7 +397,8 @@ void loop() {
       }
 
       //test autoconnect as reconnect etc.
-      if(BUTTONFUNC == 2){
+      if(BUTTONFUNC == 9){
+        // wm.setEnableConfigPortal(false);
         wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
         wm.autoConnect();
         return;

@@ -570,7 +570,7 @@ class WiFiManager
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
-    bool          _enableAuth             = false; // enables http digest authentication for all pages
+    bool          _enableAuth             = false; // enables http digest authentication for all pages, not supported in captive portals, we can either force disable auth in cp (IMPEMENTED), or disable cp (with safe landing page)
     String        _authUsername           = "admin"; // default username for http authentication
     String        _authPassword           = "12345"; // default password for http authentication
     #ifdef ESP32
@@ -774,14 +774,15 @@ private:
     boolean       connect             = false;
     boolean       abort               = false;
     boolean       reset               = false;
-    boolean       configPortalActive  = false;
 
 
     // these are state flags for portal mode, we are either in webportal mode(STA) or configportal mode(AP)
     // these are mutually exclusive as STA+AP mode is not supported due to channel restrictions and stability
     // if we decide to support this, these checks will need to be replaced with something client aware to check if client origin is ap or web
     // These state checks are critical and used for internal function checks
+    boolean       configPortalActive  = false;
     boolean       webPortalActive     = false;
+
     boolean       portalTimeoutResult = false;
 
     boolean       portalAbortResult   = false;
@@ -793,7 +794,7 @@ private:
     int         _max_params;
     WiFiManagerParameter** _params    = NULL;
 
-    boolean _debug  = true;
+    boolean _debug                    = true;
     String _debugPrefix = FPSTR(S_debugPrefix);
 
     wm_debuglevel_t debugLvlShow = WM_DEBUG_VERBOSE; // at which level start showing [n] level tags

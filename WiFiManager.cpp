@@ -1302,19 +1302,26 @@ void WiFiManager::HTTPSend(const String &content){
 bool WiFiManager::handleRequest() {
   _webPortalAccessed = millis();
 
-  // We use DIGEST_AUTH since connection is over insecure HTTP
-  
-  if (!_enableAuth) return true;
+  #ifdef WM_NOAUTH
+  return true;
+  #else
 
+  // Handle basic authentication
+  if (!_enableAuth) return true;
+  else if(_enableCaptivePortal) return true; // cannot auth in captiveportal, to prevent breaking cp ignore auth @todo add auth landing page for cp with instructions etc.
+
+  #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("DOING AUTH"));
+  #endif
   bool authenticated = server->authenticate(_authUsername.c_str(), _authPassword.c_str());
   if(!authenticated){
-    #ifndef WM_NOAUTH
     server->requestAuthentication(HTTPAuthMethod::DIGEST_AUTH);
+    #ifdef WM_DEBUG_LEVEL    
+    DEBUG_WM(WM_DEBUG_VERBOSE,F("AUTH FAIL"));
     #endif
-    DEBUG_WM(WM_DEBUG_DEV,F("AUTH FAIL"));
   }
   return authenticated;
+  #endif
 }
 
 /** 
@@ -2416,7 +2423,7 @@ void WiFiManager::handleNotFound() {
  * Return true in that case so the page handler do not try to handle the request again. 
  */
 boolean WiFiManager::captivePortal() {
-  
+  // catch client captive portal probe and redirect
   if(!_enableCaptivePortal || !configPortalActive) return false; // skip redirections if cp not enabled or not in ap mode
   
   String serverLoc =  toStringIp(server->client().localIP());
