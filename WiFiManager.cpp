@@ -2417,7 +2417,7 @@ void WiFiManager::handleNotFound() {
  */
 boolean WiFiManager::captivePortal() {
   
-  if(!_enableCaptivePortal) return false; // skip redirections, @todo maybe allow redirection even when no cp ? might be useful
+  if(!_enableCaptivePortal || !configPortalActive) return false; // skip redirections if cp not enabled or not in ap mode
   
   String serverLoc =  toStringIp(server->client().localIP());
 
