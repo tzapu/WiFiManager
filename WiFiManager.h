@@ -235,6 +235,16 @@ class WiFiManagerParameter {
 };
 
 
+    // debugging
+    typedef enum {
+        WM_DEBUG_SILENT    = 0, // debug OFF but still compiled for runtime
+        WM_DEBUG_ERROR     = 1, // error only
+        WM_DEBUG_NOTIFY    = 2, // default stable,INFO
+        WM_DEBUG_VERBOSE   = 3, // move verbose info
+        WM_DEBUG_DEV       = 4, // development useful debugging info
+        WM_DEBUG_MAX       = 5  // MAX extra dev auditing, var dumps etc (MAX+1 will print timing,mem and frag info)
+    } wm_debuglevel_t;
+
 class WiFiManager
 {
   public:
@@ -339,6 +349,7 @@ class WiFiManager
     // toggle debug output
     void          setDebugOutput(boolean debug);
     void          setDebugOutput(boolean debug, String prefix); // log line prefix, default "*wm:"
+    void          setDebugOutput(boolean debug, wm_debuglevel_t level ); // log line prefix, default "*wm:"
 
     //set min quality percentage to include in scan, defaults to 8% if not specified
     void          setMinimumSignalQuality(int quality = 8);
@@ -425,9 +436,6 @@ class WiFiManager
     // see _menutokens for ids
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
-
-    // if true enable Fast connect mode
-    void          setFastConnectMode(bool enabled);
     
     // set the webapp title, default WiFiManager
     void          setTitle(String title);
@@ -541,7 +549,6 @@ class WiFiManager
     
     WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
-
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
     bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
@@ -611,20 +618,21 @@ class WiFiManager
     // but not limited to, we could run continuous background scans on various page hits, or xhr hits
     // which would be better coupled with asyncscan
     // atm preload is only done on root hit and startcp
-    boolean       _preloadwifiscan        = true; // preload wifiscan if true
+    // 
+    // preload scanning causes AP to delay showing for users, but also caches and lets the cp load faster once its open
+    //  my scan takes 7-10 seconds
+    public:
+    boolean       _preloadwifiscan        = false; // preload wifiscan if true
     unsigned int  _scancachetime          = 30000; // ms cache time for preload scans
-    boolean       _asyncScan              = true; // perform wifi network scan async
+    boolean       _asyncScan              = false; // perform wifi network scan async
+    
+    private:
 
     boolean       _autoforcerescan        = false;  // automatically force rescan if scan networks is 0, ignoring cache
     
     boolean       _disableIpFields        = false; // modify function of setShow_X_Fields(false), forces ip fields off instead of default show if set, eg. _staShowStaticFields=-1
 
     String        _wificountry            = "";  // country code, @todo define in strings lang
-	
-    //fast mode to set mac address and channel during begin
-	boolean       _fastConnectMode        = false;
-	uint8_t*      _fastConnectBSSID;
-	uint32_t      _fastConnectChannel     = 0;
 
     // wrapper functions for handling setting and unsetting persistent for now.
     bool          esp32persistent         = false;
@@ -653,16 +661,18 @@ class WiFiManager
     uint8_t       waitForConnectResult();
     uint8_t       waitForConnectResult(uint32_t timeout);
     void          updateConxResult(uint8_t status);
-	bool          getFastConConfig(String ssid);
 
     // webserver handlers
-    void          HTTPSend(String content);
+public:
+    void          handleNotFound();
+private:
+    void          HTTPSend(const String &content);
     void          handleRoot();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleInfo();
     void          handleReset();
-    void          handleNotFound();
+
     void          handleExit();
     void          handleClose();
     // void          handleErase();
@@ -757,8 +767,15 @@ class WiFiManager
     boolean       abort               = false;
     boolean       reset               = false;
     boolean       configPortalActive  = false;
+
+
+    // these are state flags for portal mode, we are either in webportal mode(STA) or configportal mode(AP)
+    // these are mutually exclusive as STA+AP mode is not supported due to channel restrictions and stability
+    // if we decide to support this, these checks will need to be replaced with something client aware to check if client origin is ap or web
+    // These state checks are critical and used for internal function checks
     boolean       webPortalActive     = false;
     boolean       portalTimeoutResult = false;
+
     boolean       portalAbortResult   = false;
     boolean       storeSTAmode        = true; // option store persistent STA mode in connectwifi 
     int           timer               = 0;    // timer for debug throttle for numclients, and portal timeout messages
@@ -768,27 +785,17 @@ class WiFiManager
     int         _max_params;
     WiFiManagerParameter** _params    = NULL;
 
-    // debugging
-    typedef enum {
-        DEBUG_ERROR     = 0,
-        DEBUG_NOTIFY    = 1, // alias
-        DEBUG_INFO      = 1, // default stable
-        DEBUG_VERBOSE   = 2,
-        DEBUG_DEV       = 3, // default dev
-        DEBUG_MAX       = 4
-    } wm_debuglevel_t;
-
     boolean _debug  = true;
     String _debugPrefix = FPSTR(S_debugPrefix);
 
-    wm_debuglevel_t debugLvlShow = DEBUG_VERBOSE; // at which level start showing [n] level tags
+    wm_debuglevel_t debugLvlShow = WM_DEBUG_VERBOSE; // at which level start showing [n] level tags
 
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
     
     // Set default debug level
     #ifndef WM_DEBUG_LEVEL
-    #define WM_DEBUG_LEVEL DEBUG_NOTIFY
+    #define WM_DEBUG_LEVEL WM_DEBUG_NOTIFY
     #endif
 
     // override debug level OFF
@@ -799,7 +806,7 @@ class WiFiManager
     #ifdef WM_DEBUG_LEVEL
     uint8_t _debugLevel = (uint8_t)WM_DEBUG_LEVEL;
     #else 
-    uint8_t _debugLevel = DEBUG_INFO; // default debug level
+    uint8_t _debugLevel = 0; // default debug level
     #endif
 
     // @todo use DEBUG_ESP_PORT ?
