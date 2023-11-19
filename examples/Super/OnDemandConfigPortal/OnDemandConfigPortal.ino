@@ -119,9 +119,9 @@ void setup() {
 
 
   // Set ESP WIFI specifics 
-  // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // wifi_scan_method_t scanMethod
-  // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - WIFI_CONNECT_AP_BY_SIGNAL,WIFI_CONNECT_AP_BY_SECURITY
-  // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK);
+  // WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); // wifi_scan_method_t scanMethod [WIFI_FAST_SCAN],WIFI_ALL_CHANNEL_SCAN
+  // WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL); // wifi_sort_method_t sortMethod - [WIFI_CONNECT_AP_BY_SIGNAL],WIFI_CONNECT_AP_BY_SECURITY
+  // WiFi.setMinSecurity(WIFI_AUTH_WPA2_PSK); [WIFI_AUTH_WPA2_PSK]
 
   wm.setDebugOutput(true, WM_DEBUG_DEV);
   wm.debugPlatformInfo();
