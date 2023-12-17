@@ -280,7 +280,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
-  // bool wifiIsSaved = getWiFiIsSaved();
+  bool wifiIsSaved = getWiFiIsSaved();
 
   #ifdef ESP32
   setupHostname(true);
@@ -300,7 +300,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
 
   // check if wifi is saved, (has autoconnect) to speed up cp start
   // NOT wifi init safe
-  // if(wifiIsSaved){
+  if(wifiIsSaved){
      _startconn = millis();
     _begin();
 
@@ -367,12 +367,12 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(F("AutoConnect: FAILED for "),(String)((millis()-_startconn)) + " ms");
     #endif
-  // }
-  // else {
-    // #ifdef WM_DEBUG_LEVEL
-    // DEBUG_WM(F("No Credentials are Saved, skipping connect"));
-    // #endif
-  // } 
+  }
+  else {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(F("No Credentials are Saved, skipping connect"));
+    #endif
+  }
 
   // possibly skip the config portal
   if (!_enableConfigPortal) {
@@ -3755,6 +3755,7 @@ String WiFiManager::WiFi_SSID(bool persistent) const{
     return String(reinterpret_cast<char*>(tmp));
     
     #elif defined(ESP32)
+    wifiLowLevelInit(persistent);
     if(persistent){
       wifi_config_t conf;
       esp_wifi_get_config(WIFI_IF_STA, &conf);
