@@ -1130,8 +1130,7 @@ bool WiFiManager::wifiConnectDefault(){
   DEBUG_WM(WM_DEBUG_DEV,F("Using Password:"),WiFi_psk(true));
   #endif
 
-  ret = WiFi_enableSTA(true,storeSTAmode);
-  delay(500); // THIS DELAY ?
+  ret = WiFi.mode(WIFI_STA);
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_DEV,F("Mode after delay: "),getModeString(WiFi.getMode()));
