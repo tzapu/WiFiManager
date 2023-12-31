@@ -51,10 +51,10 @@
 // #warning ESP32S3
 // #endif
 
-#if defined(ARDUINO_ESP32S3_DEV) || defined(CONFIG_IDF_TARGET_ESP32S3)
-#warning "WM_NOTEMP"
-#define WM_NOTEMP // disabled temp sensor, have to determine which chip we are on
-#endif
+// #if defined(ARDUINO_ESP32S3_DEV) || defined(CONFIG_IDF_TARGET_ESP32S3)
+// #warning "WM_NOTEMP"
+// #define WM_NOTEMP // disabled temp sensor, have to determine which chip we are on
+// #endif
 
 // #include "soc/efuse_reg.h" // include to add efuse chip rev to info, getChipRevision() is almost always the same though, so not sure why it matters.
 
