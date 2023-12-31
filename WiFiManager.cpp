@@ -3755,7 +3755,7 @@ String WiFiManager::WiFi_SSID(bool persistent) const{
     return String(reinterpret_cast<char*>(tmp));
     
     #elif defined(ESP32)
-    wifiLowLevelInit(persistent);
+    // wifiLowLevelInit(persistent); // @todo fix for S3, not found
     if(persistent){
       wifi_config_t conf;
       esp_wifi_get_config(WIFI_IF_STA, &conf);
