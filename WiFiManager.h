@@ -52,7 +52,6 @@
 // #endif
 
 #if defined(ARDUINO_ESP32S3_DEV) || defined(CONFIG_IDF_TARGET_ESP32S3)
-#warning "WM_NOTEMP"
 #define WM_NOTEMP // disabled temp sensor, have to determine which chip we are on
 #endif
 
