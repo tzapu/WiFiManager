@@ -1288,6 +1288,7 @@ String WiFiManager::getHTTPHead(String title){
     page += FPSTR(HTTP_HEAD_END);
   } 
 
+  page += _customTopBodyElement;
   return page;
 }
 
@@ -2887,6 +2888,16 @@ void WiFiManager::setConfigPortalTimeoutCallback( std::function<void()> func ) {
  */
 void WiFiManager::setCustomHeadElement(const char* html) {
   _customHeadElement = html;
+}
+
+/**
+ * set custom top body html
+ * custom element will be added to shortly after body tag opened, eg. to show a logo etc.
+ * @access public
+ * @param char element
+ */
+void WiFiManager::setCustomTopBodyElement(const char* html) {
+  _customTopBodyElement = html;
 }
 
 /**
