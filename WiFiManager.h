@@ -222,14 +222,13 @@ class WiFiManagerParameter {
   protected:
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
-  private:
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
     char       *_value;
     int         _length;
     int         _labelPlacement;
-  protected:
+  
     const char *_customHTML;
     friend class WiFiManager;
 };
@@ -509,7 +508,7 @@ class WiFiManager
     
     std::unique_ptr<WM_WebServer> server;
 
-  private:
+  protected:
     // vars
     std::vector<uint8_t> _menuIds;
     std::vector<const char *> _menuIdsParams  = {"wifi","param","info","exit"};
@@ -621,12 +620,12 @@ class WiFiManager
     // 
     // preload scanning causes AP to delay showing for users, but also caches and lets the cp load faster once its open
     //  my scan takes 7-10 seconds
-    public:
+public:
     boolean       _preloadwifiscan        = false; // preload wifiscan if true
     unsigned int  _scancachetime          = 30000; // ms cache time for preload scans
     boolean       _asyncScan              = false; // perform wifi network scan async
     
-    private:
+protected:
 
     boolean       _autoforcerescan        = false;  // automatically force rescan if scan networks is 0, ignoring cache
     
@@ -665,7 +664,7 @@ class WiFiManager
     // webserver handlers
 public:
     void          handleNotFound();
-private:
+protected:
     void          HTTPSend(const String &content);
     void          handleRoot();
     void          handleWifi(boolean scan);
