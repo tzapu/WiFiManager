@@ -280,7 +280,8 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   DEBUG_WM(F("AutoConnect"));
   #endif
 
-  bool wifiIsSaved = getWiFiIsSaved();
+  // bool wifiIsSaved = getWiFiIsSaved();
+  bool wifiIsSaved = true; // workaround until I can check esp32 wifiisinit and has nvs
 
   #ifdef ESP32
   setupHostname(true);
