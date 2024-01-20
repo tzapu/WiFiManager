@@ -5,7 +5,8 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below
 
-![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)
+<a name="release"></a>
+[![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)](#release)
 
 [![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
 
@@ -20,6 +21,7 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 [![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32)
 [![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-s2)
 [![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-c3)
+[![ESP32](https://img.shields.io/badge/ESP-32S3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-S3)
 
 Member to Member Support / Chat
 
@@ -28,15 +30,10 @@ Member to Member Support / Chat
 [![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/nS5WGkaQH5)
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
-**This works with the ESP8266 Arduino platform**
-
-[https://github.com/esp8266/Arduino](https://github.com/esp8266/Arduino)
-
-**This works with the ESP32 Arduino platform** 
-
-[https://github.com/espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 Arduino](https://github.com/espressif/arduino-esp32) platforms.
 
 ### Known Issues
+
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
 -------
 
