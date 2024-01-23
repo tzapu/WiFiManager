@@ -258,6 +258,7 @@ void setup() {
     wm.setConfigPortalBlocking(false);
   }
 
+
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep in seconds
   wm.setConfigPortalTimeout(TESP_CP_TIMEOUT);
@@ -327,7 +328,8 @@ void setup() {
 void wifiInfo(){
   // can contain gargbage on esp32 if wifi is not ready yet
   Serial.println("[WIFI] WIFI_INFO DEBUG");
-  // WiFi.printDiag(Serial);
+  WiFi.printDiag(Serial);
+  Serial.println("[WIFI] MODE: " + (String)(wm.getModeString(WiFi.getMode())));
   Serial.println("[WIFI] SAVED: " + (String)(wm.getWiFiIsSaved() ? "YES" : "NO"));
   Serial.println("[WIFI] SSID: " + (String)wm.getWiFiSSID());
   Serial.println("[WIFI] PASS: " + (String)wm.getWiFiPass());
