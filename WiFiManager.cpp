@@ -3760,8 +3760,8 @@ String WiFiManager::WiFi_SSID(bool persistent) const{
     // wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     if(persistent){
       wifi_config_t conf;
-      esp_wifi_get_config(WIFI_IF_STA, &conf);
-      return String(reinterpret_cast<const char*>(conf.sta.ssid));
+      _ssid = String(reinterpret_cast<const char *>(conf.sta.ssid));      
+      return _ssid;
     }
     else {
       if(WiFiGenericClass::getMode() == WIFI_MODE_NULL){
