@@ -3830,7 +3830,7 @@ String WiFiManager::WiFi_psk(bool persistent) const {
       #ifdef WM_DEBUG_LEVEL
       if(info.wifi_sta_disconnected.reason == WIFI_REASON_NO_AP_FOUND) DEBUG_WM(WM_DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: NO_AP_FOUND"));
       if(info.wifi_sta_disconnected.reason == WIFI_REASON_ASSOC_FAIL){
-        if(_aggresiveReconn & _connectRetries<4) _connectRetries=4;
+        if(_aggresiveReconn && _connectRetries<4) _connectRetries=4;
         DEBUG_WM(WM_DEBUG_VERBOSE,F("[EVENT] WIFI_REASON: AUTH FAIL"));
       }  
       #endif
