@@ -2503,6 +2503,11 @@ void WiFiManager::reportStatus(String &page){
         str.replace(FPSTR(T_c),"D");
         str.replace(FPSTR(T_r),FPSTR(HTTP_STATUS_OFFFAIL));
       }
+      else if(_lastconxresult == WL_CONNECTION_LOST){
+        // connect failed, MOST likely 4WAY_HANDSHAKE_TIMEOUT/incorrect password, state is ambiguous however
+        str.replace(FPSTR(T_c),"D");
+        str.replace(FPSTR(T_r),FPSTR(HTTP_STATUS_OFFFAIL));
+      }
       else{
         str.replace(FPSTR(T_c),"");
         str.replace(FPSTR(T_r),"");
