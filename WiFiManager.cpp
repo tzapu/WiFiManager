@@ -3432,7 +3432,7 @@ void WiFiManager::debugPlatformInfo(){
     #endif
   #elif defined(ESP32)
   #ifdef WM_DEBUG_LEVEL
-    DEBUG_WM(F("[SYS] WM version: "),      WM_VERSION_STR);
+    DEBUG_WM(F("[SYS] WM version: "), String((__FlashStringHelper *)WM_VERSION_STR) +" D:"+String(_debugLevel));
     DEBUG_WM(F("[SYS] Arduino version: "), VER_ARDUINO_STR);
     DEBUG_WM(F("[SYS] ESP SDK version: "), ESP.getSdkVersion());
     DEBUG_WM(F("[SYS] Free heap:       "), ESP.getFreeHeap());
