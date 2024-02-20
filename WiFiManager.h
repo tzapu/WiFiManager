@@ -559,7 +559,7 @@ class WiFiManager
     uint16_t      _httpPort               = 80; // port for webserver
     // uint8_t       _retryCount             = 0; // counter for retries, probably not needed if synchronous
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
-    bool          _aggresiveReconn        = true; // use an agrressive reconnect strategy, WILL delay conxs
+    bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
