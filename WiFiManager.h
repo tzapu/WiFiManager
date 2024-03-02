@@ -225,7 +225,7 @@ class WiFiManagerParameter {
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
-    char       *_value;
+    std::unique_ptr<char[]> _value;
     int         _length;
     int         _labelPlacement;
   

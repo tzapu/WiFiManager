@@ -64,9 +64,7 @@ void WiFiManagerParameter::init(const char *id, const char *label, const char *d
 }
 
 WiFiManagerParameter::~WiFiManagerParameter() {
-  if (_value != NULL) {
-    delete[] _value;
-  }
+  // unique_ptr should auto release memory;
   _length=0; // setting length 0, ideally the entire parameter should be removed, or added to wifimanager scope so it follows
 }
 
@@ -88,39 +86,43 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   //   // return false; //@todo bail 
   // }
 
-  if(_length != length || _value == nullptr){
-    _length = length;
-    if( _value != nullptr){
-      delete[] _value;
-    }
-    _value  = new char[_length + 1];  
-  }
+  _length = length; // why waste time to compare it?
+  _value.reset(new char[length + 1]);
+  if (_value != nullptr)
+  {
+    memset(_value.get(), 0, _length + 1); // explicit null
 
-  memset(_value, 0, _length + 1); // explicit null
-  
-  if (defaultValue != NULL) {
-    strncpy(_value, defaultValue, _length);
+    if (defaultValue != NULL)
+    {
+      strncpy(_value.get(), defaultValue, _length);
+    }
   }
 }
+
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
-  return _value;
+  return _value.get();
 }
+
 const char* WiFiManagerParameter::getID() const {
   return _id;
 }
+
 const char* WiFiManagerParameter::getPlaceholder() const {
   return _label;
 }
+
 const char* WiFiManagerParameter::getLabel() const {
   return _label;
 }
 int WiFiManagerParameter::getValueLength() const {
   return _length;
 }
+
 int WiFiManagerParameter::getLabelPlacement() const {
   return _labelPlacement;
 }
+
 const char* WiFiManagerParameter::getCustomHTML() const {
   return _customHTML;
 }
@@ -1953,7 +1955,7 @@ void WiFiManager::doParamSave(){
       }
 
       //store it in params array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      value.toCharArray(_params[i]->_value.get(), _params[i]->_length + 1); // length+1 null terminated
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(WM_DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
       #endif
