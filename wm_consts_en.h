@@ -13,23 +13,22 @@
 #ifndef _WM_CONSTS_H
 #define _WM_CONSTS_H
 
-
 // -----------------------------------------------------------------------------------------------
 // TOKENS
 
-const char WM_VERSION_STR[] PROGMEM = "v2.0.15-rc.1";
+const char WM_VERSION_STR[] PROGMEM = "v2.0.17";
 
-static const char _wifi_token[]       PROGMEM = "wifi";
+static const char _wifi_token[] PROGMEM = "wifi";
 static const char _wifinoscan_token[] PROGMEM = "wifinoscan";
-static const char _info_token[]       PROGMEM = "info";
-static const char _param_token[]      PROGMEM = "param";
-static const char _close_token[]      PROGMEM = "close";
-static const char _restart_token[]    PROGMEM = "restart";
-static const char _exit_token[]       PROGMEM = "exit";
-static const char _erase_token[]      PROGMEM = "erase";
-static const char _update_token[]     PROGMEM = "update";
-static const char _sep_token[]        PROGMEM = "sep";
-static const char _custom_token[]     PROGMEM = "custom";
+static const char _info_token[] PROGMEM = "info";
+static const char _param_token[] PROGMEM = "param";
+static const char _close_token[] PROGMEM = "close";
+static const char _restart_token[] PROGMEM = "restart";
+static const char _exit_token[] PROGMEM = "exit";
+static const char _erase_token[] PROGMEM = "erase";
+static const char _update_token[] PROGMEM = "update";
+static const char _sep_token[] PROGMEM = "sep";
+static const char _custom_token[] PROGMEM = "custom";
 static PGM_P _menutokens[] PROGMEM = {
     _wifi_token,
     _wifinoscan_token,
@@ -41,104 +40,94 @@ static PGM_P _menutokens[] PROGMEM = {
     _erase_token,
     _update_token,
     _sep_token,
-    _custom_token
-};
+    _custom_token};
 const uint8_t _nummenutokens = (sizeof(_menutokens) / sizeof(PGM_P));
 
+const char R_root[] PROGMEM = "/";
+const char R_wifi[] PROGMEM = "/wifi";
+const char R_wifinoscan[] PROGMEM = "/0wifi";
+const char R_wifisave[] PROGMEM = "/wifisave";
+const char R_info[] PROGMEM = "/info";
+const char R_param[] PROGMEM = "/param";
+const char R_paramsave[] PROGMEM = "/paramsave";
+const char R_restart[] PROGMEM = "/restart";
+const char R_exit[] PROGMEM = "/exit";
+const char R_close[] PROGMEM = "/close";
+const char R_erase[] PROGMEM = "/erase";
+const char R_status[] PROGMEM = "/status";
+const char R_update[] PROGMEM = "/update";
+const char R_updatedone[] PROGMEM = "/u";
 
-const char R_root[]               PROGMEM = "/";
-const char R_wifi[]               PROGMEM = "/wifi";
-const char R_wifinoscan[]         PROGMEM = "/0wifi";
-const char R_wifisave[]           PROGMEM = "/wifisave";
-const char R_info[]               PROGMEM = "/info";
-const char R_param[]              PROGMEM = "/param";
-const char R_paramsave[]          PROGMEM = "/paramsave";
-const char R_restart[]            PROGMEM = "/restart";
-const char R_exit[]               PROGMEM = "/exit";
-const char R_close[]              PROGMEM = "/close";
-const char R_erase[]              PROGMEM = "/erase";
-const char R_status[]             PROGMEM = "/status";
-const char R_update[]             PROGMEM = "/update";
-const char R_updatedone[]         PROGMEM = "/u";
+// Strings
+const char S_ip[] PROGMEM = "ip";
+const char S_gw[] PROGMEM = "gw";
+const char S_sn[] PROGMEM = "sn";
+const char S_dns[] PROGMEM = "dns";
 
-
-//Strings
-const char S_ip[]                 PROGMEM = "ip";
-const char S_gw[]                 PROGMEM = "gw";
-const char S_sn[]                 PROGMEM = "sn";
-const char S_dns[]                PROGMEM = "dns";
-
-
-
-//Tokens
+// Tokens
 //@todo consolidate and reduce
-const char T_ss[]                 PROGMEM = "{"; // token start sentinel
-const char T_es[]                 PROGMEM = "}"; // token end sentinel
-const char T_1[]                  PROGMEM = "{1}"; // @token 1
-const char T_2[]                  PROGMEM = "{2}"; // @token 2
-const char T_3[]                  PROGMEM = "{3}"; // @token 2
-const char T_v[]                  PROGMEM = "{v}"; // @token v
-const char T_V[]                  PROGMEM = "{V}"; // @token v
-const char T_I[]                  PROGMEM = "{I}"; // @token I
-const char T_i[]                  PROGMEM = "{i}"; // @token i
-const char T_n[]                  PROGMEM = "{n}"; // @token n
-const char T_p[]                  PROGMEM = "{p}"; // @token p
-const char T_t[]                  PROGMEM = "{t}"; // @token t
-const char T_l[]                  PROGMEM = "{l}"; // @token l
-const char T_c[]                  PROGMEM = "{c}"; // @token c
-const char T_e[]                  PROGMEM = "{e}"; // @token e
-const char T_q[]                  PROGMEM = "{q}"; // @token q
-const char T_r[]                  PROGMEM = "{r}"; // @token r
-const char T_R[]                  PROGMEM = "{R}"; // @token R
-const char T_h[]                  PROGMEM = "{h}"; // @token h
+const char T_ss[] PROGMEM = "{";  // token start sentinel
+const char T_es[] PROGMEM = "}";  // token end sentinel
+const char T_1[] PROGMEM = "{1}"; // @token 1
+const char T_2[] PROGMEM = "{2}"; // @token 2
+const char T_3[] PROGMEM = "{3}"; // @token 2
+const char T_v[] PROGMEM = "{v}"; // @token v
+const char T_V[] PROGMEM = "{V}"; // @token v
+const char T_I[] PROGMEM = "{I}"; // @token I
+const char T_i[] PROGMEM = "{i}"; // @token i
+const char T_n[] PROGMEM = "{n}"; // @token n
+const char T_p[] PROGMEM = "{p}"; // @token p
+const char T_t[] PROGMEM = "{t}"; // @token t
+const char T_l[] PROGMEM = "{l}"; // @token l
+const char T_c[] PROGMEM = "{c}"; // @token c
+const char T_e[] PROGMEM = "{e}"; // @token e
+const char T_q[] PROGMEM = "{q}"; // @token q
+const char T_r[] PROGMEM = "{r}"; // @token r
+const char T_R[] PROGMEM = "{R}"; // @token R
+const char T_h[] PROGMEM = "{h}"; // @token h
 
 // http
-const char HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
-const char HTTP_HEAD_CT[]         PROGMEM = "text/html";
-const char HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
-const char HTTP_HEAD_CORS[]       PROGMEM = "Access-Control-Allow-Origin";
-const char HTTP_HEAD_CORS_ALLOW_ALL[]  PROGMEM = "*";
+const char HTTP_HEAD_CL[] PROGMEM = "Content-Length";
+const char HTTP_HEAD_CT[] PROGMEM = "text/html";
+const char HTTP_HEAD_CT2[] PROGMEM = "text/plain";
+const char HTTP_HEAD_CORS[] PROGMEM = "Access-Control-Allow-Origin";
+const char HTTP_HEAD_CORS_ALLOW_ALL[] PROGMEM = "*";
 
-const char * const WIFI_STA_STATUS[] PROGMEM
-{
-  "WL_IDLE_STATUS",     // 0 STATION_IDLE
-  "WL_NO_SSID_AVAIL",   // 1 STATION_NO_AP_FOUND
-  "WL_SCAN_COMPLETED",  // 2
-  "WL_CONNECTED",       // 3 STATION_GOT_IP
-  "WL_CONNECT_FAILED",  // 4 STATION_CONNECT_FAIL, STATION_WRONG_PASSWORD(NI)
-  "WL_CONNECTION_LOST", // 5
-  "WL_DISCONNECTED",    // 6
-  "WL_STATION_WRONG_PASSWORD" // 7 KLUDGE
+const char *const WIFI_STA_STATUS[] PROGMEM{
+    "WL_IDLE_STATUS",           // 0 STATION_IDLE
+    "WL_NO_SSID_AVAIL",         // 1 STATION_NO_AP_FOUND
+    "WL_SCAN_COMPLETED",        // 2
+    "WL_CONNECTED",             // 3 STATION_GOT_IP
+    "WL_CONNECT_FAILED",        // 4 STATION_CONNECT_FAIL, STATION_WRONG_PASSWORD(NI)
+    "WL_CONNECTION_LOST",       // 5
+    "WL_DISCONNECTED",          // 6
+    "WL_STATION_WRONG_PASSWORD" // 7 KLUDGE
 };
 
 #ifdef ESP32
-const char * const AUTH_MODE_NAMES[] PROGMEM
-{
+const char *const AUTH_MODE_NAMES[] PROGMEM{
     "OPEN",
     "WEP",
     "WPA_PSK",
     "WPA2_PSK",
     "WPA_WPA2_PSK",
     "WPA2_ENTERPRISE",
-    "MAX"
-};
+    "MAX"};
 #elif defined(ESP8266)
-const char * const AUTH_MODE_NAMES[] PROGMEM
-{
+const char *const AUTH_MODE_NAMES[] PROGMEM{
     "",
     "",
-    "WPA_PSK",      // 2 ENC_TYPE_TKIP
+    "WPA_PSK", // 2 ENC_TYPE_TKIP
     "",
-    "WPA2_PSK",     // 4 ENC_TYPE_CCMP
-    "WEP",          // 5 ENC_TYPE_WEP
+    "WPA2_PSK", // 4 ENC_TYPE_CCMP
+    "WEP",      // 5 ENC_TYPE_WEP
     "",
-    "OPEN",         //7 ENC_TYPE_NONE
+    "OPEN",         // 7 ENC_TYPE_NONE
     "WPA_WPA2_PSK", // 8 ENC_TYPE_AUTO
 };
 #endif
 
-const char* const WIFI_MODES[] PROGMEM = { "NULL", "STA", "AP", "STA+AP" };
-
+const char *const WIFI_MODES[] PROGMEM = {"NULL", "STA", "AP", "STA+AP"};
 
 #ifdef ESP32
 // as 2.5.2
@@ -149,9 +138,9 @@ const char* const WIFI_MODES[] PROGMEM = { "NULL", "STA", "AP", "STA+AP" };
 //     int8_t                max_tx_power;   /**< This field is used for getting WiFi maximum transmitting power, call esp_wifi_set_max_tx_power to set the maximum transmitting power. */
 //     wifi_country_policy_t policy;  /**< country policy */
 // } wifi_country_t;
-const wifi_country_t WM_COUNTRY_US{"US",1,11,CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER,WIFI_COUNTRY_POLICY_AUTO};
-const wifi_country_t WM_COUNTRY_CN{"CN",1,13,CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER,WIFI_COUNTRY_POLICY_AUTO};
-const wifi_country_t WM_COUNTRY_JP{"JP",1,14,CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER,WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_US{"US", 1, 11, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_CN{"CN", 1, 13, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_JP{"JP", 1, 14, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_AUTO};
 #elif defined(ESP8266) && !defined(WM_NOCOUNTRY)
 // typedef struct {
 //     char cc[3];               /**< country code string */
@@ -159,11 +148,10 @@ const wifi_country_t WM_COUNTRY_JP{"JP",1,14,CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER,
 //     uint8_t nchan;            /**< total channel number */
 //     uint8_t policy;           /**< country policy */
 // } wifi_country_t;
-const wifi_country_t WM_COUNTRY_US{"US",1,11,WIFI_COUNTRY_POLICY_AUTO};
-const wifi_country_t WM_COUNTRY_CN{"CN",1,13,WIFI_COUNTRY_POLICY_AUTO};
-const wifi_country_t WM_COUNTRY_JP{"JP",1,14,WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_US{"US", 1, 11, WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_CN{"CN", 1, 13, WIFI_COUNTRY_POLICY_AUTO};
+const wifi_country_t WM_COUNTRY_JP{"JP", 1, 14, WIFI_COUNTRY_POLICY_AUTO};
 #endif
-
 
 /*
 * ESP32 WiFi Events
