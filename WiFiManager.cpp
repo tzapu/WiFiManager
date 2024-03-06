@@ -2810,6 +2810,8 @@ boolean WiFiManager::captivePortal()
   if (_httpPort != 80)
     serverLoc += ":" + (String)_httpPort;              // add port if not default
   bool doredirect = serverLoc != server->hostHeader(); // redirect if hostheader not server ip, prevent redirect loops
+                                                       // Only redirect the portal detection requests. Avoids overload.
+  doredirect = doredirect && (server->hostHeader().indexOf("connect") >= 0 || server->hostHeader().indexOf("msft") >= 0 || server->hostHeader().indexOf("apple") >= 0 || server->uri().startsWith("/gen") || server->uri().indexOf("hostpot") >= 0);
 
   if (doredirect)
   {
