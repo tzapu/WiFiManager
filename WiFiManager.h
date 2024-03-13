@@ -358,9 +358,24 @@ class WiFiManager
     
     //sets config for a static IP
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
-    
+
     //sets config for a static IP with DNS
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns);
+
+    //check if static network configuration is set
+    bool          isStaticIp(void);
+
+    //provides static host ip address provided method isStaticIp() returns true
+    void          getStaticIp(IPAddress* staticIp);
+
+    //provides static gateway ip address provided method isStaticIp() returns true
+    void          getStaticGw(IPAddress* staticGw);
+
+    //provides static network mask provided method isStaticIp() returns true
+    void          getStaticSn(IPAddress* staticSn);
+
+    //provides static DNS ip address provided method isStaticIp() returns true
+    void          getStaticDns(IPAddress* staticDns);
     
     //if this is set, it will exit after config, even if connection is unsuccessful.
     void          setBreakAfterConfig(boolean shouldBreak);

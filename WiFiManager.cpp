@@ -2784,6 +2784,61 @@ void WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn,
 }
 
 /**
+ * [isStaticIp description]
+ * @access public
+ * @param {[type]} void
+ * @return bool true if static network configuration was configured, false if DHCP was configured
+ * provides static or dhcp network configuration
+ */
+bool WiFiManager::isStaticIp(void) {
+    return _sta_static_ip ? true : false;
+}
+
+/**
+ * [getStaticIp description]
+ * @access public
+ * @param {[type]} IPAddress* staticIp
+ * @return void
+ * provides static host ip address provided method isStaticIp() returns true
+ */
+void WiFiManager::getStaticIp(IPAddress* staticIp) {
+    *staticIp = _sta_static_ip;
+}
+
+/**
+ * [getStaticGw description]
+ * @access public
+ * @param {[type]} IPAddress* staticGw
+ * @return void
+ * provides static gateway ip address provided method isStaticIp() returns true
+ */
+void WiFiManager::getStaticGw(IPAddress* staticGw) {
+    *staticGw = _sta_static_gw;
+}
+
+/**
+ * [getStaticSn description]
+ * @access public
+ * @param {[type]} IPAddress* staticSn
+ * @return void
+ * provides static host network mask provided method isStaticIp() returns true
+ */
+void WiFiManager::getStaticSn(IPAddress* staticSn) {
+    *staticSn = _sta_static_sn;
+}
+
+/**
+ * [getStaticDns description]
+ * @access public
+ * @param {[type]} IPAddress* staticDns
+ * @return void
+ * provides static dns address provided method isStaticIp() returns true
+ */
+void WiFiManager::getStaticDns(IPAddress* staticDns) {
+    *staticDns = _sta_static_dns;
+}
+
+/**
  * [setMinimumSignalQuality description]
  * @access public
  * @param {[type]} int quality [description]
