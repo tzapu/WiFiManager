@@ -19,7 +19,7 @@ jobs:
         example: 
         - "examples/Parameters/SPIFFS/AutoConnectWithFSParametersAndCustomIP/AutoConnectWithFSParametersAndCustomIP.ino"
         - "examples/Parameters/SPIFFS/AutoConnectWithFSParameters/AutoConnectWithFSParameters.ino"
-        - "examples/NonBlocking/OnDemandNonBlocking/onDemandNonBlocking.ino"
+        - "examples/NonBlocking/OnDemandNonBlocking/OnDemandNonBlocking.ino"
         - "examples/NonBlocking/AutoConnectNonBlockingwParams/AutoConnectNonBlockingwParams.ino"
         - "examples/NonBlocking/AutoConnectNonBlocking/AutoConnectNonBlocking.ino"
         - "examples/Basic/Basic.ino"
@@ -31,7 +31,7 @@ jobs:
         - "examples/Old_examples/AutoConnectWithTimeout/AutoConnectWithTimeout.ino"
         - "examples/ParamsChildClass/ParamsChildClass.ino"
         - "examples/OnDemand/OnDemandConfigPortal/OnDemandConfigPortal.ino"
-        - "examples/OnDemand/OnDemandWebPortal/onDemandWebPortal.ino"
+        - "examples/OnDemand/OnDemandWebPortal/OnDemandWebPortal.ino"
      
     steps:
     - uses: actions/checkout@v2
