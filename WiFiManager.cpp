@@ -1335,7 +1335,8 @@ void WiFiManager::handleRoot() {
   String page = getHTTPHead(_title); // @token options @todo replace options with title
   String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
   str.replace(FPSTR(T_t),_title);
-  str.replace(FPSTR(T_v),configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading @todo use hostname?
+  str.replace(FPSTR(T_v), _subtitle.length() ? _subtitle : ( // Use subtitle, AP name or ip
+    configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())));
   page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
@@ -3147,6 +3148,14 @@ void WiFiManager::setTitle(String title){
 }
 
 /**
+ * [setSubtitle description]
+ * @param String subtitle, set app subtitle
+ */
+void WiFiManager::setSubtitle(String subtitle) {
+    _subtitle = subtitle;
+}
+
+/**
  * set menu items and order
  * if param is present in menu , params will be removed from wifi page automatically
  * eg.
@@ -3876,8 +3885,9 @@ void WiFiManager::handleUpdate() {
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(_title); // @token options
 	String str = FPSTR(HTTP_ROOT_MAIN);
-  str.replace(FPSTR(T_t), _title);
-	str.replace(FPSTR(T_v), configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading
+    str.replace(FPSTR(T_t), _title);
+    str.replace(FPSTR(T_v), _subtitle.length() ? _subtitle : ( // Use subtitle, AP name or ip
+        configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())));
 	page += str;
 
 	page += FPSTR(HTTP_UPDATE);
@@ -3986,8 +3996,9 @@ void WiFiManager::handleUpdateDone() {
 
 	String page = getHTTPHead(FPSTR(S_options)); // @token options
 	String str  = FPSTR(HTTP_ROOT_MAIN);
-  str.replace(FPSTR(T_t),_title);
-	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+    str.replace(FPSTR(T_t),_title);
+    str.replace(FPSTR(T_v), _subtitle.length() ? _subtitle : ( // Use subtitle, AP name or ip
+        configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())));
 	page += str;
 
 	if (Update.hasError()) {
