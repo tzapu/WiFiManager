@@ -533,7 +533,7 @@ class WiFiManager
     unsigned long _startconn              = 0; // ms for timing wifi connects
 
     // defaults
-    const byte    DNS_PORT                = 53;
+    const uint8_t  DNS_PORT               = 53;
     String        _apName                 = "no-net";
     String        _apPassword             = "";
     String        _ssid                   = ""; // var temp ssid
