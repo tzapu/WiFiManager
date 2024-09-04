@@ -1438,9 +1438,9 @@ void WiFiManager::handleParam(){
 String WiFiManager::getMenuOut(){
   String page;  
 
-  for(auto menuId :_menuIds ){
-    if((String)_menutokens[menuId] == "param" && _paramsCount == 0) continue; // no params set, omit params from menu, @todo this may be undesired by someone, use only menu to force?
-    if((String)_menutokens[menuId] == "custom" && _customMenuHTML!=NULL){
+  for (auto menuId :_menuIds) {
+    if(strcmp_P("param", _menutokens[menuId]) == 0 && _paramsCount == 0) continue; // no params set, omit params from menu, @todo this may be undesired by someone, use only menu to force?
+    if(strcmp_P("custom", _menutokens[menuId]) == 0 && _customMenuHTML != NULL) {
       page += _customMenuHTML;
       continue;
     }
