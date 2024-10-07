@@ -223,7 +223,7 @@ const char HTTP_INFO_aboutarduino[] PROGMEM = "<dt>Arduino</dt><dd>{1}</dd>";
 const char HTTP_INFO_aboutsdk[]     PROGMEM = "<dt>ESP-SDK/IDF</dt><dd>{1}</dd>";
 const char HTTP_INFO_aboutdate[]    PROGMEM = "<dt>编译日期</dt><dd>{1}</dd>";
 
-const char S_brand[]              PROGMEM = "WiFiManager";
+const char S_brand[]              PROGMEM = "WiFi管理";
 const char S_debugPrefix[]        PROGMEM = "*wm:";
 const char S_y[]                  PROGMEM = "是";
 const char S_n[]                  PROGMEM = "否";
