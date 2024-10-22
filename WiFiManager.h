@@ -751,7 +751,7 @@ protected:
     String        getIpForm(String id, String title, String value);
     String        getScanItemOut();
     String        getStaticOut();
-    String        getHTTPHead(String title);
+    String        getHTTPHead(String title, String classes = "");
     String        getMenuOut();
     //helpers
     boolean       isIp(String str);

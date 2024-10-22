@@ -1272,7 +1272,7 @@ void WiFiManager::startWPS() {
 }
 #endif
 
-String WiFiManager::getHTTPHead(String title){
+String WiFiManager::getHTTPHead(String title, String classes){
   String page;
   page += FPSTR(HTTP_HEAD_START);
   page.replace(FPSTR(T_v), title);
@@ -1280,14 +1280,12 @@ String WiFiManager::getHTTPHead(String title){
   page += FPSTR(HTTP_STYLE);
   page += _customHeadElement;
 
-  if(_bodyClass != ""){
-    String p = FPSTR(HTTP_HEAD_END);
-    p.replace(FPSTR(T_c), _bodyClass); // add class str
-    page += p;
+  String p = FPSTR(HTTP_HEAD_END);
+  if (_bodyClass != "") {
+      classes += " " + _bodyClass;  // add class str
   }
-  else {
-    page += FPSTR(HTTP_HEAD_END);
-  } 
+  p.replace(FPSTR(T_c), classes);
+  page += p;
 
   return page;
 }
