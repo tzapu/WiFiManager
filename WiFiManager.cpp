@@ -1289,7 +1289,10 @@ String WiFiManager::getHTTPHead(String title){
     page += FPSTR(HTTP_HEAD_END);
   } 
 
-  page += _customBodyHeader;
+  if (_customBodyHeader) {
+    page += _customBodyHeader;
+  }
+
   return page;
 }
 
