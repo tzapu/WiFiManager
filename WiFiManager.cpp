@@ -1289,7 +1289,7 @@ String WiFiManager::getHTTPHead(String title){
     page += FPSTR(HTTP_HEAD_END);
   } 
 
-  page += _customTopBodyElement;
+  page += _customBodyHeader;
   return page;
 }
 
@@ -2897,13 +2897,13 @@ void WiFiManager::setCustomHeadElement(const char* html) {
 }
 
 /**
- * set custom top body html
- * custom element will be added to shortly after body tag opened, eg. to show a logo etc.
+ * set custom html at the top of the body
+ * custom element will be added immediately after the body tag is opened, eg. to show a logo etc.
  * @access public
  * @param char element
  */
-void WiFiManager::setCustomTopBodyElement(const char* html) {
-  _customTopBodyElement = html;
+void WiFiManager::setCustomBodyHeader(const char* html) {
+    _customBodyHeader = html;
 }
 
 /**
