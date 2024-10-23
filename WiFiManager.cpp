@@ -1297,7 +1297,13 @@ String WiFiManager::getHTTPHead(String title){
 }
 
 String WiFiManager::getHTTPEnd() {
-    return FPSTR(HTTP_END);
+  String end = FPSTR(HTTP_END);
+
+  if (_customBodyFooter) {
+    end = String(_customBodyFooter) + end;
+  }
+
+  return end;
 }
 
 void WiFiManager::HTTPSend(const String &content){
@@ -2911,6 +2917,16 @@ void WiFiManager::setCustomHeadElement(const char* html) {
  */
 void WiFiManager::setCustomBodyHeader(const char* html) {
     _customBodyHeader = html;
+}
+
+/**
+ * set custom html at the bottom of the body
+ * custom element will be added immediately before the body tag is closed
+ * @access public
+ * @param char element
+ */
+void WiFiManager::setCustomBodyFooter(const char* html) {
+    _customBodyFooter = html;
 }
 
 /**

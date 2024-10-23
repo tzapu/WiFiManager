@@ -376,6 +376,9 @@ class WiFiManager
     //add custom html at start of <body> for all pages
     void          setCustomBodyHeader(const char* html);
 
+    //add custom html at end of <body> for all pages
+    void          setCustomBodyFooter(const char* html);
+
     //if this is set, customise style
     void          setCustomMenuHTML(const char* html);
 
@@ -600,6 +603,7 @@ class WiFiManager
 
     const char*   _customHeadElement      = ""; // store custom head element html from user inside <head>
     const char*   _customBodyHeader       = ""; // store custom top body element html from user inside <body>
+    const char*   _customBodyFooter       = ""; // store custom bottom body element html from user inside <body>
     const char*   _customMenuHTML         = ""; // store custom menu html from user
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
