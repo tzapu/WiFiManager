@@ -65,7 +65,7 @@ const char R_updatedone[]         PROGMEM = "/u";
 
 
 // Classes
-const char C_root[]               PROGMEM = "root";
+const char C_root[]               PROGMEM = "home";
 const char C_wifi[]               PROGMEM = "wifi";
 const char C_info[]               PROGMEM = "info";
 const char C_param[]              PROGMEM = "param";
