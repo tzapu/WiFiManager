@@ -2913,7 +2913,7 @@ void WiFiManager::setCustomHeadElement(const char* html) {
 
 /**
  * set custom html at the top of the body
- * custom element will be added immediately after the body tag is opened, eg. to show a logo etc.
+ * custom element will be added after the body tag is opened, eg. to show a logo etc.
  * @access public
  * @param char element
  */
@@ -2923,7 +2923,7 @@ void WiFiManager::setCustomBodyHeader(const char* html) {
 
 /**
  * set custom html at the bottom of the body
- * custom element will be added immediately before the body tag is closed
+ * custom element will be added before the body tag is closed
  * @access public
  * @param char element
  */
