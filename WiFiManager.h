@@ -756,6 +756,7 @@ protected:
     String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title);
+    String        getHTTPEnd();
     String        getMenuOut();
     //helpers
     boolean       isIp(String str);

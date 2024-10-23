@@ -1296,6 +1296,10 @@ String WiFiManager::getHTTPHead(String title){
   return page;
 }
 
+String WiFiManager::getHTTPEnd() {
+    return FPSTR(HTTP_END);
+}
+
 void WiFiManager::HTTPSend(const String &content){
   server->send(200, FPSTR(HTTP_HEAD_CT), content);
 }
@@ -1344,7 +1348,7 @@ void WiFiManager::handleRoot() {
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
   if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
@@ -1400,7 +1404,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_SCAN_LINK);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -1429,7 +1433,7 @@ void WiFiManager::handleParam(){
   page += FPSTR(HTTP_FORM_END);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -1891,7 +1895,7 @@ void WiFiManager::handleWifiSave() {
   }
 
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
   HTTPSend(page);
@@ -1918,7 +1922,7 @@ void WiFiManager::handleParamSave() {
   String page = getHTTPHead(FPSTR(S_titleparamsaved)); // @token titleparamsaved
   page += FPSTR(HTTP_PARAMSAVED);
   if(_showBack) page += FPSTR(HTTP_BACKBTN); 
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2075,7 +2079,7 @@ void WiFiManager::handleInfo() {
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_HELP);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2345,7 +2349,7 @@ void WiFiManager::handleReset() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlereset)); //@token titlereset
   page += FPSTR(S_resetting); //@token resetting
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2380,7 +2384,7 @@ void WiFiManager::handleErase(boolean opt) {
     #endif
   }
 
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
   HTTPSend(page);
 
   if(ret){
@@ -3895,7 +3899,7 @@ void WiFiManager::handleUpdate() {
 	page += str;
 
 	page += FPSTR(HTTP_UPDATE);
-	page += FPSTR(HTTP_END);
+	page += getHTTPEnd();
 
 	HTTPSend(page);
 
@@ -4017,7 +4021,7 @@ void WiFiManager::handleUpdateDone() {
 		page += FPSTR(HTTP_UPDATE_SUCCESS);
 		DEBUG_WM(F("[OTA] update ok"));
 	}
-	page += FPSTR(HTTP_END);
+	page += getHTTPEnd();
 
 	HTTPSend(page);
 
