@@ -1282,7 +1282,10 @@ String WiFiManager::getHTTPHead(String title, String classes){
 
   String p = FPSTR(HTTP_HEAD_END);
   if (_bodyClass != "") {
-      classes += " " + _bodyClass;  // add class str
+    if (classes != "") {
+      classes += " ";  // add spacing, if necessary
+    }
+    classes += _bodyClass;  // add class str
   }
   p.replace(FPSTR(T_c), classes);
   page += p;
