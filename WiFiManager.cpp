@@ -1739,8 +1739,8 @@ String WiFiManager::getParamOut(){
     char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
-      //Serial.println((String)_params[i]->_length);
-      if (_params[i] == NULL || _params[i]->_length > 99999) {
+      //Serial.println((String)_params[i]->getValueLength());
+      if (_params[i] == NULL || _params[i]->getValueLength() > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
@@ -1941,7 +1941,7 @@ void WiFiManager::doParamSave(){
     #endif
 
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || _params[i]->_length > 99999) {
+      if (_params[i] == NULL || _params[i]->getValueLength() > 99999) {
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
         #endif
@@ -1957,7 +1957,7 @@ void WiFiManager::doParamSave(){
       }
 
       //store it in params array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      _params[i]->setValue(value.c_str());
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(WM_DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
       #endif
