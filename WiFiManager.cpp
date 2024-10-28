@@ -118,6 +118,9 @@ const char* WiFiManagerParameter::getLabel() const {
 int WiFiManagerParameter::getValueLength() const {
   return _length;
 }
+int WiFiManagerParameter::getValueMaxLength() const {
+    return _length;
+}
 int WiFiManagerParameter::getLabelPlacement() const {
   return _labelPlacement;
 }
@@ -1773,7 +1776,7 @@ String WiFiManager::getParamOut(){
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
         if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
         if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
-        snprintf(valLength, 5, "%d", _params[i]->getValueLength());
+        snprintf(valLength, 5, "%d", _params[i]->getValueMaxLength());
         if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
         if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
         if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
