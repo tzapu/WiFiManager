@@ -76,6 +76,10 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 //   return *this;
 // }
 
+void WiFiManagerParameter::setValue(const char *defaultValue) {
+    setValue(defaultValue, getValueLength());  // use the existing max length
+}
+
 // @note debug is not available in wmparameter class
 void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
   if(!_id){
