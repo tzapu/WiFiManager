@@ -234,7 +234,6 @@ class WiFiManagerParameter {
     int         _labelPlacement;
   
     const char *_customHTML;
-    friend class WiFiManager;
 };
 
 
