@@ -204,9 +204,9 @@ class WiFiManagerParameter {
     WiFiManagerParameter();
     WiFiManagerParameter(const char *custom);
     WiFiManagerParameter(const char *id, const char *label);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom);
+    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
@@ -217,16 +217,16 @@ class WiFiManagerParameter {
     int         getValueLength() const;
     int         getLabelPlacement() const;
     virtual const char *getCustomHTML() const;
-    void        setValue(const char *defaultValue, int length);
+    void        setValue(const char *defaultValue, int maxLength);
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
 
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
     char       *_value;
-    int         _length;
+    int         _length; // @deprecated this should be _maxLength
     int         _labelPlacement;
   
     const char *_customHTML;

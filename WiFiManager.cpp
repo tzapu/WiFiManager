@@ -41,26 +41,26 @@ WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
   init(id, label, "", 0, "", WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length) {
-  init(id, label, defaultValue, length, "", WFM_LABEL_DEFAULT);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength) {
+  init(id, label, defaultValue, maxLength, "", WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom) {
-  init(id, label, defaultValue, length, custom, WFM_LABEL_DEFAULT);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom) {
+  init(id, label, defaultValue, maxLength, custom, WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  init(id, label, defaultValue, length, custom, labelPlacement);
+WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement) {
+  init(id, label, defaultValue, maxLength, custom, labelPlacement);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
+void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement) {
   _id             = id;
   _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
   _length         = 0;
   _value          = nullptr;
-  setValue(defaultValue,length);
+  setValue(defaultValue, maxLength);
 }
 
 WiFiManagerParameter::~WiFiManagerParameter() {
@@ -77,19 +77,19 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 // }
 
 // @note debug is not available in wmparameter class
-void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
+void WiFiManagerParameter::setValue(const char *defaultValue, int maxLength) {
   if(!_id){
     // Serial.println("cannot set value of this parameter");
     return;
   }
   
-  // if(strlen(defaultValue) > length){
+  // if(strlen(defaultValue) > maxLength){
   //   // Serial.println("defaultValue length mismatch");
   //   // return false; //@todo bail 
   // }
 
-  if(_length != length || _value == nullptr){
-    _length = length;
+  if(_length != maxLength || _value == nullptr){
+    _length = maxLength;
     if( _value != nullptr){
       delete[] _value;
     }
