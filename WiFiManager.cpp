@@ -77,7 +77,7 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 // }
 
 void WiFiManagerParameter::setValue(const char *defaultValue) {
-    setValue(defaultValue, getValueLength());  // use the existing max length
+    setValue(defaultValue, getValueMaxLength());  // use the existing max length
 }
 
 // @note debug is not available in wmparameter class
@@ -121,6 +121,9 @@ const char* WiFiManagerParameter::getLabel() const {
 }
 int WiFiManagerParameter::getValueLength() const {
   return _length;
+}
+int WiFiManagerParameter::getValueMaxLength() const {
+    return _length;
 }
 int WiFiManagerParameter::getLabelPlacement() const {
   return _labelPlacement;
@@ -1739,8 +1742,8 @@ String WiFiManager::getParamOut(){
     char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
-      //Serial.println((String)_params[i]->getValueLength());
-      if (_params[i] == NULL || _params[i]->getValueLength() > 99999) {
+      //Serial.println((String)_params[i]->getValueMaxLength());
+      if (_params[i] == NULL || _params[i]->getValueMaxLength() > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
@@ -1777,7 +1780,7 @@ String WiFiManager::getParamOut(){
         if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
         if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
         if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
-        snprintf(valLength, 5, "%d", _params[i]->getValueLength());
+        snprintf(valLength, 5, "%d", _params[i]->getValueMaxLength());
         if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
         if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
         if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
@@ -1941,7 +1944,7 @@ void WiFiManager::doParamSave(){
     #endif
 
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || _params[i]->getValueLength() > 99999) {
+      if (_params[i] == NULL || _params[i]->getValueMaxLength() > 99999) {
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
         #endif

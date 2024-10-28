@@ -30,7 +30,7 @@ addParameter KEYWORD2
 getID KEYWORD2
 getValue KEYWORD2
 getPlaceholder KEYWORD2
-getValueLength KEYWORD2
+getValueMaxLength KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
