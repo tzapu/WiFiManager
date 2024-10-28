@@ -86,6 +86,11 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int maxLength) {
     // Serial.println("cannot set value of this parameter");
     return;
   }
+
+  if(maxLength < 0){
+      // Serial.println("cannot set length below zero");
+      return;
+  }
   
   // if(strlen(defaultValue) > maxLength){
   //   // Serial.println("defaultValue length mismatch");
