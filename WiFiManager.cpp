@@ -143,6 +143,76 @@ const char* WiFiManagerParameter::getCustomHTML() const {
   return _customHTML;
 }
 
+String WiFiManagerParameter::getHTML() const {
+    // flag so we only parse the template on first run
+    static bool template_parsed = false;
+
+    // flags to indicate the presence of this token
+    // within the template string
+    static bool tok_i = false;
+    static bool tok_n = false;
+    static bool tok_p = false;
+    static bool tok_t = false;
+    static bool tok_l = false;
+    static bool tok_v = false;
+    static bool tok_c = false;
+
+    if (!template_parsed) {
+        String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
+        HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
+
+        tok_i = HTTP_PARAM_temp.indexOf(FPSTR(T_i)) > 0;
+        tok_n = HTTP_PARAM_temp.indexOf(FPSTR(T_n)) > 0;
+        tok_p = HTTP_PARAM_temp.indexOf(FPSTR(T_p)) > 0;
+        tok_t = HTTP_PARAM_temp.indexOf(FPSTR(T_t)) > 0;
+        tok_l = HTTP_PARAM_temp.indexOf(FPSTR(T_l)) > 0;
+        tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
+        tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
+
+        template_parsed = true;
+    }
+
+    // if we have no name, quit early and return custom HTML
+    if (this->getName() == NULL) {
+        return String(this->getCustomHTML());
+    }
+
+    String pitem;
+
+    // label before or after, @todo this could be done via floats or CSS and eliminated
+    switch (this->getLabelPlacement()) {
+    case WFM_LABEL_BEFORE:
+        pitem  = FPSTR(HTTP_FORM_LABEL);
+        pitem += FPSTR(HTTP_FORM_PARAM);
+        break;
+    case WFM_LABEL_AFTER:
+        pitem  = FPSTR(HTTP_FORM_PARAM);
+        pitem += FPSTR(HTTP_FORM_LABEL);
+        break;
+    default:
+        // WFM_NO_LABEL
+        pitem = FPSTR(HTTP_FORM_PARAM);
+        break;
+    }
+
+    // Input templating
+    // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
+    if (tok_i) pitem.replace(FPSTR(T_i), this->getName());  // T_i id
+    if (tok_n) pitem.replace(FPSTR(T_n), this->getName());  // T_n name
+    if (tok_p) pitem.replace(FPSTR(T_p), FPSTR(T_t));       // T_p replace legacy placeholder token
+    if (tok_t) pitem.replace(FPSTR(T_t), this->getLabel()); // T_t title/label
+    if (tok_l) {
+        char valLength[5];
+        snprintf(valLength, 5, "%d", this->getValueMaxLength());
+        pitem.replace(FPSTR(T_l), valLength); // T_l value max length
+    }
+    if (tok_v) pitem.replace(FPSTR(T_v), this->getValue()); // T_v value
+    if (tok_c) pitem.replace(FPSTR(T_c), this->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
+
+    return pitem;
+}
+
+
 /**
  * [addParameter description]
  * @access public
@@ -1742,15 +1812,6 @@ String WiFiManager::getParamOut(){
     String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
     HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
     bool tok_I = HTTP_PARAM_temp.indexOf(FPSTR(T_I)) > 0;
-    bool tok_i = HTTP_PARAM_temp.indexOf(FPSTR(T_i)) > 0;
-    bool tok_n = HTTP_PARAM_temp.indexOf(FPSTR(T_n)) > 0;
-    bool tok_p = HTTP_PARAM_temp.indexOf(FPSTR(T_p)) > 0;
-    bool tok_t = HTTP_PARAM_temp.indexOf(FPSTR(T_t)) > 0;
-    bool tok_l = HTTP_PARAM_temp.indexOf(FPSTR(T_l)) > 0;
-    bool tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
-    bool tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
-
-    char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
       //Serial.println((String)_params[i]->getValueMaxLength());
@@ -1765,38 +1826,14 @@ String WiFiManager::getParamOut(){
 
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
-     // label before or after, @todo this could be done via floats or CSS and eliminated
-     String pitem;
-      switch (_params[i]->getLabelPlacement()) {
-        case WFM_LABEL_BEFORE:
-          pitem = FPSTR(HTTP_FORM_LABEL);
-          pitem += FPSTR(HTTP_FORM_PARAM);
-          break;
-        case WFM_LABEL_AFTER:
-          pitem = FPSTR(HTTP_FORM_PARAM);
-          pitem += FPSTR(HTTP_FORM_LABEL);
-          break;
-        default:
-          // WFM_NO_LABEL
-          pitem = FPSTR(HTTP_FORM_PARAM);
-          break;
-      }
+      String pitem;
 
-      // Input templating
-      // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
-      // if no ID use customhtml for item, else generate from param string
-      if (_params[i]->getName() != NULL) {
-        if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
-        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getName()); // T_i name
-        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getName()); // T_n name alias
-        if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
-        if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
-        snprintf(valLength, 5, "%d", _params[i]->getValueMaxLength());
-        if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
-        if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
-        if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
-      } else {
-        pitem = _params[i]->getCustomHTML();
+      if(_params[i]->getName() != NULL) {
+        pitem = _params[i]->getHTML();
+        if (tok_I) pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre) + (String)i); // T_I id number
+      }
+      else {
+        pitem = _params[i]->getHTML();
       }
 
       page += pitem;

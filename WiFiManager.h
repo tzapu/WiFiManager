@@ -221,6 +221,7 @@ class WiFiManagerParameter {
     virtual const char *getCustomHTML() const;
     void        setValue(const char *defaultValue, int maxLength);
 
+    virtual String getHTML() const;
     virtual void   setValueReceived(const char* value);
 
   protected:
