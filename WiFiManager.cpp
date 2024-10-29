@@ -1809,10 +1809,6 @@ String WiFiManager::getParamOut(){
 
   if(_paramsCount > 0){
 
-    String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
-    HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM);
-    bool tok_I = HTTP_PARAM_temp.indexOf(FPSTR(T_I)) > 0;
-
     for (int i = 0; i < _paramsCount; i++) {
       //Serial.println((String)_params[i]->getValueMaxLength());
       if (_params[i] == NULL || _params[i]->getValueMaxLength() > 99999) {
@@ -1826,17 +1822,7 @@ String WiFiManager::getParamOut(){
 
     // add the extra parameters to the form
     for (int i = 0; i < _paramsCount; i++) {
-      String pitem;
-
-      if(_params[i]->getName() != NULL) {
-        pitem = _params[i]->getHTML();
-        if (tok_I) pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre) + (String)i); // T_I id number
-      }
-      else {
-        pitem = _params[i]->getHTML();
-      }
-
-      page += pitem;
+      page += _params[i]->getHTML();
     }
   }
 
