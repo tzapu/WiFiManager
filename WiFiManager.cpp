@@ -102,6 +102,13 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int maxLength) {
     strncpy(_value, defaultValue, _length);
   }
 }
+
+void WiFiManagerParameter::setValueReceived(const char* value) {
+    // by default, this just passes through to 'setValue'
+    // derived classes can intercept the received value here
+    setValue(value, getValueMaxLength());
+}
+
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
@@ -1959,7 +1966,7 @@ void WiFiManager::doParamSave(){
       }
 
       //store it in params array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      _params[i]->setValueReceived(value.c_str());
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(WM_DEBUG_VERBOSE,(String)_params[i]->getName() + ":",value);
       #endif
