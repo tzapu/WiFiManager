@@ -237,6 +237,26 @@ class WiFiManagerParameter {
     const char *_customHTML;
 };
 
+class WiFiManagerParameterCheckbox : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterCheckbox(
+        const char* name,
+        const char* label,
+        const char* value,
+        bool        checked = false,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+private:
+    bool _checked;
+};
+
 
     // debugging
     typedef enum {

@@ -212,6 +212,109 @@ String WiFiManagerParameter::getHTML() const {
     return pitem;
 }
 
+/**
+ * --------------------------------------------------------------------------------
+ *  WiFiManagerParameterCheckbox
+ * --------------------------------------------------------------------------------
+**/
+
+WiFiManagerParameterCheckbox::WiFiManagerParameterCheckbox(
+    const char* name,
+    const char* label,
+    const char* value,
+    bool checked,
+    const char* custom,
+    int labelPlacement
+
+):
+    WiFiManagerParameter(name, label, value, (value ? strlen(value) : 0), custom, labelPlacement)
+{
+    setChecked(checked);
+}
+
+bool WiFiManagerParameterCheckbox::getChecked() const {
+    return _checked;
+}
+
+void WiFiManagerParameterCheckbox::setChecked(bool checked) {
+    _checked = checked;
+}
+
+void WiFiManagerParameterCheckbox::setValueReceived(const char* value) {
+    const int res = strncmp(value, getValue(), getValueMaxLength());
+    setChecked(res == 0);  // set checkbox if receieved is equal to value
+}
+
+String WiFiManagerParameterCheckbox::getHTML() const {
+    // flag so we only parse the template on first run
+    static bool template_parsed = false;
+
+    // flags to indicate the presence of this token
+    // within the template string
+    static bool tok_i = false;
+    static bool tok_n = false;
+    static bool tok_t = false;
+    static bool tok_T = false;
+    static bool tok_v = false;
+    static bool tok_c = false;
+
+    if (!template_parsed) {
+        String HTTP_PARAM_temp = FPSTR(HTTP_FORM_LABEL);
+        HTTP_PARAM_temp += FPSTR(HTTP_FORM_PARAM_CHECK);
+
+        tok_i = HTTP_PARAM_temp.indexOf(FPSTR(T_i)) > 0;
+        tok_n = HTTP_PARAM_temp.indexOf(FPSTR(T_n)) > 0;
+        tok_t = HTTP_PARAM_temp.indexOf(FPSTR(T_t)) > 0;
+        tok_T = HTTP_PARAM_temp.indexOf(FPSTR(T_T)) > 0;
+        tok_v = HTTP_PARAM_temp.indexOf(FPSTR(T_v)) > 0;
+        tok_c = HTTP_PARAM_temp.indexOf(FPSTR(T_c)) > 0;
+
+        template_parsed = true;
+    }
+
+    String pitem;
+
+    // label before or after, @todo this could be done via floats or CSS and eliminated
+    switch (this->getLabelPlacement()) {
+    case WFM_LABEL_BEFORE:
+        pitem  = FPSTR(HTTP_FORM_LABEL);
+        pitem += FPSTR(HTTP_FORM_PARAM_CHECK);
+        break;
+    case WFM_LABEL_AFTER:
+        pitem  = FPSTR(HTTP_FORM_PARAM_CHECK);
+        pitem += FPSTR(HTTP_FORM_LABEL);
+        break;
+    default:
+        // WFM_NO_LABEL
+        pitem = FPSTR(HTTP_FORM_PARAM_CHECK);
+        break;
+    }
+
+    // Input templating
+    // "<label for='{i}'>{t}</label>"
+    // "<input type='{T}' name='{n}' id='{i}' value='{v}' {c}>";
+    if (tok_t) pitem.replace(FPSTR(T_t), this->getLabel());  // T_t title/label
+    if (tok_T) pitem.replace(FPSTR(T_T), F("checkbox"));     // T_T type
+    if (tok_n) pitem.replace(FPSTR(T_n), this->getName());   // T_n name
+    if (tok_i) pitem.replace(FPSTR(T_i), this->getName());   // T_i id
+    if (tok_v) pitem.replace(FPSTR(T_v), this->getValue());  // T_v value
+
+    // T_c meant for additional attributes, not html, but can stuff
+    // For checkboxes, this is where we can put 'checked'
+    if (tok_c) {
+        String c;
+        if (this->getChecked()) {
+            c += F("checked ");
+        }
+        c += this->getCustomHTML();
+        pitem.replace(FPSTR(T_c), c);
+    }
+
+    pitem += FPSTR(HTTP_BR);
+
+    return pitem;
+}
+
 
 /**
  * [addParameter description]
