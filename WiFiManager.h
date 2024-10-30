@@ -203,14 +203,15 @@ class WiFiManagerParameter {
     */
     WiFiManagerParameter();
     WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *label);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
+    WiFiManagerParameter(const char *name, const char *label);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
     ~WiFiManagerParameter();
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
-    const char *getID() const;
+    const char *getName() const;
+    const char *getID() const;          // @deprecated, use getName
     const char *getValue() const;
     const char *getLabel() const;
     const char *getPlaceholder() const; // @deprecated, use getLabel
@@ -221,10 +222,10 @@ class WiFiManagerParameter {
     void        setValue(const char *defaultValue, int maxLength);
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
+    void init(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
 
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
-    const char *_id;
+    const char *_id;    // @deprecated this should be _name
     const char *_label;
     char       *_value;
     int         _length; // @deprecated this should be _maxLength

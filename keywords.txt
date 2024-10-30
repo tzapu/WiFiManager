@@ -27,7 +27,7 @@ setSTAStaticIPConfig KEYWORD2
 setAPCallback	KEYWORD2
 setSaveConfigCallback KEYWORD2
 addParameter KEYWORD2
-getID KEYWORD2
+getName	KEYWORD2
 getValue KEYWORD2
 getPlaceholder KEYWORD2
 getValueMaxLength KEYWORD2
