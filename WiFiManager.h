@@ -207,7 +207,7 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength);
     WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom);
     WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
-    ~WiFiManagerParameter();
+    virtual ~WiFiManagerParameter();
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
     const char *getName() const;
