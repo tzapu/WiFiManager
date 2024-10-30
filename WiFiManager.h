@@ -257,6 +257,33 @@ private:
     bool _checked;
 };
 
+class WiFiManagerParameterRadio : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterRadio(
+        const char* name,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    void addOption(const char* id, const char* label, const char* value, bool selected);
+    void clear();
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+private:
+    struct RadioOption {
+        const char* id;
+        const char* label;
+        const char* value;
+    };
+
+    bool   valueSelected(const char* value) const;
+    String generateOptionHTML(const RadioOption& option) const;
+
+    std::vector<RadioOption> options;
+    size_t maxBufferSize;
+};
+
 
     // debugging
     typedef enum {
