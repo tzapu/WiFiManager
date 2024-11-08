@@ -39,20 +39,27 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: ${{ runner.os }}-pip-
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ github.ref }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ github.ref }}-
+          ${{ runner.os }}-pip-
+        
     - name: Cache PlatformIO
       uses: actions/cache@v2
       with:
         path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}-${{ github.ref }}
+        restore-keys: |
+          ${{ runner.os }}-${{ github.ref }}-
+          ${{ runner.os }}-
+        
     - name: Set up Python
       uses: actions/setup-python@v2
     - name: Install PlatformIO
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-    - name: Install 3rd party dependecies
+    - name: Install 3rd party dependencies
       run: | 
         pio lib -g install \
         file://. \
@@ -92,20 +99,25 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ github.ref }}-
+            ${{ runner.os }}-pip-
       - name: Cache PlatformIO
         uses: actions/cache@v2
         with:
           path: ~/.platformio
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-${{ github.ref }}-
+            ${{ runner.os }}-
       - name: Set up Python
         uses: actions/setup-python@v2
       - name: Install PlatformIO
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade platformio
-      - name: Install 3rd party dependecies
+      - name: Install 3rd party dependencies
         run: |
           pio lib -g install \
           file://. \
@@ -116,3 +128,4 @@ jobs:
         run: pio ci --board=esp32dev
         env:
           PLATFORMIO_CI_SRC: ${{ matrix.example }}
+          
