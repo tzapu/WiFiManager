@@ -29,13 +29,18 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: ${{ runner.os }}-pip-
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ matrix.board }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.board }}-
+          ${{ runner.os }}-pip-
     - name: Cache PlatformIO
       uses: actions/cache@v2
       with:
         path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}-${{ matrix.board }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.board }}-
+          ${{ runner.os }}-
     - name: Set up Python
       uses: actions/setup-python@v2
     - name: Install PlatformIO
