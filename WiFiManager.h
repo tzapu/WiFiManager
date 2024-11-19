@@ -257,6 +257,29 @@ private:
     bool _checked;
 };
 
+class WiFiManagerParameterRadio;
+
+class WiFiManagerParameterRadioOption {
+public:
+    WiFiManagerParameterRadioOption(WiFiManagerParameterRadio& radio, const char* id, const char* label, const char* value, bool checked = false);
+    virtual ~WiFiManagerParameterRadioOption();
+
+    const char* getID() const;
+    const char* getLabel() const;
+    const char* getValue() const;
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+    virtual String getHTML() const;
+
+private:
+    WiFiManagerParameterRadio& _radio;
+    const char* _id;
+    const char* _label;
+    const char* _value;
+};
+
 class WiFiManagerParameterRadio : public WiFiManagerParameter {
 public:
     WiFiManagerParameterRadio(
@@ -264,23 +287,14 @@ public:
         const char* custom = "",
         int         labelPlacement = WFM_LABEL_AFTER);
 
-    void addOption(const char* id, const char* label, const char* value, bool selected);
-    void clear();
+    void addOption(WiFiManagerParameterRadioOption& option, bool checked = false);
+    void removeOption(WiFiManagerParameterRadioOption& option);
 
     virtual String getHTML() const;
     virtual void   setValueReceived(const char* value);
 
 private:
-    struct RadioOption {
-        const char* id;
-        const char* label;
-        const char* value;
-    };
-
-    bool   valueSelected(const char* value) const;
-    String generateOptionHTML(const RadioOption& option) const;
-
-    std::vector<RadioOption> options;
+    std::vector<WiFiManagerParameterRadioOption*> options;
     size_t maxBufferSize;
 };
 

@@ -321,70 +321,61 @@ String WiFiManagerParameterCheckbox::getHTML() const {
  * --------------------------------------------------------------------------------
 **/
 
-WiFiManagerParameterRadio::WiFiManagerParameterRadio(
-    const char* name,
-    const char* custom,
-    int labelPlacement
+WiFiManagerParameterRadioOption::WiFiManagerParameterRadioOption(
+    WiFiManagerParameterRadio& radio,
+    const char* id,
+    const char* label,
+    const char* value,
+    bool checked
 ) :
-    // no label, no value, 0 value length
-    WiFiManagerParameter(name, "", "", 0, custom, labelPlacement),
-    maxBufferSize(0)
-{}
+    _radio(radio), _id(id), _label(label), _value(value)
+{
+    this->_radio.addOption(*this, checked);
+}
 
-void WiFiManagerParameterRadio::addOption(const char* id, const char* label, const char* value, bool selected) {
-    const RadioOption elem = { id, label, value };
-    options.push_back(elem);
+WiFiManagerParameterRadioOption::~WiFiManagerParameterRadioOption()
+{
+    this->_radio.removeOption(*this);
+}
 
-    // compare value length to max buffer size
-    int valueLen = value ? strlen(value) : 0;
-    if (valueLen > this->maxBufferSize) {
-        this->maxBufferSize = valueLen;
+const char* WiFiManagerParameterRadioOption::getID() const {
+    return this->_id;
+}
+
+const char* WiFiManagerParameterRadioOption::getLabel() const {
+    return this->_label;
+}
+
+const char* WiFiManagerParameterRadioOption::getValue() const {
+    return this->_value;
+}
+
+bool WiFiManagerParameterRadioOption::getChecked() const {
+    // if there is no value here or in the radio, we're not checked
+    if (!this->getValue() || !(this->_radio).getValue()) return false;
+
+    // otherwise, compare our value vs the radio selection to see if they match
+    return (strncmp((this->_radio).getValue(), this->getValue(), (this->_radio).getValueMaxLength()) == 0);
+}
+
+void WiFiManagerParameterRadioOption::setChecked(bool checked) {
+    // if we are setting 'checked' then we can set the value,
+    // regardless of what may be set previously
+    if (checked) {
+        (this->_radio).setValueReceived(this->getValue());
     }
 
-    // if 'selection' flag is set or if nothing is selected so far,
-    // copy the new value into the value buffer
-    if (selected || (this->getValueMaxLength() == 0)) {
-        this->setValue(value, this->maxBufferSize);
-    }
-}
-
-void WiFiManagerParameterRadio::clear() {
-    this->options.clear();
-    this->maxBufferSize = 0;
-    this->setValue("", this->maxBufferSize);
-}
-
-void WiFiManagerParameterRadio::setValueReceived(const char* value) {
-    if (!value) return;
-
-    // input validation: only accept a new value if the value received
-    // matches one of the possible options
-    for (const RadioOption& i : options) {
-        const int match = strncmp(value, i.value, this->maxBufferSize);
-        if (match == 0) {
-            this->setValue(i.value, this->maxBufferSize);
-            break;
-        }
-    }
-}
-
-bool WiFiManagerParameterRadio::valueSelected(const char* value) const {
-    if (!value) return false;
-    const int match = strncmp(value, this->getValue(), this->maxBufferSize);
-    return match == 0;
-}
-
-String WiFiManagerParameterRadio::getHTML() const {
-    String radioGroup;
-
-    for (const RadioOption& i : options) {
-        radioGroup += generateOptionHTML(i);
+    // if we are setting 'unchecked' and we're currently checked,
+    // clear the stored string in the class
+    else if (!checked && this->getChecked()) {
+        (this->_radio).setValueReceived(nullptr);
     }
 
-    return radioGroup;
+    // implicit else: if we're setting 'unchecked' and we aren't
+    // currently checked, do nothing
 }
 
-String WiFiManagerParameterRadio::generateOptionHTML(const RadioOption& option) const {
+String WiFiManagerParameterRadioOption::getHTML() const {
     // flag so we only parse the template on first run
     static bool template_parsed = false;
 
@@ -414,7 +405,7 @@ String WiFiManagerParameterRadio::generateOptionHTML(const RadioOption& option) 
     String pitem;
 
     // label before or after, @todo this could be done via floats or CSS and eliminated
-    switch (this->getLabelPlacement()) {
+    switch ((this->_radio).getLabelPlacement()) {
     case WFM_LABEL_BEFORE:
         pitem  = FPSTR(HTTP_FORM_LABEL);
         pitem += FPSTR(HTTP_FORM_PARAM_CHECK);
@@ -432,20 +423,20 @@ String WiFiManagerParameterRadio::generateOptionHTML(const RadioOption& option) 
     // Input templating
     // "<label for='{i}'>{t}</label>"
     // "<input type='{T}' name='{n}' id='{i}' value='{v}' {c}>";
-    if (tok_t) pitem.replace(FPSTR(T_t), option.label);      // T_t title/label
-    if (tok_T) pitem.replace(FPSTR(T_T), F("radio"));        // T_T type
-    if (tok_n) pitem.replace(FPSTR(T_n), this->getName());   // T_n name
-    if (tok_i) pitem.replace(FPSTR(T_i), option.id);         // T_i id
-    if (tok_v) pitem.replace(FPSTR(T_v), option.value);      // T_v value
+    if (tok_t) pitem.replace(FPSTR(T_t), this->getLabel());          // T_t title/label
+    if (tok_T) pitem.replace(FPSTR(T_T), F("radio"));                // T_T type
+    if (tok_n) pitem.replace(FPSTR(T_n), (this->_radio).getName());  // T_n name
+    if (tok_i) pitem.replace(FPSTR(T_i), this->getID());             // T_i id
+    if (tok_v) pitem.replace(FPSTR(T_v), this->getValue());          // T_v value
 
     // T_c meant for additional attributes, not html, but can stuff
     // For radio options, this is where we can put 'checked'
     if (tok_c) {
         String c;
-        if (this->valueSelected(option.value)) {
+        if (this->getChecked()) {
             c += F("checked ");
         }
-        c += this->getCustomHTML();
+        c += (this->_radio).getCustomHTML();
         pitem.replace(FPSTR(T_c), c);
     }
 
@@ -453,6 +444,92 @@ String WiFiManagerParameterRadio::generateOptionHTML(const RadioOption& option) 
 
     return pitem;
 }
+
+
+WiFiManagerParameterRadio::WiFiManagerParameterRadio(
+    const char* name,
+    const char* custom,
+    int labelPlacement
+) :
+    // no label, no value, 0 value length
+    WiFiManagerParameter(name, "", "", 0, custom, labelPlacement),
+    maxBufferSize(0)
+{}
+
+void WiFiManagerParameterRadio::addOption(WiFiManagerParameterRadioOption& option, bool checked) {
+    options.push_back(&option);
+
+    // compare value length to max buffer size, so we can store this value when needed
+    const char* value = option.getValue();
+    int valueLen = value ? strlen(value) : 0;
+    if (valueLen > this->maxBufferSize) {
+        this->maxBufferSize = valueLen;
+    }
+
+    // if 'checked' or if nothing is checked so far,
+    // copy the new value into the value buffer
+    if (checked || this->getValueMaxLength() == 0) {
+        this->setValue(value, this->maxBufferSize);
+    }
+}
+
+void WiFiManagerParameterRadio::removeOption(WiFiManagerParameterRadioOption& option) {
+    // find the option in the vector and remove it
+    // @todo should this be a linked list for better efficiency? then again,
+    //       the user isn't expected to be changing options regularly...
+    for (size_t i = 0; i < options.size(); ++i) {
+        if (&option == options[i]) {
+            options.erase(options.begin() + i);
+        }
+    }
+
+    // if this option is currently set, clear the value
+    if (option.getChecked()) {
+        this->setValue("", this->maxBufferSize);
+    }
+}
+
+void WiFiManagerParameterRadio::setValueReceived(const char* value) {
+    // if the received value is null or blank, there is nothing checked
+    // we can clear the value and return immediately
+    if (!value || (strcmp(value, "") == 0)) {
+        this->setValue("", this->maxBufferSize);
+        return;
+    }
+
+    // input validation: only accept a new value if the value received
+    // matches one of the possible options
+    for (const WiFiManagerParameterRadioOption* const option : options) {
+        // if the option is null, skip it
+        if (!option) continue;
+
+        // if the option value is null, skip it
+        const char* optionValue = option->getValue();
+        if (!optionValue) continue;
+
+        // otherwise compare the strings
+        const bool match = (strncmp(value, optionValue, this->maxBufferSize) == 0);
+
+        // if there's a match, store the value and we're done
+        if (match) {
+            this->setValue(optionValue, this->maxBufferSize);
+            break;
+        }
+    }
+}
+
+String WiFiManagerParameterRadio::getHTML() const {
+    String radioGroup;
+
+    for (const WiFiManagerParameterRadioOption* const option : options) {
+        if (option) {
+            radioGroup += option->getHTML();
+        }
+    }
+
+    return radioGroup;
+}
+
 
 /**
  * [addParameter description]
