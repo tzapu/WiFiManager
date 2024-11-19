@@ -261,7 +261,13 @@ class WiFiManagerParameterRadio;
 
 class WiFiManagerParameterRadioOption {
 public:
-    WiFiManagerParameterRadioOption(WiFiManagerParameterRadio& radio, const char* id, const char* label, const char* value, bool checked = false);
+    WiFiManagerParameterRadioOption(
+        WiFiManagerParameterRadio& radio,
+        const char* id,
+        const char* label,
+        const char* value,
+        bool        checked = false);
+
     virtual ~WiFiManagerParameterRadioOption();
 
     const char* getID() const;
