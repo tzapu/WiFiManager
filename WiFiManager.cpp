@@ -2966,7 +2966,7 @@ void WiFiManager::setShowStaticFields(boolean alwaysShow){
  */
 void WiFiManager::setShowDnsFields(boolean alwaysShow){
   if(_disableIpFields) _staShowDns = alwaysShow ? 1 : -1;
-  _staShowDns = alwaysShow ? 1 : 0;
+  else _staShowDns = alwaysShow ? 1 : 0;
 }
 
 /**
