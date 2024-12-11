@@ -46,6 +46,7 @@ static PGM_P _menutokens[] PROGMEM = {
 const uint8_t _nummenutokens = (sizeof(_menutokens) / sizeof(PGM_P));
 
 
+// Routes
 const char R_root[]               PROGMEM = "/";
 const char R_wifi[]               PROGMEM = "/wifi";
 const char R_wifinoscan[]         PROGMEM = "/0wifi";
@@ -60,6 +61,18 @@ const char R_erase[]              PROGMEM = "/erase";
 const char R_status[]             PROGMEM = "/status";
 const char R_update[]             PROGMEM = "/update";
 const char R_updatedone[]         PROGMEM = "/u";
+
+
+// Classes
+const char C_root[]               PROGMEM = "home";
+const char C_wifi[]               PROGMEM = "wifi";
+const char C_info[]               PROGMEM = "info";
+const char C_param[]              PROGMEM = "param";
+const char C_close[]              PROGMEM = "close";
+const char C_restart[]            PROGMEM = "restart";
+const char C_exit[]               PROGMEM = "exit";
+const char C_erase[]              PROGMEM = "erase";
+const char C_update[]             PROGMEM = "update";
 
 
 //Strings
