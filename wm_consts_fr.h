@@ -98,6 +98,7 @@ const char T_i[]                  PROGMEM = "{i}"; // @token i
 const char T_n[]                  PROGMEM = "{n}"; // @token n
 const char T_p[]                  PROGMEM = "{p}"; // @token p
 const char T_t[]                  PROGMEM = "{t}"; // @token t
+const char T_T[]                  PROGMEM = "{T}"; // @token T
 const char T_l[]                  PROGMEM = "{l}"; // @token l
 const char T_c[]                  PROGMEM = "{c}"; // @token c
 const char T_e[]                  PROGMEM = "{e}"; // @token e
