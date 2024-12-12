@@ -27,4 +27,5 @@ jobs:
            ,-whitespace/newline\
            ,-whitespace/operators\
            ,-whitespace/parens\
+           ,-whitespace/line_length\
            "
