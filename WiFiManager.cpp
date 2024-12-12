@@ -37,30 +37,30 @@ WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _customHTML     = custom;
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label) {
-  init(id, label, "", 0, "", WFM_LABEL_DEFAULT);
+WiFiManagerParameter::WiFiManagerParameter(const char *name, const char *label) {
+  init(name, label, "", 0, "", WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length) {
-  init(id, label, defaultValue, length, "", WFM_LABEL_DEFAULT);
+WiFiManagerParameter::WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength) {
+  init(name, label, defaultValue, maxLength, "", WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom) {
-  init(id, label, defaultValue, length, custom, WFM_LABEL_DEFAULT);
+WiFiManagerParameter::WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom) {
+  init(name, label, defaultValue, maxLength, custom, WFM_LABEL_DEFAULT);
 }
 
-WiFiManagerParameter::WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  init(id, label, defaultValue, length, custom, labelPlacement);
+WiFiManagerParameter::WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement) {
+  init(name, label, defaultValue, maxLength, custom, labelPlacement);
 }
 
-void WiFiManagerParameter::init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement) {
-  _id             = id;
+void WiFiManagerParameter::init(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement) {
+  _id             = name;
   _label          = label;
   _labelPlacement = labelPlacement;
   _customHTML     = custom;
   _length         = 0;
   _value          = nullptr;
-  setValue(defaultValue,length);
+  setValue(defaultValue, maxLength);
 }
 
 WiFiManagerParameter::~WiFiManagerParameter() {
@@ -77,19 +77,24 @@ WiFiManagerParameter::~WiFiManagerParameter() {
 // }
 
 // @note debug is not available in wmparameter class
-void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
+void WiFiManagerParameter::setValue(const char *defaultValue, int maxLength) {
   if(!_id){
     // Serial.println("cannot set value of this parameter");
     return;
   }
+
+  if(maxLength < 0){
+      // Serial.println("cannot set length below zero");
+      return;
+  }
   
-  // if(strlen(defaultValue) > length){
+  // if(strlen(defaultValue) > maxLength){
   //   // Serial.println("defaultValue length mismatch");
   //   // return false; //@todo bail 
   // }
 
-  if(_length != length || _value == nullptr){
-    _length = length;
+  if(_length != maxLength || _value == nullptr){
+    _length = maxLength;
     if( _value != nullptr){
       delete[] _value;
     }
@@ -102,9 +107,19 @@ void WiFiManagerParameter::setValue(const char *defaultValue, int length) {
     strncpy(_value, defaultValue, _length);
   }
 }
+
+void WiFiManagerParameter::setValueReceived(const char* value) {
+    // by default, this just passes through to 'setValue'
+    // derived classes can intercept the received value here
+    setValue(value, getValueMaxLength());
+}
+
 const char* WiFiManagerParameter::getValue() const {
   // Serial.println(printf("Address of _value is %p\n", (void *)_value)); 
   return _value;
+}
+const char* WiFiManagerParameter::getName() const {
+    return _id;
 }
 const char* WiFiManagerParameter::getID() const {
   return _id;
@@ -117,6 +132,9 @@ const char* WiFiManagerParameter::getLabel() const {
 }
 int WiFiManagerParameter::getValueLength() const {
   return _length;
+}
+int WiFiManagerParameter::getValueMaxLength() const {
+    return _length;
 }
 int WiFiManagerParameter::getLabelPlacement() const {
   return _labelPlacement;
@@ -132,12 +150,12 @@ const char* WiFiManagerParameter::getCustomHTML() const {
  */
 bool WiFiManager::addParameter(WiFiManagerParameter *p) {
 
-  // check param id is valid, unless null
-  if(p->getID()){
-    for (size_t i = 0; i < strlen(p->getID()); i++){
-       if(!(isAlphaNumeric(p->getID()[i])) && !(p->getID()[i]=='_')){
+  // check param name is valid, unless null
+  if(p->getName()){
+    for (size_t i = 0; i < strlen(p->getName()); i++){
+       if(!(isAlphaNumeric(p->getName()[i])) && !(p->getName()[i]=='_')){
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] parameter IDs can only contain alpha numeric chars"));
+        DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] parameter names can only contain alpha numeric chars"));
         #endif
         return false;
        }
@@ -179,7 +197,7 @@ bool WiFiManager::addParameter(WiFiManagerParameter *p) {
   _paramsCount++;
   
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(WM_DEBUG_VERBOSE,F("Added Parameter:"),p->getID());
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("Added Parameter:"),p->getName());
   #endif
   return true;
 }
@@ -1750,8 +1768,8 @@ String WiFiManager::getParamOut(){
     char valLength[5];
 
     for (int i = 0; i < _paramsCount; i++) {
-      //Serial.println((String)_params[i]->_length);
-      if (_params[i] == NULL || _params[i]->_length > 99999) {
+      //Serial.println((String)_params[i]->getValueMaxLength());
+      if (_params[i] == NULL || _params[i]->getValueMaxLength() > 99999) {
         // try to detect param scope issues, doesnt always catch but works ok
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
@@ -1782,13 +1800,13 @@ String WiFiManager::getParamOut(){
       // Input templating
       // "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>";
       // if no ID use customhtml for item, else generate from param string
-      if (_params[i]->getID() != NULL) {
+      if (_params[i]->getName() != NULL) {
         if(tok_I)pitem.replace(FPSTR(T_I), (String)FPSTR(S_parampre)+(String)i); // T_I id number
-        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getID()); // T_i id name
-        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getID()); // T_n id name alias
+        if(tok_i)pitem.replace(FPSTR(T_i), _params[i]->getName()); // T_i name
+        if(tok_n)pitem.replace(FPSTR(T_n), _params[i]->getName()); // T_n name alias
         if(tok_p)pitem.replace(FPSTR(T_p), FPSTR(T_t)); // T_p replace legacy placeholder token
         if(tok_t)pitem.replace(FPSTR(T_t), _params[i]->getLabel()); // T_t title/label
-        snprintf(valLength, 5, "%d", _params[i]->getValueLength());
+        snprintf(valLength, 5, "%d", _params[i]->getValueMaxLength());
         if(tok_l)pitem.replace(FPSTR(T_l), valLength); // T_l value length
         if(tok_v)pitem.replace(FPSTR(T_v), _params[i]->getValue()); // T_v value
         if(tok_c)pitem.replace(FPSTR(T_c), _params[i]->getCustomHTML()); // T_c meant for additional attributes, not html, but can stuff
@@ -1952,7 +1970,7 @@ void WiFiManager::doParamSave(){
     #endif
 
     for (int i = 0; i < _paramsCount; i++) {
-      if (_params[i] == NULL || _params[i]->_length > 99999) {
+      if (_params[i] == NULL || _params[i]->getValueMaxLength() > 99999) {
         #ifdef WM_DEBUG_LEVEL
         DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] WiFiManagerParameter is out of scope"));
         #endif
@@ -1964,13 +1982,13 @@ void WiFiManager::doParamSave(){
       if(server->hasArg(name)) {
         value = server->arg(name);
       } else {
-        value = server->arg(_params[i]->getID());
+        value = server->arg(_params[i]->getName());
       }
 
       //store it in params array
-      value.toCharArray(_params[i]->_value, _params[i]->_length+1); // length+1 null terminated
+      _params[i]->setValueReceived(value.c_str());
       #ifdef WM_DEBUG_LEVEL
-      DEBUG_WM(WM_DEBUG_VERBOSE,(String)_params[i]->getID() + ":",value);
+      DEBUG_WM(WM_DEBUG_VERBOSE,(String)_params[i]->getName() + ":",value);
       #endif
     }
     #ifdef WM_DEBUG_LEVEL
