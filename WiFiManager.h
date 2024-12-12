@@ -373,6 +373,12 @@ class WiFiManager
     //add custom html at inside <head> for all pages
     void          setCustomHeadElement(const char* html);
 
+    //add custom html at start of <body> for all pages
+    void          setCustomBodyHeader(const char* html);
+
+    //add custom html at end of <body> for all pages
+    void          setCustomBodyFooter(const char* html);
+
     //if this is set, customise style
     void          setCustomMenuHTML(const char* html);
 
@@ -595,8 +601,10 @@ class WiFiManager
     boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
 
-    const char*   _customHeadElement      = ""; // store custom head element html from user isnide <head>
-    const char*   _customMenuHTML         = ""; // store custom head element html from user inside <>
+    const char*   _customHeadElement      = ""; // store custom head element html from user inside <head>
+    const char*   _customBodyHeader       = ""; // store custom top body element html from user inside <body>
+    const char*   _customBodyFooter       = ""; // store custom bottom body element html from user inside <body>
+    const char*   _customMenuHTML         = ""; // store custom menu html from user
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
 
@@ -752,6 +760,7 @@ protected:
     String        getScanItemOut();
     String        getStaticOut();
     String        getHTTPHead(String title, String classes = "");
+    String        getHTTPEnd();
     String        getMenuOut();
     //helpers
     boolean       isIp(String str);

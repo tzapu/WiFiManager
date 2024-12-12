@@ -1290,7 +1290,21 @@ String WiFiManager::getHTTPHead(String title, String classes){
   p.replace(FPSTR(T_c), classes);
   page += p;
 
+  if (_customBodyHeader) {
+    page += _customBodyHeader;
+  }
+
   return page;
+}
+
+String WiFiManager::getHTTPEnd() {
+  String end = FPSTR(HTTP_END);
+
+  if (_customBodyFooter) {
+    end = String(_customBodyFooter) + end;
+  }
+
+  return end;
 }
 
 void WiFiManager::HTTPSend(const String &content){
@@ -1341,7 +1355,7 @@ void WiFiManager::handleRoot() {
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
   if(_preloadwifiscan) WiFi_scanNetworks(_scancachetime,true); // preload wifiscan throttled, async
@@ -1397,7 +1411,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_SCAN_LINK);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -1426,7 +1440,7 @@ void WiFiManager::handleParam(){
   page += FPSTR(HTTP_FORM_END);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   reportStatus(page);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -1888,7 +1902,7 @@ void WiFiManager::handleWifiSave() {
   }
 
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   server->sendHeader(FPSTR(HTTP_HEAD_CORS), FPSTR(HTTP_HEAD_CORS_ALLOW_ALL)); // @HTTPHEAD send cors
   HTTPSend(page);
@@ -1915,7 +1929,7 @@ void WiFiManager::handleParamSave() {
   String page = getHTTPHead(FPSTR(S_titleparamsaved), FPSTR(C_param)); // @token titleparamsaved
   page += FPSTR(HTTP_PARAMSAVED);
   if(_showBack) page += FPSTR(HTTP_BACKBTN); 
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2072,7 +2086,7 @@ void WiFiManager::handleInfo() {
   if(_showInfoErase) page += FPSTR(HTTP_ERASEBTN);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
   page += FPSTR(HTTP_HELP);
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2325,6 +2339,7 @@ void WiFiManager::handleExit() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleexit), FPSTR(C_exit)); // @token titleexit
   page += FPSTR(S_exiting); // @token exiting
+  page += getHTTPEnd();
   // ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
   server->sendHeader(F("Cache-Control"), F("no-cache, no-store, must-revalidate")); // @HTTPHEAD send cache
   HTTPSend(page);
@@ -2342,7 +2357,7 @@ void WiFiManager::handleReset() {
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titlereset), FPSTR(C_restart)); //@token titlereset
   page += FPSTR(S_resetting); //@token resetting
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
 
   HTTPSend(page);
 
@@ -2377,7 +2392,7 @@ void WiFiManager::handleErase(boolean opt) {
     #endif
   }
 
-  page += FPSTR(HTTP_END);
+  page += getHTTPEnd();
   HTTPSend(page);
 
   if(ret){
@@ -2472,6 +2487,7 @@ void WiFiManager::handleClose(){
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleclose), FPSTR(C_close)); // @token titleclose
   page += FPSTR(S_closing); // @token closing
+  page += getHTTPEnd();
   HTTPSend(page);
 }
 
@@ -2894,6 +2910,26 @@ void WiFiManager::setConfigPortalTimeoutCallback( std::function<void()> func ) {
  */
 void WiFiManager::setCustomHeadElement(const char* html) {
   _customHeadElement = html;
+}
+
+/**
+ * set custom html at the top of the body
+ * custom element will be added after the body tag is opened, eg. to show a logo etc.
+ * @access public
+ * @param char element
+ */
+void WiFiManager::setCustomBodyHeader(const char* html) {
+    _customBodyHeader = html;
+}
+
+/**
+ * set custom html at the bottom of the body
+ * custom element will be added before the body tag is closed
+ * @access public
+ * @param char element
+ */
+void WiFiManager::setCustomBodyFooter(const char* html) {
+    _customBodyFooter = html;
 }
 
 /**
@@ -3882,7 +3918,7 @@ void WiFiManager::handleUpdate() {
 	page += str;
 
 	page += FPSTR(HTTP_UPDATE);
-	page += FPSTR(HTTP_END);
+	page += getHTTPEnd();
 
 	HTTPSend(page);
 
@@ -4004,7 +4040,7 @@ void WiFiManager::handleUpdateDone() {
 		page += FPSTR(HTTP_UPDATE_SUCCESS);
 		DEBUG_WM(F("[OTA] update ok"));
 	}
-	page += FPSTR(HTTP_END);
+	page += getHTTPEnd();
 
 	HTTPSend(page);
 

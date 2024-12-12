@@ -150,7 +150,7 @@ const char HTTP_HELP[]             PROGMEM =
 const char HTTP_HELP[]             PROGMEM = "";
 #endif
 
-const char HTTP_UPDATE[] PROGMEM = "Charger le nouveau firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Mise à jour</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* Peut ne pas fonctionner à l'intérieur du portail captif, ouvrir dans le navigateur http://192.168.4.1</a><small>";
+const char HTTP_UPDATE[] PROGMEM = "Charger le nouveau firmware<br/><form method='POST' action='u' enctype='multipart/form-data' onchange=\"(function(el){document.getElementById('uploadbin').style.display = el.value=='' ? 'none' : 'initial';})(this)\"><input type='file' name='update' accept='.bin,application/octet-stream'><button id='uploadbin' type='submit' class='h D'>Mise à jour</button></form><small><a href='http://192.168.4.1/update' target='_blank'>* Peut ne pas fonctionner à l'intérieur du portail captif, ouvrir dans le navigateur http://192.168.4.1</a></small>";
 const char HTTP_UPDATE_FAIL[] PROGMEM = "<div class='msg D'><strong>Echec de la mise à jour !</strong><Br/>Redémarrer l'appareil et réessayer</div>";
 const char HTTP_UPDATE_SUCCESS[] PROGMEM = "<div class='msg S'><strong>Mise à jour réussie. </strong> <br/> L'appareil redémarre maintenant...</div>";
 
