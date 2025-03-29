@@ -2072,7 +2072,7 @@ void WiFiManager::handleInfo() {
   }
   page += F("</dl>");
 
-  page += F("<h3>About</h3><hr><dl>");
+  page += getInfoData("abouthead");
   page += getInfoData("aboutver");
   page += getInfoData("aboutarduinover");
   page += getInfoData("aboutidfver");
@@ -2297,6 +2297,9 @@ String WiFiManager::getInfoData(String id){
   //   p.replace(FPSTR(T_1),(String)hallRead()); // hall sensor reads can cause issues with adcs
   // }
   #endif
+  else if(id==F("abouthead")){
+    p = FPSTR(HTTP_INFO_abouthead);
+  }
   else if(id==F("aboutver")){
     p = FPSTR(HTTP_INFO_aboutver);
     p.replace(FPSTR(T_1),FPSTR(WM_VERSION_STR));
