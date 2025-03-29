@@ -961,7 +961,7 @@ bool WiFiManager::shutdownConfigPortal(){
 
   if(webPortalActive) return false;
 
-  if(configPortalActive){
+  if(configPortalActive && dnsServer){
     //DNS handler
     dnsServer->processNextRequest();
   }
