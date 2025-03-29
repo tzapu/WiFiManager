@@ -203,34 +203,105 @@ class WiFiManagerParameter {
     */
     WiFiManagerParameter();
     WiFiManagerParameter(const char *custom);
-    WiFiManagerParameter(const char *id, const char *label);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
-    WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
-    ~WiFiManagerParameter();
+    WiFiManagerParameter(const char *name, const char *label);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom);
+    WiFiManagerParameter(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
+    virtual ~WiFiManagerParameter();
     // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
 
-    const char *getID() const;
+    const char *getName() const;
+    const char *getID() const;          // @deprecated, use getName
     const char *getValue() const;
     const char *getLabel() const;
     const char *getPlaceholder() const; // @deprecated, use getLabel
-    int         getValueLength() const;
+    int         getValueLength() const; // @deprecated, use getValueMaxLength
+    int         getValueMaxLength() const;
     int         getLabelPlacement() const;
     virtual const char *getCustomHTML() const;
-    void        setValue(const char *defaultValue, int length);
+    void        setValue(const char *defaultValue, int maxLength);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
 
   protected:
-    void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *name, const char *label, const char *defaultValue, int maxLength, const char *custom, int labelPlacement);
 
     WiFiManagerParameter& operator=(const WiFiManagerParameter&);
-    const char *_id;
+    const char *_id;    // @deprecated this should be _name
     const char *_label;
     char       *_value;
-    int         _length;
+    int         _length; // @deprecated this should be _maxLength
     int         _labelPlacement;
   
     const char *_customHTML;
-    friend class WiFiManager;
+};
+
+class WiFiManagerParameterCheckbox : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterCheckbox(
+        const char* name,
+        const char* label,
+        const char* value,
+        bool        checked = false,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+private:
+    bool _checked;
+};
+
+class WiFiManagerParameterRadio;
+
+class WiFiManagerParameterRadioOption {
+public:
+    WiFiManagerParameterRadioOption(
+        WiFiManagerParameterRadio& radio,
+        const char* id,
+        const char* label,
+        const char* value,
+        bool        checked = false);
+
+    virtual ~WiFiManagerParameterRadioOption();
+
+    const char* getID() const;
+    const char* getLabel() const;
+    const char* getValue() const;
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+    virtual String getHTML() const;
+
+private:
+    WiFiManagerParameterRadio& _radio;
+    const char* _id;
+    const char* _label;
+    const char* _value;
+};
+
+class WiFiManagerParameterRadio : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterRadio(
+        const char* name,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    void addOption(WiFiManagerParameterRadioOption& option, bool checked = false);
+    void removeOption(WiFiManagerParameterRadioOption& option);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+private:
+    std::vector<WiFiManagerParameterRadioOption*> options;
+    size_t maxBufferSize;
 };
 
 

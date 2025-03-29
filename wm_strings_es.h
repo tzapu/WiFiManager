@@ -78,6 +78,7 @@ const char HTTP_FORM_END[]         PROGMEM = "<br/><br/><button type='submit'>Sa
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
 const char HTTP_FORM_PARAM_HEAD[]  PROGMEM = "<hr><br/>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>\n"; // do not remove newline!
+const char HTTP_FORM_PARAM_CHECK[] PROGMEM = "<input type='{T}' name='{n}' id='{i}' value='{v}' {c}>\n";
 
 const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi?refresh=1' method='POST'><button name='refresh' value='1'>Refresh</button></form>";
 const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
