@@ -813,6 +813,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
     if(!configPortalActive) break;
 
     yield(); // watchdog
+    #ifdef ESP32
+	delay(0);
+    #endif
   }
 
   #ifdef WM_DEBUG_LEVEL
