@@ -30,7 +30,7 @@ void loop() {
 
 void saveParamsCallback () {
   Serial.println("Get Params:");
-  Serial.print(custom_mqtt_server.getID());
+  Serial.print(custom_mqtt_server.getName());
   Serial.print(" : ");
   Serial.println(custom_mqtt_server.getValue());
 }
