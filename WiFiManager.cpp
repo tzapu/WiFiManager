@@ -812,7 +812,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 
     if(!configPortalActive) break;
 
-    yield(); // watchdog
+    delay(1); // watchdog
   }
 
   #ifdef WM_DEBUG_LEVEL
