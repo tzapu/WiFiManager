@@ -189,7 +189,7 @@ const char HTTP_JS[] PROGMEM =
 	const char HTTP_INFO_chiprev[]    PROGMEM = "<dt>Chip Rev</dt><dd>{1}</dd>";
   	const char HTTP_INFO_lastreset[]  PROGMEM = "<dt>Motivo do último reset</dt><dd>CPU0: {1}<br/>CPU1: {2}</dd>";
   	const char HTTP_INFO_aphost[]     PROGMEM = "<dt>Access Point Hostname</dt><dd>{1}</dd>";
-    const char HTTP_INFO_psrsize[]    PROGMEM = "<dt>Tamanho PSRAM</dt><dd>{1} bytes</dd>";
+    	const char HTTP_INFO_psrsize[]    PROGMEM = "<dt>Tamanho PSRAM</dt><dd>{1} bytes</dd>";
 	const char HTTP_INFO_temp[]       PROGMEM = "<dt>Temperatura</dt><dd>{1} C&deg; / {2} F&deg;</dd><dt>Hall</dt><dd>{3}</dd>";
 #else
 	const char HTTP_INFO_esphead[]    PROGMEM = "<h3>esp8266</h3><hr><dl>";
