@@ -7,8 +7,9 @@
  * for configuration of WiFi credentials using a Captive Portal
  *
  * @author Creator tzapu
- * @author airlomba
+ * @author tablatronix
  * @version 0.0.0
+ * @translated airlomba
  * @license MIT
  */
 
