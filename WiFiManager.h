@@ -71,7 +71,12 @@
       #include "user_interface.h"
     }
     #include <ESP8266WiFi.h>
-    #include <ESP8266WebServer.h>
+    #ifdef WM_ASYNCWEBSERVER
+        #include <ESPAsyncTCP.h>
+        #include <ESPAsyncWebServer.h>
+    #else
+        #include <ESP8266WebServer.h>
+    #endif
 
     #ifdef WM_MDNS
         #include <ESP8266mDNS.h>
@@ -89,13 +94,18 @@
     #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
     #define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
-    #ifndef WEBSERVER_H
-        #ifdef WM_WEBSERVERSHIM
-            #include <WebServer.h>
-        #else
-            #include <ESP8266WebServer.h>
-            // Forthcoming official ? probably never happening
-            // https://github.com/esp8266/ESPWebServer
+    #ifdef WM_ASYNCWEBSERVER
+        #include <AsyncTCP.h>
+        #include <ESPAsyncWebServer.h>
+    #else
+        #ifndef WEBSERVER_H
+            #ifdef WM_WEBSERVERSHIM
+                #include <WebServer.h>
+            #else
+                #include <ESP8266WebServer.h>
+                // Forthcoming official ? probably never happening
+                // https://github.com/esp8266/ESPWebServer
+            #endif
         #endif
     #endif
 
@@ -507,9 +517,17 @@ class WiFiManager
     std::unique_ptr<DNSServer>        dnsServer;
 
     #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
+        #ifdef WM_ASYNCWEBSERVER
+        using WM_WebServer = AsyncWebServer;
+        #else
         using WM_WebServer = WebServer;
+        #endif
     #else
+        #ifdef WM_ASYNCWEBSERVER
+        using WM_WebServer = AsyncWebServer;
+        #else
         using WM_WebServer = ESP8266WebServer;
+        #endif
     #endif
     
     std::unique_ptr<WM_WebServer> server;

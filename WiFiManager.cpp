@@ -869,7 +869,9 @@ uint8_t WiFiManager::processConfigPortal(){
     }
 
     //HTTP handler
+    #ifndef WM_ASYNCWEBSERVER
     server->handleClient();
+    #endif
 
     // Waiting for save...
     if(connect) {
@@ -966,12 +968,18 @@ bool WiFiManager::shutdownConfigPortal(){
     dnsServer->processNextRequest();
   }
 
+  #ifndef WM_ASYNCWEBSERVER
   //HTTP handler
   server->handleClient();
+  #endif
 
   // @todo what is the proper way to shutdown and free the server up
   // debug - many open issues aobut port not clearing for use with other servers
+  #ifdef WM_ASYNCWEBSERVER
+  server->end();
+  #else
   server->stop();
+  #endif
   server.reset();
 
   WiFi.scanDelete(); // free wifi scan results
