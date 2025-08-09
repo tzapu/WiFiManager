@@ -134,11 +134,18 @@
 
 
 // Include wm strings vars
-// Pass in strings env override via WM_STRINGS_FILE
-#ifndef WM_STRINGS_FILE
-#define WM_STRINGS_FILE "wm_strings_en.h" // this includes constants as dependency
+// Pass in strings env override via LANG_XX
+#if defined(LANG_DE)
+  #include "wm_strings_de.h"
+#elif defined(LANG_ES)
+  #include "wm_strings_es.h"
+#elif defined(LANG_EN)
+  #include "wm_strings_en.h"
+#elif defined(LANG_FR)
+  #include "wm_strings_fr.h"
+#else
+  #include "wm_strings_en.h"
 #endif
-#include WM_STRINGS_FILE
 
 // prep string concat vars
 #define WM_STRING2(x) #x
