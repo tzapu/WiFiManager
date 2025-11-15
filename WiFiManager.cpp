@@ -201,6 +201,18 @@ int WiFiManager::getParametersCount() {
 }
 
 /**
+ *  [clearParameter description]
+ * @access public
+ */
+void WiFiManager::clearParameter() {
+  if (_params != NULL) {
+    free(_params);
+    _params = NULL;
+    _paramsCount = 0;
+  }
+}
+
+/**
  * --------------------------------------------------------------------------------
  *  WiFiManager 
  * --------------------------------------------------------------------------------
