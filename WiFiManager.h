@@ -305,6 +305,9 @@ class WiFiManager
     // returns the Parameters Count
     int           getParametersCount();
 
+    // clear all custom parameters.
+    void          clearParameter();
+
     // SET CALLBACKS
 
     //called after AP mode and config portal has started
