@@ -657,6 +657,10 @@ void WiFiManager::setupHTTPServer(){
   
   server->on(WM_G(R_update), std::bind(&WiFiManager::handleUpdate, this));
   server->on(WM_G(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
+
+  // API handlers
+  server->on(WM_G(R_API_wifi), std::bind(&WiFiManager::handleAPIWifi, this));
+  server->on(WM_G(R_API_wifisave), std::bind(&WiFiManager::handleAPISaveWifi, this));
   
   server->begin(); // Web server start
   #ifdef WM_DEBUG_LEVEL
@@ -2536,6 +2540,199 @@ void WiFiManager::reportStatus(String &page){
   }
   page += str;
 }
+
+// HTTPD CALLBACK, handle API wifi
+// Based on: handleWifi
+void WiFiManager::handleAPIWifi() {
+#ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE, F("<- HTTP API Wifi"));
+#endif
+  handleRequest();
+
+  WiFi_scanNetworks(server->hasArg(F("refresh")), false);
+
+  String response = getScanJSON();
+
+  Serial.println("SCAN RESPONSE" + response);
+
+  server->send(200, FPSTR("application/json"), response);
+};
+
+// Based on: getScanItemOut
+// Generates a JSON string for the scanned networks: 
+/*
+      {
+        networks : [
+          {
+            ssid : <string>,
+            strength : <number> (percentage 0-100),
+            secure : <boolean>
+          }
+        ]
+      }
+
+*/
+String WiFiManager::getScanJSON() {
+  String result;
+
+  if (!_numNetworks)
+    WiFi_scanNetworks(); // scan in case this gets called before any scans
+
+  int n = _numNetworks;
+  if (n == 0) {
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(F("No networks found"));
+#endif
+    result += FPSTR(S_nonetworks_json); // @token nonetworks_json
+    return result;
+  }
+#ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(n, F("networks found"));
+#endif
+  // sort networks
+  int indices[n];
+  for (int i = 0; i < n; i++) {
+    indices[i] = i;
+  }
+
+  // RSSI SORT
+  for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+      if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
+        std::swap(indices[i], indices[j]);
+      }
+    }
+  }
+
+  /* test std:sort
+    std::sort(indices, indices + n, [](const int & a, const int & b) -> bool
+    {
+    return WiFi.RSSI(a) > WiFi.RSSI(b);
+    });
+   */
+
+  // remove duplicates ( must be RSSI sorted )
+  if (_removeDuplicateAPs) {
+    String cssid;
+    for (int i = 0; i < n; i++) {
+      if (indices[i] == -1)
+        continue;
+      cssid = WiFi.SSID(indices[i]);
+      for (int j = i + 1; j < n; j++) {
+        if (cssid == WiFi.SSID(indices[j])) {
+#ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(DEBUG_VERBOSE, F("DUP AP:"), WiFi.SSID(indices[j]));
+#endif
+          indices[j] = -1; // set dup aps to index -1
+        }
+      }
+    }
+  }
+
+  result += FPSTR("{\"networks\":[");
+
+  // display networks in page
+  for (int i = 0; i < n; i++) {
+    if (indices[i] == -1)
+      continue; // skip dups
+
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE, F("AP: "), (String)WiFi.RSSI(indices[i]) + " " + (String)WiFi.SSID(indices[i]));
+#endif
+
+    int rssiperc = getRSSIasQuality(WiFi.RSSI(indices[i]));
+    uint8_t enc_type = WiFi.encryptionType(indices[i]);
+
+    if (_minimumQuality != -1 && _minimumQuality > rssiperc) {
+#ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(DEBUG_VERBOSE, F("Skipping , does not meet _minimumQuality"));
+#endif
+      continue;
+    }
+    String item = "{";
+    if (WiFi.SSID(indices[i]) == "") {
+      // Serial.println(WiFi.BSSIDstr(indices[i]));
+      continue; // No idea why I am seeing these, lets just skip them for now
+    }
+    item += "\"ssid\":\"" + WiFi.SSID(indices[i]) + "\"";                                           // ssid
+    item += ",\"strength\":" + (String)rssiperc;                                                    // rssi percentage 0-100
+    item += ",\"secure\":" + (String)((enc_type == WM_WIFIOPEN ? "false" : "true")) + (String) "}"; // has password or not
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_VERBOSE, item);
+#endif
+
+    result += item + ((i == n - 1) ? "" : ",");
+    delay(0);
+  }
+
+  result += "]}";
+  return result;
+}
+
+// HTTPD CALLBACK, handle API save wifi
+// Based on: handleSaveWifi
+void WiFiManager::handleAPISaveWifi()
+{
+#ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE, F("<- HTTP API Save Wifi"));
+#endif
+  handleRequest();
+  // SAVE/connect here
+  _ssid = server->arg(F("s")).c_str();
+  _pass = server->arg(F("p")).c_str();
+
+  // set static ips from server args
+  if (server->arg(FPSTR(S_ip)) != "")
+  {
+    //_sta_static_ip.fromString(server->arg(FPSTR(S_ip));
+    String ip = server->arg(FPSTR(S_ip));
+    optionalIPFromString(&_sta_static_ip, ip.c_str());
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV, F("static ip:"), ip);
+#endif
+  }
+  if (server->arg(FPSTR(S_gw)) != "")
+  {
+    String gw = server->arg(FPSTR(S_gw));
+    optionalIPFromString(&_sta_static_gw, gw.c_str());
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV, F("static gateway:"), gw);
+#endif
+  }
+  if (server->arg(FPSTR(S_sn)) != "")
+  {
+    String sn = server->arg(FPSTR(S_sn));
+    optionalIPFromString(&_sta_static_sn, sn.c_str());
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV, F("static netmask:"), sn);
+#endif
+  }
+  if (server->arg(FPSTR(S_dns)) != "")
+  {
+    String dns = server->arg(FPSTR(S_dns));
+    optionalIPFromString(&_sta_static_dns, dns.c_str());
+#ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(DEBUG_DEV, F("static DNS:"), dns);
+#endif
+  }
+
+  if (_presavewificallback != NULL)
+  {
+    _presavewificallback(); // @CALLBACK
+  }
+
+  if (_paramsInWifi)
+    doParamSave();
+
+  String response = "{\"message\":\"Saved credentials\"}";
+  server->send(200, FPSTR("application/json"), response);
+
+#ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_DEV, F("Sent wifi saved"));
+#endif
+
+  connect = true; // signal ready to connect/reset process in processConfigPortal
+};
 
 // PUBLIC
 

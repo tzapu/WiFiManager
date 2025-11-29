@@ -701,6 +701,11 @@ protected:
     boolean       configPortalHasTimeout();
     uint8_t       processConfigPortal();
     void          stopCaptivePortal();
+
+    // webserver api handlers
+    void          handleAPIWifi();
+    void          handleAPISaveWifi();
+
 	// OTA Update handler
 	void          handleUpdate();
 	void          handleUpdating();
@@ -769,6 +774,10 @@ protected:
     String        getHTTPHead(String title, String classes = "");
     String        getHTTPEnd();
     String        getMenuOut();
+
+    // api output helpers
+    String        getScanJSON();
+
     //helpers
     boolean       isIp(String str);
     String        toStringIp(IPAddress ip);
