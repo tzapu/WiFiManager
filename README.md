@@ -188,6 +188,21 @@ lib_deps =
 
 ## Documentation
 
+#### Switch languages for the configuration website
+You can switch the language for configuration website during compile time. Default is `LANG_EN` for an english setup. Within PlatformIO add the following compile parameter:
+```ini
+[env]
+build_flags = -D LANG_EN
+```
+Currently the following language codes are available:
+```ini
+LANG_DE
+LANG_EN
+LANG_ES
+LANG_FR
+```
+
+
 #### Password protect the configuration Access Point
 You can and should password protect the configuration access point.  Simply add the password as a second parameter to `autoConnect`.
 A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
