@@ -1354,7 +1354,7 @@ void WiFiManager::handleRoot() {
   page += str;
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
-  reportStatus(page);
+  if (_showStatus) reportStatus(page);
   page += getHTTPEnd();
 
   HTTPSend(page);
@@ -1410,7 +1410,7 @@ void WiFiManager::handleWifi(boolean scan) {
   page += FPSTR(HTTP_FORM_END);
   page += FPSTR(HTTP_SCAN_LINK);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
-  reportStatus(page);
+  if (_showStatus) reportStatus(page);
   page += getHTTPEnd();
 
   HTTPSend(page);
@@ -1439,7 +1439,7 @@ void WiFiManager::handleParam(){
   page += getParamOut();
   page += FPSTR(HTTP_FORM_END);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
-  reportStatus(page);
+  if (_showStatus) reportStatus(page);
   page += getHTTPEnd();
 
   HTTPSend(page);
@@ -1993,7 +1993,7 @@ void WiFiManager::handleInfo() {
   #endif
   handleRequest();
   String page = getHTTPHead(FPSTR(S_titleinfo), FPSTR(C_info)); // @token titleinfo
-  reportStatus(page);
+  if (_showStatus) reportStatus(page);
 
   uint16_t infos = 0;
 
@@ -3332,6 +3332,14 @@ void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
 }
 
+
+/**
+ * setShowStatus
+ * @param bool enable, show status of wifi connection on pages
+ */
+void WiFiManager::setShowStatus(bool enable){
+  _showStatus = enable;
+}
 
 bool WiFiManager::preloadWiFi(String ssid, String pass){
   _defaultssid = ssid;
