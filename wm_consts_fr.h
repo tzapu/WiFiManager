@@ -63,6 +63,9 @@ const char R_status[]             PROGMEM = "/status";
 const char R_update[]             PROGMEM = "/update";
 const char R_updatedone[]         PROGMEM = "/u";
 
+// Api routes
+const char R_API_wifi[] PROGMEM = "/api/wifi";
+const char R_API_wifisave[] PROGMEM = "/api/wifisave";
 
 // Classes
 const char C_root[]               PROGMEM = "home";
@@ -82,7 +85,7 @@ const char S_gw[]                 PROGMEM = "gw";
 const char S_sn[]                 PROGMEM = "sn";
 const char S_dns[]                PROGMEM = "dns";
 
-
+const char S_nonetworks_json[]    PROGMEM = "{ \"networks\" : [] }";
 
 //Tokens
 //@todo consolidate and reduce
