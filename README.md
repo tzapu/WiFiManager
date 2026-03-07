@@ -35,6 +35,10 @@ Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 
 ### Known Issues
 
 * Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
+
+### Tech stack used
+![Stack Fingerprint](https://stackfingerprint.vercel.app/api/card?repo=tzapu/WiFiManager&theme=sakura&layout=compact&size=md&icons=color&pills=round)
+
 -------
 
 ## Contents
