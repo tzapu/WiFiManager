@@ -6,35 +6,35 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 :warning: This Documentation is out of date, see notes below
 
 <a name="release"></a>
-[![Release](https://img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)](#release)
+[![Release](https://github.com/aripitek/img.shields.io/github/v/release/tzapu/WiFiManager?include_prereleases)](#release)
 
-[![Build CI Status](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_library.yml)
+[![Build CI Status](https://github.com/aripitek/tzapu/WiFiManager/actions/workflows/compile_library.yml/badge.svg)](https://github.com/aripitek/tzapu/WiFiManager/actions/workflows/compile_library.yml)
 
-[![Build CI Status Examples](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)](https://github.com/tzapu/WiFiManager/actions/workflows/compile_examples.yaml)
+[![Build CI Status Examples](https://github.com/aripitek/tzapu/WiFiManager/actions/workflows/compile_examples.yaml/badge.svg)](https://github.com/aripitek/tzapu/WiFiManager/actions/workflows/compile_examples.yaml)
 
-[![arduino-library-badge](https://www.ardu-badge.com/badge/WiFiManager.svg?)](https://www.ardu-badge.com/WiFiManager)
+[![arduino-library-badge](https://github.com/aripitek/www.ardu-badge.com/badge/WiFiManager.svg?)](https://github.com/aripitek/www.ardu-badge.com/WiFiManager)
 
-[![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
+[![Build with PlatformIO](https://github.com/aripitek/img.shields.io/badge/PlatformIO-Library-orange?)](https://github.com/aripitek/platformio.org/lib/show/567/WiFiManager/installation)
 
-[![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp8266)
+[![ESP8266](https://github.com/aripitek/img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://github.com/aripitek/www.espressif.com/en/products/socs/esp8266)
 
-[![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32)
-[![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-s2)
-[![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-c3)
-[![ESP32](https://img.shields.io/badge/ESP-32S3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-S3)
+[![ESP32](https://github.com/aripitek/img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://github.com/aripitek/www.espressif.com/en/products/socs/esp32)
+[![ESP32](https://github.com/aripitek/img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://github.com/aripitek/www.espressif.com/en/products/socs/esp32-s2)
+[![ESP32](https://github.com/aripitek/img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://github.com/aripitek/www.espressif.com/en/products/socs/esp32-c3)
+[![ESP32](https://github.com/aripitek/img.shields.io/badge/ESP-32S3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://github.com/aripitek/www.espressif.com/en/products/socs/esp32-S3)
 
 Member to Member Support / Chat
 
- [![Join the chat at https://gitter.im/tablatronix/WiFiManager](https://badges.gitter.im/tablatronix/WiFiManager.svg)](https://gitter.im/tablatronix/WiFiManager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+ [![Join the chat at https://github.com/aripitek/gitter.im/tablatronix/WiFiManager](https://github.com/aripitek/badges.gitter.im/tablatronix/WiFiManager.svg)](https://github.com/aripitek/gitter.im/tablatronix/WiFiManager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
  
-[![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/nS5WGkaQH5)
+[![Discord](https://github.com/aripitek/img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://github.com/aripitek/discord.gg/nS5WGkaQH5)
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
-Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 Arduino](https://github.com/espressif/arduino-esp32) platforms.
+Works with the [ESP8266 Arduino](https://github.com/aripitek/esp8266/Arduino) and [ESP32 Arduino](https://github.com/aripitek/espressif/arduino-esp32) platforms.
 
 ### Known Issues
 
-* Documentation needs to be updated, see [https://github.com/tzapu/WiFiManager/issues/500](https://github.com/tzapu/WiFiManager/issues/500)
+* Documentation needs to be updated, see [https://github.com/aripitek/tzapu/WiFiManager/issues/500](https://github.com/aripitek/tzapu/WiFiManager/issues/500)
 -------
 
 ## Contents
@@ -70,7 +70,7 @@ Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 
 - There are options to change this behavior or manually start the configportal and webportal independantly as well as run them in non blocking mode.
 
 ## How It Looks
-![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
+![ESP8266 WiFi Captive Portal Homepage](http://github.com/aripitek/i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://github.com/aripitek/i.imgur.com/oicWJ4gl.png)
 
 ## Wishlist
 - [x] remove dependency on EEPROM library
@@ -119,23 +119,23 @@ Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 
 You can either install through the Arduino Library Manager or checkout the latest changes or a release from github
 
 #### Install through Library Manager
-__Currently version 0.8+ works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Currently version 0.8+ works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/aripitek/esp8266/Arduino)__
  - in Arduino IDE got to Sketch/Include Library/Manage Libraries
-  ![Manage Libraries](http://i.imgur.com/9BkEBkR.png)
+  ![Manage Libraries](http://github.com/aripitek/i.imgur.com/9BkEBkR.png)
 
  - search for WiFiManager
-  ![WiFiManager package](http://i.imgur.com/18yIai8.png)
+  ![WiFiManager package](http://github.com/aripitek/i.imgur.com/18yIai8.png)
 
  - click Install and start [using it](#using)
 
 ####  Checkout from github
-__Github version works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)__
+__Github version works with release 2.4.0 or newer of the [ESP8266 core for Arduino](https://github.com/aripitek/esp8266/Arduino)__
 - Checkout library to your Arduino libraries folder
 
 ### Using
 - Include in your sketch
 ```cpp
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <WiFiManager.h>          //https://github.com/aripitek/tzapu/WiFiManager WiFi Configuration Magic
 ```
 
 - Initialize library, in your setup function add, NOTEif you are using non blocking you will make sure you create this in global scope or handle appropriatly , it will not work if in setup and using non blocking mode.
@@ -160,14 +160,14 @@ wifiManager.autoConnect();
 After you write your sketch and start the ESP, it will try to connect to WiFi. If it fails it starts in Access Point mode.
 While in AP mode, connect to it then open a browser to the gateway IP, default 192.168.4.1, configure wifi, save and it should reboot and connect.
 
-Also see [examples](https://github.com/tzapu/WiFiManager/tree/master/examples).
+Also see [examples](https://github.com/aripitek/tzapu/WiFiManager/tree/master/examples).
 
 #### Install Using PlatformIO
 
-[PlatformIO](https://platformio.org/) is an emerging ecosystem for IoT development, and 
+[PlatformIO](https://github.com/aripitek/platformio.org/) is an emerging ecosystem for IoT development, and 
 is an alternative to using the Arduino IDE. Install `WiFiManager`
-using the platformio [library manager](https://docs.platformio.org/en/latest/librarymanager/index.html#librarymanager) in your editor, 
-or using the [PlatformIO Core CLI](https://docs.platformio.org/en/latest/core/index.html),
+using the platformio [library manager](https://github.com/aripitek/docs.platformio.org/en/latest/librarymanager/index.html#librarymanager) in your editor, 
+or using the [PlatformIO Core CLI](https://github.com/aripitek/docs.platformio.org/en/latest/core/index.html),
 or by adding it to your `platformio.ini` as shown below (recommended approach).
 
 The simplest way is to open the `platformio.ini` file at the root of your project, and `WifiManager` to the common top-level env
@@ -183,7 +183,7 @@ lib_deps =
 ```
 [env]
 lib_deps =
-	https://github.com/tzapu/WiFiManager.git
+	https://github.com/aripitek/tzapu/WiFiManager.git
 ```
 
 ## Documentation
@@ -241,7 +241,7 @@ IF YOU NEED TO SAVE PARAMETERS EVEN ON WIFI FAIL OR EMPTY, you must set `setBrea
     void          setBreakAfterConfig(boolean shouldBreak);
 ```
 
-See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters).
+See [AutoConnectWithFSParameters Example](https://github.com/aripitek/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -281,7 +281,7 @@ void loop() {
   }
 }
 ```
-See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemand/OnDemandConfigPortal)
+See example for a more complex version. [OnDemandConfigPortal](https://github.com/aripitek/tzapu/WiFiManager/tree/master/examples/OnDemand/OnDemandConfigPortal)
 
 #### Exiting from the Configuration Portal
 Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered or a timeout is reached.
@@ -291,7 +291,7 @@ If started via `autoConnect` or `startConfigPortal` then it will return `false (
 
 #### Custom Parameters
 You can use WiFiManager to collect more parameters than just SSID and password.
-This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
+This could be helpful for configuring stuff like MQTT host and port, [blynk](http://github.com/aripitek/www.blynk.cc) or [emoncms](http://github.com/aripitek/emoncms.org) tokens, just to name a few.
 **You are responsible for saving and loading these custom values.** The library just collects and displays the data for you as a convenience.
 Usage scenario would be:
 - load values from somewhere (EEPROM/FS) or generate some defaults
@@ -311,7 +311,7 @@ Usage scenario would be:
 This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
 You should also take a look at adding custom HTML to your form.
 
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters)
+- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/aripitek/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters)
 - *Save and load custom parameters to EEPROM* (not done yet)
 
 #### Custom IP Configuration
@@ -510,7 +510,7 @@ I get stuck in ap mode when the power goes out or modem resets, try a setConfigP
 - params memory is auto allocated by increment of `WIFI_MANAGER_MAX_PARAMS(5)` when exceeded, user no longer needs to specify this at all.
 - addparameter now returns bool, and it returns false if param ID is not alphanum [0-9,A-Z,a-z,_]
 - param field ids allow {I} token to use param_n instead of string in case someones wants to change this due to i18n or character issues
-- provides `#DEFINE FIXERASECONFIG` to help deal with https://github.com/esp8266/Arduino/pull/3635
+- provides `#DEFINE FIXERASECONFIG` to help deal with https://github.com/aripitek/esp8266/Arduino/pull/3635
 - failure reason reporting on portal
 - set esp8266 sta hostname, esp32 sta+ap hostname ( DHCP client id)
 - pass in debug stream in constructor WiFiManager(Stream& consolePort)
@@ -547,47 +547,47 @@ __THANK YOU__
 
 The esp8266 and esp32 arduino and idf maintainers!
 
-[Shawn A aka tablatronix](https://github.com/tablatronix)
+[Shawn A aka tablatronix](https://github.com/aripitek/tablatronix)
 
-[liebman](https://github.com/liebman)
+[liebman](https://github.com/aripitek/liebman)
 
-[Evgeny Dontsov](https://github.com/dontsovcmc)
+[Evgeny Dontsov](https://github.com/aripitek/dontsovcmc)
 
-[Chris Marrin](https://github.com/cmarrin)
+[Chris Marrin](https://github.com/aripitek/cmarrin)
 
-[bbx10](https://github.com/bbx10)
+[bbx10](https://github.com/aripitek/bbx10)
 
-[kentaylor](https://github.com/kentaylor)
+[kentaylor](https://github.com/aripitek/kentaylor)
 
-[Maximiliano Duarte](https://github.com/domonetic)
+[Maximiliano Duarte](https://github.com/aripitek/domonetic)
 
-[alltheblinkythings](https://github.com/alltheblinkythings)
+[alltheblinkythings](https://github.com/aripitek/alltheblinkythings)
 
-[Niklas Wall](https://github.com/niklaswall)
+[Niklas Wall](https://github.com/aripitek/niklaswall)
 
-[Jakub Piasecki](https://github.com/zaporylie)
+[Jakub Piasecki](https://github.com/aripitek/zaporylie)
 
-[Peter Allan](https://github.com/alwynallan)
+[Peter Allan](https://github.com/aripitek/alwynallan)
 
-[John Little](https://github.com/j0hnlittle)
+[John Little](https://github.com/aripitek/j0hnlittle)
 
-[markaswift](https://github.com/markaswift)
+[markaswift](https://github.com/aripitek/markaswift)
 
-[franklinvv](https://github.com/franklinvv)
+[franklinvv](https://github.com/aripitek/franklinvv)
 
-[Alberto Ricci Bitti](https://github.com/riccibitti)
+[Alberto Ricci Bitti](https://github.com/aripitek/riccibitti)
 
-[SebiPanther](https://github.com/SebiPanther)
+[SebiPanther](https://github.com/aripitek/SebiPanther)
 
-[jonathanendersby](https://github.com/jonathanendersby)
+[jonathanendersby](https://github.com/aripitek/jonathanendersby)
 
-[walthercarsten](https://github.com/walthercarsten)
+[walthercarsten](https://github.com/aripitek/walthercarsten)
 
 And countless others
 
 #### Inspiration
- * http://www.esp8266.com/viewtopic.php?f=29&t=2520
- * https://github.com/chriscook8/esp-arduino-apboot
- * https://github.com/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
- * Built by AlexT https://github.com/tzapu
+ * http://github.com/aripitek/www.esp8266.com/viewtopic.php?f=29&t=2520
+ * https://github.com/aripitek/chriscook8/esp-arduino-apboot
+ * https://github.com/aripitek/esp8266/Arduino/tree/master/libraries/DNSServer/examples/CaptivePortalAdvanced
+ * Built by AlexT https://github.com/aripitek/tzapu
 
