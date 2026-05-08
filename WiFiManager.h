@@ -255,6 +255,25 @@ class WiFiManagerParameter {
         WM_DEBUG_MAX       = 5  // MAX extra dev auditing, var dumps etc (MAX+1 will print timing,mem and frag info)
     } wm_debuglevel_t;
 
+    // Provisioning connection state (AP+STA mode)
+    typedef enum {
+        WM_PROV_IDLE       = 0, // no active provisioning
+        WM_PROV_SCANNING   = 1, // scanning for networks
+        WM_PROV_CONNECTING = 2, // STA connection in progress
+        WM_PROV_CONNECTED  = 3, // STA connected, waiting for AP shutdown delay
+        WM_PROV_FAILED     = 4, // STA connection failed
+        WM_PROV_RETRYING   = 5  // retrying STA connection
+    } wm_provstate_t;
+
+    // LED indicator state for developer-supplied LED callback
+    typedef enum {
+        WM_LED_OFF        = 0, // LED off (timeout elapsed)
+        WM_LED_NOWIFI     = 1, // No wifi configured – suggest Orange (infinite by default)
+        WM_LED_CONNECTED  = 2, // WiFi connected     – suggest Green  (15 s by default)
+        WM_LED_FAILED     = 3, // Connection failed  – suggest Red    (infinite by default)
+        WM_LED_CONNECTING = 4  // Trying to connect  – suggest Blue pulsing (5 s by default)
+    } wm_ledstate_t;
+
 class WiFiManager
 {
   public:
@@ -514,6 +533,49 @@ class WiFiManager
     // get hostname helper
     String        getWiFiHostname();
 
+    // --- AP+STA Provisioning options ---
+
+    // if true, keep AP active while STA connection attempt is in progress (default false)
+    void          setKeepAPDuringSTAConnect(bool keep);
+
+    // set the delay in ms before the AP is shut down after a successful STA connection (default 10000)
+    void          setAPShutdownDelay(unsigned long ms);
+
+    // if true, map low-level errors to descriptive messages in /status JSON (default false)
+    void          setDetailedFailureReasons(bool enable);
+
+    // if true (default), register OS captive-portal probe handlers (/generate_204, /hotspot-detect.html, /ncsi.txt)
+    void          setCaptivePortalCompatibility(bool enable);
+
+    // get the current provisioning state (see wm_provstate_t)
+    wm_provstate_t getProvisioningState();
+
+    // --- LED behaviour ---
+
+    // Set a callback invoked whenever the LED state changes.
+    // The callback receives a wm_ledstate_t value; WM_LED_OFF means the
+    // timeout has elapsed and the LED should be turned off.
+    void          setLEDCallback(std::function<void(wm_ledstate_t)> func);
+
+    // Per-state LED timeout in milliseconds.  0 = stay on indefinitely.
+    // Defaults: NoWifi=0 (infinite), Connected=15000 (15 s),
+    //           Failed=0 (infinite), Connecting=5000 (5 s).
+    void          setLEDTimeoutNoWifi(unsigned long ms);
+    void          setLEDTimeoutConnected(unsigned long ms);
+    void          setLEDTimeoutFailed(unsigned long ms);
+    void          setLEDTimeoutConnecting(unsigned long ms);
+
+    // --- Custom animated SVGs for the provisioning status page ---
+
+    // Set a custom SVG (or any HTML) shown while connecting to WiFi.
+    void          setCustomConnectingSVG(const char* svg);
+
+    // Set a custom SVG (or any HTML) shown on a successful connection.
+    void          setCustomSuccessSVG(const char* svg);
+
+    // Set a custom SVG (or any HTML) shown when the connection failed.
+    void          setCustomFailureSVG(const char* svg);
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -545,6 +607,7 @@ class WiFiManager
     unsigned long _webPortalAccessed      = 0; // ms last web access time
     uint8_t       _lastconxresult         = WL_IDLE_STATUS; // store last result when doing connect operations
     int           _numNetworks            = 0; // init index for numnetworks wifiscans
+    bool          _scanFailed             = false; // true when last sync scan returned WIFI_SCAN_FAILED
     unsigned long _lastscan               = 0; // ms for timing wifi scans
     unsigned long _startscan              = 0; // ms for timing wifi scans
     unsigned long _startconn              = 0; // ms for timing wifi connects
@@ -581,13 +644,34 @@ class WiFiManager
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
 
+    // AP+STA provisioning flow options
+    bool          _keepAPDuringSTAConnect = false; // keep AP running while STA connection is in progress
+    unsigned long _apShutdownDelayMs      = 10000; // ms to keep AP alive after successful STA connect before shutting down
+    bool          _detailedFailureReasons = false; // map low-level errors to human-readable strings in /status
+    bool          _captivePortalCompat    = true;  // register OS captive portal probe handlers (generate_204 etc.)
+
+    // provisioning state machine (used when _keepAPDuringSTAConnect is true)
+    wm_provstate_t _provisioningState     = WM_PROV_IDLE;
+    String         _provisioningError     = "";
+    bool           _provisioningConnecting = false;  // true while non-blocking STA connect is running
+    unsigned long  _apShutdownDeadline    = 0;       // millis() deadline for AP shutdown
+    bool           _apShutdownPending     = false;   // true when waiting for AP shutdown delay
+    unsigned long  _ipWaitStart           = 0;       // millis() when WL_CONNECTED first seen with 0.0.0.0 IP
+
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
     static uint8_t _lastconxresulttmp; // tmp var for esp32 callback
     #endif
 
+    #ifdef ESP8266
+    // WiFiEventHandler objects must be kept alive for the duration of the
+    // callback registration; storing them as members achieves this.
+    WiFiEventHandler _wifiGotIPHandler;
+    WiFiEventHandler _wifiDisconnectedHandler;
+    #endif
+
     #ifndef WL_STATION_WRONG_PASSWORD
-    uint8_t WL_STATION_WRONG_PASSWORD     = 7; // @kludge define a WL status for wrong password
+    static constexpr uint8_t WL_STATION_WRONG_PASSWORD = 7; // @kludge define a WL status for wrong password
     #endif
 
     // parameter options
@@ -618,6 +702,21 @@ class WiFiManager
     const char*   _customMenuHTML         = ""; // store custom menu html from user
     String        _bodyClass              = ""; // class to add to body
     String        _title                  = FPSTR(S_brand); // app title -  default WiFiManager
+
+    // Custom SVG/HTML slots for provisioning status page
+    const char*   _customConnectingSVG    = nullptr; // shown while connecting
+    const char*   _customSuccessSVG       = nullptr; // shown on successful connection
+    const char*   _customFailureSVG       = nullptr; // shown on connection failure
+
+    // LED state callback and per-state timeouts
+    std::function<void(wm_ledstate_t)> _ledcallback = nullptr;
+    unsigned long _ledTimeoutNoWifi       = 0;      // 0 = infinite (orange – no wifi configured)
+    unsigned long _ledTimeoutConnected    = 15000;  // 15 s (green – connected)
+    unsigned long _ledTimeoutFailed       = 0;      // 0 = infinite (red – failed)
+    unsigned long _ledTimeoutConnecting   = 5000;   // 5 s (blue pulsing – connecting)
+    wm_ledstate_t _ledCurrentState        = WM_LED_OFF;
+    unsigned long _ledStateStart          = 0;      // millis() when current LED state was set
+    unsigned long _ledLastPoll            = 0;      // millis() of last 1-second LED reconciliation
 
     // internal options
     
@@ -680,6 +779,17 @@ protected:
     uint8_t       waitForConnectResult(uint32_t timeout);
     void          updateConxResult(uint8_t status);
 
+    // provisioning state machine helpers
+    uint8_t       checkProvisioningState();                    // poll STA status; returns WL_IDLE_STATUS or WL_CONNECTED
+    bool          saveWiFiCredentials(String ssid, String pass); // persist credentials only on success
+    String        getProvisioningStateStr();                   // convert _provisioningState to string for /status JSON
+    String        getProvisioningFailureReason(uint8_t status); // map WL status to human-readable string
+
+    // LED state helpers
+    void          setLEDState(wm_ledstate_t state); // set LED state and invoke callback
+    void          checkLEDTimeout();                // turn LED off when per-state timeout elapses
+    void          syncLEDState();                   // call from loop(): check timeout + reconcile with WiFi status every 1 s
+
     // webserver handlers
 public:
     void          handleNotFound();
@@ -690,6 +800,11 @@ protected:
     void          handleWifiSave();
     void          handleInfo();
     void          handleReset();
+
+    // OS captive portal probe handlers
+    void          handleCaptivePortal204();     // Android  /generate_204
+    void          handleCaptivePortalHotspot(); // iOS/macOS /hotspot-detect.html
+    void          handleCaptivePortalNcsi();    // Windows  /ncsi.txt
 
     void          handleExit();
     void          handleClose();

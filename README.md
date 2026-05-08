@@ -1,6 +1,8 @@
 
 # WiFiManager
 
+https://github.com/user-attachments/assets/1e86e083-0089-4639-b95f-392b61905f0a
+
 Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 :warning: This Documentation is out of date, see notes below

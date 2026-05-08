@@ -34,8 +34,9 @@ const char HTTP_SCRIPT[]           PROGMEM = "<script>function c(l){"
 "p = l.nextElementSibling.classList.contains('l');"
 "document.getElementById('p').disabled = !p;"
 "if(p)document.getElementById('p').focus();};"
-"function f() {var x = document.getElementById('p');x.type==='password'?x.type='text':x.type='password';}"
+"function f() {var x=document.getElementById('p');var b=document.querySelector('.pw-btn');var m=x.classList.toggle('pw-masked');b.setAttribute('aria-label',m?'Show password':'Hide password');}"
 "</script>"; // @todo add button states, disable on click , show ack , spinner etc
+
 
 const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div class='wrap'>"; // {c} = _bodyclass
 // example of embedded logo, base64 encoded inline, No styling here
@@ -43,7 +44,7 @@ const char HTTP_HEAD_END[]         PROGMEM = "</head><body class='{c}'><div clas
 const char HTTP_ROOT_MAIN[]        PROGMEM = "<h1>{t}</h1><h3>{v}</h3>";
 
 const char * const HTTP_PORTAL_MENU[] PROGMEM = {
-"<form action='/wifi'    method='get'><button>Configure WiFi</button></form><br/>\n", // MENU_WIFI
+"<form action='/wifi'    method='get'><button onclick=\"this.textContent='Scanning\u2026'\">Configure WiFi</button></form><br/>\n", // MENU_WIFI
 "<form action='/0wifi'   method='get'><button>Configure WiFi (No scan)</button></form><br/>\n", // MENU_WIFINOSCAN
 "<form action='/info'    method='get'><button>Info</button></form><br/>\n", // MENU_INFO
 "<form action='/param'   method='get'><button>Setup</button></form><br/>\n",//MENU_PARAM
@@ -59,40 +60,161 @@ const char * const HTTP_PORTAL_MENU[] PROGMEM = {
 const char HTTP_PORTAL_OPTIONS[]   PROGMEM = "";
 const char HTTP_ITEM_QI[]          PROGMEM = "<div role='img' aria-label='{r}%' title='{r}%' class='q q-{q} {i} {h}'></div>"; // rssi icons
 const char HTTP_ITEM_QP[]          PROGMEM = "<div class='q {h}'>{r}%</div>"; // rssi percentage {h} = hidden showperc pref
-const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)' data-ssid='{V}'>{v}</a>{qi}{qp}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
+const char HTTP_ITEM[]             PROGMEM = "<div><a href='#p' onclick='c(this)' data-ssid='{V}' class='wi'>{v}</a>{qi}{qp}</div>"; // {q} = HTTP_ITEM_QI, {r} = HTTP_ITEM_QP
 // const char HTTP_ITEM[]            PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a> {R} {r}% {q} {e}</div>"; // test all tokens
 
 const char HTTP_FORM_START[]       PROGMEM = "<form method='POST' action='{v}'>";
-const char HTTP_FORM_WIFI[]        PROGMEM = "<label for='s'>SSID</label><input id='s' name='s' maxlength='32' autocorrect='off' autocapitalize='none' placeholder='{v}'><br/><label for='p'>Password</label><input id='p' name='p' maxlength='64' type='password' placeholder='{p}'><input type='checkbox' id='showpass' onclick='f()'> <label for='showpass'>Show Password</label><br/>";
+const char HTTP_FORM_WIFI[]        PROGMEM = "<label for='s'>Network Name</label><input id='s' name='s' maxlength='32' autocorrect='off' autocapitalize='none' value='{v}' pattern='^[^!#;+\\/\\[\\]\"\\s].{0,31}$' title='Network name (1-32 chars, first character cannot be a space or !#;+/[]\")'><br/><label for='p'>Password</label><div class='pw-wrap'><input id='p' name='p' maxlength='64' type='text' class='pw-masked' value='{p}' autocomplete='off' pattern='^.{8,63}$' title='WiFi password must be between 8 and 63 characters (leave empty for open networks).'><button type='button' class='pw-btn' onclick='f()' aria-label='Show password'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='currentColor'><path d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/></svg></button></div><br/>";
 const char HTTP_FORM_WIFI_END[]    PROGMEM = "";
 const char HTTP_FORM_STATIC_HEAD[] PROGMEM = "<hr><br/>";
-const char HTTP_FORM_END[]         PROGMEM = "<br/><br/><button type='submit'>Save</button></form>";
+const char HTTP_FORM_END[]         PROGMEM = "<br/><button type='submit' class='btn-cta'>Save</button></form>";
 const char HTTP_FORM_LABEL[]       PROGMEM = "<label for='{i}'>{t}</label>";
 const char HTTP_FORM_PARAM_HEAD[]  PROGMEM = "<hr><br/>";
 const char HTTP_FORM_PARAM[]       PROGMEM = "<br/><input id='{i}' name='{n}' maxlength='{l}' value='{v}' {c}>\n"; // do not remove newline!
 
-const char HTTP_SCAN_LINK[]        PROGMEM = "<br/><form action='/wifi?refresh=1' method='POST'><button name='refresh' value='1'>Refresh</button></form>";
-const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Saving Credentials<br/>Trying to connect ESP to network.<br />If it fails reconnect to AP to try again</div>";
+const char HTTP_SCAN_LINK[]        PROGMEM = "<form class='rf' action='/wifi?refresh=1' method='POST'><button type='submit' class='rib' name='refresh' value='1' aria-label='Refresh networks' title='Refresh'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='currentColor'><path d='M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg></button></form>";
+const char HTTP_SAVED[]            PROGMEM = "<div class='msg'>Connecting to WiFi network...<br/>If the connection fails, come back to this page to try again.</div>";
 const char HTTP_PARAMSAVED[]       PROGMEM = "<div class='msg S'>Saved<br/></div>";
+// Provisioning mode save page: stays open and polls /status with JavaScript
+// {svgC} = custom connecting SVG (replaced server-side), {svgS} = success SVG, {svgF} = failure SVG
+const char HTTP_SAVED_PROVISIONING[] PROGMEM =
+  "<div id='wm-svg-c' style='display:none;text-align:center;margin:8px 0'>{svgC}</div>"
+  "<div id='wm-svg-s' style='display:none;text-align:center;margin:8px 0'>{svgS}</div>"
+  "<div id='wm-svg-f' style='display:none;text-align:center;margin:8px 0'>{svgF}</div>"
+  "<div class='msg' id='wm-prov-msg'><span class='sp'></span>&nbsp;Connecting&hellip;<br/><small id='wm-prov-status'>Please wait</small></div>"
+  "<div id='wm-prov-btns'></div>"
+  "<script>"
+  "function wmSvg(id){"
+    "['wm-svg-c','wm-svg-s','wm-svg-f'].forEach(function(i){"
+      "var e=document.getElementById(i);if(e)e.style.display='none';"
+    "});"
+    "if(id){var e=document.getElementById(id);if(e&&e.innerHTML.trim()!='')e.style.display='';}"
+  "}"
+  "function wmPoll(){"
+    "fetch('/status').then(function(r){return r.json();}).then(function(d){"
+      "var m=document.getElementById('wm-prov-msg');"
+      "var b=document.getElementById('wm-prov-btns');"
+      "if(d.state==='connected'){"
+        "wmSvg('wm-svg-s');"
+        "m.className='msg S';"
+        "m.innerHTML='<strong>Connected!</strong><br/><small>Network: <b>'+d.ssid+'</b><br/>IP: '+d.ip+(d.hostname?'&nbsp;&nbsp;'+d.hostname:'')+'</small>';"
+        "var shut=d.apShutdownIn?'<br/><small>Setup mode closes in '+Math.ceil(d.apShutdownIn/1000)+'s</small>':'';"
+        "m.innerHTML+=shut;"
+        "b.innerHTML='<br/><form action=\"/exit\" method=\"get\"><button type=\"submit\">Close setup</button></form>';"
+      "}else if(d.state==='failed'){"
+        "wmSvg('wm-svg-f');"
+        "var lr=d.lastResult||'';"
+        "var title=lr==='wrong_password'?'Wrong password':lr==='not_found'?'Network not found':'Could not connect';"
+        "var sub=lr==='wrong_password'?'Please re-enter the password for <b>'+d.ssid+'</b> and try again.':lr==='not_found'?'<b>'+d.ssid+'</b> was not found. Move closer and try again.':'Could not reach <b>'+d.ssid+'</b>. Check your settings and try again.';"
+        "m.className='msg D';"
+        "m.innerHTML='<strong>'+title+'</strong><br/><small>'+sub+'</small>';"
+        "b.innerHTML='<br/><form action=\"/wifi\" method=\"get\"><button type=\"submit\">Change settings</button></form>';"
+      "}else if(d.state==='connecting'){"
+        "wmSvg('wm-svg-c');"
+        "m.className='msg';"
+        "m.innerHTML='<span class=\"sp\"></span>&nbsp;Connecting to <b>'+d.ssid+'</b>&hellip;<br/><small id=\"wm-prov-status\">'+new Date().toLocaleTimeString()+'</small>';"
+        "b.innerHTML='';"
+        "setTimeout(wmPoll,1500);"
+      "}else{"
+        "var s=document.getElementById('wm-prov-status');"
+        "if(s)s.textContent=d.state;"
+        "setTimeout(wmPoll,2000);"
+      "}"
+    "}).catch(function(){setTimeout(wmPoll,3000);});"
+  "}"
+  "wmSvg('wm-svg-c');"
+  "setTimeout(wmPoll,800);"
+  "</script>";
 const char HTTP_END[]              PROGMEM = "</div></body></html>";
 const char HTTP_ERASEBTN[]         PROGMEM = "<br/><form action='/erase' method='get'><button class='D'>Erase WiFi config</button></form>";
 const char HTTP_UPDATEBTN[]        PROGMEM = "<br/><form action='/update' method='get'><button>Update</button></form>";
 const char HTTP_BACKBTN[]          PROGMEM = "<hr><br/><form action='/' method='get'><button>Back</button></form>";
 
-const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg S'><strong>Connected</strong> to {v}<br/><em><small>with IP {i}</small></em></div>";
-const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg {c}'><strong>Not connected</strong> to {v}{r}</div>"; // {c=class} {v=ssid} {r=status_off}
-const char HTTP_STATUS_OFFPW[]     PROGMEM = "<br/>Authentication failure"; // STATION_WRONG_PASSWORD,  no eps32
-const char HTTP_STATUS_OFFNOAP[]   PROGMEM = "<br/>AP not found";   // WL_NO_SSID_AVAIL
-const char HTTP_STATUS_OFFFAIL[]   PROGMEM = "<br/>Could not connect"; // WL_CONNECT_FAILED
-const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg'>No AP set</div>";
+// Bottom navigation bar shown on WiFi-setup and info pages
+const char HTTP_NAV_BOTTOM[]       PROGMEM =
+  "<div class='nav'>"
+    "<a href='/wifi'>"
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='22' height='22' fill='currentColor'><path d='M1 9l2 2c5.1-5.1 13.3-5.1 18.4 0l2-2C16.5 2.3 7.3 2.3 1 9zm8 8l3 3 3-3c-1.7-1.6-4.2-1.6-6 0zm-4-4l2 2c2.8-2.8 7.3-2.8 10.1 0l2-2C15.5 9.5 8.3 9.5 5 13z'/></svg>"
+      "<span>WiFi</span>"
+    "</a>"
+    "<a href='/info'>"
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='22' height='22' fill='currentColor'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/></svg>"
+      "<span>Info</span>"
+    "</a>"
+    "<a href='/restart'>"
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='22' height='22' fill='currentColor'><path d='M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z'/></svg>"
+      "<span>Restart</span>"
+    "</a>"
+  "</div>";
+
+// Live status polling script – polls /status every 6 s and updates the element
+// with id='wm-live-status'.  Shows a spinner immediately and reveals failure
+// messages only after several polls so a brief disconnect is not alarming.
+const char HTTP_STATUS_LIVE_SCRIPT[] PROGMEM =
+  "<script>"
+  "(function(){"
+    "var c=0;"
+    // highlight the password field (wrong-password error feedback)
+    "function markPwErr(){var p=document.getElementById('p');if(p)p.classList.add('input-error');}"
+    "function g(){"
+      "fetch('/status').then(function(r){return r.json();})"
+      ".then(function(d){"
+        "c++;"
+        "var e=document.getElementById('wm-live-status');"
+        "if(!e)return;"
+        "if(d.wlstatus==='connected'){"
+          "var q=d.quality?' ('+d.quality+'%)':'';"
+          "e.className='msg S';"
+          "e.innerHTML='<strong>Connected</strong> to <b>'+d.ssid+'</b><br/><small>IP\u00a0'+d.ip+q+'</small>';"
+        "}else if(c>1&&d.lastResult==='wrong_password'){"
+          "e.className='msg D';"
+          "e.innerHTML='<strong>Wrong password</strong><br/><small>Check the password for <b>'+d.ssid+'</b> and try again.</small>';"
+          "markPwErr();"
+        "}else if(c>1&&d.lastResult==='not_found'){"
+          "e.className='msg D';"
+          "e.innerHTML='<strong>Network not found</strong><br/><small><b>'+d.ssid+'</b> is not in range. Move closer or choose a different network.</small>';"
+        "}else if(c>1&&(d.lastResult==='failed'||d.lastResult==='timeout')){"
+          "e.className='msg D';"
+          "e.innerHTML='<strong>Could not connect</strong><br/><small>Check settings for <b>'+d.ssid+'</b> and try again.</small>';"
+        "}else if(d.state==='connecting'){"
+          "e.className='msg';"
+          "e.innerHTML='<span class=\"sp\"></span>&nbsp;Connecting to <b>'+d.ssid+'</b>\u2026';"
+        "}else if(!d.ssid||d.ssid===''){"
+          "e.className='msg';"
+          "e.innerHTML='No WiFi network configured.';"
+          "return;"
+        "}else{"
+          "e.className='msg';"
+          "e.innerHTML='<span class=\"sp\"></span>&nbsp;Checking connection\u2026';"
+        "}"
+        "setTimeout(g,6000);"
+      "})"
+      ".catch(function(){setTimeout(g,9000);});"
+    "}"
+    // If the server-rendered banner already shows a wrong-password error, highlight
+    // the password field immediately (before the spinner replaces the static content).
+    "var e=document.getElementById('wm-live-status');"
+    "if(e&&e.classList.contains('D')&&e.textContent.indexOf('Wrong')!==-1){markPwErr();}"
+    // Replace static status with spinner, then start polling
+    "if(e){e.className='msg';e.innerHTML='<span class=\"sp\"></span>&nbsp;Checking connection\u2026';}"
+    "setTimeout(g,1500);"
+  "})();"
+  "</script>";
+
+const char HTTP_STATUS_ON[]        PROGMEM = "<div class='msg S' id='wm-live-status'><strong>Connected</strong> to {v}<br/><em><small>IP: {i}</small></em></div>";
+const char HTTP_STATUS_OFF[]       PROGMEM = "<div class='msg {c}' id='wm-live-status'><strong>Not connected</strong> to {v}{r}</div>"; // {c=class} {v=ssid} {r=status_off}
+const char HTTP_STATUS_OFFPW[]     PROGMEM = "<br/>Wrong password"; // STATION_WRONG_PASSWORD
+const char HTTP_STATUS_OFFNOAP[]   PROGMEM = "<br/>Network not found";   // WL_NO_SSID_AVAIL
+const char HTTP_STATUS_OFFFAIL[]   PROGMEM = "<br/>Check your settings"; // WL_CONNECT_FAILED
+const char HTTP_STATUS_NONE[]      PROGMEM = "<div class='msg' id='wm-live-status'>No WiFi network configured</div>";
 const char HTTP_BR[]               PROGMEM = "<br/>";
 
 const char HTTP_STYLE[]            PROGMEM = "<style>"
-".c,body,h1,h3{text-align:center;font-family:verdana}div,input,select{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box}"
+".c,body,h1,h3{text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}div,input,select{padding:5px;font-size:1em;margin:5px 0;box-sizing:border-box}"
 "input,button,select,.msg{border-radius:.3rem;width: 100%}input[type=radio],input[type=checkbox]{width:auto}"
-"button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
+"button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.75rem;font-size:1.2rem;width:100%}"
 "input[type='file']{border:1px solid #1fa3ec}"
-".wrap {text-align:left;display:inline-block;min-width:260px;max-width:500px}"
+".wrap {text-align:left;display:block;width:100%;max-width:500px;margin:0 auto}"
 ".footer {position: fixed; text-align: center; bottom: 0; width: 100%}"
 // links
 "a{color:#000;font-weight:700;text-decoration:none}a:hover{color:#1fa3ec;text-decoration:underline}"
@@ -105,6 +227,8 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "background-size: 95px 16px;}}"
 // msg callouts
 ".msg{padding:20px;margin:20px 0;border:1px solid #eee;border-left-width:5px;border-left-color:#777}.msg h4{margin-top:0;margin-bottom:5px}.msg.P{border-left-color:#1fa3ec}.msg.P h4{color:#1fa3ec}.msg.D{border-left-color:#dc3630}.msg.D h4{color:#dc3630}.msg.S{border-left-color: #5cb85c}.msg.S h4{color: #5cb85c}"
+// highlight input when password is wrong
+".input-error{border-color:#dc3630!important;box-shadow:0 0 0 3px rgba(220,54,48,.15)!important}"
 // lists
 "dt{font-weight:bold}dd{margin:0;padding:0 0 0.5em 0;min-height:12px}"
 "td{vertical-align: top;}"
@@ -112,12 +236,58 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "button{transition: 0s opacity;transition-delay: 3s;transition-duration: 0s;cursor: pointer}"
 "button.D{background-color:#dc3630}"
 "button:active{opacity:50% !important;cursor:wait;transition-delay: 0s}"
+// spinner animation
+".sp{display:inline-block;width:1em;height:1em;border:3px solid rgba(31,163,236,.3);border-top-color:#1fa3ec;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}"
+"@keyframes spin{to{transform:rotate(360deg)}}"
+// bottom navigation bar
+".nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:4px 5px;text-align:center;z-index:100;display:flex;justify-content:space-around}"
+".nav a{color:#1fa3ec;margin:0;font-size:.65em;text-decoration:none;font-weight:bold;display:flex;flex-direction:column;align-items:center;padding:2px 12px}"
+".nav a svg{display:block;margin:0 auto 2px}"
+// add bottom padding to wrap so content is not hidden behind nav
+".wrap{padding-bottom:60px}"
+// sticky call-to-action button sits above the nav bar
+".btn-cta{position:sticky;bottom:58px;z-index:10}"
+// password eye-icon wrapper
+".pw-wrap{position:relative;padding:0;margin:0}"
+".pw-wrap>input{padding-right:40px}"
+".pw-btn{position:absolute;right:2px;top:50%;transform:translateY(-50%);background:none;border:none;padding:6px;cursor:pointer;width:36px;line-height:1;color:#888}"
+".pw-masked{-webkit-text-security:disc;-moz-text-security:disc;}"
+// status + refresh icon flex row
+".sh{display:flex;align-items:flex-start;gap:6px}"
+".sh>.msg{flex:1;margin:5px 0}"
+".rf{flex-shrink:0;margin:5px 0;width:auto}"
+".rib{width:36px;height:36px;padding:7px;border-radius:.3rem;line-height:1}"
+// scrollable wifi network list
+".wl{max-height:40vh;overflow-y:auto;border:1px solid #eee;border-radius:.3rem;margin:5px 0}"
+// make SSID anchor fill the whole row (left of quality icons) so the whole area is tappable
+".wl>div>a.wi{flex:1;min-width:0;padding:4px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}"
+// network list item: padding + hairline separator (like iOS / Premiere Pro)
+".wl>div{padding:10px 12px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}"
+".wl>div:last-child{border-bottom:none}"
+// empty/error message for network list
+".nm{color:#888;text-align:center;padding:8px 0;margin:0}"
 // invert
 "body.invert{background-color:#060606;}"
 "body.invert,body.invert a,body.invert h1 {color:#fff;}"
 "body.invert .msg{color:#fff;background-color:#282828;border-top:1px solid #555;border-right:1px solid #555;border-bottom:1px solid #555;}"
 "body.invert .q[role=img]{-webkit-filter:invert(1);filter:invert(1);}"
+"body.invert .nav{background:#121212;border-top-color:#333}"
+"body.invert .wl{border-color:#444}"
+"body.invert .wl>div{border-bottom-color:#333}"
 ":disabled {opacity: 0.5;}"
+// automatic OS dark mode
+"@media(prefers-color-scheme:dark){"
+  "body{background-color:#060606;color:#fff}"
+  "a,h1{color:#fff}"
+  ".msg{color:#fff;background-color:#282828;border-top:1px solid #555;border-right:1px solid #555;border-bottom:1px solid #555}"
+  ".q[role=img]{-webkit-filter:invert(1);filter:invert(1)}"
+  ".nav{background:#121212;border-top-color:#333}"
+  ".wl{border-color:#444}"
+  ".wl>div{border-bottom-color:#333}"
+  "input,select{background-color:#1a1a1a;color:#fff;border:1px solid #444}"
+  ".pw-btn{color:#aaa}"
+  ".input-error{box-shadow:0 0 0 3px rgba(220,54,48,.3)!important}"
+"}"
 "</style>";
 
 #ifndef WM_NOHELP
@@ -234,7 +404,7 @@ const char S_NA[]                 PROGMEM = "Unknown";
 const char S_passph[]             PROGMEM = "********";
 const char S_titlewifisaved[]     PROGMEM = "Credentials saved";
 const char S_titlewifisettings[]  PROGMEM = "Settings saved";
-const char S_titlewifi[]          PROGMEM = "Config ESP";
+const char S_titlewifi[]          PROGMEM = "WiFi Setup";
 const char S_titleinfo[]          PROGMEM = "Info";
 const char S_titleparam[]         PROGMEM = "Setup";
 const char S_titleparamsaved[]    PROGMEM = "Setup saved";
@@ -244,11 +414,12 @@ const char S_titleerase[]         PROGMEM = "Erase";
 const char S_titleclose[]         PROGMEM = "Close";
 const char S_options[]            PROGMEM = "options";
 const char S_nonetworks[]         PROGMEM = "No networks found. Refresh to scan again.";
+const char S_scanfailed[]         PROGMEM = "Scan failed. Tap refresh to try again.";
 const char S_staticip[]           PROGMEM = "Static IP";
 const char S_staticgw[]           PROGMEM = "Static gateway";
 const char S_staticdns[]          PROGMEM = "Static DNS";
 const char S_subnet[]             PROGMEM = "Subnet";
-const char S_exiting[]            PROGMEM = "Exiting";
+const char S_exiting[]            PROGMEM = "<div class='msg' style='text-align:center'><span class='sp'></span>&nbsp;<strong>Closing setup&hellip;</strong><br/><small style='color:#888'>You can close this window</small></div><script>setTimeout(function(){try{window.close();}catch(e){}},600);</script>";
 const char S_resetting[]          PROGMEM = "Module will reset in a few seconds.";
 const char S_closing[]            PROGMEM = "You can close the page, portal will continue to run";
 const char S_error[]              PROGMEM = "An error occured";
