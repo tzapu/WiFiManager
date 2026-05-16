@@ -478,6 +478,17 @@ bool WiFiManager::startAP(){
     delay(500); // workaround delay
   #endif
 
+  #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
+    // ESP32-S3/C3 workaround: these chips need a clean WiFi mode transition
+    // with sufficient delays for the AP interface to stabilize.
+    // Without this, clients see the AP but cannot complete association.
+    // See: https://github.com/tzapu/WiFiManager/issues/1482
+    WiFi.mode(WIFI_OFF);
+    delay(100);
+    WiFi.mode(WIFI_AP);
+    delay(500);
+  #endif
+
   // setup optional soft AP static ip config
   if (_ap_static_ip) {
     #ifdef WM_DEBUG_LEVEL
@@ -679,7 +690,13 @@ void WiFiManager::setupDNSD(){
 void WiFiManager::setupConfigPortal() {
   setupHTTPServer();
   _lastscan = 0; // reset network scan cache
+  #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
+  // ESP32-S3/C3: Do NOT preload WiFi scan - async scanning in AP mode
+  // causes the AP to become unreachable for clients on these chips.
+  // The scan will be triggered on-demand when the user opens the WiFi page.
+  #else
   if(_preloadwifiscan) WiFi_scanNetworks(true,true); // preload wifiscan , async
+  #endif
 }
 
 boolean WiFiManager::startConfigPortal() {
@@ -717,6 +734,9 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   if(!validApPassword()) return false;
   
   // HANDLE issues with STA connections, shutdown sta if not connected, or else this will hang channel scanning and softap will not respond
+  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+  // Skip this on ESP32-S3/C3 - the disconnect/enableSTA(false) sequence causes
+  // the subsequent softAP to be unstable. startAP() handles mode switching cleanly.
   if(_disableSTA || (!WiFi.isConnected() && _disableSTAConn)){
     // this fixes most ap problems, however, simply doing mode(WIFI_AP) does not work if sta connection is hanging, must `wifi_station_disconnect` 
     #ifdef WM_DISCONWORKAROUND
@@ -731,6 +751,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   else {
     // WiFi_enableSTA(true);
   }
+  #endif
 
   // init configportal globals to known states
   configPortalActive = true;
@@ -743,7 +764,25 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(WM_DEBUG_VERBOSE,F("Enabling AP"));
   #endif
+
+  #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3)
+  // ESP32-S3/C3: Use minimal AP setup sequence that is proven to work.
+  // WiFiManager's startAP() with its complex mode switching is unreliable
+  // on these chips. Do exactly what a basic WiFi.softAP() sketch does.
+  WiFi.mode(WIFI_OFF);
+  delay(500);
+  WiFi.mode(WIFI_AP);
+  delay(500);
+  WiFi.softAP(_apName.c_str(), (_apPassword != "") ? _apPassword.c_str() : nullptr, 6, _apHidden, 4);
+  delay(500);
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("StartAP with SSID: "),_apName);
+  DEBUG_WM(F("AP IP address:"),WiFi.softAPIP());
+  #endif
+  #else
   startAP();
+  #endif
+
   WiFiSetCountry();
 
   // do AP callback if set
