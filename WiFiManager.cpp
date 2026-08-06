@@ -1641,6 +1641,7 @@ String WiFiManager::WiFiManager::getScanItemOut(){
       bool tok_i = HTTP_ITEM_STR.indexOf(FPSTR(T_i)) > 0;
       
       //display networks in page
+      page += F("<div class='wifi-list'>");
       for (int i = 0; i < n; i++) {
         if (indices[i] == -1) continue; // skip dups
 
@@ -1682,6 +1683,7 @@ String WiFiManager::WiFiManager::getScanItemOut(){
         }
 
       }
+      page += F("</div>");
       page += FPSTR(HTTP_BR);
     }
 
