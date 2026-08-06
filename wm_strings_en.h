@@ -93,6 +93,7 @@ const char HTTP_STYLE[]            PROGMEM = "<style>"
 "button,input[type='button'],input[type='submit']{cursor:pointer;border:0;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%}"
 "input[type='file']{border:1px solid #1fa3ec}"
 ".wrap {text-align:left;display:inline-block;min-width:260px;max-width:500px}"
+".wifi-list{max-height:250px;overflow-y:auto;overflow-x:hidden}"
 ".footer {position: fixed; text-align: center; bottom: 0; width: 100%}"
 // links
 "a{color:#000;font-weight:700;text-decoration:none}a:hover{color:#1fa3ec;text-decoration:underline}"
