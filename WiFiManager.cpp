@@ -1156,9 +1156,23 @@ bool WiFiManager::wifiConnectDefault(){
  */
 bool WiFiManager::setSTAConfig(){
   #ifdef WM_DEBUG_LEVEL
-  DEBUG_WM(WM_DEBUG_DEV,F("STA static IP:"),_sta_static_ip);  
+	  DEBUG_WM(WM_DEBUG_DEV,F("STA static IP:"),_sta_static_ip);  
   #endif
   bool ret = true;
+  if(_serverMac[0]|_serverMac[1]|_serverMac[2]|_serverMac[3]|_serverMac[4]|_serverMac[5]){
+      esp_err_t err = esp_wifi_set_mac(WIFI_IF_STA, &_serverMac[0]);
+      #ifdef WM_DEBUG_LEVEL
+	      if (err == ESP_OK) {
+	      DEBUG_WM("Custom MAC set successfully.");
+	    } else {
+	      DEBUG_WM("Failed to set custom MAC!");
+	    }
+	  #endif
+  } else {
+	  #ifdef WM_DEBUG_LEVEL
+	  DEBUG_WM(F("No New Mac Neded:"));
+	  #endif
+  }
   if (_sta_static_ip) {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(WM_DEBUG_VERBOSE,F("Custom static IP/GW/Subnet/DNS"));
@@ -3114,6 +3128,28 @@ bool  WiFiManager::setHostname(const char * hostname){
 bool  WiFiManager::setHostname(String hostname){
   //@todo max length 32
   _hostname = hostname;
+  return true;
+}
+
+/**
+  * @brief     Set MAC address of WiFi station,
+  *
+  * @attention The bit 0 of the first byte of MAC address can not be 1. For example, the MAC address
+  *             can set to be "1a:XX:XX:XX:XX:XX", but can not be "15:XX:XX:XX:XX:XX".
+  *
+  * @param     mac  the MAC address
+  *
+  * @return   true
+  * 
+  */
+bool  WiFiManager::setMACAddress(const uint8_t *serverMac){
+  // max length 6
+  memcpy(_serverMac ,(void *)serverMac , 6*sizeof(uint8_t));
+  #ifdef WM_DEBUG_LEVEL
+    String Mac;
+    Mac= String(_serverMac[0],HEX)+":"+String(_serverMac[1],HEX)+":"+String(_serverMac[2],HEX)+":"+String(_serverMac[3],HEX)+":"+String(_serverMac[4],HEX)+":"+String(_serverMac[5],HEX);
+    DEBUG_WM(F("setMACAddress:"),Mac);
+  #endif
   return true;
 }
 

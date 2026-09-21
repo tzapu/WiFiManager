@@ -432,6 +432,8 @@ class WiFiManager
     // set a custom hostname, sets sta and ap dhcp client id for esp32, and sta for esp8266
     bool          setHostname(const char * hostname);
     bool          setHostname(String hostname);
+    // set a custom MACAddress,
+    bool          setMACAddress(const uint8_t *serverMac);
 
     // show erase wifi onfig button on info page, true
     void          setShowInfoErase(boolean enabled);
@@ -611,6 +613,7 @@ class WiFiManager
     boolean       _enableConfigPortal     = true;  // FOR autoconnect - start config portal if autoconnect failed
     boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
+    uint8_t       _serverMac[6]           ={0,0,0,0,0,0}; // The Client MAC addres
 
     const char*   _customHeadElement      = ""; // store custom head element html from user inside <head>
     const char*   _customBodyHeader       = ""; // store custom top body element html from user inside <body>
