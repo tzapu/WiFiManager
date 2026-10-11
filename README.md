@@ -54,6 +54,7 @@ Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 
    - [Custom Parameters](#custom-parameters)
    - [Custom IP Configuration](#custom-ip-configuration)
    - [Filter Low Quality Networks](#filter-networks)
+   - [Multiple Networks](#multiple-networks)
    - [Debug Output](#debug)
  - [Troubleshooting](#troubleshooting)
  - [Releases](#releases)
@@ -376,6 +377,99 @@ Use this function to show (or hide) all networks.
 wifiManager.setRemoveDuplicateAPs(false);
 ```
 
+#### Multiple Networks
+Build flag `WM_MULTIWIFI` keeps a list of networks (default 5) instead of only the last one and connects to the best one available. Without the flag nothing changes and no code is added.
+
+```ini
+; platformio.ini
+build_flags = -DWM_MULTIWIFI          ; saved network list
+              -DWM_MULTIWIFI_ROAM     ; optional, re-select when the connection is lost
+```
+Arduino IDE: uncomment `#define WM_MULTIWIFI` in `WiFiManager.h`, a define in the sketch is not seen by the library.
+
+| flag | |
+|---|---|
+| `WM_MULTIWIFI` | saved network list, selection, portal list |
+| `WM_MULTIWIFI_MAX=n` | number of saved networks, default 5 |
+| `WM_MULTIWIFI_NOUI` | no saved list / forget buttons / hidden checkbox in the portal, saves still add to the list |
+| `WM_MULTIWIFI_NOSTORE` | no built-in storage, provide `setMultiWiFiStorage()` hooks |
+| `WM_MULTIWIFI_ROAM` | `setMultiWiFiRoaming()` |
+| `WM_MULTIWIFI_ROAM_STRONGER` | `setMultiWiFiRoamStronger()`, implies ROAM |
+
+**How a network is picked** (`autoConnect()` blocking, or `beginMultiWiFi()` + `process()` non blocking)
+1. The last network that connected is tried directly, no scan (`setMultiWiFiFastTimeout(ms)`, default 10s).
+2. Otherwise scan, try the saved networks that are visible, strongest first. Each attempt is locked to the strongest access point (BSSID + channel) of that network, so with a mesh / repeaters the closest one is used.
+3. Then saved networks marked *hidden*, which never show up in scans, are tried blind.
+4. Nothing connected: `autoConnect()` opens the portal as usual.
+
+**Portal**: every network saved in the portal is added to the list (same ssid updates the password). The wifi page shows the saved networks, most recent first, with a button to forget each one and a *Hidden network* checkbox. A save that fails to connect is kept only if the network is hidden or not in range (it may be configured ahead of time) and shown with `?` until it connects once; a visible network that fails (likely a wrong password) is not kept. When the list is full, new networks are refused until one is forgotten, `removeLRUWiFiCredential()` can make room from code.
+
+**Compatibility**: the network that connected last is also kept as the regular esp saved network, so `WiFi.begin()`, `getWiFiSSID()` and existing code keep working. On the first boot with multi wifi an already saved network is imported, so updating firmware keeps the device online. `resetSettings()` clears the list.
+
+**Storage**: ESP32 NVS (namespace `wm_multi`), ESP8266 a file `/wm_multi.bin` on LittleFS (mounted if needed, never formatted; without a LittleFS partition the list only lives in RAM, call `LittleFS.begin()` yourself first if you set a LittleFS config). Own storage via hooks:
+```cpp
+wm.setMultiWiFiStorage(
+  [](std::vector<WiFiManagerCredential>& list){ /* fill list, return false if nothing was ever stored */ return false; },
+  [](const std::vector<WiFiManagerCredential>& list){ /* persist */ return true; });
+```
+
+ESP8266 without LittleFS in the sketch: the built-in storage links LittleFS (~28KB flash). To avoid that use `WM_MULTIWIFI_NOSTORE` and keep the list where your settings live, eg. EEPROM (`sizeof(WiFiManagerCredential)` is 104 bytes):
+```cpp
+const int MW_ADDR = 512; // after your own EEPROM data, EEPROM.begin() size must cover it
+wm.setMultiWiFiStorage(
+  [](std::vector<WiFiManagerCredential>& list){
+    uint8_t n = EEPROM.read(MW_ADDR);
+    if(n == 0xFF) return false; // never written
+    for(uint8_t i = 0; i < n && i < WM_MULTIWIFI_MAX; i++){
+      WiFiManagerCredential c; EEPROM.get(MW_ADDR + 1 + i * sizeof(c), c); list.push_back(c);
+    }
+    return true;
+  },
+  [](const std::vector<WiFiManagerCredential>& list){
+    EEPROM.write(MW_ADDR, list.size());
+    for(size_t i = 0; i < list.size(); i++) EEPROM.put(MW_ADDR + 1 + i * sizeof(list[i]), list[i]);
+    return EEPROM.commit();
+  });
+```
+
+Flash cost of the Basic example with `WM_MULTIWIFI` (static RAM +112 bytes, list is loaded on the heap only while needed, ~0.5KB):
+
+| | flash |
+|---|---|
+| ESP32 | +12.7KB, +10.4KB with `WM_NODEBUG`, +8.2KB with `WM_NODEBUG` and `WM_MULTIWIFI_NOUI` |
+| ESP8266, sketch uses LittleFS | +9.7KB |
+| ESP8266, `WM_MULTIWIFI_NOSTORE` | +9.0KB |
+| ESP8266, built-in storage, sketch without LittleFS | +37.4KB |
+
+**Roaming** (`WM_MULTIWIFI_ROAM`), call `process()` from `loop()`
+```cpp
+wm.setMultiWiFiRoaming(true, 30000);              // connection lost for 30s: pick again, retries back off up to 5 min
+wm.setMultiWiFiRoamStronger(true, 300000, 8);     // every 5 min scan, switch when a saved AP is 8 dB stronger on 2 scans in a row
+                                                  // (includes another AP of the same network, mesh)
+```
+Scans take the radio for a few seconds. If something else needs it (eg. BLE on ESP32), postpone scans and connect attempts with
+```cpp
+wm.setMultiWiFiAllowCallback([]{ return !bleBusy; });
+```
+
+**API**
+```cpp
+bool    addWiFiCredential(const char* ssid, const char* pass, bool hidden = false);
+bool    removeWiFiCredential(const char* ssid);
+void    clearWiFiCredentials();
+uint8_t getWiFiCredentialCount();
+uint8_t getWiFiCredentialCapacity();
+bool    getWiFiCredential(uint8_t n, WiFiManagerCredential &out); // most recent first, .ssid .hidden() .unverified()
+String  getLRUWiFiCredential();
+bool    removeLRUWiFiCredential();
+bool    beginMultiWiFi();          // non blocking, progress in process()
+bool    getMultiWiFiBusy();
+String  getMultiWiFiTarget();      // ssid being tried
+void    setMultiWiFi(bool enable); // runtime off switch
+void    setMultiWiFiResultCallback(std::function<void(const char* ssid, bool connected)>);
+```
+See `examples/MultiWiFi` and `examples/MultiWiFiNonBlocking`.
+
 #### Debug
 Debug is enabled by default on `Serial` in non-stable releases. To disable add before autoConnect/startConfigPortal
 ```cpp
@@ -491,6 +585,8 @@ I get stuck in ap mode when the power goes out or modem resets, try a setConfigP
 `#define WM_FIXERASECONFIG // use erase flash fix, esp8266 2.4.0`
 
 `#define WM_ERASE_NVS // esp32 erase(true) will erase NVS`
+
+`#define WM_MULTIWIFI // multiple saved networks, see Multiple Networks`
 
 `#include <rom/rtc.h> // esp32 info page will show last reset reasons if this file is included`
 

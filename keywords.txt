@@ -8,6 +8,7 @@
 
 WiFiManager	KEYWORD1
 WiFiManagerParameter KEYWORD1
+WiFiManagerCredential	KEYWORD1
 
 
 #######################################
@@ -31,6 +32,25 @@ getID KEYWORD2
 getValue KEYWORD2
 getPlaceholder KEYWORD2
 getValueLength KEYWORD2
+addWiFiCredential	KEYWORD2
+removeWiFiCredential	KEYWORD2
+clearWiFiCredentials	KEYWORD2
+getWiFiCredentialCount	KEYWORD2
+getWiFiCredentialCapacity	KEYWORD2
+getWiFiCredential	KEYWORD2
+getLRUWiFiCredential	KEYWORD2
+removeLRUWiFiCredential	KEYWORD2
+beginMultiWiFi	KEYWORD2
+getMultiWiFiBusy	KEYWORD2
+getMultiWiFiTarget	KEYWORD2
+setMultiWiFi	KEYWORD2
+getMultiWiFi	KEYWORD2
+setMultiWiFiFastTimeout	KEYWORD2
+setMultiWiFiAllowCallback	KEYWORD2
+setMultiWiFiResultCallback	KEYWORD2
+setMultiWiFiStorage	KEYWORD2
+setMultiWiFiRoaming	KEYWORD2
+setMultiWiFiRoamStronger	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

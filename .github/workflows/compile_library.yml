@@ -22,6 +22,10 @@ jobs:
         board: 
           - "nodemcuv2"
           - "lolin32"
+        flags:
+          - ""
+          - "-DWM_MULTIWIFI"
+          - "-DWM_MULTIWIFI_ROAM_STRONGER -DWM_MULTIWIFI_NOUI"
 
     steps:
     - uses: actions/checkout@v2
@@ -56,3 +60,12 @@ jobs:
 
     - name: Run PlatformIO
       run: pio ci --board=${{ matrix.board }} .
+      env:
+        PLATFORMIO_BUILD_FLAGS: ${{ matrix.flags }}
+
+  multiwifi-host-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Multi WiFi list logic tests
+      run: g++ -std=c++11 -Wall -Wextra -Werror -fsanitize=address,undefined -I. extras/test/test_multiwifi.cpp -o test_multiwifi && ./test_multiwifi

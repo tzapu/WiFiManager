@@ -27,6 +27,13 @@
 // #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
 // #define WM_RTC             // esp32 info page will include reset reasons
 
+// #define WM_MULTIWIFI       // store several networks and pick the best one, see README "Multiple networks"
+// #define WM_MULTIWIFI_MAX 5         // number of saved networks
+// #define WM_MULTIWIFI_NOUI          // no saved list / delete / hidden checkbox in portal (saves still add)
+// #define WM_MULTIWIFI_NOSTORE       // no built-in storage, use setMultiWiFiStorage() hooks
+// #define WM_MULTIWIFI_ROAM          // re-select network when connection is lost
+// #define WM_MULTIWIFI_ROAM_STRONGER // background scans, switch to a stronger saved AP (implies ROAM)
+
 // #define WM_JSTEST                      // build flag for enabling js xhr tests
 // #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
 
@@ -132,6 +139,19 @@
 #include <DNSServer.h>
 #include <memory>
 
+#ifdef WM_MULTIWIFI_ROAM_STRONGER
+  #ifndef WM_MULTIWIFI_ROAM
+    #define WM_MULTIWIFI_ROAM
+  #endif
+#endif
+#if defined(WM_MULTIWIFI_ROAM) && !defined(WM_MULTIWIFI)
+  #define WM_MULTIWIFI
+#endif
+
+#ifdef WM_MULTIWIFI
+  #include "wm_multiwifi.h"
+#endif
+
 
 // Include wm strings vars
 // Pass in strings env override via LANG_XX
@@ -149,6 +169,10 @@
   #include "wm_strings_pt_br.h"
 #else
   #include "wm_strings_en.h"
+#endif
+
+#ifdef WM_MULTIWIFI
+  #include "wm_strings_multiwifi.h"
 #endif
 
 // prep string concat vars
@@ -514,6 +538,55 @@ class WiFiManager
     // get hostname helper
     String        getWiFiHostname();
 
+    #ifdef WM_MULTIWIFI
+    // MULTI WIFI, build flag WM_MULTIWIFI
+
+    // runtime toggle, default true; false behaves like single network WiFiManager
+    void          setMultiWiFi(bool enable);
+    bool          getMultiWiFi();
+
+    // add or update a network (matched by ssid), false if list is full or invalid
+    // shows as unverified until it connects once
+    bool          addWiFiCredential(const char* ssid, const char* pass, bool hidden = false);
+    bool          removeWiFiCredential(const char* ssid);
+    void          clearWiFiCredentials();
+    uint8_t       getWiFiCredentialCount();
+    uint8_t       getWiFiCredentialCapacity(); // WM_MULTIWIFI_MAX
+    // ordered most recently connected first, false if out of range
+    bool          getWiFiCredential(uint8_t n, WiFiManagerCredential &out);
+    // least recently connected network (never connected ones first), "" if none
+    String        getLRUWiFiCredential();
+    // drop the least recently connected network, eg. to make room when list is full
+    bool          removeLRUWiFiCredential();
+
+    // non blocking connect: last good network, then scan and try saved networks by signal
+    // driven by process(), call it from loop(); autoConnect() uses the same logic blocking
+    bool          beginMultiWiFi();
+    // true while beginMultiWiFi is working
+    bool          getMultiWiFiBusy();
+    // ssid currently being tried, or "" if idle
+    String        getMultiWiFiTarget();
+    // ms to wait for the last good network before scanning for others, default 10000
+    void          setMultiWiFiFastTimeout(uint32_t ms);
+    // called before every scan / connect attempt, return false to postpone (eg. radio busy with BLE)
+    void          setMultiWiFiAllowCallback(std::function<bool()> func);
+    // called after each attempt with the ssid and the result
+    void          setMultiWiFiResultCallback(std::function<void(const char* ssid, bool connected)> func);
+    // own storage, load returns false if nothing was ever stored (an existing esp saved network is imported then)
+    void          setMultiWiFiStorage(std::function<bool(std::vector<WiFiManagerCredential>&)> load,
+                                      std::function<bool(const std::vector<WiFiManagerCredential>&)> save);
+
+    #ifdef WM_MULTIWIFI_ROAM
+    // when connection is lost for lostMs, re-select from saved networks, retries with backoff up to 5 min
+    void          setMultiWiFiRoaming(bool enable, uint32_t lostMs = 30000);
+    #endif
+    #ifdef WM_MULTIWIFI_ROAM_STRONGER
+    // while connected, scan every intervalMs and switch if a saved AP (incl. same ssid other bssid, mesh)
+    // is minGain dB stronger on two consecutive scans
+    void          setMultiWiFiRoamStronger(bool enable, uint32_t intervalMs = 300000, int8_t minGain = 8);
+    #endif
+    #endif
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -780,6 +853,63 @@ protected:
     String        encryptionTypeStr(uint8_t authmode);
     void          reportStatus(String &page);
     String        getInfoData(String id);
+
+    #ifdef WM_MULTIWIFI
+    enum : uint8_t { MW_IDLE, MW_FAST, MW_SCAN, MW_NEXT, MW_TRY };
+    WiFiManagerCredentialList _mwList;
+    std::vector<WiFiManagerCandidate> _mwCands;
+    bool          _mwEnabled      = true;
+    bool          _mwSaveHidden   = false; // hidden checkbox of pending portal save
+    bool          _mwLoaded       = false;
+    bool          _mwRetried      = false; // blind attempt retried once
+    bool          _mwAutoRe       = true;  // sdk auto reconnect to restore after a run
+    bool          _mwPersist      = false; // last store succeeded, list may be freed while idle
+    uint8_t       _mwState        = MW_IDLE;
+    uint8_t       _mwCand         = 0;     // next candidate index
+    int8_t        _mwTarget       = -1;    // credential index being tried
+    int8_t        _mwFastIdx      = -1;    // last good tried in fast step
+    unsigned long _mwStart        = 0;     // ms current step started
+    uint32_t      _mwFastTimeout  = 10000;
+    std::function<bool()> _mwAllow;
+    std::function<void(const char*, bool)> _mwResult;
+    std::function<bool(std::vector<WiFiManagerCredential>&)> _mwLoad;
+    std::function<bool(const std::vector<WiFiManagerCredential>&)> _mwSave;
+    #ifdef WM_MULTIWIFI_ROAM
+    bool          _mwRoam         = false;
+    uint32_t      _mwRoamLost     = 30000;
+    uint32_t      _mwBackoff      = 0;     // ms extra wait after a failed round
+    unsigned long _mwLostSince    = 0;     // ms connection lost, 0 = connected
+    #endif
+    #ifdef WM_MULTIWIFI_ROAM_STRONGER
+    bool          _mwStronger     = false;
+    uint32_t      _mwStrongerInt  = 300000;
+    int8_t        _mwStrongerGain = 8;
+    uint8_t       _mwStrongerHits = 0;
+    bool          _mwStrongerScan = false;
+    unsigned long _mwLastRoamScan = 0;
+    #endif
+
+    bool          mwActive();
+    bool          mwLoad();
+    bool          mwStore();
+    void          mwRelease();
+    bool          mwLoop();
+    bool          mwAllowed();
+    void          mwRunStart();
+    void          mwAbort();
+    void          mwAttempt(int idx, const WiFiManagerCandidate* c);
+    void          mwFinish(bool connected);
+    bool          mwScanStart();
+    int           mwScanCollect(std::vector<WiFiManagerScanItem> &items);
+    void          mwOnConnected();
+    void          mwSyncSdk();
+    bool          mwSaved(const String &ssid, const String &pass, bool connected);
+    bool          mwInScan(const String &ssid);
+    #ifndef WM_MULTIWIFI_NOUI
+    String        getMultiWiFiOut();
+    void          handleWifiDelete();
+    #endif
+    #endif
 
     // flags
     boolean       connect             = false;

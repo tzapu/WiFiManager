@@ -345,9 +345,24 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
       setSTAConfig();
       // @todo not sure if this is safe, causes dup setSTAConfig in connectwifi,
       // and we have no idea WHAT we are connected to
+      #ifdef WM_MULTIWIFI
+      if(mwActive()) mwOnConnected();
+      #endif
     }
 
-    if(connected || connectWifi(_defaultssid, _defaultpass) == WL_CONNECTED){
+    bool tried = false;
+    #ifdef WM_MULTIWIFI
+    // saved networks, last good first, then scan, blocking
+    if(!connected && _defaultssid == "" && beginMultiWiFi()){
+      while(mwLoop()){
+        delay(10);
+      }
+      connected = WiFi.status() == WL_CONNECTED;
+      tried = true;
+    }
+    #endif
+
+    if(connected || (!tried && connectWifi(_defaultssid, _defaultpass) == WL_CONNECTED)){
       //connected
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(F("AutoConnect: SUCCESS"));
@@ -645,6 +660,9 @@ void WiFiManager::setupHTTPServer(){
   server->on(WM_G(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
   server->on(WM_G(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(WM_G(R_wifisave),   std::bind(&WiFiManager::handleWifiSave, this));
+  #if defined(WM_MULTIWIFI) && !defined(WM_MULTIWIFI_NOUI)
+  server->on(WM_G(R_wifidel),    std::bind(&WiFiManager::handleWifiDelete, this));
+  #endif
   server->on(WM_G(R_info),       std::bind(&WiFiManager::handleInfo, this));
   server->on(WM_G(R_param),      std::bind(&WiFiManager::handleParam, this));
   server->on(WM_G(R_paramsave),  std::bind(&WiFiManager::handleParamSave, this));
@@ -731,6 +749,10 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   else {
     // WiFi_enableSTA(true);
   }
+
+  #ifdef WM_MULTIWIFI
+  mwAbort(); // portal owns the radio now
+  #endif
 
   // init configportal globals to known states
   configPortalActive = true;
@@ -831,6 +853,10 @@ boolean WiFiManager::process(){
     #if defined(WM_MDNS) && defined(ESP8266)
     MDNS.update();
     #endif
+
+    #ifdef WM_MULTIWIFI
+    mwLoop();
+    #endif
 	
     if(webPortalActive || (configPortalActive && !_configPortalIsBlocking)){
       // if timed out or abort, break
@@ -888,6 +914,11 @@ uint8_t WiFiManager::processConfigPortal(){
       else{
         // attempt sta connection to submitted _ssid, _pass
         uint8_t res = connectWifi(_ssid, _pass, _connectonsave) == WL_CONNECTED;
+        #ifdef WM_MULTIWIFI
+        mwSaved(_ssid, _pass, res);
+        // web portal (sta) save failed, do not leave the device offline
+        if(!res && _connectonsave && webPortalActive) beginMultiWiFi();
+        #endif
         if (res || (!_connectonsave)) {
           #ifdef WM_DEBUG_LEVEL
           if(!_connectonsave){
@@ -1008,6 +1039,9 @@ bool WiFiManager::shutdownConfigPortal(){
   #endif
   configPortalActive = false;
   DEBUG_WM(WM_DEBUG_VERBOSE,F("configportal closed"));
+  #ifdef WM_MULTIWIFI
+  mwRelease();
+  #endif
   _end();
   return ret;
 }
@@ -1380,6 +1414,9 @@ void WiFiManager::handleWifi(boolean scan) {
     WiFi_scanNetworks(server->hasArg(F("refresh")),false); //wifiscan, force if arg refresh
     page += getScanItemOut();
   }
+  #if defined(WM_MULTIWIFI) && !defined(WM_MULTIWIFI_NOUI)
+  page += getMultiWiFiOut();
+  #endif
   String pitem = "";
 
   pitem = FPSTR(HTTP_FORM_START);
@@ -1400,6 +1437,9 @@ void WiFiManager::handleWifi(boolean scan) {
   }
 
   page += pitem;
+  #if defined(WM_MULTIWIFI) && !defined(WM_MULTIWIFI_NOUI)
+  if(_mwEnabled) page += FPSTR(HTTP_MW_HIDDEN);
+  #endif
 
   page += getStaticOut();
   page += FPSTR(HTTP_FORM_WIFI_END);
@@ -1837,6 +1877,11 @@ void WiFiManager::handleWifiSave() {
     #endif    
   }
 
+  #ifdef WM_MULTIWIFI
+  _mwSaveHidden = server->hasArg(F("h"));
+  bool mwFull = _ssid != "" && _mwEnabled && mwLoad() && _mwList.find(_ssid.c_str()) < 0 && _mwList.full();
+  #endif
+
   #ifdef WM_DEBUG_LEVEL
   String requestinfo = "SERVER_REQUEST\n----------------\n";
   requestinfo += "URI: ";
@@ -1891,6 +1936,22 @@ void WiFiManager::handleWifiSave() {
   if(_paramsInWifi) doParamSave();
 
   String page;
+
+  #ifdef WM_MULTIWIFI
+  if(mwFull){
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(WM_DEBUG_NOTIFY,F("[MW] list full, not saving"),_ssid);
+    #endif
+    page = getHTTPHead(FPSTR(S_titlewifi), FPSTR(C_wifi));
+    page += FPSTR(HTTP_MW_FULL);
+    if(_showBack) page += FPSTR(HTTP_BACKBTN);
+    page += getHTTPEnd();
+    HTTPSend(page);
+    _ssid = "";
+    _pass = "";
+    return; // no connect
+  }
+  #endif
 
   if(_ssid == ""){
     page = getHTTPHead(FPSTR(S_titlewifisettings), FPSTR(C_wifi)); // @token titleparamsaved
@@ -2659,6 +2720,13 @@ void WiFiManager::resetSettings() {
   if (_resetcallback != NULL){
       _resetcallback();  // @CALLBACK
   }
+
+  #ifdef WM_MULTIWIFI
+  mwAbort();
+  _mwList.items.clear();
+  _mwLoaded = true;
+  mwStore();
+  #endif
   
   #ifdef ESP32
     WiFi.disconnect(true,true);
@@ -3283,6 +3351,9 @@ uint8_t WiFiManager::getLastConxResult(){
  * @return bool true if a saved ap config exists
  */
 bool WiFiManager::getWiFiIsSaved(){
+  #ifdef WM_MULTIWIFI
+  if(mwActive()) return true;
+  #endif
   return WiFi_hasAutoConnect();
 }
 
@@ -4049,5 +4120,720 @@ void WiFiManager::handleUpdateDone() {
 		ESP.restart();
 	}
 }
+
+
+#ifdef WM_MULTIWIFI
+/**
+ * MULTI WIFI
+ * saved network list (wm_multiwifi.h), storage, connect engine and roaming
+ * the esp sdk saved network (WiFi.begin() no args) is kept as the last good network
+ */
+
+#ifndef WM_MULTIWIFI_NOSTORE
+  #ifdef ESP32
+    #include <nvs.h>
+    #define WM_MW_NVS_NS  "wm_multi"
+    #define WM_MW_NVS_KEY "list"
+  #elif defined(ESP8266)
+    #include <LittleFS.h>
+    #define WM_MW_FILE "/wm_multi.bin"
+  #endif
+#endif
+
+#ifndef WM_MULTIWIFI_NOSTORE
+// built-in storage, returns false if nothing stored yet
+static bool wm_mw_read(WiFiManagerCredentialList &l){
+  bool ok = false;
+  #ifdef ESP32
+    uint32_t h;
+    if(nvs_open(WM_MW_NVS_NS, NVS_READONLY, &h) != ESP_OK) return false;
+    size_t len = 0;
+    if(nvs_get_blob(h, WM_MW_NVS_KEY, NULL, &len) == ESP_OK && len){
+      uint8_t* buf = (uint8_t*)malloc(len);
+      if(buf){
+        if(nvs_get_blob(h, WM_MW_NVS_KEY, buf, &len) == ESP_OK) ok = l.fromBlob(buf, len);
+        free(buf);
+      }
+    }
+    nvs_close(h);
+  #elif defined(ESP8266)
+    // never format, the sketch might use SPIFFS or a different layout
+    LittleFSConfig cfg;
+    cfg.setAutoFormat(false);
+    LittleFS.setConfig(cfg);
+    bool mounted = LittleFS.begin();
+    LittleFS.setConfig(LittleFSConfig());
+    if(!mounted) return false;
+    File f = LittleFS.open(WM_MW_FILE, "r");
+    if(!f) return false;
+    size_t len = f.size();
+    uint8_t* buf = (uint8_t*)malloc(len ? len : 1);
+    if(buf){
+      if(f.read(buf, len) == len) ok = l.fromBlob(buf, len);
+      free(buf);
+    }
+    f.close();
+  #endif
+  return ok;
+}
+
+static bool wm_mw_write(const WiFiManagerCredentialList &l){
+  size_t len = l.blobSize();
+  uint8_t* buf = (uint8_t*)malloc(len);
+  if(!buf) return false;
+  l.toBlob(buf);
+  bool ok = false;
+  #ifdef ESP32
+    uint32_t h;
+    if(nvs_open(WM_MW_NVS_NS, NVS_READWRITE, &h) == ESP_OK){
+      ok = nvs_set_blob(h, WM_MW_NVS_KEY, buf, len) == ESP_OK && nvs_commit(h) == ESP_OK;
+      nvs_close(h);
+    }
+  #elif defined(ESP8266)
+    LittleFSConfig cfg;
+    cfg.setAutoFormat(false);
+    LittleFS.setConfig(cfg);
+    bool mounted = LittleFS.begin();
+    LittleFS.setConfig(LittleFSConfig());
+    if(mounted){
+      File f = LittleFS.open(WM_MW_FILE, "w");
+      if(f){
+        ok = f.write(buf, len) == len;
+        f.close();
+      }
+    }
+  #endif
+  free(buf);
+  return ok;
+}
+#endif
+
+// write the esp sdk saved network (no bssid lock), "" clears it, does not (re)connect
+// returns 0 ok, else sdk error
+static int wm_mw_sdkwrite(const char* ssid, const char* pass){
+  #ifdef ESP32
+    if(WiFi.getMode() == WIFI_MODE_NULL) return -1;
+    wifi_config_t conf;
+    memset(&conf, 0, sizeof(conf));
+    esp_err_t err = esp_wifi_get_config(WIFI_IF_STA, &conf);
+    if(err != ESP_OK) return err;
+    // no compare, get_config returns the current (ram) config not the stored one
+    memset(conf.sta.ssid, 0, sizeof(conf.sta.ssid));
+    memset(conf.sta.password, 0, sizeof(conf.sta.password));
+    memcpy(conf.sta.ssid, ssid, strnlen(ssid, 32));
+    memcpy(conf.sta.password, pass, strnlen(pass, 64));
+    conf.sta.bssid_set = 0;
+    memset(conf.sta.bssid, 0, sizeof(conf.sta.bssid));
+    conf.sta.channel = 0;
+    conf.sta.threshold.authmode = pass[0] ? WIFI_AUTH_WPA2_PSK : WIFI_AUTH_OPEN; // as arduino begin()
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    return esp_wifi_set_config(WIFI_IF_STA, &conf);
+  #elif defined(ESP8266)
+    struct station_config conf;
+    memset(&conf, 0, sizeof(conf));
+    wifi_station_get_config_default(&conf);
+    if(strncmp((char*)conf.ssid, ssid, 32) == 0 && strncmp((char*)conf.password, pass, 64) == 0 && !conf.bssid_set) return 0;
+    memset(&conf, 0, sizeof(conf));
+    memcpy(conf.ssid, ssid, strnlen(ssid, 32));
+    memcpy(conf.password, pass, strnlen(pass, 64));
+    ETS_UART_INTR_DISABLE();
+    bool ok = wifi_station_set_config(&conf);
+    ETS_UART_INTR_ENABLE();
+    return ok ? 0 : -2;
+  #endif
+}
+
+bool WiFiManager::mwActive(){
+  return _mwEnabled && mwLoad();
+}
+
+/**
+ * load the list if needed, on first use import the esp saved network
+ * @return bool list not empty
+ */
+bool WiFiManager::mwLoad(){
+  if(_mwLoaded) return !_mwList.items.empty();
+  bool had = false;
+  _mwList.items.clear();
+  if(_mwLoad){
+    std::vector<WiFiManagerCredential> in;
+    had = _mwLoad(in);
+    for(auto &c : in){ // sanitize
+      c.ssid[32] = 0; c.pass[64] = 0;
+      if(c.ssid[0] && _mwList.find(c.ssid) < 0 && !_mwList.full()) _mwList.items.push_back(c);
+    }
+  }
+  #ifndef WM_MULTIWIFI_NOSTORE
+  else had = wm_mw_read(_mwList);
+  #endif
+
+  if(!had){
+    #ifdef ESP32
+    if(WiFi.getMode() == WIFI_MODE_NULL) return false; // wifi not init, cannot read sdk config yet, retry later
+    #endif
+    String ssid = WiFi_SSID(true);
+    if(ssid != ""){
+      int i = _mwList.put(ssid.c_str(), WiFi_psk(true).c_str(), 0);
+      _mwList.touch(i);
+      #ifdef WM_DEBUG_LEVEL
+      DEBUG_WM(F("[MW] imported saved network"), ssid);
+      #endif
+    }
+    _mwLoaded = true;
+    mwStore();
+  }
+  _mwLoaded = true;
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_DEV,F("[MW] networks loaded:"),_mwList.items.size());
+  #endif
+  return !_mwList.items.empty();
+}
+
+bool WiFiManager::mwStore(){
+  bool ok = false;
+  if(_mwSave) ok = _mwSave(_mwList.items);
+  #ifndef WM_MULTIWIFI_NOSTORE
+  else ok = wm_mw_write(_mwList);
+  #endif
+  _mwPersist = ok;
+  #ifdef WM_DEBUG_LEVEL
+  #ifdef WM_MULTIWIFI_NOSTORE
+  if(!_mwSave) return ok;
+  #endif
+  if(!ok) DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] [MW] could not store networks, keeping in RAM"));
+  #endif
+  return ok;
+}
+
+// free the list while idle, reloaded on demand
+void WiFiManager::mwRelease(){
+  if(_mwState != MW_IDLE || configPortalActive || webPortalActive || !_mwPersist) return;
+  _mwList.items.clear();
+  _mwList.items.shrink_to_fit();
+  _mwLoaded = false;
+}
+
+// keep sdk saved network = most recently connected
+void WiFiManager::mwSyncSdk(){
+  int i = _mwList.mru();
+  bool sta = WiFi.getMode() & WIFI_STA;
+  if(!sta) WiFi.enableSTA(true); // sdk only takes sta config with sta on (eg. deleting from the ap portal)
+  int err = i < 0 ? wm_mw_sdkwrite("", "") : wm_mw_sdkwrite(_mwList.items[i].ssid, _mwList.items[i].pass);
+  if(!sta) WiFi.enableSTA(false);
+  #ifdef WM_DEBUG_LEVEL
+  if(err) DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] [MW] saving last good network to sdk failed:"),err);
+  else DEBUG_WM(WM_DEBUG_DEV,F("[MW] sdk saved network:"),i < 0 ? "" : _mwList.items[i].ssid);
+  #endif
+}
+
+// sdk auto reconnect would restart connects in the middle of our scans / attempts
+void WiFiManager::mwRunStart(){
+  if(_mwState == MW_IDLE) _mwAutoRe = WiFi.getAutoReconnect();
+  WiFi.setAutoReconnect(false);
+}
+
+void WiFiManager::mwAbort(){
+  if(_mwState == MW_IDLE) return;
+  _mwState = MW_IDLE;
+  _mwTarget = -1;
+  _mwCands.clear();
+  WiFi.setAutoReconnect(_mwAutoRe);
+}
+
+bool WiFiManager::mwAllowed(){
+  return !_mwAllow || _mwAllow();
+}
+
+void WiFiManager::mwAttempt(int idx, const WiFiManagerCandidate* c){
+  const WiFiManagerCredential &cr = _mwList.items[idx];
+  _mwTarget = idx;
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("[MW] connecting to"), (String)cr.ssid + (c && c->hasBssid ? (String)F(" ch ") + c->channel + F(" rssi ") + c->rssi : (String)(cr.hidden() ? F(" (hidden)") : F(""))));
+  #endif
+  if(!(WiFi.getMode() & WIFI_STA)) WiFi_enableSTA(true);
+  setSTAConfig();
+  if(WiFi.status() != WL_IDLE_STATUS && WiFi.status() != WL_NO_SHIELD){
+    WiFi_Disconnect();
+    delay(50); // esp32 rejects config while still disconnecting
+  }
+  // esp32 stores this attempt (incl bssid lock) as the sdk saved network, mwSyncSdk rewrites it
+  // without bssid once connected, or restores last good after a failed round.
+  // (writing it from ram storage later is skipped by the sdk when ram config is identical)
+  WiFi.persistent(false); // esp8266, compares stored config itself in mwSyncSdk
+  for(uint8_t t = 0; t < 2; t++){
+    if(WiFi.begin(cr.ssid, cr.pass[0] ? cr.pass : NULL, c && c->channel ? c->channel : 0, c && c->hasBssid ? c->bssid : NULL, true) != WL_CONNECT_FAILED) break;
+    delay(200);
+  }
+  _mwStart = millis();
+}
+
+bool WiFiManager::mwScanStart(){
+  WiFi.scanDelete();
+  int8_t r = WiFi.scanNetworks(true);
+  _mwStart = millis();
+  return r != WIFI_SCAN_FAILED;
+}
+
+// copy scan results of saved ssids only (ssid points into the list), frees scan
+int WiFiManager::mwScanCollect(std::vector<WiFiManagerScanItem> &items){
+  int n = WiFi.scanComplete();
+  items.clear();
+  for(int i = 0; i < n; i++){
+    int idx = _mwList.find(WiFi.SSID(i).c_str());
+    if(idx < 0) continue;
+    WiFiManagerScanItem it;
+    it.ssid = _mwList.items[idx].ssid;
+    it.rssi = WiFi.RSSI(i);
+    it.channel = WiFi.channel(i);
+    uint8_t* b = WiFi.BSSID(i);
+    it.hasBssid = b != NULL;
+    if(b) memcpy(it.bssid, b, 6);
+    items.push_back(it);
+  }
+  WiFi.scanDelete();
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("[MW] scan found"),(String)(n < 0 ? 0 : n) + F(" networks, ") + items.size() + F(" saved"));
+  #endif
+  return items.size();
+}
+
+void WiFiManager::mwOnConnected(){
+  if(!_mwEnabled) return;
+  mwLoad();
+  String ssid = WiFi.SSID();
+  if(ssid == "") return;
+  int i = _mwList.find(ssid.c_str());
+  bool changed = false;
+  if(i < 0){
+    // connected some other way (sketch WiFi.begin), learn it if there is room
+    i = _mwList.put(ssid.c_str(), WiFi.psk().c_str(), 0);
+    changed = i >= 0;
+  }
+  if(i < 0) return;
+  changed |= _mwList.touch(i);
+  if(changed) mwStore();
+  mwSyncSdk();
+}
+
+void WiFiManager::mwFinish(bool connected){
+  _mwState = MW_IDLE;
+  _mwCands.clear();
+  _mwCands.shrink_to_fit();
+  _mwTarget = -1;
+  if(connected){
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(F("[MW] connected to"), WiFi.SSID());
+    #endif
+    _lastconxresult = WL_CONNECTED;
+    mwOnConnected();
+    #ifdef WM_MULTIWIFI_ROAM
+    _mwLostSince = 0;
+    _mwBackoff = 0;
+    #endif
+  }
+  else {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(F("[MW] no saved network available"));
+    #endif
+    updateConxResult(WiFi.status());
+    #ifdef WM_MULTIWIFI_ROAM
+    _mwBackoff = _mwBackoff ? _mwBackoff * 2 : _mwRoamLost;
+    if(_mwBackoff > 300000) _mwBackoff = 300000;
+    _mwLostSince = millis() | 1; // wait lost + backoff from the end of this round
+    #endif
+  }
+  WiFi.setAutoReconnect(_mwAutoRe);
+  // leave the sdk retrying the last good network in the background
+  int m = _mwList.mru();
+  if(!connected && m >= 0 && !configPortalActive && mwAllowed()) mwAttempt(m, NULL);
+  mwRelease();
+}
+
+/**
+ * engine, call often (process() does)
+ * @return bool busy
+ */
+bool WiFiManager::mwLoop(){
+  if(!_mwEnabled) return false;
+  if(configPortalActive) mwAbort();
+  unsigned long now = millis();
+  uint8_t st;
+
+  switch(_mwState){
+    case MW_IDLE: {
+      if(configPortalActive || !(WiFi.getMode() & WIFI_STA)) return false;
+      #ifdef WM_MULTIWIFI_ROAM
+      if(_mwRoam){
+        if(WiFi.status() == WL_CONNECTED){
+          if(_mwLostSince){ // sdk reconnected by itself
+            _mwLostSince = 0;
+            _mwBackoff = 0;
+            mwOnConnected();
+            mwRelease();
+          }
+        }
+        else if(!_mwLostSince) _mwLostSince = now | 1;
+        else if(now - _mwLostSince > _mwRoamLost + _mwBackoff && mwAllowed()){
+          _mwLostSince = now | 1;
+          #ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(F("[MW] connection lost, selecting network"));
+          #endif
+          if(beginMultiWiFi()) return true;
+        }
+      }
+      #endif
+      #ifdef WM_MULTIWIFI_ROAM_STRONGER
+      if(_mwStronger && WiFi.status() == WL_CONNECTED){
+        if(!_mwStrongerScan){
+          if(now - _mwLastRoamScan > _mwStrongerInt && mwAllowed()){
+            _mwLastRoamScan = now;
+            _mwStrongerScan = mwScanStart();
+          }
+        }
+        else {
+          int n = WiFi.scanComplete();
+          if(n == WIFI_SCAN_RUNNING && now - _mwStart < 15000) return false;
+          _mwStrongerScan = false;
+          if(!mwActive()) return false;
+          std::vector<WiFiManagerScanItem> items;
+          mwScanCollect(items);
+          WiFiManagerCandidate c;
+          if(_mwList.stronger(items.data(), items.size(), WiFi.BSSID(), WiFi.RSSI(), _mwStrongerGain, c)){
+            #ifdef WM_DEBUG_LEVEL
+            DEBUG_WM(F("[MW] stronger AP"), (String)_mwList.items[c.idx].ssid + F(" ") + c.rssi + F(" vs ") + WiFi.RSSI());
+            #endif
+            if(++_mwStrongerHits >= 2){
+              _mwStrongerHits = 0;
+              mwRunStart();
+              _mwCands.clear();
+              _mwCands.push_back(c);
+              _mwFastIdx = -1;
+              _mwCand = 0;
+              _mwState = MW_NEXT;
+              return true;
+            }
+            uint32_t confirm = _mwStrongerInt > 60000 ? 30000 : _mwStrongerInt / 2;
+            _mwLastRoamScan = now - (_mwStrongerInt - confirm); // confirm soon
+          }
+          else _mwStrongerHits = 0;
+          mwRelease();
+        }
+      }
+      #endif
+      return false;
+    }
+
+    case MW_FAST:
+      if(!_mwStart){
+        if(!mwAllowed()) return true;
+        _mwRetried = false;
+        mwAttempt(_mwFastIdx, NULL);
+        return true;
+      }
+      st = WiFi.status();
+      if(st == WL_CONNECTED){
+        if(_mwResult) _mwResult(_mwList.items[_mwFastIdx].ssid, true);
+        mwFinish(true);
+        return false;
+      }
+      if(st == WL_NO_SSID_AVAIL && now - _mwStart > 3000 && !_mwRetried){
+        _mwRetried = true; // blind probe can miss an ap, once more
+        mwAttempt(_mwFastIdx, NULL);
+        return true;
+      }
+      if(st == WL_CONNECT_FAILED || (st == WL_NO_SSID_AVAIL && now - _mwStart > 3000) || now - _mwStart > _mwFastTimeout){
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(WM_DEBUG_VERBOSE,F("[MW] last good failed:"),getWLStatusString(st));
+        #endif
+        if(_mwResult) _mwResult(_mwList.items[_mwFastIdx].ssid, false);
+        _mwState = MW_SCAN;
+        _mwStart = 0;
+      }
+      return true;
+
+    case MW_SCAN:
+      if(!_mwStart){
+        if(!mwAllowed()) return true;
+        WiFi_Disconnect(); // cannot scan while connecting
+        if(!mwScanStart()){
+          #ifdef WM_DEBUG_LEVEL
+          DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] [MW] scan failed"));
+          #endif
+        }
+        return true;
+      }
+      {
+        int n = WiFi.scanComplete();
+        if(n == WIFI_SCAN_RUNNING && now - _mwStart < 15000) return true;
+        std::vector<WiFiManagerScanItem> items;
+        mwScanCollect(items);
+        _mwList.plan(items.data(), items.size(), _mwFastIdx, _mwCands);
+        _mwCand = 0;
+        _mwState = MW_NEXT;
+      }
+      return true;
+
+    case MW_NEXT:
+      if(_mwCand >= _mwCands.size()){
+        mwFinish(false);
+        return false;
+      }
+      if(!mwAllowed()) return true;
+      _mwRetried = false;
+      mwAttempt(_mwCands[_mwCand].idx, &_mwCands[_mwCand]);
+      _mwState = MW_TRY;
+      return true;
+
+    case MW_TRY: {
+      st = WiFi.status();
+      const char* ssid = _mwList.items[_mwTarget].ssid;
+      uint32_t timeout = _connectTimeout ? _connectTimeout : 15000;
+      if(st == WL_CONNECTED){
+        if(_mwResult) _mwResult(ssid, true);
+        mwFinish(true);
+        return false;
+      }
+      if(st == WL_NO_SSID_AVAIL && now - _mwStart > 3000 && !_mwRetried && !_mwCands[_mwCand].hasBssid){
+        _mwRetried = true; // blind probe (hidden) can miss an ap, once more
+        mwAttempt(_mwTarget, &_mwCands[_mwCand]);
+        return true;
+      }
+      if(st == WL_CONNECT_FAILED || (st == WL_NO_SSID_AVAIL && now - _mwStart > 3000) || now - _mwStart > timeout){
+        #ifdef WM_DEBUG_LEVEL
+        DEBUG_WM(WM_DEBUG_VERBOSE,F("[MW] failed:"),(String)ssid + " " + getWLStatusString(st));
+        #endif
+        if(_mwResult) _mwResult(ssid, false);
+        _mwCand++;
+        _mwState = MW_NEXT;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+// a portal save finished, update the list
+bool WiFiManager::mwSaved(const String &ssid, const String &pass, bool connected){
+  if(!_mwEnabled || ssid == "") return false;
+  mwLoad();
+  uint8_t flags = _mwSaveHidden ? WM_CRED_HIDDEN : 0;
+  _mwSaveHidden = false;
+  int i;
+  if(!connected) WiFi_Disconnect(); // stop retrying, sdk rejects config changes while connecting
+  if(connected){
+    i = _mwList.put(ssid.c_str(), pass.c_str(), flags);
+    _mwList.touch(i);
+  }
+  else if(_connectonsave && !(flags & WM_CRED_HIDDEN) && mwInScan(ssid)){
+    // network is here but would not connect, likely a wrong password, do not keep it
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(F("[MW] not saving, connect failed for visible network"), ssid);
+    #endif
+    mwSyncSdk(); // connectWifi stored the failed network, restore last good
+    return false;
+  }
+  else {
+    // hidden or out of range, keep it for later
+    i = _mwList.put(ssid.c_str(), pass.c_str(), flags | WM_CRED_UNVERIFIED);
+  }
+  if(i < 0) return false;
+  mwStore();
+  mwSyncSdk();
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("[MW] saved"), ssid + (connected ? "" : " (unverified)"));
+  #endif
+  return true;
+}
+
+bool WiFiManager::mwInScan(const String &ssid){
+  for(int i = 0; i < _numNetworks; i++){
+    if(WiFi.SSID(i) == ssid) return true;
+  }
+  return false;
+}
+
+#ifndef WM_MULTIWIFI_NOUI
+String WiFiManager::getMultiWiFiOut(){
+  if(!mwActive()) return "";
+  std::vector<uint8_t> ord;
+  _mwList.order(ord);
+  String rows;
+  for(uint8_t i : ord){
+    const WiFiManagerCredential &c = _mwList.items[i];
+    String item = FPSTR(HTTP_MW_ITEM);
+    String tags;
+    if(c.hidden()) tags += FPSTR(HTTP_MW_TAG_HIDDEN);
+    if(c.unverified()) tags += FPSTR(HTTP_MW_TAG_UNVER);
+    item.replace(FPSTR(T_V), htmlEntities(c.ssid));
+    item.replace(FPSTR(T_v), htmlEntities(c.ssid));
+    item.replace(FPSTR(T_t), tags);
+    rows += item;
+  }
+  String page = FPSTR(HTTP_MW_STYLE);
+  String list = FPSTR(HTTP_MW_LIST);
+  list.replace(FPSTR(T_n), (String)_mwList.items.size());
+  list.replace(F("{m}"), (String)WM_MULTIWIFI_MAX);
+  list.replace(FPSTR(T_l), rows);
+  page += list;
+  if(_mwList.full()) page += FPSTR(HTTP_MW_TAG_FULL);
+  return page;
+}
+
+void WiFiManager::handleWifiDelete(){
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("<- HTTP WiFi delete"));
+  #endif
+  handleRequest();
+  removeWiFiCredential(server->arg(F("s")).c_str());
+  server->sendHeader(F("Location"), FPSTR(R_wifi), true);
+  server->send(302, FPSTR(HTTP_HEAD_CT2), "");
+}
+#endif
+
+// public api
+
+void WiFiManager::setMultiWiFi(bool enable){
+  if(!enable) mwAbort();
+  _mwEnabled = enable;
+}
+
+bool WiFiManager::getMultiWiFi(){
+  return _mwEnabled;
+}
+
+bool WiFiManager::addWiFiCredential(const char* ssid, const char* pass, bool hidden){
+  mwLoad();
+  int i = _mwList.find(ssid);
+  uint8_t flags = hidden ? WM_CRED_HIDDEN : 0;
+  if(i >= 0 && strncmp(_mwList.items[i].pass, pass ? pass : "", 64) == 0){
+    flags |= _mwList.items[i].flags & WM_CRED_UNVERIFIED; // same password, keep verified state
+  }
+  else flags |= WM_CRED_UNVERIFIED;
+  i = _mwList.put(ssid, pass, flags);
+  if(i < 0) return false;
+  mwStore();
+  mwSyncSdk();
+  return true;
+}
+
+bool WiFiManager::removeWiFiCredential(const char* ssid){
+  mwLoad();
+  if(!_mwList.remove(_mwList.find(ssid))) return false;
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("[MW] removed"), ssid);
+  #endif
+  mwStore();
+  mwSyncSdk();
+  return true;
+}
+
+void WiFiManager::clearWiFiCredentials(){
+  mwAbort();
+  _mwList.items.clear();
+  _mwLoaded = true;
+  mwStore();
+  wm_mw_sdkwrite("", "");
+}
+
+uint8_t WiFiManager::getWiFiCredentialCount(){
+  mwLoad();
+  return _mwList.items.size();
+}
+
+uint8_t WiFiManager::getWiFiCredentialCapacity(){
+  return WM_MULTIWIFI_MAX;
+}
+
+bool WiFiManager::getWiFiCredential(uint8_t n, WiFiManagerCredential &out){
+  mwLoad();
+  std::vector<uint8_t> ord;
+  _mwList.order(ord);
+  if(n >= ord.size()) return false;
+  out = _mwList.items[ord[n]];
+  return true;
+}
+
+String WiFiManager::getLRUWiFiCredential(){
+  mwLoad();
+  int i = _mwList.lru();
+  return i < 0 ? String() : String(_mwList.items[i].ssid);
+}
+
+bool WiFiManager::removeLRUWiFiCredential(){
+  mwLoad();
+  int i = _mwList.lru();
+  if(i < 0) return false;
+  String ssid = _mwList.items[i].ssid;
+  return removeWiFiCredential(ssid.c_str());
+}
+
+bool WiFiManager::beginMultiWiFi(){
+  if(!mwActive()) return false;
+  if(configPortalActive) return false;
+  if(!(WiFi.getMode() & WIFI_STA)) WiFi_enableSTA(true);
+  if(WiFi.status() == WL_CONNECTED){
+    mwOnConnected();
+    mwRelease();
+    return true;
+  }
+  mwRunStart();
+  _mwFastIdx = _mwList.mru();
+  _mwState = _mwFastIdx >= 0 ? MW_FAST : MW_SCAN;
+  _mwStart = 0;
+  _mwCands.clear();
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(F("[MW] begin, saved networks:"), _mwList.items.size());
+  #endif
+  return true;
+}
+
+bool WiFiManager::getMultiWiFiBusy(){
+  return _mwState != MW_IDLE;
+}
+
+String WiFiManager::getMultiWiFiTarget(){
+  if(_mwState == MW_IDLE || _mwTarget < 0 || _mwTarget >= (int)_mwList.items.size()) return String();
+  return String(_mwList.items[_mwTarget].ssid);
+}
+
+void WiFiManager::setMultiWiFiFastTimeout(uint32_t ms){
+  _mwFastTimeout = ms;
+}
+
+void WiFiManager::setMultiWiFiAllowCallback(std::function<bool()> func){
+  _mwAllow = func;
+}
+
+void WiFiManager::setMultiWiFiResultCallback(std::function<void(const char*, bool)> func){
+  _mwResult = func;
+}
+
+void WiFiManager::setMultiWiFiStorage(std::function<bool(std::vector<WiFiManagerCredential>&)> load,
+                                      std::function<bool(const std::vector<WiFiManagerCredential>&)> save){
+  _mwLoad = load;
+  _mwSave = save;
+  _mwLoaded = false;
+}
+
+#ifdef WM_MULTIWIFI_ROAM
+void WiFiManager::setMultiWiFiRoaming(bool enable, uint32_t lostMs){
+  _mwRoam = enable;
+  _mwRoamLost = lostMs;
+  _mwLostSince = 0;
+  _mwBackoff = 0;
+}
+#endif
+
+#ifdef WM_MULTIWIFI_ROAM_STRONGER
+void WiFiManager::setMultiWiFiRoamStronger(bool enable, uint32_t intervalMs, int8_t minGain){
+  _mwStronger = enable;
+  _mwStrongerInt = intervalMs;
+  _mwStrongerGain = minGain;
+  _mwStrongerHits = 0;
+  _mwLastRoamScan = millis();
+}
+#endif
+
+#endif // WM_MULTIWIFI
 
 #endif
