@@ -9,6 +9,9 @@ void setup() {
     
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
+
+    // Custom parameters are persisted automatically in the WiFiManager
+    // NVS namespace and restored when addParameter() is called.
     wm.addParameter(&custom_mqtt_server);
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);

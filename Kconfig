@@ -1,0 +1,22 @@
+menu "WiFiManager"
+
+config WIFIMANAGER_DEBUG_LEVEL
+    int "Default debug level (0-5)"
+    range 0 5
+    default 2
+    help
+        Default WiFiManager debug level. 0 is silent, 2 is notify.
+
+config WIFIMANAGER_AP_PASSWORD_REQUIRED
+    bool "Require an AP password"
+    default n
+    help
+        When enabled, startConfigPortal fails if no AP password is provided.
+
+config WIFIMANAGER_OTA_AUTH_REQUIRED
+    bool "Require authentication for OTA"
+    default y
+    help
+        When enabled, OTA uploads require setAuth() to have been called.
+
+endmenu

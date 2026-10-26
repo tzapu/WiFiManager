@@ -4,55 +4,38 @@ on:
   push:
     paths-ignore:
       - '.github/workflows/cpp_lint.yml'
-      - '.github/workflows/compile_examples.yml'
+      - '.github/workflows/compile_examples.yaml'
       - 'examples/**'
   pull_request:
     paths-ignore:
       - '.github/workflows/cpp_lint.yml'
-      - '.github/workflows/compile_examples.yml'
+      - '.github/workflows/compile_examples.yaml'
       - 'examples/**'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        board: 
-          - "nodemcuv2"
-          - "lolin32"
+        core:
+          - "esp32:esp32@3.1.0"
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ matrix.board }}
-        restore-keys: |
-          ${{ runner.os }}-pip-${{ matrix.board }}-
-          ${{ runner.os }}-pip-
-    - name: Cache PlatformIO
-      uses: actions/cache@v2
-      with:
-        path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}-${{ matrix.board }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.board }}-
-          ${{ runner.os }}-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-    - name: Install PlatformIO
-      run: |
-        python -m pip install --upgrade pip
-        pip install --upgrade platformio
+      - uses: actions/checkout@v4
 
-    - name: Create main file
-      run: |
-        echo "#include <Arduino.h>" >> main.ino
-        echo "void setup() {}" >> main.ino
-        echo "void loop() {}" >> main.ino
+      - name: Install arduino-cli
+        uses: arduino/setup-arduino-cli@v2
 
-    - name: Run PlatformIO
-      run: pio ci --board=${{ matrix.board }} .
+      - name: Install ESP32 core
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install ${{ matrix.core }}
+
+      - name: Compile library
+        run: |
+          mkdir -p build
+          printf '#include <Arduino.h>\n#include <WiFiManager.h>\nvoid setup() {}\nvoid loop() {}\n' > build/main.ino
+          arduino-cli compile --fqbn esp32:esp32:esp32 --library . build

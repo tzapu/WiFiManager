@@ -26,7 +26,7 @@
 
 // strings files must include a consts file!
 // Copy and change to custom locale tokens if necessary, but strings should be good enough
-#include "wm_consts_en.h" // include constants, tokens, routes
+#include "wm_consts.h" // include constants, tokens, routes
 
 const char WM_LANGUAGE[] PROGMEM = "es-ES"; // i18n lang code
 
@@ -268,13 +268,7 @@ const char D_HR[]                 PROGMEM = "--------------------";
 
 
 // softap ssid default prefix
-#ifdef ESP8266
-    const char S_ssidpre[]        PROGMEM = "ESP";
-#elif defined(ESP32)
-    const char S_ssidpre[]        PROGMEM = "ESP32";
-#else
-    const char S_ssidpre[]        PROGMEM = "WM";
-#endif
+const char S_ssidpre[]        PROGMEM = "ESP32";
 
 // END WIFI_MANAGER_OVERRIDE_STRINGS
 #endif

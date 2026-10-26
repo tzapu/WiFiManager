@@ -1,7 +1,11 @@
 
 # WiFiManager
 
-Espressif ESPx WiFi Connection manager with fallback web configuration portal
+ESP32 WiFi connection manager with fallback web configuration portal.
+
+> **Version 3.0.0 is ESP32-only and requires Arduino-ESP32 3.x / ESP-IDF 5.x.**
+> WiFi credentials and custom parameters are stored in a dedicated NVS namespace
+> using ESP-IDF `Preferences`. See [CHANGELOG.md](CHANGELOG.md) for migration notes.
 
 :warning: This Documentation is out of date, see notes below
 
@@ -16,8 +20,6 @@ Espressif ESPx WiFi Connection manager with fallback web configuration portal
 
 [![Build with PlatformIO](https://img.shields.io/badge/PlatformIO-Library-orange?)](https://platformio.org/lib/show/567/WiFiManager/installation)
 
-[![ESP8266](https://img.shields.io/badge/ESP-8266-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp8266)
-
 [![ESP32](https://img.shields.io/badge/ESP-32-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32)
 [![ESP32](https://img.shields.io/badge/ESP-32S2-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-s2)
 [![ESP32](https://img.shields.io/badge/ESP-32C3-000000.svg?longCache=true&style=flat&colorA=CC101F)](https://www.espressif.com/en/products/socs/esp32-c3)
@@ -30,7 +32,7 @@ Member to Member Support / Chat
 [![Discord](https://img.shields.io/badge/Discord-WiFiManager-%237289da.svg?logo=discord)](https://discord.gg/nS5WGkaQH5)
 The configuration portal is of the captive variety, so on various devices it will present the configuration dialogue as soon as you connect to the created access point.
 
-Works with the [ESP8266 Arduino](https://github.com/esp8266/Arduino) and [ESP32 Arduino](https://github.com/espressif/arduino-esp32) platforms.
+Works with the [ESP32 Arduino](https://github.com/espressif/arduino-esp32) platform (3.x) and ESP-IDF 5.x.
 
 ### Known Issues
 
@@ -241,7 +243,7 @@ IF YOU NEED TO SAVE PARAMETERS EVEN ON WIFI FAIL OR EMPTY, you must set `setBrea
     void          setBreakAfterConfig(boolean shouldBreak);
 ```
 
-See [AutoConnectWithFSParameters Example](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters).
+See the [AutoConnectNonBlockingwParams example](examples/NonBlocking/AutoConnectNonBlockingwParams) and the [SecurePersistence example](examples/SecurePersistence).
 ```cpp
 wifiManager.setSaveConfigCallback(saveConfigCallback);
 ```
@@ -281,7 +283,7 @@ void loop() {
   }
 }
 ```
-See example for a more complex version. [OnDemandConfigPortal](https://github.com/tzapu/WiFiManager/tree/master/examples/OnDemand/OnDemandConfigPortal)
+See the [OnDemandNonBlocking example](examples/NonBlocking/OnDemandNonBlocking) for a more complex version.
 
 #### Exiting from the Configuration Portal
 Normally, once entered, the configuration portal will continue to loop until WiFi credentials have been successfully entered or a timeout is reached.
@@ -292,27 +294,24 @@ If started via `autoConnect` or `startConfigPortal` then it will return `false (
 #### Custom Parameters
 You can use WiFiManager to collect more parameters than just SSID and password.
 This could be helpful for configuring stuff like MQTT host and port, [blynk](http://www.blynk.cc) or [emoncms](http://emoncms.org) tokens, just to name a few.
-**You are responsible for saving and loading these custom values.** The library just collects and displays the data for you as a convenience.
-Usage scenario would be:
-- load values from somewhere (EEPROM/FS) or generate some defaults
+
+**WiFiManager persists custom parameter values automatically** in a dedicated NVS namespace via ESP-IDF `Preferences`. Values are restored when `addParameter()` is called on the next boot. The save callback remains available for application-specific side effects.
+
+Usage scenario:
 - add the custom parameters to WiFiManager using
 ```cpp
  // id/name, placeholder/prompt, default, length
  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
  wifiManager.addParameter(&custom_mqtt_server);
-
 ```
-- if connection to AP fails, configuration portal starts and you can set /change the values (or use on demand configuration portal)
-- once configuration is done and connection is established save config callback() is called
-- once WiFiManager returns control to your application, read and save the new values using the `WiFiManagerParameter` object.
+- if connection to AP fails, the configuration portal starts and you can set/change the values
+- once configuration is done and connection is established, the save callback is called
+- read the current value at any time using the `WiFiManagerParameter` object
 ```cpp
  mqtt_server = custom_mqtt_server.getValue();
-```  
-This feature is a lot more involved than all the others, so here are some examples to fully show how it is done.
-You should also take a look at adding custom HTML to your form.
+```
 
-- Save and load custom parameters to file system in json form [AutoConnectWithFSParameters](https://github.com/tzapu/WiFiManager/tree/master/examples/Parameters/SPIFFS/AutoConnectWithFSParameters)
-- *Save and load custom parameters to EEPROM* (not done yet)
+See the [AutoConnectNonBlockingwParams example](examples/NonBlocking/AutoConnectNonBlockingwParams) and the [SecurePersistence example](examples/SecurePersistence).
 
 #### Custom IP Configuration
 You can set a custom IP for both AP (access point, config mode) and STA (station mode, client mode, normal project state)

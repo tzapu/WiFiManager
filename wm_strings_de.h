@@ -1,7 +1,7 @@
 /**
  * wm_strings_de.h
  * gernab strings for
- * WiFiManager, a library for the ESP8266/Arduino platform
+ * WiFiManager, a library for the ESP32 platform
  * for configuration of WiFi credentials using a Captive Portal
  *
  * @author Creator tzapu
@@ -19,7 +19,7 @@
 // !!! ABOVE WILL NOT WORK if you define in your sketch, must be build flag, if anyone one knows how to order includes to be able to do this it would be neat.. I have seen it done..
 
 // strings files must include a consts file!
-#include "wm_consts_de.h" // include constants, tokens, routes
+#include "wm_consts.h" // include constants, tokens, routes
 
 const char WM_LANGUAGE[] PROGMEM = "de-DE"; // i18n lang code
 
@@ -263,13 +263,7 @@ const char D_HR[]                 PROGMEM = "--------------------";
 
 
 // softap ssid default prefix
-#ifdef ESP8266
-    const char S_ssidpre[]        PROGMEM = "ESP";
-#elif defined(ESP32)
-    const char S_ssidpre[]        PROGMEM = "ESP32";
-#else
-    const char S_ssidpre[]        PROGMEM = "WM";
-#endif
+const char S_ssidpre[]        PROGMEM = "ESP32";
 
 // END WIFI_MANAGER_OVERRIDE_STRINGS
 #endif

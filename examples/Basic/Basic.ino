@@ -12,7 +12,8 @@ void setup() {
     WiFiManager wm;
 
     // reset settings - wipe stored credentials for testing
-    // these are stored by the esp library
+    // credentials and custom parameters are stored by WiFiManager
+    // in a dedicated NVS namespace via Preferences
     // wm.resetSettings();
 
     // Automatically connect using saved credentials,
@@ -28,11 +29,15 @@ void setup() {
     if(!res) {
         Serial.println("Failed to connect");
         // ESP.restart();
-    } 
+    }
     else {
-        //if you get here you have connected to the WiFi    
+        //if you get here you have connected to the WiFi
         Serial.println("connected...yeey :)");
     }
+
+    // Structured result: WM_RESULT_OK, WM_RESULT_FAILED, WM_RESULT_AUTH_FAILED, ...
+    Serial.print("Last result: ");
+    Serial.println((int)wm.getLastResult());
 
 }
 
