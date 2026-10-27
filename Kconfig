@@ -1,0 +1,39 @@
+menu "WiFiManager"
+
+config WIFIMANAGER_DEBUG_LEVEL
+    int "Default debug level (0-5)"
+    range 0 5
+    default 2
+    help
+        Default WiFiManager debug level. 0 is silent, 2 is notify.
+
+config WIFIMANAGER_AP_PASSWORD_REQUIRED
+    bool "Require an AP password"
+    default n
+    help
+        When enabled, startConfigPortal fails if no AP password is provided.
+
+config WIFIMANAGER_OTA_AUTH_REQUIRED
+    bool "Require authentication for OTA"
+    default y
+    help
+        When enabled, OTA uploads require setAuth() to have been called.
+
+config WIFIMANAGER_SAVE_TIMEOUT
+    int "Save connect timeout (seconds)"
+    range 0 300
+    default 15
+    help
+        Maximum time to wait for a station connection when credentials are
+        saved from the portal. 0 disables the timeout and falls back to the
+        core default, which blocks the portal for the whole wait.
+
+config WIFIMANAGER_DISABLE_PORTAL_RADIO_TUNING
+    bool "Disable portal radio tuning"
+    default n
+    help
+        When the portal starts, WiFiManager disables station auto reconnect and
+        modem sleep so the softAP is not dragged off channel while portal
+        clients are connected. Enable this to keep the previous behaviour.
+
+endmenu

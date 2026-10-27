@@ -1,31 +1,26 @@
 name: cpplint
 
 on:
-   push:
-      paths-ignore:
-       - '.github/workflows/compile_*.yml'
-   pull_request:
-      paths-ignore:
-       - '.github/workflows/compile_*.yml'
+  push:
+    paths-ignore:
+      - '.github/workflows/compile_*.yml'
+      - '.github/workflows/compile_*.yaml'
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/compile_*.yml'
+      - '.github/workflows/compile_*.yaml'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: cpplint
-        uses: reviewdog/action-cpplint@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
-          flags: --linelength=100
-          target: .
-          filter: "-whitespace/tab\
-           ,-readability/braces\
-           ,-whitespace/braces\
-           ,-whitespace/comments\
-           ,-whitespace/indent\
-           ,-whitespace/newline\
-           ,-whitespace/operators\
-           ,-whitespace/parens\
-           ,-whitespace/line_length\
-           "
+      - uses: actions/checkout@v4
+
+      - name: Install cpplint
+        run: pip install cpplint==1.6.1
+
+      - name: Run cpplint
+        run: |
+          cpplint --linelength=100 \
+            --filter=-whitespace/tab,-readability/braces,-whitespace/braces,-whitespace/comments,-whitespace/indent,-whitespace/newline,-whitespace/operators,-whitespace/parens,-whitespace/line_length \
+            WiFiManager.cpp WiFiManagerStorage.cpp

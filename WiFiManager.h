@@ -1,12 +1,12 @@
 /**
  * WiFiManager.h
- * 
- * WiFiManager, a library for the ESP8266/Arduino platform
+ *
+ * WiFiManager, a library for the ESP32 platform
  * for configuration of WiFi credentials using a Captive Portal
  * 
  * @author Creator tzapu
  * @author tablatronix
- * @version 0.0.0
+ * @version 3.0.0
  * @license MIT
  */
 
@@ -14,30 +14,21 @@
 #ifndef WiFiManager_h
 #define WiFiManager_h
 
-#if defined(ESP8266) || defined(ESP32)
-
-#ifdef ESP8266
-#include <core_version.h>
+#if !defined(ESP32)
+#error "WiFiManager 3.x requires ESP32 (Arduino-ESP32 3.x / ESP-IDF 5.x)"
 #endif
 
+#if defined(ESP32)
+
+#include <algorithm>
 #include <vector>
 
 // #define WM_MDNS            // includes MDNS, also set MDNS with sethostname
-// #define WM_FIXERASECONFIG  // use erase flash fix
-// #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS 
+// #define WM_ERASE_NVS       // esp32 erase(true) will erase NVS
 // #define WM_RTC             // esp32 info page will include reset reasons
 
 // #define WM_JSTEST                      // build flag for enabling js xhr tests
 // #define WIFI_MANAGER_OVERRIDE_STRINGS // build flag for using own strings include
-
-#ifdef ARDUINO_ESP8266_RELEASE_2_3_0
-#warning "ARDUINO_ESP8266_RELEASE_2_3_0, some WM features disabled" 
-// @todo check failing on platform = espressif8266@1.7.3
-#define WM_NOASYNC         // esp8266 no async scan wifi
-#define WM_NOCOUNTRY       // esp8266 no country
-#define WM_NOAUTH          // no httpauth
-#define WM_NOSOFTAPSSID    // no softapssid() @todo shim
-#endif
 
 // #ifdef CONFIG_IDF_TARGET_ESP32S2
 // #warning ESP32S2
@@ -63,75 +54,43 @@
 
 #define WM_WEBSERVERSHIM      // use webserver shim lib
 
-#define WM_G(string_literal)  (String(FPSTR(string_literal)).c_str())
+#define WM_G(string_literal)  (String(FPSTR(string_literal)))
 
-#ifdef ESP8266
+#include <WiFi.h>
+#include <esp_wifi.h>
+#include <Update.h>
+#include <mbedtls/sha256.h>
 
-    extern "C" {
-      #include "user_interface.h"
-    }
-    #include <ESP8266WiFi.h>
-    #include <ESP8266WebServer.h>
+#define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
+#define WM_WIFIOPEN   WIFI_AUTH_OPEN
 
-    #ifdef WM_MDNS
-        #include <ESP8266mDNS.h>
-    #endif
+#ifndef WEBSERVER_H
+    #include <WebServer.h>
+#endif
 
-    #define WIFI_getChipId() ESP.getChipId() 
-    #define WM_WIFIOPEN   ENC_TYPE_NONE
+#ifdef WM_ERASE_NVS
+   #include <nvs.h>
+   #include <nvs_flash.h>
+#endif
 
-#elif defined(ESP32)
+#ifdef WM_MDNS
+    #include <ESPmDNS.h>
+#endif
 
-    #include <WiFi.h>
-    #include <esp_wifi.h>  
-    #include <Update.h>
-    
-    #define WIFI_getChipId() (uint32_t)ESP.getEfuseMac()
-    #define WM_WIFIOPEN   WIFI_AUTH_OPEN
-
-    #ifndef WEBSERVER_H
-        #ifdef WM_WEBSERVERSHIM
-            #include <WebServer.h>
-        #else
-            #include <ESP8266WebServer.h>
-            // Forthcoming official ? probably never happening
-            // https://github.com/esp8266/ESPWebServer
-        #endif
-    #endif
-
-    #ifdef WM_ERASE_NVS
-       #include <nvs.h>
-       #include <nvs_flash.h>
-    #endif
-
-    #ifdef WM_MDNS
-        #include <ESPmDNS.h>
-    #endif
-
-    #ifdef WM_RTC
-        #ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
-        #if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
-        #include "esp32/rom/rtc.h"
-        #elif CONFIG_IDF_TARGET_ESP32S2
-        #include "esp32s2/rom/rtc.h"
-        #elif CONFIG_IDF_TARGET_ESP32C3
-        #include "esp32c3/rom/rtc.h"
-        #elif CONFIG_IDF_TARGET_ESP32S3
-        #include "esp32s3/rom/rtc.h"
-        #else
-        #error Target CONFIG_IDF_TARGET is not supported
-        #endif
-        #else // ESP32 Before IDF 4.0
-        #include "rom/rtc.h"
-        #endif
-    #endif
-
-#else
+#ifdef WM_RTC
+    #include <esp_system.h>
 #endif
 
 #include <DNSServer.h>
 #include <memory>
+#include "WiFiManagerStorage.h"
 
+
+// Include shared html/css/js skeleton, language independent markup and styles
+// language files only contain words and build markup through WM_HTML_* macros
+#ifndef WIFI_MANAGER_OVERRIDE_STRINGS
+  #include "wm_html.h"
+#endif
 
 // Include wm strings vars
 // Pass in strings env override via LANG_XX
@@ -201,6 +160,27 @@
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
 #endif
 
+// portal stability defaults, override with build flags or Kconfig
+#ifndef WIFI_MANAGER_SAVE_TIMEOUT
+    #ifdef CONFIG_WIFIMANAGER_SAVE_TIMEOUT
+        #define WIFI_MANAGER_SAVE_TIMEOUT (CONFIG_WIFIMANAGER_SAVE_TIMEOUT * 1000) // seconds -> ms
+    #else
+        #define WIFI_MANAGER_SAVE_TIMEOUT 15000 // ms, bound the sta connect performed on save
+    #endif
+#endif
+
+#ifndef WIFI_MANAGER_CLEAN_CONNECT
+    #define WIFI_MANAGER_CLEAN_CONNECT 1 // disconnect before connecting, avoids hung sta
+#endif
+
+#ifndef WIFI_MANAGER_PORTAL_RADIO_TUNING
+    #ifdef CONFIG_WIFIMANAGER_DISABLE_PORTAL_RADIO_TUNING
+        #define WIFI_MANAGER_PORTAL_RADIO_TUNING 0
+    #else
+        #define WIFI_MANAGER_PORTAL_RADIO_TUNING 1 // quiet the radio while the portal is open
+    #endif
+#endif
+
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
 #define WFM_NO_LABEL 0
@@ -218,8 +198,9 @@ class WiFiManagerParameter {
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom);
     WiFiManagerParameter(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
-    ~WiFiManagerParameter();
-    // WiFiManagerParameter& operator=(const WiFiManagerParameter& rhs);
+    virtual ~WiFiManagerParameter();
+    WiFiManagerParameter(const WiFiManagerParameter&) = delete;
+    WiFiManagerParameter& operator=(const WiFiManagerParameter&) = delete;
 
     const char *getID() const;
     const char *getValue() const;
@@ -233,7 +214,6 @@ class WiFiManagerParameter {
   protected:
     void init(const char *id, const char *label, const char *defaultValue, int length, const char *custom, int labelPlacement);
 
-    WiFiManagerParameter& operator=(const WiFiManagerParameter&);
     const char *_id;
     const char *_label;
     char       *_value;
@@ -254,6 +234,23 @@ class WiFiManagerParameter {
         WM_DEBUG_DEV       = 4, // development useful debugging info
         WM_DEBUG_MAX       = 5  // MAX extra dev auditing, var dumps etc (MAX+1 will print timing,mem and frag info)
     } wm_debuglevel_t;
+
+    typedef enum {
+        WM_RESULT_OK = 0,
+        WM_RESULT_FAILED,
+        WM_RESULT_TIMEOUT,
+        WM_RESULT_AUTH_FAILED,
+        WM_RESULT_STORAGE_ERROR,
+        WM_RESULT_INVALID_ARGUMENT
+    } wm_result_t;
+
+    typedef enum {
+        WM_STATE_IDLE = 0,
+        WM_STATE_CONNECTING,
+        WM_STATE_PORTAL,
+        WM_STATE_CONNECTED,
+        WM_STATE_FAILED
+    } wm_state_t;
 
 class WiFiManager
 {
@@ -461,6 +458,12 @@ class WiFiManager
 
     // get last connection result, includes autoconnect and wifisave
     uint8_t       getLastConxResult();
+
+    // get the last operation result as a structured value
+    wm_result_t   getLastResult();
+
+    // get the current portal/connection state
+    wm_state_t    getState();
     
     // get a status as string
     String        getWLStatusString(uint8_t status);    
@@ -502,6 +505,18 @@ class WiFiManager
     // set port of webserver, 80
     void          setHttpPort(uint16_t port);
 
+    // enable HTTP basic auth for the portal and OTA
+    void          setAuth(const char *username, const char *password);
+
+    // require a non-empty AP password, default false
+    void          setAPPasswordRequired(bool required);
+
+    // require auth for OTA, default true
+    void          setOTAAuthRequired(bool required);
+
+    // set expected SHA-256 of the OTA image, hex string
+    void          setOTASHA256(const char *hex);
+
     // check if config portal is active (true)
     bool          getConfigPortalActive();
     
@@ -517,11 +532,7 @@ class WiFiManager
 
     std::unique_ptr<DNSServer>        dnsServer;
 
-    #if defined(ESP32) && defined(WM_WEBSERVERSHIM)
-        using WM_WebServer = WebServer;
-    #else
-        using WM_WebServer = ESP8266WebServer;
-    #endif
+    using WM_WebServer = WebServer;
     
     std::unique_ptr<WM_WebServer> server;
 
@@ -561,12 +572,12 @@ class WiFiManager
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
-    unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
+    unsigned long _saveTimeout            = WIFI_MANAGER_SAVE_TIMEOUT; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
     
     WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
-    bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
+    bool          _cleanConnect           = WIFI_MANAGER_CLEAN_CONNECT; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
@@ -578,8 +589,10 @@ class WiFiManager
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
     bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
-                                                   // https://github.com/tzapu/WiFiManager/issues/1067
+                                                   // https://github.com/mrcodetastic/WiFiManager_ESP32/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
+    bool          _portalRadioTuned       = false; // portal disabled sta autoreconnect and modem sleep, restore on shutdown
+    wifi_ps_type_t _portalSleepState      = WIFI_PS_MIN_MODEM; // saved sleep mode, restored on portal shutdown
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
@@ -662,14 +675,10 @@ protected:
     bool          shutdownConfigPortal();
     bool          setupHostname(bool restart);
     
-#ifdef NO_EXTRA_4K_HEAP
-    boolean       _tryWPS                 = false; // try WPS on save failure, unsupported
-    void          startWPS();
-#endif
-
     bool          startAP();
     void          setupDNSD();
     void          setupHTTPServer();
+    void          stopWebServer();
 
     uint8_t       connectWifi(String ssid, String pass, bool connect = true);
     bool          setSTAConfig();
@@ -686,6 +695,7 @@ public:
 protected:
     void          HTTPSend(const String &content);
     void          handleRoot();
+    void          handleProbe();
     void          handleWifi(boolean scan);
     void          handleWifiSave();
     void          handleInfo();
@@ -697,7 +707,10 @@ protected:
     void          handleErase(boolean opt);
     void          handleParam();
     void          handleWiFiStatus();
-    void          handleRequest();
+    bool          handleRequest();
+    String        getCSRFInput();
+    bool          validateCSRF();
+    void          generateCSRFToken();
     void          handleParamSave();
     void          doParamSave();
 
@@ -734,22 +747,8 @@ protected:
 
     // check for arduino or system event system, handle esp32 arduino v2 and IDF
     #if defined(ESP_ARDUINO_VERSION) && defined(ESP_ARDUINO_VERSION_VAL)
-
-        #define WM_ARDUINOVERCHECK ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
-        #define WM_ARDUINOVERCHECK_204 ESP_ARDUINO_VERSION <= ESP_ARDUINO_VERSION_VAL(2, 0, 5)
-
-        #ifdef WM_ARDUINOVERCHECK
-            #define WM_ARDUINOEVENTS
-        #else
-            #define WM_NOSOFTAPSSID
-            #define WM_NOCOUNTRY
-        #endif
-
-        #ifdef WM_ARDUINOVERCHECK_204
-            #define WM_DISCONWORKAROUND
-        #endif
-
-    #else 
+        #define WM_ARDUINOEVENTS
+    #else
         #define WM_NOCOUNTRY
     #endif
 
@@ -758,11 +757,7 @@ protected:
     #endif
 
 
-    #ifdef WM_ARDUINOEVENTS
-        void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);
-    #else
-        void   WiFiEvent(WiFiEvent_t event, system_event_info_t info);
-    #endif
+    void   WiFiEvent(WiFiEvent_t event, arduino_event_info_t info);
     #endif
 
     // output helpers
@@ -804,6 +799,21 @@ protected:
     int         _max_params;
     WiFiManagerParameter** _params    = NULL;
 
+    // persistence and security
+    mutable WiFiManagerStorage _storage;
+    bool          _storageReady       = false;
+    bool          _authEnabled        = false;
+    String        _authUser           = "";
+    String        _authPass           = "";
+    String        _csrfToken          = "";
+    bool          _apPasswordRequired = false;
+    bool          _otaRequireAuth     = true;
+    bool          _otaRejected        = false;
+    String        _otaExpectedSha256  = "";
+    mbedtls_sha256_context _otaSha256;
+    bool          _otaSha256Active    = false;
+    wm_state_t    _state              = WM_STATE_IDLE;
+
     boolean _debug  = true;
     String _debugPrefix = FPSTR(S_debugPrefix);
 
@@ -814,7 +824,11 @@ protected:
     
     // Set default debug level
     #ifndef WM_DEBUG_LEVEL
+    #ifdef CONFIG_WIFIMANAGER_DEBUG_LEVEL
+    #define WM_DEBUG_LEVEL CONFIG_WIFIMANAGER_DEBUG_LEVEL
+    #else
     #define WM_DEBUG_LEVEL WM_DEBUG_NOTIFY
+    #endif
     #endif
 
     // override debug level OFF
@@ -862,7 +876,6 @@ protected:
       return  obj->fromString(s);
     }
     auto optionalIPFromString(...) -> bool {
-      // DEBUG_WM("NO fromString METHOD ON IPAddress, you need ESP8266 core 2.1.0 or newer for Custom IP configuration to work.");
       return false;
     }
 

@@ -1,4 +1,4 @@
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 WiFiManager wm;
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "", 40);
 
@@ -9,6 +9,9 @@ void setup() {
     
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
+
+    // Custom parameters are persisted automatically in the WiFiManager
+    // NVS namespace and restored when addParameter() is called.
     wm.addParameter(&custom_mqtt_server);
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);

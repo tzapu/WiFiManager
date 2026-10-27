@@ -4,14 +4,12 @@
  * trigger pin will start a webportal for 120 seconds then turn it off.
  * startAP = true will start both the configportal AP and webportal
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+// Enable mDNS support in WiFiManager
+#define WM_MDNS
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 
 // include MDNS
-#ifdef ESP8266
-#include <ESP8266mDNS.h>
-#elif defined(ESP32)
 #include <ESPmDNS.h>
-#endif
 
 // select which pin will trigger the configuration portal when set to LOW
 #define TRIGGER_PIN 0
@@ -41,9 +39,6 @@ void setup() {
 }
 
 void loop() {
-  #ifdef ESP8266
-  MDNS.update();
-  #endif
   doWiFiManager();
   // put your main code here, to run repeatedly:
 }

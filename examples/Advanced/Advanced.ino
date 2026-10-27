@@ -2,7 +2,7 @@
  * WiFiManager advanced demo, contains advanced configurartion options
  * Implements TRIGGEN_PIN button press, press for ondemand configportal, hold for 3 seconds for reset settings.
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 
 #define TRIGGER_PIN 0
 
@@ -61,6 +61,10 @@ void setup() {
 
   // wm.setConnectTimeout(20); // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(30); // auto close configportal after n seconds
+
+  // Protect the portal and OTA with HTTP basic auth.
+  // OTA is disabled until setAuth() is called.
+  wm.setAuth("admin", "admin");
   // wm.setCaptivePortalEnable(false); // disable captive portal redirection
   // wm.setAPClientCheck(true); // avoid timeout if client connected to softap
 
