@@ -86,6 +86,12 @@
 #include "WiFiManagerStorage.h"
 
 
+// Include shared html/css/js skeleton, language independent markup and styles
+// language files only contain words and build markup through WM_HTML_* macros
+#ifndef WIFI_MANAGER_OVERRIDE_STRINGS
+  #include "wm_html.h"
+#endif
+
 // Include wm strings vars
 // Pass in strings env override via LANG_XX
 #if defined(LANG_DE)
@@ -152,6 +158,27 @@
 
 #ifndef WIFI_MANAGER_MAX_PARAMS
     #define WIFI_MANAGER_MAX_PARAMS 5 // params will autoincrement and realloc by this amount when max is reached
+#endif
+
+// portal stability defaults, override with build flags or Kconfig
+#ifndef WIFI_MANAGER_SAVE_TIMEOUT
+    #ifdef CONFIG_WIFIMANAGER_SAVE_TIMEOUT
+        #define WIFI_MANAGER_SAVE_TIMEOUT (CONFIG_WIFIMANAGER_SAVE_TIMEOUT * 1000) // seconds -> ms
+    #else
+        #define WIFI_MANAGER_SAVE_TIMEOUT 15000 // ms, bound the sta connect performed on save
+    #endif
+#endif
+
+#ifndef WIFI_MANAGER_CLEAN_CONNECT
+    #define WIFI_MANAGER_CLEAN_CONNECT 1 // disconnect before connecting, avoids hung sta
+#endif
+
+#ifndef WIFI_MANAGER_PORTAL_RADIO_TUNING
+    #ifdef CONFIG_WIFIMANAGER_DISABLE_PORTAL_RADIO_TUNING
+        #define WIFI_MANAGER_PORTAL_RADIO_TUNING 0
+    #else
+        #define WIFI_MANAGER_PORTAL_RADIO_TUNING 1 // quiet the radio while the portal is open
+    #endif
 #endif
 
 #define WFM_LABEL_BEFORE 1
@@ -545,12 +572,12 @@ class WiFiManager
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
-    unsigned long _saveTimeout            = 0; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
+    unsigned long _saveTimeout            = WIFI_MANAGER_SAVE_TIMEOUT; // ms stop trying to connect to ap on saves, in case bugs in esp waitforconnectresult
     
     WiFiMode_t    _usermode               = WIFI_STA; // Default user mode
     String        _wifissidprefix         = FPSTR(S_ssidpre); // auto apname prefix prefix+chipid
     int           _cpclosedelay           = 2000; // delay before wifisave, prevents captive portal from closing to fast.
-    bool          _cleanConnect           = false; // disconnect before connect in connectwifi, increases stability on connects
+    bool          _cleanConnect           = WIFI_MANAGER_CLEAN_CONNECT; // disconnect before connect in connectwifi, increases stability on connects
     bool          _connectonsave          = true; // connect to wifi when saving creds
     bool          _disableSTA             = false; // disable sta when starting ap, always
     bool          _disableSTAConn         = true;  // disable sta when starting ap, if sta is not connected ( stability )
@@ -562,8 +589,10 @@ class WiFiManager
     uint8_t       _connectRetries         = 1; // number of sta connect retries, force reconnect, wait loop (connectimeout) does not always work and first disconnect bails
     bool          _aggresiveReconn        = false; // use an agrressive reconnect strategy, WILL delay conxs
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
-                                                   // https://github.com/tzapu/WiFiManager/issues/1067
+                                                   // https://github.com/mrcodetastic/WiFiManager_ESP32/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
+    bool          _portalRadioTuned       = false; // portal disabled sta autoreconnect and modem sleep, restore on shutdown
+    wifi_ps_type_t _portalSleepState      = WIFI_PS_MIN_MODEM; // saved sleep mode, restored on portal shutdown
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;

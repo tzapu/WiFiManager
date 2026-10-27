@@ -1,4 +1,4 @@
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 
 
 void setup() {

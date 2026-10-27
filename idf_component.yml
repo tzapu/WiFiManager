@@ -1,5 +1,5 @@
 version: "3.0.0"
 description: "WiFi configuration manager with captive portal for ESP32"
-url: "https://github.com/tzapu/WiFiManager"
+url: "https://github.com/mrcodetastic/WiFiManager_ESP32"
 dependencies:
   idf: ">=5.0"

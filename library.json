@@ -1,24 +1,20 @@
 {
-  "name": "WiFiManager",
+  "name": "WiFiManager_ESP32",
   "version": "3.0.0",
   "keywords": "wifi,wi-fi,esp32,espressif32,arduino,preferences,nvs,captive-portal",
-  "description": "WiFi configuration manager with web configuration portal for ESP32, using ESP-IDF Preferences for persistence",
+  "description": "WiFi configuration manager with web configuration portal for ESP32 chips, using ESP-IDF Preferences for persistence",
   "authors":
   [
     {
-        "name": "tzapu",
-        "url": "https://github.com/tzapu"
-    },
-    {
-        "name": "tablatronix",
-        "url": "https://github.com/tablatronix",
+        "name": "mrcodetastic",
+        "url": "https://github.com/mrcodetastic/",
         "maintainer": true
     }
   ],
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/tzapu/WiFiManager.git"
+    "url": "https://github.com/mrcodetastic/WiFiManager_ESP32.git"
   },
   "frameworks": "arduino",
   "platforms":

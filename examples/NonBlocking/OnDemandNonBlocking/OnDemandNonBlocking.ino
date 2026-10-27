@@ -6,7 +6,7 @@
  */
 // Enable mDNS support in WiFiManager
 #define WM_MDNS
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 
 // include MDNS
 #include <ESPmDNS.h>

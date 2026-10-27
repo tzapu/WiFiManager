@@ -29,6 +29,10 @@
 - Portal/connection state tracking via `getState()`.
 - Consolidated language-independent constants in `wm_consts.h`.
 - HTML buffer reservations to reduce heap fragmentation.
+- `wm_html.h`: single source of truth for markup, CSS and JS, with `WM_HTML_*` templates so language files only contain translatable words.
+- `WM_CSS_CUSTOM` build flag to replace the default stylesheet.
+- `WM_NOHELP` build flag to compile out the help table.
+- Kconfig options `WIFIMANAGER_SAVE_TIMEOUT` and `WIFIMANAGER_DISABLE_PORTAL_RADIO_TUNING`.
 
 ### Changed
 
@@ -38,9 +42,19 @@
 - Replaced the VLA in scan rendering with `std::vector`.
 - Fixed the `WM_G` temporary pointer.
 - Fixed broken Arduino version gating.
+- Modernized the captive portal stylesheet: system font stack, card layout, 44px touch targets, focus rings, CSS custom properties and dark mode.
+- `getHTTPHead()` now reserves 4096 bytes to match the real head size (shell + script + stylesheet).
+- Fixed the Spanish portal `lang` attribute, the non-clickable show-password label in es/pt/pt-br, and untranslated Spanish strings.
+- Fixed the dark mode rule that painted links and headings as black blocks in de/es/fr/pt/pt-br.
+- Portal stability: station auto-reconnect and modem sleep are disabled while the config portal is open and restored on shutdown, so background STA activity no longer drags the softAP off channel and drops portal clients.
+- Non-blocking portal now disconnects and disables STA after a failed save, matching the blocking path instead of leaving AP+STA wedged.
+- Default save connect timeout is now 15 s (`WIFI_MANAGER_SAVE_TIMEOUT`) instead of unbounded, bounding how long a failed save blocks the portal.
+- `setCleanConnect()` is now enabled by default (`WIFI_MANAGER_CLEAN_CONNECT`), avoiding hung STA connects.
 
 ### Removed
 
 - ESP8266 code paths, constants, strings, and metadata.
 - WPS support.
+- Duplicated HTML/CSS/JS constants from every `wm_strings_*.h` file.
+- Dead `.footer` CSS rule and the no-op button transition rules.
 - `WM_FIXERASECONFIG`, `WM_NOASYNC`, `WM_NOAUTH`, `WM_NOSOFTAPSSID`, `WM_DISCONWORKAROUND`.

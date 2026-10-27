@@ -2,7 +2,7 @@
  * WiFiManager advanced demo, contains advanced configurartion options
  * Implements TRIGGEN_PIN button press, press for ondemand configportal, hold for 3 seconds for reset settings.
  */
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/mrcodetastic/WiFiManager_ESP32
 
 #define TRIGGER_PIN 0
 

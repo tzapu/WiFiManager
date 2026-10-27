@@ -763,6 +763,18 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   startAP();
   WiFiSetCountry();
 
+  // quiet the radio while the portal is open, a background sta reconnect or
+  // modem sleep will drag the softAP off channel and drop portal clients
+  #if WIFI_MANAGER_PORTAL_RADIO_TUNING
+  _portalSleepState = WiFi.getSleep();
+  WiFi.setAutoReconnect(false);
+  WiFi.setSleep(WIFI_PS_NONE);
+  _portalRadioTuned = true;
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_VERBOSE,F("Portal radio tuning: sta autoreconnect off, modem sleep off"));
+  #endif
+  #endif
+
   // do AP callback if set
   if ( _apcallback != NULL) {
     #ifdef WM_DEBUG_LEVEL
@@ -954,8 +966,14 @@ uint8_t WiFiManager::processConfigPortal(){
         #endif
       }
       else{
+        // non blocking: keep the portal open, but do not leave a failing sta
+        // attached, it drags the softAP off channel and drops portal clients
+        _ssid = "";
+        _pass = "";
+        WiFi_Disconnect();
+        WiFi_enableSTA(false);
         #ifdef WM_DEBUG_LEVEL
-        DEBUG_WM(WM_DEBUG_VERBOSE,F("Portal is non blocking - remaining open"));
+        DEBUG_WM(WM_DEBUG_VERBOSE,F("Portal is non blocking - remaining open, STA disabled"));
         #endif        
       }
     }
@@ -1007,6 +1025,19 @@ bool WiFiManager::shutdownConfigPortal(){
   #endif
   delay(1000);
   WiFi_Mode(_usermode); // restore users wifi mode, BUG https://github.com/esp8266/Arduino/issues/4372
+
+  // restore radio settings changed when the portal started
+  #if WIFI_MANAGER_PORTAL_RADIO_TUNING
+  if(_portalRadioTuned){
+    WiFi.setAutoReconnect(_wifiAutoReconnect);
+    WiFi.setSleep(_portalSleepState);
+    _portalRadioTuned = false;
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(WM_DEBUG_VERBOSE,F("Portal radio tuning restored"));
+    #endif
+  }
+  #endif
+
   if(WiFi.status()==WL_IDLE_STATUS){
     WiFi.reconnect(); // restart wifi since we disconnected it in startconfigportal
     #ifdef WM_DEBUG_LEVEL
@@ -1257,7 +1288,8 @@ uint8_t WiFiManager::waitForConnectResult(uint32_t timeout) {
 
 String WiFiManager::getHTTPHead(String title, String classes){
   String page;
-  page.reserve(2048);
+  // head is shell + script + stylesheet + title, the stylesheet alone is ~3.5k
+  page.reserve(4096);
   page += FPSTR(HTTP_HEAD_START);
   page.replace(FPSTR(T_v), title);
   page += FPSTR(HTTP_SCRIPT);
