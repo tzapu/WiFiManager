@@ -172,21 +172,21 @@ bool WiFiManagerStorage::saveParam(const String &id, const String &value) {
   if (!_ready || id == "") {
     return false;
   }
-  return _prefs.putString(keyForParam(id), value) > 0;
+  return _prefs.putString(keyForParam(id).c_str(), value) > 0;
 }
 
 String WiFiManagerStorage::loadParam(const String &id, const String &defaultValue) {
   if (!_ready || id == "") {
     return defaultValue;
   }
-  return _prefs.getString(keyForParam(id), defaultValue);
+  return _prefs.getString(keyForParam(id).c_str(), defaultValue);
 }
 
 bool WiFiManagerStorage::clearParam(const String &id) {
   if (!_ready || id == "") {
     return false;
   }
-  return _prefs.remove(keyForParam(id));
+  return _prefs.remove(keyForParam(id).c_str());
 }
 
 bool WiFiManagerStorage::clearAll() {
